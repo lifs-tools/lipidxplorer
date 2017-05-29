@@ -1,0 +1,30 @@
+##########################################################
+# Identify PS with checking  the precursor mass, NLS and FAS          #
+##########################################################
+
+QUERYNAME = Phosphatidylserine;
+DEFINE PR = 'C[34..50] H[30..120] O[10] N[1] P[1]' WITH DBR = (3.5,10.5), CHG = -1;
+DEFINE headPS = 'C[3] H[5] O[2] N[1]' WITH DBR = (-0.5,6.5), CHG = 0;
+DEFINE FA1 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+DEFINE FA2 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+
+IDENTIFY
+	
+	# marking
+	PR IN MS1- AND
+	FA1 IN MS2- AND
+	FA2 IN MS2- AND
+	headPS IN MS2- 
+
+SUCHTHAT    
+	FA1.chemsc + FA2.chemsc + headPS.nlsc + 'C3 H6 P1 O4' == PR.chemsc
+  
+REPORT 
+	MASS = "%.4f" % (PR.mass);
+	CHEMSC = PR.chemsc;
+        ERROR = "%.2fppm" % (PR.errppm);
+	SPECIES = "PS [%d:%d / %d:%d]" % (FA1.chemsc[C], FA1.chemsc[db] - 1.5, FA2.chemsc[C], FA2.chemsc[db] - 1.5);
+	PRECURINTENS = PR.intensity;
+	FAINTENS = sumIntensity(FA1.intensity, FA2.intensity);;
+
+################ end script ##################

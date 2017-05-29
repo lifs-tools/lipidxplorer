@@ -1,0 +1,28 @@
+##########################################################
+# Identify PE-O with checking  the precursor mass, FAS and FA-O determination              #
+##########################################################
+
+QUERYNAME = Phosphatidylethanolamineether;
+DEFINE PR = 'C[33..49] H[50..100] O[7] N[1] P[1]' WITH DBR = (1.5,8.5), CHG = -1;
+DEFINE FA1 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+DEFINE FAO ='C[17..27] H[20..80] O[6] N[1] P[1]' WITH DBR = (0.5,6.5), CHG = -1;
+
+IDENTIFY
+	
+	# marking
+	PR IN MS1-  AND
+	FA1 IN MS2-  AND
+	FAO IN MS2- 
+
+SUCHTHAT	
+	FA1.chemsc + FAO.chemsc == PR.chemsc + 'O1 H1'
+  
+REPORT 
+	MASS = "%.4f" % (PR.mass);
+	CHEMSC = PR.chemsc;
+        ERROR = "%.2fppm" % (PR.errppm);
+	SPECIES = "PE-O [%d:%d / %d:%d]" % (FAO.chemsc[C] - 5, FAO.chemsc[db] - 0.5, FA1.chemsc[C], FA1.chemsc[db] - 1.5);
+	PRECURINTENS = PR.intensity;
+	FAINTENS = FA1.intensity + FAO.intensity;;
+
+################ end script ##################
