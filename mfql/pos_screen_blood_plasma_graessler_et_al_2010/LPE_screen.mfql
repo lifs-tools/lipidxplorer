@@ -1,0 +1,24 @@
+##########################################################
+# Identify LPE with checking  the precursor mass         #
+##########################################################
+
+QUERYNAME = lysoPhosphatidylethanolamine;
+DEFINE PR = 'C[17..29] H[30..200] N[1] O[7] P[1]' WITH DBR = (0.5,6.5), CHG = 1;
+
+IDENTIFY
+	
+	# marking
+	PR IN MS1+ WITH TOLERANCE = 4 ppm, MINOCC = 0.33
+  
+SUCHTHAT
+        isOdd(PR.chemsc[C])
+  
+REPORT 
+	MASS = "%4.4f" % "(PR.mass)";
+	NAME = "LPE [%d:%d]" % "((PR.chemsc)[C] - 5, (PR.chemsc)[db] - 0.5)";
+	CHEMSC = PR.chemsc;
+        ERROR = "%2.2fppm" % "(PR.errppm)";
+	PRECURINTENS = PR.intensity;
+	TAG = "%s" % "PR.chemsc.scriptTag";;
+
+################ end script ##################

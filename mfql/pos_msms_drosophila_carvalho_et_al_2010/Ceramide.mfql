@@ -1,0 +1,26 @@
+##########################################################
+# Identify Ceramides with MRM approach at QStar #
+##########################################################
+
+QUERYNAME = ceramides;
+DEFINE PR = 'C[31..47] H[30..200] N[1] O[3..4]' WITH DBR = (0.5,2.5), CHG = 1;
+DEFINE LCB = 'C[14..18] H[20..40] N[1]' WITH DBR = (1.5,3.5), CHG = 1;
+
+IDENTIFY
+	
+	# marking
+	PR IN MS1+ AND
+	LCB IN MS2+
+
+SUCHTHAT
+	isEven(LCB.chemsc[C]) AND
+	PR.chemsc[db] - 0.5 == LCB.chemsc[db] - 1.5
+        
+REPORT 
+	MASS = "%4.4f" % "(PR.mass)";
+	NAME = "Cer[%d:%d/%d:%d;%d]" % ((LCB.chemsc)[C], (LCB.chemsc)[db] - 1.5, (PR.chemsc)[C] - (LCB.chemsc)[C], (((PR.chemsc)[db] - 0.5) - ((LCB.chemsc)[db] - 1.5)), (PR.chemsc)[O] - 3);
+	CHEMSC = PR.chemsc;
+        ERROR = "%2.2fDa" % (LCB.errda);
+	LCBINTENS = LCB.intensity;;
+
+################ end script ##################

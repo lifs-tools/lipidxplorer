@@ -1,0 +1,24 @@
+##########################################################
+# Identify Cholester with checking  the precursor mass   #
+##########################################################
+
+QUERYNAME = cholesterylester;
+DEFINE PR = 'C[29..51] H[30..200] N[1] O[2]' WITH DBR = (4.5,7.5), CHG = 1;
+
+IDENTIFY
+	
+	# marking
+	PR IN MS1+ WITH TOLERANCE = 4 ppm, MINOCC = 0.33
+
+SUCHTHAT
+        isOdd(PR.chemsc[C])
+        
+REPORT 
+	MASS = "%4.4f" % "(PR.mass)";
+	NAME = "Chol [%d:%d]" % "((PR.chemsc)[C] - 27, (PR.chemsc)[db] - 4.5)";
+	CHEMSC = PR.chemsc;
+        ERROR = "%2.2fppm" % "(PR.errppm)";
+	PRECURINTENS = PR.intensity;
+	TAG = "%s" % "PR.chemsc.scriptTag";;
+
+################ end script ##################
