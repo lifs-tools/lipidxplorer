@@ -1,0 +1,22 @@
+##########################################################
+# Identify CLwith checking  the precursor mass -2 charge                                              #
+##########################################################
+
+QUERYNAME = Cardiolipin;
+DEFINE PR = 'C[65..87] H[90..180] O[17] P[2]' WITH DBR = (5,16), CHG = -2;
+
+IDENTIFY Cardiolipin WHERE
+	# marking
+	PR IN MS1- WITH TOLERANCE = 5 ppm
+
+ SUCHTHAT
+        isOdd(PR.chemsc[C])
+	 
+REPORT 
+	MASS = "%4.4f" % "(PR.mass)";
+	CHEMSC = PR.chemsc;
+        ERROR = "%2.2fppm" % "(PR.errppm)";
+	NAME = "CL [%d:%d]" % "((PR.chemsc)[C] - 9, (PR.chemsc)[db] - 5)";
+        PRECURINTENS = PR.intensity;;
+
+################ end script ##################

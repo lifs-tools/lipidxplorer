@@ -1,0 +1,35 @@
+##########################################################
+# Identify PC-O with checking  the precursor mass, NLS, FAS                                            #
+##########################################################
+
+QUERYNAME = Phosphatidylcholineether;
+DEFINE PR = 'C[38..54] H[30..120] O[9] N[1] P[1]' WITH DBR = (1.5,8.5), CHG = -1;
+DEFINE headPC = 'C[3] H[6] O[2]' WITH CHG = 0;
+DEFINE FA1 ='C[14..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+DEFINE FAO ='C[21..29] H[20..80] O[6] N[1] P[1]' WITH DBR = (0.5,6.5), CHG = -1;
+
+IDENTIFY Phosphatidylcholineether WHERE
+	
+	# marking
+	PR IN MS1- AND
+	FA1 in MS2- AND
+	FAO in MS2- AND
+	headPC in MS2- WITH TOLERANCE = 0.5 Da
+
+SUCHTHAT
+	isEven(PR.chemsc[C]) AND
+	isEven(FA1.chemsc[C]) AND
+	isOdd(FAO.chemsc[C]) AND
+	FA1.chemsc + FAO.chemsc + headPC.nlsc == PR.chemsc + 'O1 H1'
+  
+REPORT 
+	MASS = "%4.4f" % "(PR.mass)";
+	CHEMSC = PR.chemsc;
+        ERROR = "%2.2fppm" % "(PR.errppm)";
+	NAME = "PC-O [%d:%d]" % "((PR.chemsc)[C] - 10, (PR.chemsc)[db] - 1.5)";
+	SPECIE = "PC-O [%d:%d / %d:%d]" % "(FAO.chemsc[C] - 7, FAO.chemsc[db] - 0.5, FA1.chemsc[C], FA1.chemsc[db] - 1.5)";
+	PRECURINTENS = PR.intensity;
+	NLSPIS = headPC.intensity;
+	FAS = FA1.intensity + FAO.intensity;;
+
+################ end script ##################

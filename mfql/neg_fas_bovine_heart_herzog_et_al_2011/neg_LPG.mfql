@@ -1,0 +1,27 @@
+##########################################################
+# Identify LPG with checking  the precursor mass AND FA                                               #
+##########################################################
+
+QUERYNAME = lysoPhosphatidylglycerol;
+DEFINE PR = 'C[20..28] H[30..70] O[9] P[1]' WITH DBR = (1.5,7.5), CHG = -1;
+DEFINE FA1 ='C[14..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+
+IDENTIFY lysoPhosphatidylglycerol WHERE
+	
+	# marking
+	PR IN MS1- AND
+	FA1 IN MS2-
+
+SUCHTHAT
+	isEven(FA1.chemsc[C]) AND
+	FA1.chemsc + 'C6 H13 O7 P1' == PR.chemsc
+  
+REPORT 
+	MASS = "%4.4f" % "(PR.mass)";
+	CHEMSC = PR.chemsc;
+        ERROR = "%2.2fppm" % "(PR.errppm)";
+	NAME = "LPG [%d:%d]" % "((PR.chemsc)[C] - 6, (PR.chemsc)[db] - 1.5)";
+	PRECURINTENS = PR.intensity;
+	FAS = FA1.intensity;;
+
+################ end script ##################

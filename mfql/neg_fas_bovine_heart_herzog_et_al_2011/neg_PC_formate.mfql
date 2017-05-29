@@ -1,0 +1,35 @@
+##########################################################
+# Identify PC with checking  the precursor mass, NLS, FAS                                            #
+##########################################################
+
+QUERYNAME = Phosphatidylcholine;
+DEFINE PR = 'C[38..54] H[30..130] O[10] N[1] P[1]' WITH DBR = (2.5,9.5), CHG = -1;
+DEFINE headPC = 'C[2] H[4] O[2]' WITH CHG = 0;
+DEFINE FA1 ='C[14..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+DEFINE FA2 ='C[14..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+
+IDENTIFY Phosphatidylcholine WHERE
+	
+	# marking
+	PR IN MS1- AND
+	FA1 in MS2- AND
+	FA2 in MS2- AND
+	headPC in MS2- WITH TOLERANCE = 1.2 Da
+
+SUCHTHAT
+	isEven(PR.chemsc[C]) AND
+	isEven(FA1.chemsc[C]) AND
+	isEven(FA2.chemsc[C]) AND
+	FA1.chemsc + FA2.chemsc + headPC.nlsc + 'C7 H15 P1 O4 N1' == PR.chemsc
+  
+REPORT 
+	MASS = "%4.4f" % "(PR.mass)";
+	CHEMSC = PR.chemsc;
+        ERROR = "%2.2fppm" % "(PR.errppm)";
+	NAME = "PC [%d:%d]" % "((PR.chemsc)[C] - 9, (PR.chemsc)[db] - 2.5)";
+	SPECIE = "PC [%d:%d / %d:%d]" % "(FA1.chemsc[C], FA1.chemsc[db] - 1.5, FA2.chemsc[C], FA2.chemsc[db] - 1.5)";
+	PRECURINTENS = PR.intensity;
+	NLSPIS = headPC.intensity;
+	FAS = sumIntensity(FA1.intensity, FA2.intensity);;
+
+################ end script ##################

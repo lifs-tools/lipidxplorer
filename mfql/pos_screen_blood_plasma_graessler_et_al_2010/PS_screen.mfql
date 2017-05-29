@@ -1,0 +1,25 @@
+##########################################################
+# Identify PS with checking  the precursor mass          #
+##########################################################
+
+QUERYNAME = Phosphatidylserine;
+DEFINE PR = 'C[34..50] H[30..200] N[1] O[10] P[1]' WITH DBR = (0.5,8.5), CHG = 1;
+
+IDENTIFY
+	
+	# marking
+	PR IN MS1+ WITH TOLERANCE = 4 ppm, MINOCC = 0.33
+  
+SUCHTHAT
+        isEven(PR.chemsc[C])
+  
+REPORT 
+	MASS = "%4.4f" % "(PR.mass)";
+	NAME = "PS [%d:%d]" % "((PR.chemsc)[C] - 6, (PR.chemsc)[db] - 0.5)";
+	CHEMSC = PR.chemsc;
+        ERROR = "%2.2fppm" % "(PR.errppm)";
+	PRECURINTENS = PR.intensity;
+	TAG = "%s" % "PR.chemsc.scriptTag";;
+
+################ end script ##################
+

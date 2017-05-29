@@ -1,0 +1,25 @@
+##########################################################
+# Identify lysoCLwith checking  the precursor mass -2 charge                                              #
+##########################################################
+
+QUERYNAME = lysoCardiolipin;
+DEFINE PR = 'C[51..69] H[90..180] O[16] P[2]' WITH DBR = (4,16), CHG = -2;
+DEFINE PRA = 'C[51..69] H[90..180] O[16] P[2]' WITH DBR = (3.5,15.5), CHG = -1;
+
+IDENTIFY lysoCardiolipin WHERE
+	# marking
+	PR IN MS1- WITH TOLERANCE = 5 ppm OR
+	PRA IN MS1- WITH TOLERANCE = 5 ppm
+
+# SUCHTHAT
+#      isOdd(PR.chemsc[C]) AND
+#	PR.chemsc == PRA.chemsc - 'H1'
+	 
+REPORT 
+	MASS = "%4.4f" % "(PR.mass)";
+	CHEMSC = PR.chemsc;
+        ERROR = "%2.2fppm" % "(PR.errppm)";
+	NAME = "LysCL [%d:%d]" % "((PR.chemsc)[C] - 9, (PR.chemsc)[db] - 4)";
+        PRECURINTENS = PR.intensity;;
+
+################ end script ##################
