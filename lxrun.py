@@ -89,8 +89,8 @@ def lpdxImportCLI():
 	project = Project()
 	# the order of the following if-statements integrates prioraties
 
-      
-	project.options['masterScan'] = args[0]
+	import sys
+	project.options['masterScan'] =  sys.argv[0]
 		
 
 	# if the settings are comming from the project file
