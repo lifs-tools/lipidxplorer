@@ -487,6 +487,10 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 				nb_ms_peaks.append(ret[3])
 				nb_msms_scans.append(ret[4])
 				nb_msms_peaks.append(ret[5])
+			
+			from time import sleep
+			sleep(1) # dirty hack to reduce threading problem, give enough time for UI to update
+			# os if you enable memory logging it crashes in the same way
 
 
 		if not len(dictBasePeakIntensity.keys()) > 0:
