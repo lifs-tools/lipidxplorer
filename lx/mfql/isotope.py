@@ -109,7 +109,7 @@ def isotope(elemC, elemH, elemO, elemN, elemS, elemP, WINDOW_SIZE = 100, RESOLUT
 		for j in xrange(MAX_ISOTOPES):
 			if A[i][j,0] != 0:
 				#removed +1 after R)+1 --we're using python
-				tA[N.round(A[i][j,0]*R)]=A[i][j,1]#;  % put isotopic distribution in tA
+				tA[int(N.round(A[i][j,0]*R))]=A[i][j,1]#;  % put isotopic distribution in tA
 
 		#print 'Calculate FFT...'
 		t0 = time.clock()
