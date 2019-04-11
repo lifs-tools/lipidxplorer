@@ -1025,6 +1025,7 @@ directory>, <the resolution of the mass spec machine>
 								mergeDeltaRes = options['MSresolutionDelta'])
 
 		# for debugging
+		strings = []
 		for cl in listClusters:
 			str = ''
 			for sample in dictSpecEntry.keys():#cl.keys():
@@ -1037,9 +1038,14 @@ directory>, <the resolution of the mass spec machine>
 							str +=  " /{0:>9.4f} - {1:>12}/ ".format(cl[sample].mass, '')
 						except TypeError:
 							print "TypeError:", cl[sample].mass
+						except :
+							import sys
+							print(sys.exc_info()[0])
 				else:
 					str +=  " /{0:>9} - {1:>12}/ ".format('empty', '')
-			print str
+			strings.append(str)
+		
+		print('\n'.join(strings))
 
 		### averaging of the MS1 scans ###
 		##################################
