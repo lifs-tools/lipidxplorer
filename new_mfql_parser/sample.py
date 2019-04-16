@@ -6,9 +6,6 @@ if __name__ == '__main__':
     with open('sample.mfql','rU') as f:
         mfql = f.read()
 
-    # mfql = [l.strip() for l in mfql]
-    # mfql = '\n'.join(mfql)
-    print(mfql)
     lexer.input(mfql)
 
     # Tokenize
