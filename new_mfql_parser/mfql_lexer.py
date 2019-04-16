@@ -17,20 +17,7 @@ tokens = keywords + (
 	'RBRACE', 'LBRACKET', 'RBRACKET', 'SFSTRING', 'ARROW', 'ARROWR'
 )
 
-# ignoring characters (space and tab)
-#t_ignore_WHITESPACE = r'\s'
-#t_ignore_TAB = r'\t'
-#t_ignore_COMMENT = r'\#.*'
-#t_ignore_CR = r'\n'
-
-
-#def t_CR(t):
-#	r'\r'
-#	pass
-
-#def t_CRNL(t):
-#	r'\r\n'
-#	pass
+#
 
 def t_ID(t):
 	r'[a-zA-Z$][a-zA-Z$0-9]*'
@@ -69,8 +56,7 @@ t_SFSTRING  = r'\'.*?\''
 t_DOT	  = r'\.'
 t_PERCENT = r'%'
 
-#t_ignore = '\t\n'
-#t_ignore = ' \t'
+
 
 def t_comment(t):
 	r'[ ]*\043[^\n]*'
@@ -86,14 +72,6 @@ def t_WS_NL(t):
 	t.lexer.lineno += t.value.count("\n")
 	pass
 
-#def t_NEWLINE(t):
-#	r'\n+'
-#	t.lexer.lineno += t.value.count("\n")
-#	print ">>> NL", t.value.count("\n")
-#
-#def t_TAB(t):
-#	r'\t'
-#	pass
 
 def t_UNDERSCORE(t):
 	r'_'
@@ -107,7 +85,6 @@ def t_error(t):
 		print "Illegal character %s (%s) in line %d" % (t.value[0], ord(t.value[0]), t.lexer.lineno)
 	t.lexer.skip(1)
 
-# build lexer
 
 lexer = lex.lex(reflags = re.I, debug = 0, optimize = 0)
 
