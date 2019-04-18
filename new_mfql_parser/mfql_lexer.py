@@ -98,7 +98,7 @@ if __name__ == '__main__':
         DEFINE FA1 = 'C[10..40] H[20..100] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
         DEFINE FA2 ='C[10..40] H[20..100] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
 
-    IDENTIFYjup
+    IDENTIFY
         pr IN MS1- AND
         FA1 IN MS2- AND
         FA2 IN MS2-
