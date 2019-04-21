@@ -1,22 +1,12 @@
+from collections import  namedtuple
 import ply.yacc as yacc
 from mfql_lexer import tokens
 
 mfql_dict = {}
-
-precedence = (
-    ('left', 'OR'),
-    ('left', 'AND', 'IFF', 'IFA', 'ARROW'),
-    ('left', 'EQUALS', 'NE'),
-    ('nonassoc', 'LT', 'GT', 'GE', 'LE', 'ARROWR'),
-    ('left', 'PLUS', 'MINUS'),
-    ('left', 'TIMES', 'DIVIDE'),
-    ('left', 'NOT'),
-    ('right', 'UMINUS')
-)
-
-### PROGRAMM ###
-import ply.yacc as yacc
-from mfql_lexer import tokens
+Var = namedtuple('Var','id object Options')
+Options = namedtuple('Options', 'dbr_l dbr_h chg')
+Obj = namedtuple('Obj', 'p_rule p_values')
+ElementSeq = namedtuple('ElementSeq', 'str')
 
 precedence = (
 	('left', 'OR'),
@@ -41,129 +31,70 @@ def p_program_single(p):
     print(mfql_dict == p[1])
     p[0] = p[1]
 
+'''
+def p_script(p):
+    '''script : scriptname variablesSection identificationSection suchthatSection reportSection SEMICOLON'''
+    mfql_dict['scriptname'] = p[1]
+    mfql_dict['variables'] = p[2]
+    mfql_dict['identification'] = p[3]
+    mfql_dict['suchthat'] = p[4]
+    mfql_dict['report'] = p[5]
+    p[0] = mfql_dict
+
+def p_script1(p):
+    '''script : scriptname variablesSection identificationSection reportSection SEMICOLON'''
+    mfql_dict['scriptname'] = p[1]
+    mfql_dict['variables'] = p[2]
+    mfql_dict['identification'] = p[3]
+    mfql_dict['suchthat'] = None
+    mfql_dict['report'] = p[4]
+    p[0] = mfql_dict
+
+'''
+
 def p_script(p):
 	'''script  : scriptname variables identification
 			   | identification'''
-    raise NotImplementedError('not implemented')
+    raise NotImplementedError('not implemented... see above commebt')
 
 
 def p_script_error(p):
 	'''script : error variables identification'''
-	raise SyntaxError"SYNTAX ERROR: 'QUERYNAME' is missing"
+	raise SyntaxError("SYNTAX ERROR: 'QUERYNAME' is missing")
 
 ### VARIABLES ###
 
 def p_scriptname(p):
 	'''scriptname : QUERYNAME IS getQueryName SEMICOLON'''
-
-	global gprogressCount
-	global numQueries
-
-	if mfqlObj.parsePart == 'identification' or mfqlObj.parsePart == 'genTargetList':
-
-		numQueries += 1
-		if numQueries > 1:
-			raise SyntaxErrorException("There is only one query per *.mfql file allowed!",
-					mfqlObj.filename,
-					0)
-
-		mfqlObj.listQueryNames.append(p[3])
-		mfqlObj.dictEnvironment[p[3]] = []
-		mfqlObj.scan = TypeScan(mfqlObj = mfqlObj)
-		mfqlObj.scan.scanTerm = []
-		mfqlObj.scan.wasOR = False
-		mfqlObj.dictDefinitionTable[mfqlObj.queryName] = {}
-
-		#gprogressCount += 1
-		#if gparent:
-		#	(cont, skip) = gparent.debug.progressDialog.Update(gprogressCount)
-		#	if not cont:
-		#		gparent.debug.progressDialog.Destroy()
-		#		return gparent.CONST_THREAD_USER_ABORT
-
-
 	p[0] = p[3]
 
 def p_getQueryName(p):
 	'''getQueryName : ID'''
+    p[0] = p[1]
 
-#	'''tagname : ID'''
-	mfqlObj.queryName = p[1]
-
+#----
 
 def p_variables_loop(p):
 	'''variables : variables var'''
+	p[0] = p[1] + [p[2]]
 
 def p_variables_endloop(p):
 	'''variables : var'''
+	p[0] = [p[1]]
 
 def p_var_normal(p):
-	'''var : DEFINE ID IS object options SEMICOLON
-			| DEFINE ID IS object options AS NEUTRALLOSS SEMICOLON'''
+    '''var : DEFINE ID IS object WITH options SEMICOLON'''
+    p[0]=Var(p[2], p[4], p[5])
 
-	if len(p) == 7 and p[5] != None:
-		p[4].addOptions(p[5])
-
-	elif len(p) == 9:
-		if p[5] != None: # options are given
-			index = 0
-
-			# accidantly the user could have added a CHG option,
-			# although it is a neutral loss
-			while index < len(p[5]):
-				if p[5][index][0] == "chg":
-					del p[5][index]
-				else:
-					index += 1
-			p[5].append(("chg", 0))
-			p[4].addOptions(p[5])
-		else:
-			p[4].addOptions([("chg", 0)])
-
-#	if isinstance(p[4], TypeList):
-#		for n in p[4]:
-#			if mfqlObj.queryName and mfqlObj.queryName != "":
-#				name = mfqlObj.queryName + mfqlObj.namespaceConnector + n.variable
-#			else:
-#				name = n.variable
-#			mfqlObj.dictDefinitionTable[mfqlObj.queryName][name] = deepcopy(p[4])
-#
-#	else:
-
-	if mfqlObj.queryName and mfqlObj.queryName != "":
-		name = mfqlObj.queryName + mfqlObj.namespaceConnector + p[2]
-	else:
-		name = p[2]
-
-	mfqlObj.dictDefinitionTable[mfqlObj.queryName][name] = p[4]
-
-#def p_var_list(p):
-#	'''var : DEFINE list IS object options SEMICOLON'''
-
-#	if len(p) == 7 and p[5] != None:
-#		p[4].addOptions(p[5])
-
-#	for n in p[2]:
-#		if mfqlObj.queryName and mfqlObj.queryName != "":
-#			name = mfqlObj.queryName + mfqlObj.namespaceConnector + n.variable
-#		else:
-#			name = n.variable
-#		mfqlObj.dictDefinitionTable[mfqlObj.queryName][name] = deepcopy(p[4])
+def p_var_nl(p):
+    '''var : DEFINE ID IS object WITH options AS NEUTRALLOSS SEMICOLON'''
+    options = p[5]
+    options.chg = 0
+    p[0]=Var(p[2], p[4], options)
 
 def p_var_emptyVar(p):
 	'''var : DEFINE ID options SEMICOLON'''
-
-	if len(p) == 5 and p[3] != None:
-		o = TypeSFConstraint(elementSequence = ElementSequence())
-		o.addOptions(p[3])
-	else:
-		o = TypeSFConstraint(elementSequence = None)
-
-	if mfqlObj.queryName and mfqlObj.queryName != "":
-		name = mfqlObj.queryName + mfqlObj.namespaceConnector + p[2]
-	else:
-		name = p[2]
-	mfqlObj.dictDefinitionTable[mfqlObj.queryName][name] = o
+	p[0] = Var(p[2], None, p[2])
 
 ### OBJECT ###
 
@@ -173,28 +104,21 @@ def p_object_withAttr(p):
 
 def p_object_onlyObj(p):
 	'''object : onlyObj'''
-
-	if len(p) == 2:
-		p[0] = p[1]
-
+	p[0] = p[1]
 
 ### OBJECT/VARCONTENT ###
 
 def p_onlyObj_ID_itemAccess(p):
 	'''onlyObj : ID LBRACE ID RBRACE'''
-	p[0] = TypeVariable(variable = p[1], item = p[3])
-	mfqlObj.listDataTable.append(p[0])
+	p[0] = Obj('p_onlyObj_ID_itemAccess', p[1:])
 
 def p_onlyObj_ID(p):
 	'''onlyObj : ID'''
-	p[0] = TypeVariable(variable = p[1])
-	mfqlObj.listDataTable.append(p[0])
+	p[0] = Obj('p_onlyObj_ID', p[1:])
 
 def p_onlyObj_list(p):
 	'''onlyObj : list'''
-	p[0] = TypeList(list = p[1])
-
-	#mfqlObj.listDataTable.append(p[1])
+	p[0] = Obj('p_onlyObj_list', p[1:])
 
 def p_onlyObj_varcontent(p):
 	'''onlyObj : varcontent'''
@@ -202,50 +126,36 @@ def p_onlyObj_varcontent(p):
 
 def p_onlyObj_function1(p):
 	'''onlyObj : ID LPAREN arguments RPAREN LBRACE ID RBRACE'''
-	p[0] = TypeFunction(name = p[1], arguments = p[3], mfqlObj = mfqlObj, item = p[6])
-	mfqlObj.listDataTable.append(p[1])
+	p[0] = Obj('p_onlyObj_function1', p[1:])
 
 def p_onlyObj_function2(p):
 	'''onlyObj : ID LPAREN arguments RPAREN'''
-	p[0] = TypeFunction(name = p[1], arguments = p[3], mfqlObj = mfqlObj)
-	mfqlObj.listDataTable.append(p[1])
+	p[0] = Obj('p_onlyObj_function2', p[1:])
 
 def p_withAttr_accessItem_(p):
 	'''withAttr : ID DOT ID LBRACE ID RBRACE'''
-	#p[0] = TypeItem(variable = p[1], attribute = p[3], item = p[5])
-	p[0] = TypeVariable(variable = p[1], attribute = p[3], item = p[5])
-	mfqlObj.listDataTable.append(p[0])
+	p[0] = Obj('p_withAttr_accessItem_', p[1:])
 
 def p_withAttr_accessItem_string(p):
 	'''withAttr : ID DOT ID LBRACE STRING RBRACE'''
-	#p[0] = TypeItem(variable = p[1], attribute = p[3], item = p[5])
-	p[0] = TypeVariable(variable = p[1], attribute = p[3], item = p[5])
-	mfqlObj.listDataTable.append(p[0])
+	p[0] = Obj('p_withAttr_accessItem_string', p[1:])
 
 def p_withAttr_id(p):
 	'''withAttr : ID DOT ID'''
-#	p[0] = TypeAttribute(
-#		variable = mfqlObj.dictDefinitionTable[p[1]],
-#		attribute = p[3])
-	p[0] = TypeVariable(variable = p[1], attribute = p[3])
-
-	mfqlObj.listDataTable.append(p[0])
+	p[0] = Obj('p_withAttr_id', p[1:])
 
 def p_withAttr_varcontent(p):
 	'''withAttr : varcontent DOT ID'''
-	#p[0] = TypeAttribute(mass = p[1], attribute = p[3])
-	p[0] = TypeVariable(variable = p[1], attribute = p[3])
-
-	mfqlObj.listDataTable.append(p[0])
+	p[0] = Obj('p_withAttr_varcontent', p[1:])
 
 def p_withAttr_list(p):
 	'''withAttr : list DOT ID'''
-	p[0] = TypeAttribute(sequence = p[1], attribute = p[3])
+	p[0] = Obj('p_withAttr_list', p[1:])
 
-	mfqlObj.listDataTable.append(p[0])
-
+#-----
 def p_arguments_empty(p):
 	'''arguments :'''
+	#TODO this should not be processed
 	p[0] = None
 
 def p_arguments_single(p):
@@ -254,81 +164,49 @@ def p_arguments_single(p):
 
 def p_arguments_multi(p):
 	'''arguments : arguments COMMA expression'''
-	p[0] = p[1]
-	p[0].append(p[3])
-
+	p[0] = p[1] + [p[3]]
 
 ### LIST ###
 
 def p_list(p):
 	'''list : LBRACKET listcontent RBRACKET'''
-	#'''list : LPAREN listcontent RPAREN'''
-
 	p[0] = p[2]
-	mfqlObj.listDataTable.append(p[0])
 
 def p_listcontent_cont(p):
 	'''listcontent : listcontent COMMA object'''
-
-	p[0] = p[1]
-	if len(p) == 4:
-		p[0].append(p[3])
+	p[0] = p[1] + [p[3]]
 
 def p_listcontent_obj(p):
 	'''listcontent : object'''
-
-	if len(p) == 2:
-		p[0] = [p[1]]
+	p[0] = [p[1]]
 
 ### VARCONTENT ###
 
 def p_varcontent_tolerance(p):
 	'''varcontent : tolerancetype'''
-
 	p[0] = p[1]
 
 def p_varcontent_float(p):
 	'''varcontent : FLOAT'''
-
-	p[0] = TypeFloat(float = float(p[1]), mass = float(p[1]))
-
-#def p_varcontent_negfloat(p):
-#	'''varcontent : MINUS FLOAT'''
-#
-#	p[0] = TypeFloat(float = -float(p[1]), mass = -float(p[1]))
+	p[0] = float(p[1])
 
 def p_varcontent_integer(p):
 	'''varcontent : INTEGER
-				  | PLUS INTEGER
-				  | MINUS INTEGER'''
+				  | PLUS INTEGER'''
+	p[0] = int(''.join(p[1:]))
 
-	if len(p) == 2:
-		p[0] = TypeFloat(float = float(p[1]), mass = float(p[1]))
-	else:
-		if p[1] == 'PLUS':
-			p[0] = TypeFloat(float = float(p[2]), mass = float(p[2]))
-		else:
-			p[0] = TypeFloat(float = -float(p[2]), mass = -float(p[2]))
-
-#def p_varcontent_signedInteger(p):
-#	'''varcontent : MINUS INTEGER'''
-#
-#	p[0] = TypeFloat(float = -float(p[2]), mass = -float(p[2]))
+def p_varcontent_integer(p):
+	'''varcontent : MINUS INTEGER'''
+	p[0] = -1 * int(p[2])
 
 def p_varcontent_string(p):
 	'''varcontent : STRING'''
-
-	p[0] = TypeString(string = p[1].strip('"'))
-	#p[0] = TypeMassList(file = p[1].strip('"'))
+	p[0] = p[1].strip('"')
 
 def p_varcontent_sfstring(p):
 	'''varcontent : SFSTRING'''
-
-	es = parseElemSeq(p[1].strip('\''))
-	if isinstance(es, SCConstraint):
-		p[0] = TypeSFConstraint(elementSequence = es)
-	else:
-		p[0] = TypeElementSequence(elementSequence = es, options = {})
+	#TODO try parseElemSeq(p[1].strip('\''))
+	p[0] = ElementSeq(p[1].strip('\''))
 
 ### OPTIONS ###
 
