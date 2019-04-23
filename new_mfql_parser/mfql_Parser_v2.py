@@ -31,8 +31,6 @@ def p_program_multi(p):
 
 def p_program_single(p):
     '''program  : script SEMICOLON'''
-
-
     print(' its done this is why he needs an extra semicoloni, maybe compare p[1] to mfql_dict')
     print(mfql_dict == p[1])
     p[0] = p[1]
@@ -118,12 +116,12 @@ def p_variables_endloop(p):
 
 
 def p_var_normal(p):
-    '''var : DEFINE ID IS object WITH options SEMICOLON'''
+    '''var : DEFINE ID IS object options SEMICOLON'''
     p[0] = Var(p[2], p[4], p[5])
 
 
 def p_var_nl(p):
-    '''var : DEFINE ID IS object WITH options AS NEUTRALLOSS SEMICOLON'''
+    '''var : DEFINE ID IS object options AS NEUTRALLOSS SEMICOLON'''
     options = p[5]
     options.chg = 0
     p[0] = Var(p[2], p[4], options)
@@ -552,11 +550,11 @@ def p_error(p):
     if not p:
         raise SyntaxError("SYNTAX ERROR at EOF")
     else:
-        detail = "Syntax error at '%s' in file " % p.value
+        detail = "Syntax error at '%s' in file at position %s %s" % (p .value,p.lineno , p.lexpos)
         raise SyntaxError(detail)
 
 
-parser = yacc.yacc(debug=0, optimize=0)
+parser = yacc.yacc(debug=1, optimize=0)
 # bparser = yacc.yacc(method = 'LALR')
 
 if __name__ == '__main__':
