@@ -1,6 +1,6 @@
 from collections import namedtuple
 import ply.yacc as yacc
-from mfql_lexer import tokens
+from mfql_lexer import tokens, lexer
 
 mfql_dict = {}
 Var = namedtuple('Var', 'id object Options')
@@ -253,7 +253,7 @@ def p_varcontent_integer(p):
     p[0] = int(''.join(p[1:]))
 
 
-def p_varcontent_integer(p):
+def p_varcontent_integer_min(p):
     '''varcontent : MINUS INTEGER'''
     p[0] = -1 * int(p[2])
 
@@ -554,7 +554,7 @@ def p_error(p):
         raise SyntaxError(detail)
 
 
-parser = yacc.yacc(debug=1, optimize=0)
+parser = yacc.yacc(debug=0, optimize=0)
 # bparser = yacc.yacc(method = 'LALR')
 
 if __name__ == '__main__':
@@ -588,7 +588,7 @@ if __name__ == '__main__':
         PROH = "%d" % "((pr.chemsc)[O] - 10)";
         SPECIE = "PC %d:%d:%d" % "((pr.chemsc)[C]-9, pr.chemsc[db] - 2.5, pr.chemsc[O]-10)";
 
-            PRERR = "%2.2f" % "(pr.errppm)";
+        PRERR = "%2.2f" % "(pr.errppm)";
         PRI = pr.intensity;
 
         FA1M = FA2.mass; 
@@ -600,7 +600,7 @@ if __name__ == '__main__':
         FA2M = FA1.mass; 
         FA2C = "%d" % "((FA1.chemsc)[C])";
         FA2DB = "%d" % "((FA1.chemsc)[db] - 1.5)"; 
-            FA2ERR = "%2.2f" % "(FA1.errppm)";
+        FA2ERR = "%2.2f" % "(FA1.errppm)";
         FA2I = FA1.intensity;
         ; 
 
@@ -608,5 +608,5 @@ if __name__ == '__main__':
 
     '''
 
-    result = parser.parse(mfql)
+    result = parser.parse(mfql, lexer = lexer, debug=1)
     print(result)
