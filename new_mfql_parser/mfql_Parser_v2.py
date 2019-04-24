@@ -594,7 +594,7 @@ if __name__ == '__main__':
         FA1M = FA2.mass; 
         FA1C = "%d" % "((FA2.chemsc)[C])";
         FA1DB = "%d" % "((FA2.chemsc)[db] - 1.5)"; 
-            FA1ERR = "%2.2f" % "(FA2.errppm)";
+        FA1ERR = "%2.2f" % "(FA2.errppm)";
         FA1I = FA2.intensity;
 
         FA2M = FA1.mass; 
