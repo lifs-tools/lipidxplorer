@@ -83,7 +83,7 @@ def t_error(t):
 
 # build lexer
 
-lexer = lex.lex(reflags = re.I, debug = 0, optimize = 0)
+lexer = lex.lex(reflags = re.I, debug = 0, optimize = 1)
 
 
 if __name__ == '__main__':
