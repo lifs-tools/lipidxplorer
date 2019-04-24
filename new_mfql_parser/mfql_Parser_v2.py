@@ -22,73 +22,20 @@ precedence = (
 )
 
 
-### PROGRAMM ###
-
-def p_program_multi(p):
-    '''program  : program script SEMICOLON'''
-    raise NotImplementedError('not implemented')
-
-
-def p_program_single(p):
-    '''program  : script SEMICOLON'''
-    print(' its done this is why he needs an extra semicoloni, maybe compare p[1] to mfql_dict')
-    print(mfql_dict == p[1])
+def p_program(p):
+    '''program  : script SEMICOLON
+                | script'''
+    #todo make mfql linter, remove depicated trailing semicolon
     p[0] = p[1]
 
 
-# '''
-# def p_script(p):
-#     '''
-# script: scriptname
-# variablesSection
-# identificationSection
-# suchthatSection
-# reportSection
-# SEMICOLON
-# '''
-#     mfql_dict['scriptname'] = p[1]
-#     mfql_dict['variables'] = p[2]
-#     mfql_dict['identification'] = p[3]
-#     mfql_dict['suchthat'] = p[4]
-#     mfql_dict['report'] = p[5]
-#     p[0] = mfql_dict
-#
-# def p_script1(p):
-#     '''
-# script: scriptname
-# variablesSection
-# identificationSection
-# reportSection
-# SEMICOLON
-# '''
-#     mfql_dict['scriptname'] = p[1]
-#     mfql_dict['variables'] = p[2]
-#     mfql_dict['identification'] = p[3]
-#     mfql_dict['suchthat'] = None
-#     mfql_dict['report'] = p[4]
-#     p[0] = mfql_dict
-#
-# '''
-
-
 def p_script(p):
-    '''script  : scriptname variables identification
-               | identification'''
-    # raise NotImplementedError('not implemented... see above commebt')
-    if len(p) > 2:
-        mfql_dict['scriptname'] = p[1]
-        mfql_dict['variables'] = p[2]
-        mfql_dict['identification'] = p[3]
-    else:
-        mfql_dict['identification'] = p[1]
+    '''script  : scriptname variables identification'''
+    mfql_dict['scriptname'] = p[1]
+    mfql_dict['variables'] = p[2]
+    mfql_dict['identification'] = p[3]
 
     p[0] = mfql_dict
-
-
-
-def p_script_error(p):
-    '''script : error variables identification'''
-    raise SyntaxError("SYNTAX ERROR: 'QUERYNAME' is missing")
 
 
 ### VARIABLES ###
@@ -602,7 +549,7 @@ if __name__ == '__main__':
         FA2DB = "%d" % "((FA1.chemsc)[db] - 1.5)"; 
         FA2ERR = "%2.2f" % "(FA1.errppm)";
         FA2I = FA1.intensity;
-        ; 
+         
 
     ################ end script ##################
 

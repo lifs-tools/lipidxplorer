@@ -2,6 +2,7 @@ from collections import  namedtuple
 import ply.yacc as yacc
 from mfql_lexer import tokens
 
+# MFQL = namedtuple('MFQL', 'scriptname variables identification suchthat report')
 mfql_dict = {}
 Var = namedtuple('Var','id object Options')
 Options = namedtuple('Options', 'dbr_l dbr_h chg')
@@ -23,13 +24,13 @@ precedence = (
 ################
 ### PROGRAMM ###
 def p_program_single(p):
-    '''program  : script SEMICOLON'''
+    '''program : script SEMICOLON'''
     print(' its done this is why he needs an extra semicoloni, maybe compare p[1] to mfql_dict' )
     print(mfql_dict == p[1])
     p[0] = p[1]
 
 def p_script(p):
-    '''script  : scriptname variablesSection identificationSection suchthatSection reportSection'''
+    '''script : scriptname variablesSection identificationSection suchthatSection reportSection SEMICOLON'''
     mfql_dict['scriptname'] = p[1]
     mfql_dict['variables'] = p[2]
     mfql_dict['identification'] = p[3]
@@ -38,7 +39,7 @@ def p_script(p):
     p[0] = mfql_dict
 
 def p_script1(p):
-    '''script  : scriptname variables identificationSection reportSection'''
+    '''script : scriptname variablesSection identificationSection reportSection SEMICOLON'''
     mfql_dict['scriptname'] = p[1]
     mfql_dict['variables'] = p[2]
     mfql_dict['identification'] = p[3]
@@ -50,6 +51,11 @@ def p_script1(p):
 def p_scriptname(p):
     '''scriptname : QUERYNAME IS ID SEMICOLON'''
     p[0] = p[3]
+
+
+def p_variablesSection(p):
+    '''variablesSection : variables'''
+    p[0] = p[1]
 
 
 def p_variables(p):
@@ -76,18 +82,19 @@ def p_object(p):
     p[0] = p[1]
 
 def p_options(p):
-    '''options : option COMMA option''' # two options
+    '''options : option COMMA option'''
+    # two options
     option1 = p[1]
     option2 = p[3]
     option_1_2 = [attr1 if attr1 is not None else attr2 for attr1, attr2 in zip(option1, option2)]
     p[0] = Options(*option_1_2)
 
-def p_options(p):
-    '''options : option''' # one option
+def p_options1(p):
+    '''options : option'''
     p[0] = p[1]
 
 def p_option_dbr(p):
-    '''option : DBR IS LPAREN object COMMA object RPAREN'''
+    '''option : DBR IS LPAREN FLOAT COMMA FLOAT RPAREN'''
     p[0] = Options(float(p[4]), float(p[6]), None)
 
 def p_option_chg(p):
@@ -108,8 +115,6 @@ def p_only_Statement(p):
 
 def p_statement_in(p):
     '''statement : ID IN scope '''
-    if p[1] not in [ var.id for var in mfql_dict['variables']]:
-        print('var {} not defined'.format(p[1]))
     p[0] = Var_in_ms(p[1], p[3])
 
 def p_scope(p):
@@ -144,6 +149,7 @@ def p_binop_not(p):
     p[0] = Binop(p[1], p[2], None)
 
 #---------------
+# https://www.dabeaz.com/ply/PLYTalk.pdf
 def p_suchthatSection(p):
     '''suchthatSection : SUCHTHAT suchthat'''
     p[0] = p[2]
@@ -201,12 +207,8 @@ def p_expression_content(p):
 
 #-------------------------
 def p_reportSection(p):
-    '''reportSection : REPORT report'''
+    '''reportSection : REPORT report_items'''
     p[0]=p[2]
-
-def p_report_1(p):
-    '''report : report_items'''
-    p[0] = p[1]
 
 def p_report_items_1(p):
     '''report_items : report_item'''
@@ -217,10 +219,10 @@ def report_items(p):
     items_dict = p[1]
     p[0] = items_dict.update(p[2])
 
-
 def p_report_item(p):
-    '''report_item : ID IS STRING SEMICOLON'''
-    p[0] = {p[1]:p[3]}
+    '''report_item : ID IS STRING PERCENT STRING SEMICOLON'''
+    joined = p[3] + p[4] + p[5]
+    p[0] = {p[1]:joined}
 
 #--
 def p_error(p):
@@ -234,7 +236,6 @@ def p_error(p):
 #######
 
 parser = yacc.yacc(debug=1, optimize=0)
-# bparser = yacc.yacc(method = 'LALR')
 
 if __name__ == '__main__':
     mfql = '''
