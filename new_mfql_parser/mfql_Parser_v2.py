@@ -23,19 +23,10 @@ precedence = (
 
 
 def p_program(p):
-    '''program  : script SEMICOLON
-                | script'''
-    # todo make mfql linter, remove depicated trailing semicolon
+    '''program  : script '''
+    #todo make mfql linter, remove depicated trailing semicolon
     p[0] = p[1]
 
-
-# def p_script(p):
-#     '''script  : scriptname variablesSection identification'''
-#     mfql_dict['scriptname'] = p[1]
-#     mfql_dict['variables'] = p[2]
-#     mfql_dict['identification'] = p[3]
-#
-#     p[0] = mfql_dict
 
 def p_script(p):
     '''script : scriptname variablesSection identificationSection suchthatSection reportSection SEMICOLON'''
@@ -45,7 +36,6 @@ def p_script(p):
     mfql_dict['suchthat'] = p[4]
     mfql_dict['report'] = p[5]
     p[0] = mfql_dict
-
 
 def p_script1(p):
     '''script : scriptname variablesSection identificationSection reportSection SEMICOLON'''
@@ -74,7 +64,6 @@ def p_getQueryName(p):
 def p_variablesSection(p):
     '''variablesSection : variables'''
     p[0] = p[1]
-
 
 def p_variables_loop(p):
     '''variables : variables var'''
@@ -302,8 +291,7 @@ def p_tolerancetype(p):
 
     if float(p[1]) <= 0.0:
         raise ValueError(
-            "Tolerance value as given in the query '%s' can not be smaller" % mfqlObj.queryName + \
-            " or equal zero")
+            "Tolerance value as given in the query '%s' can not be less than zero" % p.lexpos  )
 
     p[0] = (p[2].lower(), float(p[1]))
 
@@ -314,14 +302,8 @@ def p_tolerancetype(p):
 # https://github.com/dabeaz/ply/blob/master/example/calc/calc.py
 
 def p_identificationSection(p):
-    '''identificationSection : IDENTIFY marks evalMarks'''
+    '''identificationSection : IDENTIFY marks '''
     p[0] = p[2]
-
-
-def p_tagname(p):
-    '''tagname : ID'''
-    p[0] = p[1]
-
 
 def p_marks(p):
     '''marks : boolmarks'''
@@ -378,18 +360,11 @@ def p_boolmarks_toScan(p):
 
     p[0] = Evaluable('p_boolmarks_toScan', p[1:])
 
-
-def p_evalMarks(p):
-    '''evalMarks : '''
-    # todo this should not happen
-
-
-# ---------------
+#---------------
 # https://www.dabeaz.com/ply/PLYTalk.pdf
 def p_suchthatSection(p):
     '''suchthatSection : SUCHTHAT body'''
     p[0] = p[2]
-
 
 # def p_suchthat_single(p):
 #     '''suchthat : SUCHTHAT body'''
@@ -490,11 +465,10 @@ def p_scope(p):
 
     p[0] = p[1] + p[2]
 
-
-# ---
+#---
 def p_reportSection(p):
     '''reportSection : REPORT reportContent'''
-    p[0] = p[2]
+    p[0]=p[2]
 
 
 def p_reportContent_cont(p):
@@ -520,7 +494,7 @@ def p_error(p):
     if not p:
         raise SyntaxError("SYNTAX ERROR at EOF")
     else:
-        detail = "Syntax error at '%s' in file at position %s %s" % (p.value, p.lineno, p.lexpos)
+        detail = "Syntax error at '%s' in file at position %s %s" % (p .value,p.lineno , p.lexpos)
         raise SyntaxError(detail)
 
 
@@ -572,15 +546,15 @@ if __name__ == '__main__':
         FA2DB = "%d" % "((FA1.chemsc)[db] - 1.5)"; 
         FA2ERR = "%2.2f" % "(FA1.errppm)";
         FA2I = FA1.intensity;
-
+        ;;
 
     ################ end script ##################
 
     '''
 
-    result = parser.parse(mfql, lexer=lexer, debug=0)
+    result = parser.parse(mfql, lexer = lexer, debug=1)
     expected = '''
     {'variables': [Var(id='pr', object=ElementSeq(str='C[30..80] H[40..300] O[10] N[1] P[1]'), Options=[('dbr', [2.5, 14.5]), ',']), Var(id='FA1', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options=[('dbr', [1.5, 7.5]), ',']), Var(id='FA2', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options=[('dbr', [1.5, 7.5]), ','])], 'scriptname': 'PCFAS', 'identification': None, 'marks': Evaluable(p_method='p_boolmarks_and', p_values=[Evaluable(p_method='p_boolmarks_and', p_values=[Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['pr']), 'IN', 'MS1-', None])]), 'AND', Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['FA1']), 'IN', 'MS2-', None])])]), 'AND', Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['FA2']), 'IN', 'MS2-', None])])]), 'report': [Var(id='pr', object=ElementSeq(str='C[30..80] H[40..300] O[10] N[1] P[1]'), Options=[('dbr', [2.5, 14.5]), ',']), Var(id='FA1', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options=[('dbr', [1.5, 7.5]), ',']), Var(id='FA2', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options=[('dbr', [1.5, 7.5]), ','])], 'suchthat': Evaluable(p_method='p_booleanterm_logic', p_values=[Evaluable(p_method='p_booleanterm_logic', p_values=[Evaluable(p_method='p_booleanterm_expression', p_values=[Obj(p_rule='p_onlyObj_function2', p_values=['isOdd', '(', [Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'H', ']'])])], ')'])]), 'AND', Evaluable(p_method='p_booleanterm_expression', p_values=[Obj(p_rule='p_onlyObj_function2', p_values=['isOdd', '(', [Evaluable(p_method='p_expression_struct', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'db', ']'])]), '*', Evaluable(p_method='p_expression_content', p_values=[2])])], ')'])])]), 'AND', Evaluable(p_method='p_booleanterm_expr', p_values=[Evaluable(p_method='p_expr_multi', p_values=[Evaluable(p_method='p_expression_struct', p_values=[Evaluable(p_method='p_expression_struct', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'chemsc'])]), '+', Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'chemsc'])])]), '+', Evaluable(p_method='p_expression_content', p_values=[ElementSeq(str='C9 H19 N1 O6 P1')])]), '==', Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])]), None])])]), 'evalMarks': Evaluable(p_method='p_boolmarks_and', p_values=[Evaluable(p_method='p_boolmarks_and', p_values=[Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['pr']), 'IN', 'MS1-', None])]), 'AND', Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['FA1']), 'IN', 'MS2-', None])])]), 'AND', Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['FA2']), 'IN', 'MS2-', None])])])}
     '''
     expected = expected.strip()
-    print(str(result) == expected)
+    print(str(result))
