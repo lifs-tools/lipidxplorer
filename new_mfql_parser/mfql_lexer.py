@@ -2,7 +2,7 @@ import ply.lex as lex
 import re
 
 keywords = (
-    'IDENTIFY', 'WITH', 'WHERE', 'AND', 'OR',
+    'IDENTIFY', 'WITH', 'AND', 'OR',
     'TOLERANCE', 'MINOCC', 'MAXOCC', 'MASSRANGE', 'DBR', 'CHG',
     'NOT', 'DA', 'PPM', 'RES', 'DEFINE', 'IN', 'MS1', 'MS2',
     'REPORT', 'SUCHTHAT',
