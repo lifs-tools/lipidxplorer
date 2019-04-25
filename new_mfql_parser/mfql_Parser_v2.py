@@ -353,20 +353,8 @@ def p_boolmarks_toScan(p):
 #---------------
 # https://www.dabeaz.com/ply/PLYTalk.pdf
 def p_suchthatSection(p):
-    '''suchthatSection : SUCHTHAT body'''
+    '''suchthatSection : SUCHTHAT booleanterm'''
     p[0] = p[2]
-
-
-def p_body_bool(p):
-    '''body : bterm'''
-    # TODO redundant why is this here?
-    p[0] = p[1]
-
-
-def p_bterm(p):
-    '''bterm : booleanterm'''
-    p[0] = p[1]
-
 
 def p_booleanterm_logic(p):
     '''booleanterm : booleanterm AND booleanterm
