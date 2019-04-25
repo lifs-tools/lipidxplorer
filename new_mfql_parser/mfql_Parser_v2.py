@@ -95,12 +95,8 @@ def p_var_nl_no_opt(p):
 ### OBJECT ###
 
 def p_object_withAttr(p):
-    '''object : withAttr'''
-    p[0] = p[1]
-
-
-def p_object_onlyObj(p):
-    '''object : onlyObj'''
+    '''object : withAttr
+            | onlyObj'''
     p[0] = p[1]
 
 
