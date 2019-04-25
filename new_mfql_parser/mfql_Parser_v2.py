@@ -23,8 +23,9 @@ precedence = (
 
 
 def p_program(p):
-    '''program  : script  SEMICOLON  '''
-    #todo make mfql linter, remove depicated trailing semicolon
+    '''program  : script  SEMICOLON
+                | script '''
+    #todo make mfql linter, remove  trailing semicolon
     p[0] = p[1]
 
 
@@ -50,13 +51,8 @@ def p_script1(p):
 ### VARIABLES ###
 
 def p_scriptname(p):
-    '''scriptname : QUERYNAME IS getQueryName SEMICOLON'''
+    '''scriptname : QUERYNAME IS ID SEMICOLON'''
     p[0] = p[3]
-
-
-def p_getQueryName(p):
-    '''getQueryName : ID'''
-    p[0] = p[1]
 
 
 # ----
@@ -76,20 +72,25 @@ def p_variables_endloop(p):
 
 
 def p_var_normal(p):
-    '''var : DEFINE ID IS object options SEMICOLON'''
-    p[0] = Var(p[2], p[4], p[5])
+    '''var : DEFINE ID IS object WITH optioncontent SEMICOLON'''
+    p[0] = Var(p[2], p[4], p[6])
+
+def p_var_no_opts(p):
+    '''var : DEFINE ID IS object SEMICOLON'''
+    p[0] = Var(p[2], p[4], None)
 
 
 def p_var_nl(p):
-    '''var : DEFINE ID IS object options AS NEUTRALLOSS SEMICOLON'''
-    options = p[5]
-    options.chg = 0
+    '''var : DEFINE ID IS object WITH  optioncontent AS NEUTRALLOSS SEMICOLON'''
+    options = p[6]
+    option = {'CHG':0}
+    options.update(option)
     p[0] = Var(p[2], p[4], options)
 
-
-def p_var_emptyVar(p):
-    '''var : DEFINE ID options SEMICOLON'''
-    p[0] = Var(p[2], None, p[2])
+def p_var_nl_no_opt(p):
+    '''var : DEFINE ID IS object AS NEUTRALLOSS SEMICOLON'''
+    option = {'CHG': 0}
+    p[0] = Var(p[2], p[4], option)
 
 
 ### OBJECT ###
@@ -231,55 +232,45 @@ def p_varcontent_sfstring(p):
 
 ### OPTIONS ###
 
-def p_options_there(p):
-    '''options : WITH optioncontent'''
-    p[0] = p[2]
-
-
-def p_options_not_there(p):
-    # TODO this should be eliminated
-    '''options :'''
-
 
 def p_optioncontent_cont(p):
-    # TODO did I see this before?
     '''optioncontent : optioncontent COMMA optionentry'''
-    p[0] = p[1] + [p[2]]
+    p[0] = p[1].update(p[3]) # they are dicts
 
 
 def p_optioncontent_obj(p):
     '''optioncontent : optionentry'''
-    p[0] = [p[1]]
+    p[0] = p[1]
 
 
 def p_optionentry_dbr(p):
     '''optionentry : DBR IS LPAREN object COMMA object RPAREN'''
-    p[0] = ("dbr", [p[4], p[6]])
+    p[0] = {"dbr": (p[4], p[6])}
 
 
 def p_optionentry_chg(p):
     '''optionentry : CHG IS INTEGER'''
-    p[0] = ("chg", int(p[3]))
+    p[0] = {"chg": int(p[3])}
 
 
 def p_optionentry_massrange(p):
     '''optionentry : MASSRANGE IS LPAREN object COMMA object RPAREN'''
-    p[0] = ("massrange", [int(p[4].float), int(p[6].float)])
+    p[0] = {"massrange": (float(p[4]), float(p[6]))}
 
 
 def p_optionentry_minocc(p):
     '''optionentry : MINOCC IS object'''
-    p[0] = ("minocc", p[3])
+    p[0] = {"minocc", p[3]}
 
 
 def p_optionentry_maxocc(p):
     '''optionentry : MAXOCC IS object'''
-    p[0] = ("maxocc", p[3])
+    p[0] = {"maxocc", p[3]}
 
 
 def p_optionentry_TOLERANCE(p):
     '''optionentry : TOLERANCE IS tolerancetype'''
-    p[0] = ("tolerance", p[3])
+    p[0] = {"tolerance", p[3]}
 
 
 def p_tolerancetype(p):
@@ -366,10 +357,6 @@ def p_suchthatSection(p):
     '''suchthatSection : SUCHTHAT body'''
     p[0] = p[2]
 
-# def p_suchthat_single(p):
-#     '''suchthat : SUCHTHAT body'''
-#     p[0] = p[2]
-
 
 def p_body_bool(p):
     '''body : bterm'''
@@ -414,13 +401,13 @@ def p_booleanterm_expression(p):
 
 
 def p_expr_multi(p):
-    '''expr : expression EQUALS expression options
-            | expression GT expression options
-            | expression GE expression options
-            | expression LE expression options
-            | expression LT expression options
-            | expression NE expression options
-            | expression ARROWR expression options '''
+    '''expr : expression EQUALS expression
+            | expression GT expression
+            | expression GE expression
+            | expression LE expression
+            | expression LT expression
+            | expression NE expression
+            | expression ARROWR expression  '''
 
     p[0] = Evaluable('p_expr_multi', p[1:])
 
@@ -453,7 +440,7 @@ def p_expression_content(p):
 ### SCAN ###
 
 def p_scan_object(p):
-    '''scan : object IN scope options'''
+    '''scan : object IN scope'''
     p[0] = Evaluable('p_scan_object', p[1:])
 
 
@@ -551,9 +538,10 @@ if __name__ == '__main__':
 
     '''
 
-    result = parser.parse(mfql, lexer = lexer, debug=0,)
+    result = parser.parse(mfql, lexer = lexer, debug=1)
     expected = '''
-    {'report': [ReportItem(id='PRM', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'mass'])]), ';']), ReportItem(id='EC', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])]), ';']), ReportItem(id='CLASS', p_values=['"PC"', '%', '"()"', ';']), ReportItem(id='PRC', p_values=['"%d"', '%', '"((pr.chemsc)[C] - 9)"', ';']), ReportItem(id='PRDB', p_values=['"%d"', '%', '"((pr.chemsc)[db] - 2.5)"', ';']), ReportItem(id='PROH', p_values=['"%d"', '%', '"((pr.chemsc)[O] - 10)"', ';']), ReportItem(id='SPECIE', p_values=['"PC %d:%d:%d"', '%', '"((pr.chemsc)[C]-9, pr.chemsc[db] - 2.5, pr.chemsc[O]-10)"', ';']), ReportItem(id='PRERR', p_values=['"%2.2f"', '%', '"(pr.errppm)"', ';']), ReportItem(id='PRI', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'intensity'])]), ';']), ReportItem(id='FA1M', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'mass'])]), ';']), ReportItem(id='FA1C', p_values=['"%d"', '%', '"((FA2.chemsc)[C])"', ';']), ReportItem(id='FA1DB', p_values=['"%d"', '%', '"((FA2.chemsc)[db] - 1.5)"', ';']), ReportItem(id='FA1ERR', p_values=['"%2.2f"', '%', '"(FA2.errppm)"', ';']), ReportItem(id='FA1I', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'intensity'])]), ';']), ReportItem(id='FA2M', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'mass'])]), ';']), ReportItem(id='FA2C', p_values=['"%d"', '%', '"((FA1.chemsc)[C])"', ';']), ReportItem(id='FA2DB', p_values=['"%d"', '%', '"((FA1.chemsc)[db] - 1.5)"', ';']), ReportItem(id='FA2ERR', p_values=['"%2.2f"', '%', '"(FA1.errppm)"', ';']), ReportItem(id='FA2I', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'intensity'])]), ';'])], 'scriptname': 'PCFAS', 'identification': Evaluable(p_method='p_boolmarks_and', p_values=[Evaluable(p_method='p_boolmarks_and', p_values=[Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['pr']), 'IN', 'MS1-', None])]), 'AND', Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['FA1']), 'IN', 'MS2-', None])])]), 'AND', Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['FA2']), 'IN', 'MS2-', None])])]), 'variables': [Var(id='pr', object=ElementSeq(str='C[30..80] H[40..300] O[10] N[1] P[1]'), Options=[('dbr', [2.5, 14.5]), ',']), Var(id='FA1', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options=[('dbr', [1.5, 7.5]), ',']), Var(id='FA2', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options=[('dbr', [1.5, 7.5]), ','])], 'suchthat': Evaluable(p_method='p_booleanterm_logic', p_values=[Evaluable(p_method='p_booleanterm_logic', p_values=[Evaluable(p_method='p_booleanterm_expression', p_values=[Obj(p_rule='p_onlyObj_function2', p_values=['isOdd', '(', [Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'H', ']'])])], ')'])]), 'AND', Evaluable(p_method='p_booleanterm_expression', p_values=[Obj(p_rule='p_onlyObj_function2', p_values=['isOdd', '(', [Evaluable(p_method='p_expression_struct', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'db', ']'])]), '*', Evaluable(p_method='p_expression_content', p_values=[2])])], ')'])])]), 'AND', Evaluable(p_method='p_booleanterm_expr', p_values=[Evaluable(p_method='p_expr_multi', p_values=[Evaluable(p_method='p_expression_struct', p_values=[Evaluable(p_method='p_expression_struct', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'chemsc'])]), '+', Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'chemsc'])])]), '+', Evaluable(p_method='p_expression_content', p_values=[ElementSeq(str='C9 H19 N1 O6 P1')])]), '==', Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])]), None])])])}
+    {'report': [ReportItem(id='PRM', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'mass'])]), ';']), ReportItem(id='EC', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])]), ';']), ReportItem(id='CLASS', p_values=['"PC"', '%', '"()"', ';']), ReportItem(id='PRC', p_values=['"%d"', '%', '"((pr.chemsc)[C] - 9)"', ';']), ReportItem(id='PRDB', p_values=['"%d"', '%', '"((pr.chemsc)[db] - 2.5)"', ';']), ReportItem(id='PROH', p_values=['"%d"', '%', '"((pr.chemsc)[O] - 10)"', ';']), ReportItem(id='SPECIE', p_values=['"PC %d:%d:%d"', '%', '"((pr.chemsc)[C]-9, pr.chemsc[db] - 2.5, pr.chemsc[O]-10)"', ';']), ReportItem(id='PRERR', p_values=['"%2.2f"', '%', '"(pr.errppm)"', ';']), ReportItem(id='PRI', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'intensity'])]), ';']), ReportItem(id='FA1M', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'mass'])]), ';']), ReportItem(id='FA1C', p_values=['"%d"', '%', '"((FA2.chemsc)[C])"', ';']), ReportItem(id='FA1DB', p_values=['"%d"', '%', '"((FA2.chemsc)[db] - 1.5)"', ';']), ReportItem(id='FA1ERR', p_values=['"%2.2f"', '%', '"(FA2.errppm)"', ';']), ReportItem(id='FA1I', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'intensity'])]), ';']), ReportItem(id='FA2M', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'mass'])]), ';']), ReportItem(id='FA2C', p_values=['"%d"', '%', '"((FA1.chemsc)[C])"', ';']), ReportItem(id='FA2DB', p_values=['"%d"', '%', '"((FA1.chemsc)[db] - 1.5)"', ';']), ReportItem(id='FA2ERR', p_values=['"%2.2f"', '%', '"(FA1.errppm)"', ';']), ReportItem(id='FA2I', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'intensity'])]), ';'])], 'scriptname': 'PCFAS', 'identification': Evaluable(p_method='p_boolmarks_and', p_values=[Evaluable(p_method='p_boolmarks_and', p_values=[Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['pr']), 'IN', 'MS1-'])]), 'AND', Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['FA1']), 'IN', 'MS2-'])])]), 'AND', Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='p_scan_object', p_values=[Obj(p_rule='p_onlyObj_ID', p_values=['FA2']), 'IN', 'MS2-'])])]), 'variables': [Var(id='pr', object=ElementSeq(str='C[30..80] H[40..300] O[10] N[1] P[1]'), Options=None), Var(id='FA1', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options=None), Var(id='FA2', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options=None)], 'suchthat': Evaluable(p_method='p_booleanterm_logic', p_values=[Evaluable(p_method='p_booleanterm_logic', p_values=[Evaluable(p_method='p_booleanterm_expression', p_values=[Obj(p_rule='p_onlyObj_function2', p_values=['isOdd', '(', [Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'H', ']'])])], ')'])]), 'AND', Evaluable(p_method='p_booleanterm_expression', p_values=[Obj(p_rule='p_onlyObj_function2', p_values=['isOdd', '(', [Evaluable(p_method='p_expression_struct', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'db', ']'])]), '*', Evaluable(p_method='p_expression_content', p_values=[2])])], ')'])])]), 'AND', Evaluable(p_method='p_booleanterm_expr', p_values=[Evaluable(p_method='p_expr_multi', p_values=[Evaluable(p_method='p_expression_struct', p_values=[Evaluable(p_method='p_expression_struct', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'chemsc'])]), '+', Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'chemsc'])])]), '+', Evaluable(p_method='p_expression_content', p_values=[ElementSeq(str='C9 H19 N1 O6 P1')])]), '==', Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])])])])])}
     '''
     expected = expected.strip()
+    print(result)
     assert (str(result) == expected )
