@@ -120,7 +120,7 @@ def p_onlyObj_function1(p):
 
 def p_onlyObj_function2(p):
     '''onlyObj : ID LPAREN arguments RPAREN'''
-    p[0] = Obj('p_onlyObj_function2', p[1:])
+    p[0] = Evaluable(p[1], p[3])
 
 
 def p_withAttr_accessItem_(p):
@@ -147,8 +147,6 @@ def p_withAttr_list(p):
     '''withAttr : list DOT ID'''
     p[0] = Obj('p_withAttr_list', p[1:])
 
-
-# -----
 
 def p_arguments_single(p):
     '''arguments : expression'''
@@ -284,53 +282,48 @@ def p_marks(p):
 
 def p_booleanterm_paren(p):
     '''boolmarks : LPAREN boolmarks RPAREN'''
-    p[0] = Evaluable('p_booleanterm_paren', p[1:])
-
+    p[0] = p[2]
 
 def p_boolmarks_not(p):
     '''boolmarks : NOT boolmarks'''
 
-    p[0] = Evaluable('p_boolmarks_not', p[1:])
+    p[0] = Evaluable('Not', p[2])
 
 
 def p_boolmarks_or(p):
     '''boolmarks : boolmarks OR boolmarks'''
-    p[0] = Evaluable('p_boolmarks_or', p[1:])
+    p[0] = Evaluable('OR', (p[1],p[3]))
 
 
 def p_boolmarks_and(p):
     '''boolmarks : boolmarks AND boolmarks'''
-    p[0] = Evaluable('p_boolmarks_and', p[1:])
-
+    p[0] = Evaluable('AND', (p[1], p[3]))
 
 def p_boolmarks_if(p):
     # todo how is this differenc to the other if?
     '''boolmarks : boolmarks IFA boolmarks'''
-
-    p[0] = Evaluable('p_boolmarks_if', p[1:])
-
+    # p[0] = Evaluable('p_boolmarks_if', p[1:])
+    raise NotImplementedError(' not sure what the {} should do'.format(p[2]))
 
 def p_boolmarks_onlyif(p):
     '''boolmarks : boolmarks IFF boolmarks'''
-
-    p[0] = Evaluable('p_boolmarks_onlyif', p[1:])
+    # p[0] = Evaluable('p_boolmarks_onlyif', p[1:])
+    raise NotImplementedError(' not sure what the {} should do'.format(p[2]))
 
 
 def p_boolmarks_arrow(p):
     '''boolmarks : boolmarks ARROW boolmarks'''
-
-    p[0] = Evaluable('p_boolmarks_arrow', p[1:])
+    # p[0] = Evaluable('p_boolmarks_arrow', p[1:])
+    raise NotImplementedError(' not sure what the {} should do'.format(p[2]))
 
 
 def p_boolmarks_le(p):
     '''boolmarks : boolmarks LE boolmarks'''
-    p[0] = Evaluable('p_boolmarks_le', p[1:])
-
+    p[0] = Evaluable(p[2], (p[1], p[3]))
 
 def p_boolmarks_toScan(p):
     '''boolmarks : scan'''
-
-    p[0] = Evaluable('p_boolmarks_toScan', p[1:])
+    p[0] = p[1]
 
 #---------------
 # https://www.dabeaz.com/ply/PLYTalk.pdf
@@ -395,13 +388,12 @@ def p_expression_attribute(p):
 
 def p_expression_paren(p):
     '''expression : LPAREN expression RPAREN'''
-    p[0] = Evaluable('p_expression_paren', p[1:])
+    p[0] = p[2]
 
 
 def p_expression_content(p):
     '''expression : object'''
-    p[0] = Evaluable('p_expression_content', p[1:])
-
+    p[0] = p[1]
 
 ### SCAN ###
 
@@ -421,12 +413,11 @@ def p_scope(p):
 #---
 def p_reportSection(p):
     '''reportSection : REPORT reportContent'''
-    p[0]=p[2]
+    p[0] = p[2]
 
 
 def p_reportContent_cont(p):
     '''reportContent : reportContent reportItem'''
-    # TODO improve format here
     p[0] = p[1] + [p[2]]
 
 
@@ -440,7 +431,7 @@ def p_rContent(p):
                 | ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
                 | ID IS expression SEMICOLON'''
 
-    p[0] = ReportItem(p[1], p[3:])
+    p[0] = ReportItem(p[1], p[3:-1])
 
 
 def p_error(p):
@@ -506,7 +497,7 @@ if __name__ == '__main__':
 
     result = parser.parse(mfql, lexer = lexer, debug=0)
     expected = '''
-    {'report': [ReportItem(id='PRM', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'mass'])]), ';']), ReportItem(id='EC', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])]), ';']), ReportItem(id='CLASS', p_values=['"PC"', '%', '"()"', ';']), ReportItem(id='PRC', p_values=['"%d"', '%', '"((pr.chemsc)[C] - 9)"', ';']), ReportItem(id='PRDB', p_values=['"%d"', '%', '"((pr.chemsc)[db] - 2.5)"', ';']), ReportItem(id='PROH', p_values=['"%d"', '%', '"((pr.chemsc)[O] - 10)"', ';']), ReportItem(id='SPECIE', p_values=['"PC %d:%d:%d"', '%', '"((pr.chemsc)[C]-9, pr.chemsc[db] - 2.5, pr.chemsc[O]-10)"', ';']), ReportItem(id='PRERR', p_values=['"%2.2f"', '%', '"(pr.errppm)"', ';']), ReportItem(id='PRI', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'intensity'])]), ';']), ReportItem(id='FA1M', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'mass'])]), ';']), ReportItem(id='FA1C', p_values=['"%d"', '%', '"((FA2.chemsc)[C])"', ';']), ReportItem(id='FA1DB', p_values=['"%d"', '%', '"((FA2.chemsc)[db] - 1.5)"', ';']), ReportItem(id='FA1ERR', p_values=['"%2.2f"', '%', '"(FA2.errppm)"', ';']), ReportItem(id='FA1I', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'intensity'])]), ';']), ReportItem(id='FA2M', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'mass'])]), ';']), ReportItem(id='FA2C', p_values=['"%d"', '%', '"((FA1.chemsc)[C])"', ';']), ReportItem(id='FA2DB', p_values=['"%d"', '%', '"((FA1.chemsc)[db] - 1.5)"', ';']), ReportItem(id='FA2ERR', p_values=['"%2.2f"', '%', '"(FA1.errppm)"', ';']), ReportItem(id='FA2I', p_values=[Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'intensity'])]), ';'])], 'scriptname': 'PCFAS', 'identification': Evaluable(p_method='p_boolmarks_and', p_values=[Evaluable(p_method='p_boolmarks_and', p_values=[Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='IN', p_values=('pr', 'MS1-'))]), 'AND', Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='IN', p_values=('FA1', 'MS2-'))])]), 'AND', Evaluable(p_method='p_boolmarks_toScan', p_values=[Evaluable(p_method='IN', p_values=('FA2', 'MS2-'))])]), 'variables': [Var(id='pr', object=ElementSeq(str='C[30..80] H[40..300] O[10] N[1] P[1]'), Options={'dbr': (2.5, 14.5), 'chg': -1}), Var(id='FA1', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options={'dbr': (1.5, 7.5), 'chg': -1}), Var(id='FA2', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options={'dbr': (1.5, 7.5), 'chg': -1})], 'suchthat': Evaluable(p_method='AND', p_values=(Evaluable(p_method='AND', p_values=(Obj(p_rule='p_onlyObj_function2', p_values=['isOdd', '(', [Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'H', ']'])])], ')']), Obj(p_rule='p_onlyObj_function2', p_values=['isOdd', '(', [Evaluable(p_method='*', p_values=(Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'db', ']'])]), Evaluable(p_method='p_expression_content', p_values=[2])))], ')']))), Evaluable(p_method='==', p_values=(Evaluable(p_method='+', p_values=(Evaluable(p_method='+', p_values=(Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'chemsc'])]), Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'chemsc'])]))), Evaluable(p_method='p_expression_content', p_values=[ElementSeq(str='C9 H19 N1 O6 P1')]))), Evaluable(p_method='p_expression_content', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])])))))}
+    {'report': [ReportItem(id='PRM', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'mass'])]), ReportItem(id='EC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])]), ReportItem(id='CLASS', p_values=['"PC"', '%', '"()"']), ReportItem(id='PRC', p_values=['"%d"', '%', '"((pr.chemsc)[C] - 9)"']), ReportItem(id='PRDB', p_values=['"%d"', '%', '"((pr.chemsc)[db] - 2.5)"']), ReportItem(id='PROH', p_values=['"%d"', '%', '"((pr.chemsc)[O] - 10)"']), ReportItem(id='SPECIE', p_values=['"PC %d:%d:%d"', '%', '"((pr.chemsc)[C]-9, pr.chemsc[db] - 2.5, pr.chemsc[O]-10)"']), ReportItem(id='PRERR', p_values=['"%2.2f"', '%', '"(pr.errppm)"']), ReportItem(id='PRI', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'intensity'])]), ReportItem(id='FA1M', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'mass'])]), ReportItem(id='FA1C', p_values=['"%d"', '%', '"((FA2.chemsc)[C])"']), ReportItem(id='FA1DB', p_values=['"%d"', '%', '"((FA2.chemsc)[db] - 1.5)"']), ReportItem(id='FA1ERR', p_values=['"%2.2f"', '%', '"(FA2.errppm)"']), ReportItem(id='FA1I', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'intensity'])]), ReportItem(id='FA2M', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'mass'])]), ReportItem(id='FA2C', p_values=['"%d"', '%', '"((FA1.chemsc)[C])"']), ReportItem(id='FA2DB', p_values=['"%d"', '%', '"((FA1.chemsc)[db] - 1.5)"']), ReportItem(id='FA2ERR', p_values=['"%2.2f"', '%', '"(FA1.errppm)"']), ReportItem(id='FA2I', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'intensity'])])], 'scriptname': 'PCFAS', 'identification': Evaluable(p_method='AND', p_values=(Evaluable(p_method='AND', p_values=(Evaluable(p_method='IN', p_values=('pr', 'MS1-')), Evaluable(p_method='IN', p_values=('FA1', 'MS2-')))), Evaluable(p_method='IN', p_values=('FA2', 'MS2-')))), 'variables': [Var(id='pr', object=ElementSeq(str='C[30..80] H[40..300] O[10] N[1] P[1]'), Options={'dbr': (2.5, 14.5), 'chg': -1}), Var(id='FA1', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options={'dbr': (1.5, 7.5), 'chg': -1}), Var(id='FA2', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options={'dbr': (1.5, 7.5), 'chg': -1})], 'suchthat': Evaluable(p_method='AND', p_values=(Evaluable(p_method='AND', p_values=(Evaluable(p_method='isOdd', p_values=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'H', ']'])]), Evaluable(p_method='isOdd', p_values=[Evaluable(p_method='*', p_values=(Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'db', ']']), 2))]))), Evaluable(p_method='==', p_values=(Evaluable(p_method='+', p_values=(Evaluable(p_method='+', p_values=(Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'chemsc']), Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'chemsc']))), ElementSeq(str='C9 H19 N1 O6 P1'))), Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])))))}
     '''
     expected = expected.strip()
     print(result)
