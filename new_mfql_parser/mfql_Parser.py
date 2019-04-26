@@ -1,6 +1,8 @@
 from collections import namedtuple
+
 import ply.yacc as yacc
-from mfql_lexer import tokens, lexer
+
+from mfql_lexer import lexer
 
 mfql_dict = {}
 Var = namedtuple('Var', 'id object Options')
