@@ -1,15 +1,8 @@
-from collections import namedtuple
 
 import ply.yacc as yacc
 
-from mfql_lexer import lexer, tokens
-
-mfql_dict = {}
-Var = namedtuple('Var', 'id object Options')
-Obj = namedtuple('Obj', 'p_rule p_values')
-ElementSeq = namedtuple('ElementSeq', 'str')
-Evaluable = namedtuple('Evaluable', 'p_method , p_values')
-ReportItem = namedtuple('ReportItem', 'id p_values')
+from data_structs import mfql_dict, Var, Obj, ElementSeq, Evaluable, ReportItem
+from mfql_lexer import lexer
 
 precedence = (
     ('left', 'OR'),
@@ -503,4 +496,4 @@ if __name__ == '__main__':
     '''
     expected = expected.strip()
     print(result)
-    assert (str(result) == expected )
+    assert (str(result) == expected)
