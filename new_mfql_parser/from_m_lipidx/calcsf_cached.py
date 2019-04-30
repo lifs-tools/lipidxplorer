@@ -81,6 +81,8 @@ def calcsf(args):
     TiBuf = jTi * TI
 
     listOutSeq = []
+    mass_list = []
+    dbr_list = []
 
     while jTi < upBndI:
 
@@ -222,6 +224,9 @@ def calcsf(args):
                                                                                             #
                                                                                             #                                                                                             print("HIT")
 
+                                                                                            mass_list.append(massSum)
+                                                                                            dbr_list.append(cRDB)
+
                                                                                             listOutSeq_inner = []
                                                                                             listOutSeq_inner.append(jC)
                                                                                             listOutSeq_inner.append(jH)
@@ -283,4 +288,4 @@ def calcsf(args):
         jTi += 1
         TiBuf += TI
 
-    return listOutSeq
+    return (mass_list, dbr_list, listOutSeq)
