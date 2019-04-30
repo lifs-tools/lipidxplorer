@@ -2,7 +2,9 @@
 import ply.yacc as yacc
 
 from data_structs import mfql_dict, Var, Obj, ElementSeq, Evaluable, ReportItem
-from mfql_lexer import lexer
+from mfql_lexer import tokens, lexer
+
+tokens = tokens  # for linting
 
 precedence = (
     ('left', 'OR'),
