@@ -1,5 +1,8 @@
+import pandas as pd
+
 from mfql_Parser import parser
 from mfql_lexer import lexer
+from var2df import var2df
 
 expected_mfql_parse = '''
     {'report': [ReportItem(id='PRM', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'mass'])]), ReportItem(id='EC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])]), ReportItem(id='CLASS', p_values=['"PC"', '%', '"()"']), ReportItem(id='PRC', p_values=['"%d"', '%', '"((pr.chemsc)[C] - 9)"']), ReportItem(id='PRDB', p_values=['"%d"', '%', '"((pr.chemsc)[db] - 2.5)"']), ReportItem(id='PROH', p_values=['"%d"', '%', '"((pr.chemsc)[O] - 10)"']), ReportItem(id='SPECIE', p_values=['"PC %d:%d:%d"', '%', '"((pr.chemsc)[C]-9, pr.chemsc[db] - 2.5, pr.chemsc[O]-10)"']), ReportItem(id='PRERR', p_values=['"%2.2f"', '%', '"(pr.errppm)"']), ReportItem(id='PRI', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'intensity'])]), ReportItem(id='FA1M', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'mass'])]), ReportItem(id='FA1C', p_values=['"%d"', '%', '"((FA2.chemsc)[C])"']), ReportItem(id='FA1DB', p_values=['"%d"', '%', '"((FA2.chemsc)[db] - 1.5)"']), ReportItem(id='FA1ERR', p_values=['"%2.2f"', '%', '"(FA2.errppm)"']), ReportItem(id='FA1I', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'intensity'])]), ReportItem(id='FA2M', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'mass'])]), ReportItem(id='FA2C', p_values=['"%d"', '%', '"((FA1.chemsc)[C])"']), ReportItem(id='FA2DB', p_values=['"%d"', '%', '"((FA1.chemsc)[db] - 1.5)"']), ReportItem(id='FA2ERR', p_values=['"%2.2f"', '%', '"(FA1.errppm)"']), ReportItem(id='FA2I', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'intensity'])])], 'scriptname': 'PCFAS', 'identification': Evaluable(p_method='AND', p_values=(Evaluable(p_method='AND', p_values=(Evaluable(p_method='IN', p_values=('pr', 'MS1-')), Evaluable(p_method='IN', p_values=('FA1', 'MS2-')))), Evaluable(p_method='IN', p_values=('FA2', 'MS2-')))), 'variables': [Var(id='pr', object=ElementSeq(str='C[30..80] H[40..300] O[10] N[1] P[1]'), Options={'dbr': (2.5, 14.5), 'chg': -1}), Var(id='FA1', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options={'dbr': (1.5, 7.5), 'chg': -1}), Var(id='FA2', object=ElementSeq(str='C[10..40] H[20..100] O[2]'), Options={'dbr': (1.5, 7.5), 'chg': -1})], 'suchthat': Evaluable(p_method='AND', p_values=(Evaluable(p_method='AND', p_values=(Evaluable(p_method='isOdd', p_values=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'H', ']'])]), Evaluable(p_method='isOdd', p_values=[Evaluable(p_method='*', p_values=(Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'db', ']']), 2))]))), Evaluable(p_method='==', p_values=(Evaluable(p_method='+', p_values=(Evaluable(p_method='+', p_values=(Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'chemsc']), Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'chemsc']))), ElementSeq(str='C9 H19 N1 O6 P1'))), Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])))))}
@@ -34,3 +37,13 @@ if __name__ == '__main__':
     result = parser.parse(mfql)
     print('check mfql')
     assert (str(result) == expected_mfql_parse.strip() )
+
+    print('get spectra')
+    df = pd.read_csv('spectra.csv')
+    df.columns = 'scanNum,filterLine,retTime,mz,i,r,n,z,charge'.split(',')
+    print(df.head())
+
+    print('get identifications')
+    variables = result['variables']
+    variables = [var2df(var) for var in variables]
+    print(variables)
