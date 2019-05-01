@@ -2,6 +2,7 @@ import pandas as pd
 
 from mfql_Parser import parser
 from mfql_lexer import lexer
+from nearest import nearest
 from var2df import var2df
 
 expected_mfql_parse = '''
@@ -41,7 +42,8 @@ if __name__ == '__main__':
     print('get spectra')
     df = pd.read_csv('spectra.csv')
     df.columns = 'scanNum,filterLine,retTime,mz,i,r,n,z,charge'.split(',')
-    print(df.head())
+    sel_df = df.loc[df.filterLine.str.contains('888')].copy()  # copy to avoid pandas warnings
+    print(sel_df.head())
 
     print('get identifications')
     variables = result['variables']
@@ -49,3 +51,8 @@ if __name__ == '__main__':
     print(var_df.head())
 
     print('find closest masses')
+    nearest_idx = nearest(sel_df.mz, var_df.m)
+    nearest_val = var_df.m.iloc[nearest_idx].tolist()  # to list because index
+    sel_df.loc[:, 'nearest_idx'] = nearest_idx
+    sel_df.loc[:, 'nearest_val'] = nearest_val
+    print(sel_df.head())
