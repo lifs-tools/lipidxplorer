@@ -1,8 +1,15 @@
 from data_structs import Evaluable, Obj, ElementSeq
 
 
+def evaluate(evaluable):
+    # process like swagger, see python_mztab
+
+    # eval() # use this to evaluate???
+    res_df = None  # result is a dataframe with the evaluated results
+    return res_df  # a list of masses and thir data
+
 def suchthat2df(suchthat):
-    return suchthat
+    return evaluate(str(suchthat))
 
 
 if __name__ == '__main__':
