@@ -3,6 +3,7 @@ import pandas as pd
 from mfql_Parser import parser
 from mfql_lexer import lexer
 from nearest import nearest
+from suchthat2df import suchthat2df
 from var2df import var2df
 
 expected_mfql_parse = '''
@@ -56,3 +57,8 @@ if __name__ == '__main__':
     sel_df.loc[:, 'nearest_idx'] = nearest_idx
     sel_df.loc[:, 'nearest_val'] = nearest_val
     print(sel_df.head())
+
+    print('do suchthat')
+    suchthat = result['suchthat']
+    print(suchthat)
+    suchthat2df(suchthat)
