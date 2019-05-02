@@ -5,13 +5,12 @@
 #	. adding chemsf together
 ###	  ###
 
-import sys
 import os
-
-from copy import deepcopy, copy
-from lx.mfql.runtimeStatic import TypeTolerance
-
 import platform
+import sys
+from copy import deepcopy, copy
+
+from lx.mfql.runtimeStatic import TypeTolerance
 
 if platform.machine() == "i686":
 	if platform.python_version_tuple()[1] == '6': # Python 2.6
@@ -180,7 +179,9 @@ class ConstElement(Element):
 		return self._count
 
 	def get_range(self):
-		raise TypeError("Getting a range for ConstElement is not possible")
+        # raise TypeError("Getting a range for ConstElement is not possible")
+        # todo get rid of this shit
+        return [1]  # so that min is 1 and max is 1
 
 	def get_enum(self):
 		raise TypeError("Getting a enum for ConstElement is not possible")
