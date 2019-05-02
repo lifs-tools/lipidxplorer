@@ -48,8 +48,8 @@ if __name__ == '__main__':
 
     print('get identifications')
     variables = result['variables']
-    var_dfs = [var2df(var) for var in variables]
-    var_df = var_dfs[0]
+    var_dfs = {var.id: var2df(var) for var in variables}
+    var_df = var_dfs[var_dfs.keys()[0]]
     print(var_df.head())
 
     print('find closest masses')
