@@ -4,8 +4,8 @@ NAME, NUM, EOS, SP, NUMPAREN, RANGE, ENUM, SLPAREN, SRPAREN, SIMI, DB, CHARGE = 
 import re
 from copy import deepcopy
 
-from lx.exceptions import SyntaxErrorException
-from lx.mfql.chemsc import ElementSequence, sym2elt, RangeElement, ConstElement, SCConstraint
+# from lx.exceptions import SyntaxErrorException
+from chemsc import ElementSequence, sym2elt, RangeElement, ConstElement, SCConstraint
 
 _lexer = re.compile(
     r"[A-Z][a-wyz]*|\d+|[\{\}]|<EOS>|\s|\[\d{1,6}\.\.\d{1,6}\]|\[\d{1,6}(,\d{1,6})*\]|;|db\([-+]?\d{1,3}(\.\d{1,4})?,[+-]?\d{1,3}(\.\d{1,4})?\)|chg\([+-]?\d\)").match

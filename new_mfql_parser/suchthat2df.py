@@ -1,7 +1,7 @@
 import warnings
 
 from data_structs import Obj, ElementSeq, Evaluable, Func
-from var2df import elementSeq2df as elementSeqTxt2df
+from var2df import elementSeqTxt2df
 
 var_dfs = None
 
