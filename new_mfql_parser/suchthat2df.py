@@ -1,14 +1,19 @@
 from data_structs import Evaluable, Obj, ElementSeq
 
 
-def evaluate(evaluable):
-    # process like swagger, see python_mztab
+def getObj(object):
+    return (str(object))
 
-    operation, term_1, term_2 = evaluable
+
+def evaluate(evaluable):
+    if isinstance(evaluable, Obj):
+        return getObj(evaluable)
+
+    # process like swagger, see python_mztab
     print('>>>>')
-    print(operation)
-    print(evaluate(term_1))
-    print(evaluate(term_2))
+    print(evaluable.operation)
+    print(evaluate(evaluable.term_1))
+    print(evaluate(evaluable.term_2))
     print('<<<<')
 
     # eval() # use this to evaluate???
@@ -16,8 +21,7 @@ def evaluate(evaluable):
     return res_df  # a list of masses and thir data
 
 def suchthat2df(suchthat):
-    return evaluate(str(suchthat))
-
+    return evaluate(suchthat)
 
 if __name__ == '__main__':
     suchthat = Evaluable(operation='AND', term_1=Evaluable(operation='AND', term_1=Obj(p_rule='p_onlyObj_function2',
