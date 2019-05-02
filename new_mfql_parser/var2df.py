@@ -35,7 +35,7 @@ def var2df(var):
     args = argsTuple + (mass, tolerance, dbLowerBound, dbUpperBound, charge)
 
     mass_list, dbr_list, listOutSeq = calcsf(args)
-    df = pd.DataFrame({'m': mass_list, 'dbr': dbr_list, 'sequence': listOutSeq})
+    df = pd.DataFrame({'m': mass_list, 'db': dbr_list, 'sequence': listOutSeq})
 
     # as in https://mikulskibartosz.name/how-to-split-a-list-inside-a-dataframe-cell-into-rows-in-pandas-9849d8ff2401
     df_elems = df['sequence'].apply(pd.Series)
