@@ -4,10 +4,10 @@ from data_structs import Var, ElementSeq
 from from_m_lipidx.calcsf_cached import calcsf
 from from_m_lipidx.chemParser import parseElemSeq
 
+elems = 'C,H,O,N,P,S,Na,D,Ci,Cl,Li,Ni,F,I,Ag,Al,W,Ti'
+elems = elems.split(',')
 
 def makeArgs(es):
-    elems = 'C,H,O,N,P,S,Na,D,Ci,Cl,Li,Ni,F,I,Ag,Al,W,Ti'
-    elems = elems.split(',')
     res = []
     for elem in elems:
         if elem in es._seq:
@@ -36,6 +36,11 @@ def var2df(var):
 
     mass_list, dbr_list, listOutSeq = calcsf(args)
     df = pd.DataFrame({'m': mass_list, 'dbr': dbr_list, 'sequence': listOutSeq})
+
+    # as in https://mikulskibartosz.name/how-to-split-a-list-inside-a-dataframe-cell-into-rows-in-pandas-9849d8ff2401
+    df_elems = df['sequence'].apply(pd.Series)
+    df_elems.columns = elems
+    df = df.join(df_elems)
     return df
 
 
