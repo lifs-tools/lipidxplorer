@@ -31,17 +31,28 @@ def var2df(var):
     mass = 0
 
     argsTuple = tuple(makeArgs(es))
-
     args = argsTuple + (mass, tolerance, dbLowerBound, dbUpperBound, charge)
+    df = make_DF(args)
+    return df
 
+
+def make_DF(args):
     mass_list, dbr_list, listOutSeq = calcsf(args)
     df = pd.DataFrame({'m': mass_list, 'db': dbr_list, 'sequence': listOutSeq})
-
     # as in https://mikulskibartosz.name/how-to-split-a-list-inside-a-dataframe-cell-into-rows-in-pandas-9849d8ff2401
     df_elems = df['sequence'].apply(pd.Series)
     df_elems.columns = elems
     df = df.join(df_elems)
     return df
+
+
+def elementSeqTxt2df(txt):  # for processing suchthat
+    es = parseElemSeq(txt.strip('\''))
+    argsTuple = tuple(makeArgs(es))
+    args = argsTuple + (0, float("inf"), 0, float("inf"), 0)  # (mass, tolerance, dbLowerBound, dbUpperBound, charge)
+    df = make_DF(args)
+    return df
+
 
 
 if __name__ == '__main__':

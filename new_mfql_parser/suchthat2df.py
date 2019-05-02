@@ -1,6 +1,7 @@
 import warnings
 
 from data_structs import Obj, ElementSeq, Evaluable, Func
+from var2df import elementSeq2df as elementSeqTxt2df
 
 var_dfs = None
 
@@ -28,7 +29,8 @@ def getObj(object):
 
 
 def ElementSeq2df(elementSeq):
-    return elementSeq.txt
+    warnings.warn('not sure about this', DeprecationWarning)
+    return elementSeqTxt2df(elementSeq.txt)
 
 
 def evaluate(evaluable):
