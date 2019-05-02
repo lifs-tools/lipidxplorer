@@ -4,6 +4,12 @@ from data_structs import Evaluable, Obj, ElementSeq
 def evaluate(evaluable):
     # process like swagger, see python_mztab
 
+    p_method, p_values = evaluable
+    print(p_method)
+
+
+
+
     # eval() # use this to evaluate???
     res_df = None  # result is a dataframe with the evaluated results
     return res_df  # a list of masses and thir data
