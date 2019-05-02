@@ -2,6 +2,7 @@ import warnings
 
 from data_structs import Obj, ElementSeq, Evaluable, Func
 
+var_dfs = None
 
 def funcCall(func):
     # todo make this better from the parser
@@ -11,7 +12,19 @@ def funcCall(func):
     return 'do {} on {}'.format(operation, on)
 
 def getObj(object):
-    return str(object)
+    if var_dfs is None:
+        raise NotImplementedError('need the variable to calculate the objects')
+    var = object.p_values[0]
+    df = var_dfs[var]
+
+    if object.p_values[2:4] == ['chemsc', '[']:
+        atr = object.p_values[4]
+        ret = df[atr]  # this works
+    elif object.p_values[-1] == 'chemsc':
+        warnings.warn('not sure about this', DeprecationWarning)
+        ret = df['sequence']
+
+    return ret
 
 
 def ElementSeq2df(elementSeq):
@@ -37,7 +50,10 @@ def evaluate(evaluable):
     return res_df  # a list of masses and thir data
 
 
-def suchthat2df(suchthat):
+def suchthat2df(suchthat, my_var_dfs):
+    # TODO make this a class...var_dfs = var_dfs
+    global var_dfs  # TODO do nto make this global
+    var_dfs = my_var_dfs
     return evaluate(suchthat)
 
 
