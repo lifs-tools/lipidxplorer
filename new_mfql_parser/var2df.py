@@ -51,7 +51,7 @@ def elementSeqTxt2df(txt):  # for processing suchthat
     argsTuple = tuple(makeArgs(es))
     args = argsTuple + (0, float("inf"), 0, float("inf"), 0)  # (mass, tolerance, dbLowerBound, dbUpperBound, charge)
     df = make_DF(args)
-    return df
+    return df.m
 
 
 

@@ -62,16 +62,26 @@ def evaluate(evaluable):
         return funcCall(evaluable)
     elif isinstance(evaluable, Evaluable):
         operation = evaluable.operation
-        if operation == 'AND':
-            operation = '&'  # because vectpro operation... and is amboogous
-        if operation == 'OR':
-            operation = '|'  # because vectpro operation... and is amboogous
         term_1 = evaluate(evaluable.term_1)
         term_2 = evaluate(evaluable.term_2)
-        if isinstance(term_1, pd.core.series.Series) and isinstance(term_1, pd.core.series.Series):
+        if operation == 'AND':
+            operation = '&'  # because vectpro operation... and is amboogous
             return eval('term_1 {} term_2'.format(operation.lower()))
-        for the adding of series try to use product(term_1, term_2) and list(product(term_1.index, term_2.index)) for the index
-        or [(t1, t2) for t1 in term_1 for t2 in term_2]  # google pyhon eval vs exec describes an expression
+        elif operation == 'OR':
+            operation = '|'  # because vectpro operation... and is amboogous
+            return eval('term_1 {} term_2'.format(operation.lower()))
+        elif operation == '*':
+            return eval('term_1 {} term_2'.format(operation.lower()))
+        elif operation == '+':
+            # # for the adding of series try to use product(term_1, term_2) and list(product(term_1.index, term_2.index)) for the index
+            # # or [(t1, t2) for t1 in term_1 for t2 in term_2]  # google pyhon eval vs exec describes an expression
+            return [t1 + t2 for t1 in term_1 for t2 in term_2]
+        elif operation == '==':
+            # round for the matching
+            # 15.0 vs 14.49 should round to the same ie bankers rounwndind, numpy has it
+            term_1 = np.round(term_1, 2)
+            return term_2.round(2).apply(lambda x: x in term_1)
+
 
     # eval() # use this to evaluate???
     res_df = None  # result is a dataframe with the evaluated results
