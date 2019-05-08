@@ -1,5 +1,7 @@
 import warnings
 
+import numpy as np
+
 from data_structs import Obj, ElementSeq, Evaluable, Func
 from var2df import elementSeqTxt2df
 
