@@ -82,7 +82,7 @@ def evaluate(evaluable):
             # round for the matching
             # 15.0 vs 14.49 should round to the same ie bankers rounwndind, numpy has it
             term_1 = np.round(term_1, 2)
-            return term_2.round(2).apply(lambda x: x in term_1)
+            return term_2.round(2).isin(term_1)  # term_2.round(2).apply(lambda x: x in term_1)
 
 
     # eval() # use this to evaluate???
@@ -94,7 +94,8 @@ def suchthat2df(suchthat, my_var_dfs):
     # TODO make this a class...var_dfs = var_dfs
     global var_dfs  # TODO do nto make this global
     var_dfs = my_var_dfs
-    return evaluate(suchthat)
+    res = evaluate(suchthat)
+    return res
 
 
 if __name__ == '__main__':
