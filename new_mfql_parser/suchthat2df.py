@@ -10,6 +10,10 @@ def funcCall(func):
     operation = func.func
     warnings.warn('only evaluates first item in list', DeprecationWarning)
     on = evaluate(func.on[0])
+
+    if operation == 'isOdd':
+        return on % 2 == 0
+
     return 'do {} on {}'.format(operation, on)
 
 def getObj(object):
@@ -23,7 +27,7 @@ def getObj(object):
         ret = df[atr]  # this works
     elif object.p_values[-1] == 'chemsc':
         warnings.warn('not sure about this', DeprecationWarning)
-        ret = df['sequence']
+        ret = df['m']
 
     return ret
 
@@ -33,7 +37,23 @@ def ElementSeq2df(elementSeq):
     return elementSeqTxt2df(elementSeq.txt)
 
 
+# from swaggger code python_zmtab: ApiClient
+# PRIMITIVE_TYPES = (float, bool, bytes, six.text_type) + six.integer_types
+NATIVE_TYPES_MAPPING = {
+    'int': int,
+    # 'long': int if six.PY3 else long,  # noqa: F821
+    'float': float,
+    'str': str,
+    'bool': bool,
+    # 'date': datetime.date,
+    # 'datetime': datetime.datetime,
+    'object': object,
+}
+
+
 def evaluate(evaluable):
+    if type(evaluable) in NATIVE_TYPES_MAPPING.values():
+        return evaluable
     if isinstance(evaluable, Obj):
         return getObj(evaluable)
     elif isinstance(evaluable, ElementSeq):
@@ -41,11 +61,17 @@ def evaluate(evaluable):
     elif isinstance(evaluable, Func):
         return funcCall(evaluable)
     elif isinstance(evaluable, Evaluable):
-        print('>>>>')
-        print(evaluable.operation)
-        print(evaluate(evaluable.term_1))
-        print(evaluate(evaluable.term_2))
-        print('<<<<')
+        operation = evaluable.operation
+        if operation == 'AND':
+            operation = '&'  # because vectpro operation... and is amboogous
+        if operation == 'OR':
+            operation = '|'  # because vectpro operation... and is amboogous
+        term_1 = evaluate(evaluable.term_1)
+        term_2 = evaluate(evaluable.term_2)
+        if isinstance(term_1, pd.core.series.Series) and isinstance(term_1, pd.core.series.Series):
+            return eval('term_1 {} term_2'.format(operation.lower()))
+        for the adding of series try to use product(term_1, term_2) and list(product(term_1.index, term_2.index)) for the index
+        or [(t1, t2) for t1 in term_1 for t2 in term_2]  # google pyhon eval vs exec describes an expression
 
     # eval() # use this to evaluate???
     res_df = None  # result is a dataframe with the evaluated results
