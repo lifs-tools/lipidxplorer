@@ -74,7 +74,7 @@ def evaluate(evaluable):
             return eval('term_1 {} term_2'.format(operation.lower()))
         elif operation == '*':
             return eval('term_1 {} term_2'.format(operation.lower()))
-        elif operation == '+':
+        elif operation == '+':  # also try pandas.Series.where
             # # for the adding of series try to use product(term_1, term_2) and list(product(term_1.index, term_2.index)) for the index
             # # or [(t1, t2) for t1 in term_1 for t2 in term_2]  # google pyhon eval vs exec describes an expression
             return [t1 + t2 for t1 in term_1 for t2 in term_2]
