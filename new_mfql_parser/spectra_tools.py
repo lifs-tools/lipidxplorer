@@ -7,7 +7,7 @@ def specta_df_fromCSV(csv):
     return df
 
 
-def add_pr_fa_link(scan_df):
+def get_triggerScan(scan_df, tol=0.01):
     # get only the scans not the peaks
     unique_scan_df = scan_df[['scanNum', 'filterLine']].drop_duplicates()
 
@@ -22,5 +22,27 @@ def add_pr_fa_link(scan_df):
     unique_scan_df['precursor'] = unique_scan_df['filterLine'].str.extract('(\d*\.\d*)@', expand=True)
 
     # get the probabale ms1 scan and veryify its there
+    # todo make this better
+    # scan_df.where() datframe where returns from one dataframe if true and from abother if false
+    triggerScan = []
+    prev1, prev2 = None, None
+    for tup in unique_scan_df.itertuples():
+        if tup.msLevel == 1:
+            triggerScan.append(None)
+            prev1 = tup.scanNum
+            prev2 = prev1
+            continue
+        target_peak = float(tup.precursor)
+        nearnes = scan_df[scan_df.scanNum == prev1].mz.apply(
+            lambda x: abs(x - target_peak)).min()  # TODO make this more efficient
+        if nearnes < tol:
+            triggerScan.append(prev1)
+        elif scan_df[scan_df.scanNum == prev2].mz.apply(
+                lambda x: abs(x - target_peak)).min():  # check the alternative if not found
+            triggerScan.append(prev2)
+        else:
+            triggerScan.append(None)  # none was found
 
-    return scan_df
+    unique_scan_df['triggerScan'] = triggerScan
+    unique_scan_df.index = unique_scan_df.scanNum
+    return unique_scan_df
