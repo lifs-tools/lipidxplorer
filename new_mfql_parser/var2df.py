@@ -22,7 +22,8 @@ def makeArgs(es):
 def var2df(var):
     # TODO remimplement this because its super inefficient
     txt = var.object.txt
-    es = parseElemSeq(txt.strip('\''))
+    es = parseElemSeq(txt.strip(
+        '\''))  # TODO try http://www.chemcalc.org/web/pythonExamples and https://www.lfd.uci.edu/~gohlke/molmass/
 
     charge = var.Options['chg']
     dbLowerBound = var.Options['dbr'][0]
