@@ -1,7 +1,7 @@
 from mfql_Parser import parser
 from mfql_lexer import lexer
 from nearest import nearest
-from spectra_tools import add_pr_fa_link, specta_df_fromCSV
+from spectra_tools import get_triggerScan, specta_df_fromCSV
 from suchthat2df import suchthat2df
 from var2df import var2df
 
@@ -45,8 +45,9 @@ if __name__ == '__main__':
     # todo redefine this
     sel_df = df.loc[df.filterLine.str.contains('888')].copy()  # copy to avoid pandas warnings
     print('add pr-fa link')
-    add_pr_fa_link(df)
+    scans_df = get_triggerScan(df)
     print(sel_df.head())
+    print(scans_df.loc[sel_df.scanNum.unique()])
 
     print('get identifications')
     variables = result['variables']
