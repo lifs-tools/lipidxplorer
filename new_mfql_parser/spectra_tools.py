@@ -1,3 +1,6 @@
+import warnings
+from collections import defaultdict
+
 import pandas as pd
 
 
@@ -24,11 +27,12 @@ def get_triggerScan(scan_df, tol=0.01):
     # get the probabale ms1 scan and veryify its there
     # todo make this better
     # scan_df.where() datframe where returns from one dataframe if true and from abother if false
-    triggerScan = []
+    triggerScan = {}
+    triggeredScans = defaultdict(list)
     prev1, prev2 = None, None
     for tup in unique_scan_df.itertuples():
         if tup.msLevel == 1:
-            triggerScan.append(None)
+            # triggerScan.append()
             prev1 = tup.scanNum
             prev2 = prev1
             continue
@@ -36,13 +40,17 @@ def get_triggerScan(scan_df, tol=0.01):
         nearnes = scan_df[scan_df.scanNum == prev1].mz.apply(
             lambda x: abs(x - target_peak)).min()  # TODO make this more efficient
         if nearnes < tol:
-            triggerScan.append(prev1)
+            triggerScan[tup.scanNum] = prev1
+            triggeredScans[prev1].append(tup.scanNum)
         elif scan_df[scan_df.scanNum == prev2].mz.apply(
                 lambda x: abs(x - target_peak)).min():  # check the alternative if not found
-            triggerScan.append(prev2)
+            # triggerScan.append(prev2)
+            triggerScan[tup.scanNum] = prev2
+            triggeredScans[prev2].append(tup.scanNum)
         else:
-            triggerScan.append(None)  # none was found
+            # triggerScan.append(None)  # none was found
+            warnings.warn('no ms1 trigger peak found for scan {}'.format(tup.scanNum))
 
-    unique_scan_df['triggerScan'] = triggerScan
-    unique_scan_df.index = unique_scan_df.scanNum
-    return unique_scan_df
+    # unique_scan_df['triggerScan'] = triggerScan
+    # unique_scan_df.index = unique_scan_df.scanNum
+    return triggerScan, triggeredScans

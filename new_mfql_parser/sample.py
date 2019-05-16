@@ -45,9 +45,10 @@ if __name__ == '__main__':
     # todo redefine this
     sel_df = df.loc[df.filterLine.str.contains('888')].copy()  # copy to avoid pandas warnings
     print('add pr-fa link')
-    scans_df = get_triggerScan(df)
+    triggerScan, triggeredScans = get_triggerScan(df)
     print(sel_df.head())
-    print(scans_df.loc[sel_df.scanNum.unique()])
+    print('trigger scans')
+    print([triggerScan[s] for s in sel_df.scanNum.unique()])
 
     print('get identifications')
     variables = result['variables']
