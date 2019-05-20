@@ -1,4 +1,5 @@
 from mfql_Parser import parser
+from nearest import nearest
 from spectra_tools import get_triggerScan, specta_df_fromCSV, getMS1Negpeaks
 from var2df import var2df
 
@@ -27,7 +28,8 @@ if __name__ == '__main__':
 	FA1 IN MS2- AND
 	FA2 IN MS2-'''
     print('pr in ms1-')
-    MS1Neg_ser = getMS1Negpeaks(df)
+    MS1Neg_arr = getMS1Negpeaks(df)
+    nearest_idx = nearest(var_dfs['pr'].mz, MS1Neg_arr)
 
     print('do such that part')
     print('do report part')

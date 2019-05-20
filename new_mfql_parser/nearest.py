@@ -6,8 +6,8 @@ def nearest(ser1, ser2):
     # from https://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
     # TODO try https://stackoverflow.com/questions/9706041/finding-index-of-an-item-closest-to-the-value-in-a-list-thats-not-entirely-sort
     res = []
+    array = np.asarray(ser2)
     for value in ser1:
-        array = np.asarray(ser2)
         idx = (np.abs(array - value)).argmin()
         res.append(idx)
     return res

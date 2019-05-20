@@ -59,11 +59,11 @@ def getScansDF_fromPeaksDF(peaks_df):
     return unique_scan_df
 
 
-def getMS1Negpeaks(peaks_df):
+def getMS1Negpeaks(peaks_df, roundto=2):
     unique_scan_df = getScansDF_fromPeaksDF(peaks_df)
     MS1NegScans = unique_scan_df[(unique_scan_df['msLevel'] == 1) \
                                  & (unique_scan_df['mode'] == 'neg')]
 
     peaks_df_merge = peaks_df.merge(MS1NegScans, on='scanNum')
-    peaks_df_merge = peaks_df_merge.mz.round(2)
+    peaks_df_merge = peaks_df_merge.mz.round(roundto).unique()
     return peaks_df_merge
