@@ -39,7 +39,7 @@ from lx.options import Options, optionsDict
 # add the handler to the root logger
 #log.addHandler(console)
 
-def lpdxImportCLI():
+def lpdxImportCLI(projpath = None):
 
 	######################################################
 	###              collect the options               ###
@@ -147,7 +147,7 @@ def lpdxImportCLI():
 
 	(cliOptions, args) = optParser.parse_args()
 
-	if cliOptions.prj is None:
+	if cliOptions.prj is None and projpath is None:
 		if len(args) < 2:
 			raise LipidXException("Wrong number of arguments")
 
@@ -157,7 +157,10 @@ def lpdxImportCLI():
 	project = Project()
 
 	# if the settings are comming from the project file
-	if not cliOptions.prj is None:
+	if projpath is not None:
+		project.load(projpath)
+		project.testOptions()
+	elif not cliOptions.prj is None:
 		#project = Project()
 		project.load(cliOptions.prj)
 		project.testOptions()

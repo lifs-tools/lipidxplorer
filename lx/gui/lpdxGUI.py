@@ -404,7 +404,7 @@ class Worker(threading.Thread):
 				r = dlg.ShowModal()
 				if r == wx.ID_YES:
 
-					dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to herzog@mpi-cbg.de", \
+					dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to lifs-support@isas.de", \
 							"ERROR", style=wx.OK)
 					if dlg.ShowModal() == wx.ID_OK:
 						dlg.Destroy()
@@ -1647,6 +1647,13 @@ intensity."""))
 		#self.label_SettingsSection_calibration_unit = wx.StaticText(pane, -1, "m/z, m/z, ...")
 		self.label_SettingsSection_calibration_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
 		self.label_SettingsSection_calibration_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
+		self.label_SettingsSection_filter_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
+		self.label_SettingsSection_filter_ms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appears in all associated scans, the value is between 0 and 1 "))
+		self.label_SettingsSection_filter_msms = wx.StaticText(self.notebook_1_pane_5, -1, "frequency filter")
+		self.label_SettingsSection_filter_ms_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
+
+
+		self.label_SettingsSection_filter_msms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appears in all associated scans, the value is between 0 and 1 "))
 		#self.label_SettingsSection_calibration_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.text_ctrl_SettingsSection_precursorMassShift = wx.TextCtrl(self.notebook_1_pane_5, -1, '')
 		self.text_ctrl_SettingsSection_precursorMassShiftOrbi = wx.TextCtrl(self.notebook_1_pane_5, -1, '')
@@ -1669,6 +1676,9 @@ intensity."""))
 		self.text_ctrl_SettingsSection_resDelta_msms = wx.TextCtrl(self.notebook_1_pane_5, -1, '')
 		self.text_ctrl_SettingsSection_calibration_ms = wx.TextCtrl(self.notebook_1_pane_5, -1, '')
 		self.text_ctrl_SettingsSection_calibration_msms = wx.TextCtrl(self.notebook_1_pane_5, -1, '')
+		self.text_ctrl_SettingsSection_filter_ms = wx.TextCtrl(self.notebook_1_pane_5, -1, '0')
+		self.text_ctrl_SettingsSection_filter_msms = wx.TextCtrl(self.notebook_1_pane_5, -1, '0')
+
 		### end *.ini ###
 
 		self.debug = TextOutFrame(self, -1, "Debugging")
@@ -1915,6 +1925,8 @@ intensity."""))
 		project.options['timerange'] = "(%s,%s)" % (self.text_ctrl_SettingsSection_timerange1.GetValue(), self.text_ctrl_SettingsSection_timerange2.GetValue())
 		project.options['MScalibration'] = self.text_ctrl_SettingsSection_calibration_ms.GetValue()
 		project.options['MSMScalibration'] = self.text_ctrl_SettingsSection_calibration_msms.GetValue()
+		project.options['MSfilter'] = self.text_ctrl_SettingsSection_filter_ms.GetValue()
+		project.options['MSMSfilter'] = self.text_ctrl_SettingsSection_filter_msms.GetValue()
 		project.options['MSmassrange'] = "(%s,%s)" % (self.text_ctrl_SettingsSection_massrange_ms1.GetValue(), self.text_ctrl_SettingsSection_massrange_ms2.GetValue())
 		project.options['MSMSmassrange'] = "(%s,%s)" % (self.text_ctrl_SettingsSection_massrange_msms1.GetValue(), self.text_ctrl_SettingsSection_massrange_msms2.GetValue())
 		project.options['MStolerance'] = self.text_ctrl_SettingsSection_tolerance_ms.GetValue()
@@ -2064,6 +2076,8 @@ intensity."""))
 			self.text_ctrl_SettingsSection_timerange2.SetValue(options['timerange'][1])
 			self.text_ctrl_SettingsSection_calibration_ms.SetValue(','.join(options['MScalibration']))
 			self.text_ctrl_SettingsSection_calibration_msms.SetValue(','.join(options['MSMScalibration']))
+			self.text_ctrl_SettingsSection_filter_ms.SetValue(options['MSfilter'])
+			self.text_ctrl_SettingsSection_filter_msms.SetValue(options['MSMSfilter'])
 			self.text_ctrl_SettingsSection_massrange_ms1.SetValue(options['MSmassrange'][0])
 			self.text_ctrl_SettingsSection_massrange_ms2.SetValue(options['MSmassrange'][1])
 			self.text_ctrl_SettingsSection_massrange_msms1.SetValue(options['MSMSmassrange'][0])
@@ -2164,31 +2178,31 @@ intensity."""))
 
 	def OnMenuLipidXDocumentation(self, evt):
 
-		webbrowser.open('https://wiki.mpi-cbg.de/wiki/lipidx/index.php/LipidX_Documentation')
+		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Documentation')
 
 	def OnMenuMFQLTutorial(self, evt):
 
-		webbrowser.open('https://wiki.mpi-cbg.de/wiki/lipidx/index.php/LipidX_MFQL#A_short_tutorial')
+		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_MFQL#A_short_tutorial')
 
 	def OnMenuMFQLReference(self, evt):
 
-		webbrowser.open('https://wiki.mpi-cbg.de/wiki/lipidx/index.php/LipidX_MFQL#The_4_sections_of_a_MFQL_query')
+		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_MFQL#The_4_sections_of_a_MFQL_query')
 
 	def OnMenuHelpImportSettings(self, evt):
 
-		webbrowser.open('https://wiki.mpi-cbg.de/wiki/lipidx/index.php/LipidX_Usage#Machine_specific_settings')
+		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Usage#Machine_specific_settings')
 
 	def OnMenuHelpRun(self, evt):
 
-		webbrowser.open('https://wiki.mpi-cbg.de/wiki/lipidx/index.php/LipidX_Usage#Run_queries_on_the_MasterScan')
+		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Usage#Run_queries_on_the_MasterScan')
 
 	def OnMenuHelpMSTools(self, evt):
 
-		webbrowser.open('https://wiki.mpi-cbg.de/wiki/lipidx/index.php/LipidX_Usage#The_MS-Tools_panel')
+		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Usage#The_MS-Tools_panel')
 
 	def OnMenuAbout(self, evt):
 
-		webbrowser.open('https://wiki.mpi-cbg.de/wiki/lipidx/index.php/LipidX_Preface')
+		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Preface')
 
 	def OnTextEnter(self, evt):
 
@@ -2219,6 +2233,8 @@ intensity."""))
 				evt.GetId() == self.text_ctrl_SettingsSection_resDelta_msms.GetId() or\
 				evt.GetId() == self.text_ctrl_SettingsSection_calibration_ms.GetId() or\
 				evt.GetId() == self.text_ctrl_SettingsSection_calibration_msms.GetId() or\
+				evt.GetId() == self.text_ctrl_SettingsSection_filter_ms.GetId() or\
+				evt.GetId() == self.text_ctrl_SettingsSection_filter_msms.GetId() or\
 				evt.GetId() == self.text_ctrl_SettingsSection_tolerance_ms.GetId() or\
 				evt.GetId() == self.text_ctrl_SettingsSection_tolerance_msms.GetId() or\
 				evt.GetId() == self.text_ctrl_SettingsSection_selectionWindow.GetId() or\
@@ -2374,7 +2390,7 @@ intensity."""))
 		r = dlg.ShowModal()
 		if r == wx.ID_YES:
 
-			dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to herzog@mpi-cbg.de", \
+			dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to lifs-support@isas.de", \
 					"ERROR", style=wx.OK)
 			if dlg.ShowModal() == wx.ID_OK:
 				dlg.Destroy()
@@ -2709,6 +2725,8 @@ intensity."""))
 			self.confParse.set(section, 'MSMSresolutionDelta', self.text_ctrl_SettingsSection_resDelta_msms.GetValue())
 			self.confParse.set(section, 'MScalibration', self.text_ctrl_SettingsSection_calibration_ms.GetValue())
 			self.confParse.set(section, 'MSMScalibration', self.text_ctrl_SettingsSection_calibration_msms.GetValue())
+			self.confParse.set(section, 'MSfilter', self.text_ctrl_SettingsSection_filter_ms.GetValue())
+			self.confParse.set(section, 'MSMSfilter', self.text_ctrl_SettingsSection_filter_msms.GetValue())
 
 			fIni = open(self.filePath_LoadIni, 'w+')
 			self.confParse.write(fIni)
@@ -2800,6 +2818,8 @@ intensity."""))
 		self.confParse.set(newSection, 'MSMSresolutionDelta', self.text_ctrl_SettingsSection_resDelta_msms.GetValue())
 		self.confParse.set(newSection, 'MScalibration', self.text_ctrl_SettingsSection_calibration_ms.GetValue())
 		self.confParse.set(newSection, 'MSMScalibration', self.text_ctrl_SettingsSection_calibration_msms.GetValue())
+		self.confParse.set(newSection, 'MSfilter', self.text_ctrl_SettingsSection_filter_ms.GetValue())
+		self.confParse.set(newSection, 'MSMSfilter', self.text_ctrl_SettingsSection_filter_msms.GetValue())
 
 		self.listConfigurations.append(newSection)
 		self.listConfigurations.sort()
@@ -3130,6 +3150,16 @@ intensity."""))
 		else:
 			self.text_ctrl_SettingsSection_calibration_msms.ChangeValue('')
 
+		if self.confParse.has_option(setting, "MSfilter"):
+			self.text_ctrl_SettingsSection_filter_ms.ChangeValue(self.confParse.get(setting, "MSfilter"))
+		else:
+			self.text_ctrl_SettingsSection_filter_ms.ChangeValue('')
+
+		if self.confParse.has_option(setting, "MSMSfilter"):
+			self.text_ctrl_SettingsSection_filter_msms.ChangeValue(self.confParse.get(setting, "MSMSfilter"))
+		else:
+			self.text_ctrl_SettingsSection_filter_msms.ChangeValue('')
+
 		if self.confParse.has_option(setting, "MStolerance"):
 			str = self.confParse.get(setting, "MStolerance")
 			#if re.match('(.*)!(\s(ppm|Da))', str):
@@ -3200,6 +3230,8 @@ intensity."""))
 		self.text_ctrl_SettingsSection_resDelta_msms.ChangeValue('')
 		self.text_ctrl_SettingsSection_calibration_ms.ChangeValue('')
 		self.text_ctrl_SettingsSection_calibration_msms.ChangeValue('')
+		self.text_ctrl_SettingsSection_filter_ms.ChangeValue('')
+		self.text_ctrl_SettingsSection_filter_msms.ChangeValue('')
 		self.text_ctrl_SettingsSection_tolerance_ms.ChangeValue('')
 		self.text_ctrl_SettingsSection_tolerance_msms.ChangeValue('')
 		self.text_ctrl_SettingsSection_selectionWindow.ChangeValue('')
@@ -3308,7 +3340,7 @@ intensity."""))
 			r = dlg.ShowModal()
 			if r == wx.ID_YES:
 
-				dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to herzog@mpi-cbg.de", \
+				dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to lifs-support@isas.de", \
 						"ERROR", style=wx.OK)
 				if dlg.ShowModal() == wx.ID_OK:
 					dlg.Destroy()
@@ -4062,7 +4094,7 @@ intensity."""))
 			r = dlg.ShowModal()
 			if r == wx.ID_YES:
 
-				dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to herzog@mpi-cbg.de", \
+				dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to lifs-support@isas.de", \
 						"ERROR", style=wx.OK)
 				if dlg.ShowModal() == wx.ID_OK:
 					dlg.Destroy()
@@ -4354,11 +4386,20 @@ intensity."""))
 			else:
 				self.optsImport['MScalibration'] = ''
 
+			if self.confParse.has_option(setting, "MSfilter"):
+				self.optsImport['MSfilter'] = self.confParse.get(setting, "MSfilter")
+			else:
+				self.optsImport['MSfilter'] = ''
+
 			if self.confParse.has_option(setting, "MSMScalibration"):
 				self.optsImport['MSMScalibration'] = self.confParse.get(setting, "MSMScalibration")
 			else:
 				self.optsImport['MSMScalibration'] = ''
 
+			if self.confParse.has_option(setting, "MSMSfilter"):
+				self.optsImport['MSMSfilter'] = self.confParse.get(setting, "MSMSfilter")
+			else:
+				self.optsImport['MSMSfilter'] = ''
 			if self.confParse.has_option(setting, "MStolerance"):
 				str = self.confParse.get(setting, "MStolerance")
 				#if re.match('(.*)!(\s(ppm|Da))', str):
@@ -4446,6 +4487,8 @@ intensity."""))
 		strOut += "<tr><td>MS/MS threshold:</td><td>%s%s</td></tr>\n" % (repr(masterscan.options['MSMSthreshold']), MSMSthresholdType)
 		strOut += "<tr><td>MS minimum occupation:</td><td>+/- %s</td></tr>\n" % (repr(masterscan.options['MSminOccupation']))
 		strOut += "<tr><td>MS/MS minimum occupation:</td><td>+/- %s</td></tr>\n" % (repr(masterscan.options['MSMSminOccupation']))
+		strOut += "<tr><td>MS frequency filter:</td><td>+/- %s</td></tr>\n" % (repr(masterscan.options['MSfilter']))
+		strOut += "<tr><td>MS/MS frequency filter:</td><td>+/- %s</td></tr>\n" % (repr(masterscan.options['MSMSfilter']))
 		strOut += "</table>\n\n"
 
 		return strOut
@@ -4538,7 +4581,7 @@ intensity."""))
 			self.SetTitle("LipOXplorer Version %s" % self.version)
 
 		self.SetMinSize((720, 660))
-		self.SetSize((720, 660))
+		self.SetSize((1000, 730))
 
 		self.list_box_1.SetMinSize((textCtrl_big_w, 211))
 
@@ -4629,6 +4672,11 @@ intensity."""))
 		self.text_ctrl_SettingsSection_calibration_ms.SetMaxSize((textCtrl_small_w * 2, textCtrl_small_h))
 		self.text_ctrl_SettingsSection_calibration_msms.SetMinSize((textCtrl_small_w * 2, textCtrl_small_h))
 		self.text_ctrl_SettingsSection_calibration_msms.SetMaxSize((textCtrl_small_w * 2, textCtrl_small_h))
+
+		self.text_ctrl_SettingsSection_filter_ms.SetMinSize((textCtrl_small_w * 2, textCtrl_small_h))
+		self.text_ctrl_SettingsSection_filter_ms.SetMaxSize((textCtrl_small_w * 2, textCtrl_small_h))
+		self.text_ctrl_SettingsSection_filter_msms.SetMinSize((textCtrl_small_w * 2, textCtrl_small_h))
+		self.text_ctrl_SettingsSection_filter_msms.SetMaxSize((textCtrl_small_w * 2, textCtrl_small_h))
 
 		self.text_ctrl_mstools_OutputSection.SetMinSize((textCtrl_big_w, textCtrl_big_h * 3))
 		self.text_ctrl_mstools_OutputSection.SetMaxSize((textCtrl_big_w * 2, textCtrl_big_h * 3))
@@ -5022,18 +5070,31 @@ intensity."""))
 		#grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_occupationThr_groups, (8,8),
 		#	wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
 
-		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_precursorMassShift, (9,1),
+		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_precursorMassShift, (10,1),
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
-		grid_sizer_19_SettingsSection_gridBag.Add(self.text_ctrl_SettingsSection_precursorMassShift, (9,4),
+		grid_sizer_19_SettingsSection_gridBag.Add(self.text_ctrl_SettingsSection_precursorMassShift, (10,4),
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
-		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_precursorMassShift_unit, (9,5),
+		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_precursorMassShift_unit, (10,5),
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
 
-		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_precursorMassShiftOrbi, (9,6),
+		grid_sizer_19_SettingsSection_gridBag.Add(self.text_ctrl_SettingsSection_filter_ms, (9,4),
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
-		grid_sizer_19_SettingsSection_gridBag.Add(self.text_ctrl_SettingsSection_precursorMassShiftOrbi, (9,7),
+		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_filter_ms, (9,3),
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
-		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_precursorMassShiftOrbi_unit, (9,8),
+
+		grid_sizer_19_SettingsSection_gridBag.Add(self.text_ctrl_SettingsSection_filter_msms, (9,7),
+			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
+		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_filter_msms, (9,1),
+			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
+
+		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_filter_ms_ms, (9,6),
+			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
+
+		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_precursorMassShiftOrbi, (10,6),
+			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
+		grid_sizer_19_SettingsSection_gridBag.Add(self.text_ctrl_SettingsSection_precursorMassShiftOrbi, (10,7),
+			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
+		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_precursorMassShiftOrbi_unit, (10,8),
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
 
 		box_sizer_ImportSettings.Add(grid_sizer_19_SettingsSection_gridBag)

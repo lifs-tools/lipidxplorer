@@ -1,3 +1,5 @@
+20190723 add filtering as per FAM
+
 12.08.2008
 
 - new function isStandard(<variable>, "<sample>", "<scope>"). Place it in SUCHTHAT section. 
