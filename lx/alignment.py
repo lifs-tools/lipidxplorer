@@ -1870,7 +1870,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			for i in bin:
 				resultingSpecEntries += i[1]
 
-            #fileering starts here, default setings imply no filtering
+			#fileering starts here, default setings imply no filtering
 			fadi_ratio = cnt / float(fadi_denominator) if fadi_denominator is not None else 1.0
 
 			if fadi_ratio >= fadi_percentage:
@@ -2527,6 +2527,8 @@ def mergeListMsms(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes)
 	This is the averaging algorithm for MS/MS spectra. The "mergeTolerance" is
 	misleading, because this is actually the MSMSresolution.'''
 
+
+
 	length = len(listSpecEntries)
 
 	out = listSpecEntries[0]
@@ -2586,10 +2588,15 @@ def mergeListMsms(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes)
 				'peak_info' : entry[2:]}))
 
 	# start the averaging algorithm
+	from . import readSpectra
+	fadi_percentageMSMS = readSpectra.fadi_percentageMSMS
 	if dictSpecEntries['one'] != []:
+		if align != linearAlignment:
+			raise NotImplementedError('This filtering has only been implemented for linear alignmebt, for huristic please contact FAM')
+
 		listClusters = align(['one'], dictSpecEntries, mergeTolerance,
 				intensityWeightedAvg = True, merge = mergeSumIntensity,
-				deltaRes = mergeDeltaRes, minMass = sorted(dictSpecEntries['one'])[0].mass)
+				deltaRes = mergeDeltaRes, minMass = sorted(dictSpecEntries['one'])[0].mass, fadi_denominator = length, fadi_percentage = fadi_percentageMSMS)
 
 		#for cl in listClusters:
 		#	str = ''
