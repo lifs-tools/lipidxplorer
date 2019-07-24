@@ -246,12 +246,15 @@ def add_Sample(
 		#	print "ML> generated specEntries for MS alignment", memory_logging.pythonMemory()
 		#	print "MLh> ", hpy().heap()
 
+		# as per fadi this is called on ms1
+		fadi_denominator = nb_ms_scans
+		fadi_percentage = options['MSfilter']
 		listClusters = linearAlignment(dictSpecEntry.keys(),
 							dictSpecEntry,
 							options['MSresolution'],
 							merge = mergeSumIntensity,
 							mergeTolerance = options['MSresolution'],
-							mergeDeltaRes = options['MSresolutionDelta'])
+							mergeDeltaRes = options['MSresolutionDelta'], fadi_denominator= fadi_denominator, fadi_percentage = fadi_percentage)
 
 		# free memory
 		del dictSpecEntry
