@@ -7,7 +7,7 @@ class MyApp(wx.App):
 		self.frame = lpdxGUI.LpdxFrame(None, -1, "",
 				rawimport = False,
 				lipidxplorer = True,
-				version = "1.2.7")
+				version = "1.2.8")
 		self.frame.Show(True)
 		self.frame.Center()
 		self.SetTopWindow(self.frame)

@@ -10,7 +10,7 @@ from lx.options import Options
 
 from lx.lxMain import startMFQL
 
-def lpdxImportCLI():
+def lpdxImportCLI(projpath = None):
 
 	######################################################
 	###              collect the options               ###
@@ -80,7 +80,7 @@ def lpdxImportCLI():
 
 	(cliOptions, args) = optParser.parse_args()
 
-	if cliOptions.prj is None:
+	if cliOptions.prj is None and projpath is None:
 		if len(args) < 2:
 			raise LipidXException("Wrong number of arguments")
 
@@ -89,12 +89,15 @@ def lpdxImportCLI():
 	project = Project()
 	# the order of the following if-statements integrates prioraties
 
-	import sys
-	project.options['masterScan'] =  sys.argv[0]
+
+	project.options['masterScan'] = args[0]
 		
 
 	# if the settings are comming from the project file
-	if not cliOptions.prj is None:
+	if projpath is not None:
+		project.load(projpath)
+		project.testOptions()
+	elif not cliOptions.prj is None:
 		project.load(cliOptions.prj)
 		project.testOptions()
 		#options = project.getOptions()
