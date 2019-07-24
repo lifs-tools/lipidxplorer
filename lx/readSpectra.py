@@ -22,6 +22,8 @@ from lx.debugger import Debug
 # of a .dta file
 regDta = re.compile("(\d+\.?\d*)(\s|\t)+([-]?\d+\.?\d*)")
 
+fadi_percentageMSMS = None # var used for filtering this is dirty code, TODO remove this global variable
+
 def add_Sample(
 		sc = None,
 		specFile = None,
@@ -75,6 +77,9 @@ def add_Sample(
 	if options['MSMSmassrange']:
 		msmsm1 = options['MSMSmassrange'][0]
 		msmsm2 = options['MSMSmassrange'][1]
+
+	global fadi_percentageMSMS
+	fadi_percentageMSMS = options['MSMSfilter']
 
 	# for MS/MS collection of spectra attributes
 	polarity = ''
