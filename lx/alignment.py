@@ -1708,7 +1708,9 @@ def mkMSMSEntriesHeuristic(scan, listPolarity, numLoops = None, isPIS = False, r
 
 def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTolerance = None,
 		mergeDeltaRes = None, charge = None, deltaRes = None, minocc = None, msThreshold = None,
-		intensityWeightedAvg = False, minMass = None):
+		intensityWeightedAvg = False, minMass = None, fadi_denominator = None, fadi_percentage = 0.0):
+    #using fadi_denominator, fadi_percentage, becayse nbofscans and msthreshold variables are already in use !!!
+    # these varuables are used to implement fadi filter
 	'''
 	This is the standard algorithm to align spectra. It is published
 	in [...].
@@ -1721,7 +1723,10 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	deltaRes: if the tolerance is given as resolution, the deltaRes
 		states the resolution change over the masses.
 
-	The output is a list of specEntry'''
+	The output is a list of specEntry
+	that can be "filtered" as per DS
+	'''
+
 
 	# get max length of peak in the spectra
 	speclen = 0
