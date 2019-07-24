@@ -1709,8 +1709,8 @@ def mkMSMSEntriesHeuristic(scan, listPolarity, numLoops = None, isPIS = False, r
 def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTolerance = None,
 		mergeDeltaRes = None, charge = None, deltaRes = None, minocc = None, msThreshold = None,
 		intensityWeightedAvg = False, minMass = None, fadi_denominator = None, fadi_percentage = 0.0):
-    #using fadi_denominator, fadi_percentage, becayse nbofscans and msthreshold variables are already in use !!!
-    # these varuables are used to implement fadi filter
+	#using fadi_denominator, fadi_percentage, becayse nbofscans and msthreshold variables are already in use !!!
+	# these varuables are used to implement fadi filter
 	'''
 	This is the standard algorithm to align spectra. It is published
 	in [...].
@@ -1870,8 +1870,12 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			for i in bin:
 				resultingSpecEntries += i[1]
 
-			listResult[count + 1].append([avg,
-				resultingSpecEntries])
+            #fileering starts here, default setings imply no filtering
+			fadi_ratio = cnt / float(fadi_denominator) if fadi_denominator is not None else 1.0
+
+			if fadi_ratio >= fadi_percentage:
+				listResult[count + 1].append([avg,
+					resultingSpecEntries])
 
 			# if 'current' is last entry of our non-merged spectrum (count)
 			# just add it to the bin
