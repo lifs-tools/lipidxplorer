@@ -1017,12 +1017,15 @@ directory>, <the resolution of the mass spec machine>
 			count += 1
 
 		if scanAveraging == 'linear':
+			fadi_denominator = nb_ms_scans
+			fadi_percentage = options['MSfilter']
 			listClusters = linearAlignment(dictSpecEntry.keys(),
 								dictSpecEntry,
 								options['MSresolution'],
 								merge = mergeSumIntensity,
 								mergeTolerance = options['MSresolution'],
-								mergeDeltaRes = options['MSresolutionDelta'])
+								mergeDeltaRes = options['MSresolutionDelta'],
+								fadi_denominator = fadi_denominator, fadi_percentage=fadi_percentage)
 
 		elif scanAveraging == 'heuristic':
 			listClusters = heuristicAlignment(dictSpecEntry.keys(),
