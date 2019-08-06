@@ -1871,7 +1871,10 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 				resultingSpecEntries += i[1]
 
 			#fileering starts here, default setings imply no filtering
-			fadi_ratio = cnt / float(fadi_denominator) if fadi_denominator is not None else 1.0
+			fadi_ratio = 1.0
+			if fadi_denominator is not None and fadi_denominator > 0.0:
+				fadi_ratio = cnt / float(
+					fadi_denominator) if fadi_denominator is not None and fadi_denominator is not 0.0 else 1.0
 
 			if fadi_ratio >= fadi_percentage:
 				listResult[count + 1].append([avg,
