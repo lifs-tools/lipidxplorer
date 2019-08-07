@@ -922,7 +922,7 @@ directory>, <the resolution of the mass spec machine>
 					'polarity' : entry.get('polarity'),
 					'max_it' : max_it,
 					'scan' : peakList})
-
+				nb_ms_scans += 1
 					## for Kai: read out single scan masses and TIC
 					#tolerance = 0.25
 					#for mass in [806.55, 774.56, 761.43, 622.26]:
