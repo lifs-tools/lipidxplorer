@@ -789,6 +789,12 @@ directory>, <the resolution of the mass spec machine>
 		msmsm1 = MSMSmassrange[0]
 		msmsm2 = MSMSmassrange[1]
 
+	global fadi_percentageMSMS
+
+	if options['MSMSfilter']:
+		fadi_percentageMSMS = options['MSMSfilter']
+	else:
+		fadi_percentageMSMS = 1
 
 	### let's start ###
 
@@ -1017,7 +1023,7 @@ directory>, <the resolution of the mass spec machine>
 			count += 1
 
 		if scanAveraging == 'linear':
-			fadi_denominator = nb_ms_scans
+			fadi_denominator = count
 			fadi_percentage = options['MSfilter']
 			listClusters = linearAlignment(dictSpecEntry.keys(),
 								dictSpecEntry,
