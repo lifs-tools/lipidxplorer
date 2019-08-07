@@ -1033,7 +1033,7 @@ class LpdxFrame(wx.Frame):
 		# allow import of raw files?
 		self.rawimport = kwds['rawimport']
 
-		self.supportedFileTypes = ['mzML', 'mzXML', 'dta/csv']
+		self.supportedFileTypes = ['mzML', 'mzXML']
 		self.defaultFileType = 'mzML'
 		self.rawToolTip = ""
 
