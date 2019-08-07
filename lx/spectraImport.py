@@ -503,7 +503,10 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	### print some information ###
 
 	if not options['spectraFormat'] == 'dta/csv':
-
+		if options['MSfilter'] and options['MSfilter'] > 0:
+			reportout("> {0:.<30s}{1:>11.2f}".format('MS filter settings', options['MSfilter']))
+		if options['MSMSfilter'] and options['MSMSfilter'] > 0:
+			reportout("> {0:.<30s}{1:>11.2f}".format('MS/MS filter settings', options['MSMSfilter']))
 		if nb_ms_scans > 0:
 			reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS scans', sum(nb_ms_scans) / len(nb_ms_scans)))
 		if nb_ms_peaks > 0:
