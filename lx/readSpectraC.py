@@ -450,6 +450,12 @@ directory>, <the resolution of the mass spec machine>
 		msmsm1 = MSMSmassrange[0]
 		msmsm2 = MSMSmassrange[1]
 
+	global fadi_percentageMSMS
+
+	if options['MSMSfilter']:
+		fadi_percentageMSMS = options['MSMSfilter']
+	else:
+		fadi_percentageMSMS = 1
 
 	### let's start ###
 
