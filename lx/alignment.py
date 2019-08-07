@@ -1870,11 +1870,10 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			for i in bin:
 				resultingSpecEntries += i[1]
 
-			#fileering starts here, default setings imply no filtering
+			#filtering starts here, default setings imply no filtering
 			fadi_ratio = 1.0
 			if fadi_denominator is not None and fadi_denominator > 0.0:
-				fadi_ratio = cnt / float(
-					fadi_denominator) if fadi_denominator is not None and fadi_denominator is not 0.0 else 1.0
+				fadi_ratio = cnt / float(fadi_denominator) if fadi_denominator is not None and fadi_denominator is not 0.0 else 1.0
 
 			if fadi_ratio >= fadi_percentage:
 				listResult[count + 1].append([avg,
@@ -2595,7 +2594,7 @@ def mergeListMsms(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes)
 	fadi_percentageMSMS = readSpectra.fadi_percentageMSMS
 	if dictSpecEntries['one'] != []:
 		if align != linearAlignment:
-			raise NotImplementedError('This filtering has only been implemented for linear alignmebt, for huristic please contact FAM')
+			raise NotImplementedError('This filtering has only been implemented for linear alignment, for heuristic please contact FAM')
 
 		listClusters = align(['one'], dictSpecEntries, mergeTolerance,
 				intensityWeightedAvg = True, merge = mergeSumIntensity,
