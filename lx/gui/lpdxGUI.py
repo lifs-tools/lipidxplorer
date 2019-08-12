@@ -1425,18 +1425,20 @@ intensity."""))
   mzML - XML file format
   mzXML - XML file format
   %s
-  csv/dta - MS/MS spectra in *.dta file format with
-    optionally the MS spectrum as *.csv file (<m/z>, <intensity>).\n""" % self.rawToolTip))
+""" % self.rawToolTip))
 		self.checkBox_pisSpectra = wx.CheckBox(self.notebook_1_pane_2, -1, "PIS spectra")
 		self.checkBox_pisSpectra.SetToolTip(wx.ToolTip(
 			"Check this to switch on import of (multiple) precursor ion scan data"))
+		self.checkBox_pisSpectra.Hide()
 
 		self.label_SettingsSection_occupationThr_groups = buttons.GenButton(self.notebook_1_pane_2, -1, "Group samples")
+		self.label_SettingsSection_occupationThr_groups.Hide()
 
 		# putting the MS/MS checkbox
 		self.checkBox_importMSMS = wx.CheckBox(self.notebook_1_pane_2, -1, "MS only")
 		self.checkBox_importMSMS.SetToolTip(wx.ToolTip(
 			"switch off to restrict import to only MS"))
+		self.checkBox_importMSMS.Hide()
 
 		# output masterScan file
 		self.label_OutputMasterScanSection = wx.StaticText(self.notebook_1_pane_2, -1, "Specify output MasterScan file")
@@ -1648,12 +1650,12 @@ intensity."""))
 		self.label_SettingsSection_calibration_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
 		self.label_SettingsSection_calibration_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
 		self.label_SettingsSection_filter_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
-		self.label_SettingsSection_filter_ms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appears in all associated scans, the value is between 0 and 1 "))
+		self.label_SettingsSection_filter_ms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appearing in all associated scans, the value is between 0 and 1 "))
 		self.label_SettingsSection_filter_msms = wx.StaticText(self.notebook_1_pane_5, -1, "frequency filter")
 		self.label_SettingsSection_filter_ms_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
 
 
-		self.label_SettingsSection_filter_msms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appears in all associated scans, the value is between 0 and 1 "))
+		self.label_SettingsSection_filter_msms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appearing in all associated scans, the value is between 0 and 1 "))
 		#self.label_SettingsSection_calibration_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.text_ctrl_SettingsSection_precursorMassShift = wx.TextCtrl(self.notebook_1_pane_5, -1, '')
 		self.text_ctrl_SettingsSection_precursorMassShiftOrbi = wx.TextCtrl(self.notebook_1_pane_5, -1, '')
@@ -1731,7 +1733,7 @@ intensity."""))
 		self.Bind(wx.EVT_BUTTON, self.OnBrowse_ImportData, self.button_Browse_ImportDataSection)
 		self.Bind(wx.EVT_BUTTON, self.OnBrowse_OutputMasterScan, self.button_Browse_OutputMasterScanSection)
 		self.Bind(wx.EVT_BUTTON, self.OnBrowse_LoadIni, self.button_Browse_LoadIniSection)
-		self.Bind(wx.EVT_BUTTON, self.OnGroupSamples, self.label_SettingsSection_occupationThr_groups)
+		#self.Bind(wx.EVT_BUTTON, self.OnGroupSamples, self.label_SettingsSection_occupationThr_groups)
 		self.Bind(wx.EVT_BUTTON, self.OnStartImport, self.button_StartImport)
 		self.Bind(wx.EVT_CHOICE, self.OnConfigurationChoice, self.choice_SelectSettingSection)
 		#self.Bind(wx.EVT_CHECKBOX, self.OnImportMSMS, self.checkBox_importMSMS)
@@ -2611,44 +2613,44 @@ intensity."""))
 		dlg.Destroy()
 		self.text_ctrl_OutputMasterScanSection.SetValue(self.filePath_MasterScan)
 
-	def OnGroupSamples(self, evt):
-
-		options = {}
-
-		# retrieve the import file format
-		if self.combo_ctrl_ImportDataSection.GetValue() == 'mzXML':
-			options['mzXML'] = True
-			options['spectraFormat'] = 'mzXML'
-		else:
-			options['mzXML'] = False
-			options['spectraFormat'] = self.combo_ctrl_ImportDataSection.GetValue()
-
-		# check if the import folder exists
-		importData = self.text_ctrl_ImportDataSection.GetValue()
-		if not os.path.exists(importData):
-			dlg = wx.MessageDialog(self, "The given import path does not exist.", "Error", wx.OK|wx.ICON_ERROR)
-			if dlg.ShowModal() == wx.ID_OK:
-				dlg.Destroy()
-				return None
-
-		(files, isTaken, isGroup) = getInputFiles(importData, options)
-
-		listFiles = []
-		for i in files:
-			listFiles.append(i[0].split(os.sep)[-1])
-
-		self.chooseGroups = ChooseGroupsFrame(None, title = "Choose what you want to group", items = listFiles)
-		self.chooseGroups.SetBackgroundColour((240, 240, 240, 94))
-		self.chooseGroups.Center()
-		self.chooseGroups.ShowModal()
-
-		### wait here for the users input ###
-
-		s = self.chooseGroups.groupStr
-
-		f = open("%s\\groups.txt" % importData, "w")
-		f.write(s)
-		f.close()
+	# def OnGroupSamples(self, evt):
+	#
+	# 	options = {}
+	#
+	# 	# retrieve the import file format
+	# 	if self.combo_ctrl_ImportDataSection.GetValue() == 'mzXML':
+	# 		options['mzXML'] = True
+	# 		options['spectraFormat'] = 'mzXML'
+	# 	else:
+	# 		options['mzXML'] = False
+	# 		options['spectraFormat'] = self.combo_ctrl_ImportDataSection.GetValue()
+	#
+	# 	# check if the import folder exists
+	# 	importData = self.text_ctrl_ImportDataSection.GetValue()
+	# 	if not os.path.exists(importData):
+	# 		dlg = wx.MessageDialog(self, "The given import path does not exist.", "Error", wx.OK|wx.ICON_ERROR)
+	# 		if dlg.ShowModal() == wx.ID_OK:
+	# 			dlg.Destroy()
+	# 			return None
+	#
+	# 	(files, isTaken, isGroup) = getInputFiles(importData, options)
+	#
+	# 	listFiles = []
+	# 	for i in files:
+	# 		listFiles.append(i[0].split(os.sep)[-1])
+	#
+	# 	self.chooseGroups = ChooseGroupsFrame(None, title = "Choose what you want to group", items = listFiles)
+	# 	self.chooseGroups.SetBackgroundColour((240, 240, 240, 94))
+	# 	self.chooseGroups.Center()
+	# 	self.chooseGroups.ShowModal()
+	#
+	# 	### wait here for the users input ###
+	#
+	# 	s = self.chooseGroups.groupStr
+	#
+	# 	f = open("%s\\groups.txt" % importData, "w")
+	# 	f.write(s)
+	# 	f.close()
 
 
 	def OnPaneChanged(self, evt=None):
