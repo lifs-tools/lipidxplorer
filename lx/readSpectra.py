@@ -777,6 +777,8 @@ directory>, <the resolution of the mass spec machine>
 		strName = s[-2] + '.' + s[-1]
 	reportout("Importing: %s" % strName)
 
+	numPeaks = -1  # init numPeaks to have it even if there are no ms1Scans
+
 	if timerange:
 		t1 = timerange[0]
 		t2 = timerange[1]
@@ -1041,28 +1043,30 @@ directory>, <the resolution of the mass spec machine>
 								mergeTolerance = options['MSresolution'],
 								mergeDeltaRes = options['MSresolutionDelta'])
 
-		# for debugging
-		strings = []
-		for cl in listClusters:
-			str = ''
-			for sample in dictSpecEntry.keys():#cl.keys():
-				if cl.has_key(sample):
-					if cl[sample].content:
-						str +=  "  {0:>9.4f} - {1:>12.1f}  ".format(cl[sample].mass, cl[sample].content['intensity'])
-						#str +=  "  %.4f  " % cl[sample].content['intensity']
+		if (Debug("scanclusters")):
+			# for debugging
+			strings = []
+			for cl in listClusters:
+				str = ''
+				for sample in dictSpecEntry.keys():#cl.keys():
+					if cl.has_key(sample):
+						if cl[sample].content:
+							str +=  "  {0:>9.4f} - {1:>12.1f}  ".format(cl[sample].mass, cl[sample].content['intensity'])
+							#str +=  "  %.4f  " % cl[sample].content['intensity']
+						else:
+							try:
+								str +=  " /{0:>9.4f} - {1:>12}/ ".format(cl[sample].mass, '')
+							except TypeError:
+								print "TypeError:", cl[sample].mass
+							except :
+								import sys
+								print(sys.exc_info()[0])
 					else:
-						try:
-							str +=  " /{0:>9.4f} - {1:>12}/ ".format(cl[sample].mass, '')
-						except TypeError:
-							print "TypeError:", cl[sample].mass
-						except :
-							import sys
-							print(sys.exc_info()[0])
-				else:
-					str +=  " /{0:>9} - {1:>12}/ ".format('empty', '')
-			strings.append(str)
-		
-		print('\n'.join(strings))
+						str +=  " /{0:>9} - {1:>12}/ ".format('empty', '')
+				strings.append(str)
+
+			print('\n'.join(strings))
+
 
 		### averaging of the MS1 scans ###
 		##################################
@@ -1086,7 +1090,7 @@ directory>, <the resolution of the mass spec machine>
 
 		# get the average base peak intensity
 		avgBasePeakIntensity = avgBasePeakIntensity / float(count)
-
+		numPeaks = 0
 		# store the averaged spectrum
 		for cl in listClusters:
 
@@ -1122,6 +1126,7 @@ directory>, <the resolution of the mass spec machine>
 					takeIt = True
 
 			if takeIt:
+				numPeaks += 1
 				lpdxSample.listPrecurmass.append(
 					MSMass(
 						precurmass = out.mass,
@@ -1222,8 +1227,11 @@ directory>, <the resolution of the mass spec machine>
 	lpdxSample.polarity = p
 
 	# print the spectra attributes
-	reportout("{0:.<30s}{1:>11d}".format('Nb. of MS scans', count))
-	reportout("{0:.<30s}{1:>11d}".format('Nb. of MS/MS spectra', countMSMS))
+	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS scans', count))
+	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS peaks', nb_ms_peaks))
+	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS/MS scans', countMSMS))
+	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS/MS peaks', nb_msms_peaks))
+	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS peaks (after avg.)', numPeaks))
 	reportout("Spray stability:")
 	if listTotIonCurrent != []:
 		reportout("{0:.<30s}{1:>11.2f}% of median\n".format('  MaxTIC - MinTIC:', (100 * (float(max(listTotIonCurrent)) - float(min(listTotIonCurrent))) / float(median))))
