@@ -169,8 +169,8 @@ class Options:
         self.options['spectraFormat'] = None # option key used in lpdxImport.py, substituted by 'dataType'
         self.options['settingsPrefix'] = None # option key used in lpdxImport.py, substituted by 'dataType'
         #self.options['vendorsAveraging'] = None # True/False for switching to Thermo's averaging
-        self.options['MSfilter'] = None # filter threshold (Ask Fadi AlMachot for ms1)
-        self.options['MSMSfilter'] = None # same as above for ms2
+        self.options['MSfilter'] = None # minimum filter threshold for repeated ions in MS1, between 0 and 1
+        self.options['MSMSfilter'] = None # minimum filter threshold for repeated ions in MS2, between 0 and 1
 
         # for this setting exists no possibility to change it ...
         # however...
