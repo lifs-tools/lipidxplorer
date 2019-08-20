@@ -162,13 +162,14 @@ def startFromGUI(
 		return parent.CONST_THREAD_SUCCESSFUL
 
 def writeReport(file = "", options = {}, queries = {}):
-
+	print "Writing HTML report from lipidIdentification.py"
 	strReport = "<html><head></head><body>"
 	strReport += "<br>"
 	strReport += "%s" % genReportHTML(options, queries)
 	strReport += "</body></html>"
-
-	f = open(file.split('.')[0] + "-report.html", "w")
+	reportBaseFile = os.path.splitext(file)[0]
+	print "Saving report to file " + reportBaseFile + "-report.html"
+	f = open(reportBaseFile + "-report.html", "w")
 	f.write(strReport)
 	f.close()
 
@@ -185,11 +186,12 @@ def genReportHTML(options = {}, queries = {}):
 	strBugReport += "<h3>MFQL queries</h3><tt>\n"
 	for i in queries:
 		txt = ''
-		f = open(queries[i], 'r')
-		txt += " \n\n>> filename: %s >>\n\n" % i
-		txt += f.read()
-		strBugReport += txt.replace('\n', '<br>')
-		f.close()
+		if i != "":
+			f = open(queries[i], 'r')
+			txt += " \n\n>> filename: %s >>\n\n" % i
+			txt += f.read()
+			strBugReport += txt.replace('\n', '<br>')
+			f.close()
 	strBugReport += "</tt>"
 
 	return strBugReport
