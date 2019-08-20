@@ -1,0 +1,158 @@
+20190723 add filtering as per FAM
+
+12.08.2008
+
+- new function isStandard(<variable>, "<sample>", "<scope>"). Place it in SUCHTHAT section. 
+  A scan is started to find <variable> in <sample>. Once found it is declared as the standard and the
+  intensities of all other peaks in <scope> are recalculated as ratio. 
+  Example: isStandard(varStandard, "hilde01", "MS1+")
+
+- new function for addressing groups of samples with the help of placeholders:
+
+    Patterns are Unix shell style:
+    
+    *       matches everything
+    ?       matches any single character
+    [seq]   matches any character in seq
+    [!seq]  matches any char not in seq
+
+  Example: FA1.intensity["*hilde0[1-9]*"] > FA1.intensity["*hilde1[0-9]*"]
+
+- also possible: column(FA1, "*hilde0[1-9]*")
+
+13.08.2008
+
+- semi-new function: isStandard(<variable>, "<scope>"). With this syntax the standard is
+  calculated for every single sample.
+
+14.08.2008
+
+- every peak (either MS or MS/MS) has now additionally the following information:
+    . peak mean
+    . peak median
+    . peak variance
+    . peak standard deviation
+  all this info will be put out in the dump
+
+22.08.2008
+
+- isStandard() function works now for MS1+/- (! no MS2+/- !). The function should be placed in the SUCHTHAT
+  section and has as attributes 1) a variable containing the marked standard and 2) the scope of
+  the standard (MS1+, MS1-, MS2+ or MS2-). Next an example of an MFQL script identifying
+  PC with calculating the standard:
+
+	QUERYNAME = Phosphatidylcholine;
+	DEFINE PR = 'C[36..50] H[30..200] N[1] O[8] P[1]' WITH DBR = (1.5,7.5), CHG = 1;
+	DEFINE DietherPC = 'C44 H93 O6 N1 P1' WITH CHG = 1;
+	DEFINE DietherPE = 'C45 H95 O6 N1 P1' WITH CHG = 1;
+
+	IDENTIFY Phosphatidylcholine WHERE
+		
+		# marking
+		PR IN MS1+ WITH TOLERANCE = 4 ppm OR
+		DietherPC IN MS1+
+	  
+	SUCHTHAT
+		isEven(PR.chemsc[C]) AND
+		isStandard(DietherPC, "MS1+")
+	  
+	REPORT 
+		MASS = "%4.4f" % "(PR.mass)";
+		NAME = "PC [%d:%d]" % "((PR.chemsc)[C] - 8, (PR.chemsc)[db] - 1.5)";
+		PRECURINTENS = PR.intensity;;
+
+2.09.2008 
+
+- de-isotoping was implemented for MS mode. The algorithm uses the sum compositions
+  which where calculated with the used MFQL scripts. So, only molecular species of interest
+  are considered for the de-isotoping. The algorithm is the following:
+  1) sort MS spectrum increasingly.
+  2) for every mass m which has a chemical sum composition assigned:
+    3) look, if there is are masses i1, i2, i3 or i4 which could be isotopes, i.e.
+      is there a mass i1 = m + 1.0033,
+      is there a mass i2 = m + 2 * (1.0033), and so on ...
+    4) calcuate the isotopic distribution of m for only 13C. Isotopes of other elements
+       are so little for lipids, that we leave them beside. The distribution is binomial
+       with a probability that a 13C occurs of 0.01082 <insert citation here>.
+    5) substract calculated isotopic percentage from i1-4
+
+- de-isotoping of MS/MS was revisited. The algorithm is the following:
+  1) generate artificial PIS spectra P1, ..., Pn for fragments f1, ..., fn by collecting 
+     precursor masses which have f1 (f2, ..., fn) in thier MS/MS spectrum.
+  2) for every PIS spectrum Pi:
+    3) for every mass m in Pi:
+      4) look, if there is are masses i1, i2, i3 or i4 which could be isotopes
+      5) calculate the isotopica distribution of the neutral loss of m accoding to
+        <insert citation here>
+      6) subtract the calculated isotopic percentage from i1-4 
+
+1.10.2008
+
+- implemented a debugging window in the GUI.
+
+- GUI looks a bit more compact now
+
+- update of the merging algorithm (for *.mzXML import). Average masses are now calculated 
+  by intensity weighted average. This yields more accurate spectra.
+
+9.10.2008
+
+- switched off the cleaning procedure for *.mzXML imported files
+
+- if more than one sum composition is found for a precursor mass, it will be reported
+  ordered by identification error.
+
+- Bug with *.mzXML file, where only MS/MS spectra are given is fixed.
+
+23.10.2008
+
+- new Function: complementMasterScan. Switch it on with a checkbox on the
+  Run-Panel. It will produce the "complement MasterScan" of the current
+  query, i.e. a MasterScan with all peaks which where not identified in
+  the current run. It will be saved as <original MasterScan name>-complement.sc.
+
+- the purpose is do blind queries for unknown or not excpected sum compositions.
+
+18.11.2008
+
+- new Function: DEFINE allows now to define a list of same variables with
+  different names in one line. The user just writes a list:
+    old:
+      DEFINE FA1 = 'C[14..22] H[20..60] O[2] N[1]' WITH DBR = (0.0,6.0), CHG = 0;
+      DEFINE FA2 = 'C[14..22] H[20..60] O[2] N[1]' WITH DBR = (0.0,6.0), CHG = 0;
+      DEFINE FA3 = 'C[14..22] H[20..60] O[2] N[1]' WITH DBR = (0.0,6.0), CHG = 0;
+    new:
+      DEFINE (FA1, FA2, FA3) = 'C[14..22] H[20..60] O[2] N[1]' WITH DBR = (0.0,6.0), CHG = 0;
+    
+- new Function: DEFINE allow the definition of a list of fragments. For example:
+    DEFINE FA = ('C14 H27 O2 N1',
+                 'C14 H29 O2 N1',
+                 'C14 H31 O2 N1',
+                 'C15 H21 O2 N1',
+                 'C15 H31 O2 N1');
+
+2009-03-06
+
+- adding a new Variable to TypeMFQL: currVars, which carries the current variables
+  and is accessible for all functions
+- adding a new function: avg(), which calculates the average of the attribute (which
+  should be an intensity vector by now)
+
+2009-07-02
+
+- new function in the import which allows grouping the samples by letting the user put
+  them into group folders. This does only work for *.mzXML until now.
+
+2009-12-01
+
+* fixed massrange error when using masses in DEFINE
+* fixed problem with order of the *.mfql scripts in the Run Panel
+
+2009-12-03
+
+* implemented multiple charge recognition !NOTE!: it is to be tested!
+  Lipids with charge unequal to 1, 0 or -1 are not able to account to
+  isotopic correction.
+* upgrade of the Exception handling.
+
+
