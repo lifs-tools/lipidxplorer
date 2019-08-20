@@ -1,4 +1,5 @@
 # for import
+from lx.lipidIdentification import writeReport
 from lx.spectraImport import lpdxImportDEF_new
 
 # for mfql spectra interpretation
@@ -220,38 +221,4 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	if parent:
 		#parent.debug.progressDialog.Destroy()
 		return parent.CONST_THREAD_SUCCESSFUL
-
-def writeReport(file = "", options = {}, queries = {}):
-
-	strReport = "<html><head></head><body>"
-	strReport += "<br>"
-	strReport += "%s" % genReportHTML(options, queries)
-	strReport += "</body></html>"
-
-	f = open(file.split('.')[0] + "-report.html", "w")
-	f.write(strReport)
-	f.close()
-
-def genReportHTML(options = {}, queries = {}):
-
-	strBugReport = "<h3>Options</h3>\n"
-
-	strBugReport += "<table>\n"
-	for k in sorted(options.keys()):
-		if not options.isEmpty(k):
-			strBugReport += "<tr><td>%s:</td><td>%s</td></tr>\n" % (k, options[k])
-	strBugReport += "</table><br>\n"
-
-	strBugReport += "<h3>MFQL queries</h3><tt>\n"
-	for i in queries:
-		txt = ''
-		if i != "":
-			f = open(queries[i], 'r')
-			txt += " \n\n>> filename: %s >>\n\n" % i
-			txt += f.read()
-			strBugReport += txt.replace('\n', '<br>')
-			f.close()
-	strBugReport += "</tt>"
-
-	return strBugReport
 
