@@ -1174,6 +1174,8 @@ MStolerance to an arbitrary value"""
 		if self.options.has_key('MSMSmassrange') and not (self.options.isEmpty('MSMSmassrange')):
 			strOut += "MS/MS mass range: , (%s, %s)\n" % (repr(self.options['MSMSmassrange'][0]), repr(self.options['MSMSmassrange'][1]))
 		strOut += "MS tolerance: ,+/- %s\n" % (repr(self.options['MStolerance']))
+		if self.options.has_key('MSMSfilter') and not (self.options.isEmpty('MSMSfilter')):
+			strOut += "MS frequency filter: %s\n" % (repr(self.options['MSMSfilter']))
 		if self.options.has_key('MSMStolerance') and not (self.options.isEmpty('MSMStolerance')):
 			strOut += "MS/MS tolerance: ,+/- %s\n" % (repr(self.options['MSMStolerance']))
 		strOut += "MS resolution: , %s\n" % (repr(self.options['MSresolution'].tolerance))
@@ -1190,6 +1192,10 @@ MStolerance to an arbitrary value"""
 		strOut += "MS minimum occupation: ,+/- %s\n" % (repr(self.options['MSminOccupation']))
 		if self.options.has_key('MSMSminOccupation') and not (self.options.isEmpty('MSMSminOccupation')):
 			strOut += "MS/MS minimum occupation: ,+/- %s\n" % (repr(self.options['MSMSminOccupation']))
+		if self.options.has_key('MSfilter') and not (self.options.isEmpty('MSfilter')):
+			strOut += "MS/MS frequency filter: %s\n" % (repr(self.options['MSfilter']))
+			
+					
 		strOut += "\n\n"
 
 		strOut += ",,,,"
@@ -1246,9 +1252,9 @@ MStolerance to an arbitrary value"""
 		countMSMS = 0
 		for i in sorted(self.listSurveyEntry):
 			# if options['massrange'] is given
-			if (not options.has_key('massrange') or (options['massrange'][0] <= i.precurmass \
-				and i.precurmass <= options['massrange'][1])) and \
-				(not options.has_key('polarity') or options['polarity'] == i.polarity) :
+			if (not self.options.has_key('massrange') or (self.options['massrange'][0] <= i.precurmass \
+				and i.precurmass <= self.options['massrange'][1])) and \
+				(not self.options.has_key('polarity') or self.options['polarity'] == i.polarity) :
 
 				#strSQL += i.reprCSV_SQL() + "\n"
 
