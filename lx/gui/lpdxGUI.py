@@ -4090,18 +4090,6 @@ intensity."""))
 			self.isRunning = False
 			return None
 
-
-	def writeReport(self, file = "", options = {}):
-
-			strReport = "<html><head></head><body>"
-			strReport += "<br>"
-			strReport += "%s" % self.genBugReportHTML(options)
-			strReport += "</body></html>"
-
-			f = open(file.split('.')[0] + "-report.html", "w")
-			f.write(strReport)
-			f.close()
-
 	def OnMassToSumComposition(self, evt):
 
 		if self.text_ctrl_mstools_InputSection_mz.IsEmpty():
