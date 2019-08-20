@@ -72,6 +72,12 @@ def lpdxImportCLI(projpath = None):
 	optParser.add_option("--MSMStoleranceType", dest="MSMStoleranceType",
 					 help="overwrites/specifies 'MSMStoleranceType' of the *.ini file", metavar = "ARG")
 
+	optParser.add_option("--MSfilter", dest="MSfilter",
+				     help="overwrites/specifies 'MSfilter' of the *.ini file, minimum filter threshold for repeated ions in MS1, between 0 and 1", metavar = "ARG")
+
+	optParser.add_option("--MSMSfilter", dest="MSMSfilter",
+						 help="overwrites/specifies 'MSMSfilter' of the *.ini file, minimum filter threshold for repeated ions in MS2, between 0 and 1", metavar="ARG")
+
 	optParser.add_option("--statistics", dest="statistics", action = "store_true", default = False,
 					 help="statistics")
 
