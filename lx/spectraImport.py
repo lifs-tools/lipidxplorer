@@ -670,7 +670,8 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		se.sortAndIndedice()
 
 	if options['settingsPrefix']:
-		output = output.split('.')[0] + "-" + scan.setting + "." + output.split('.')[1]
+		splitext = os.path.splitext(output)
+		output = splitext[0] + "-" + scan.setting + splitext[1]
 
 	print "Save output to %s." % output
 	saveSC(scan, output)
