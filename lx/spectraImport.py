@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+import csv
 import os, sys, re
 from optparse import OptionParser
 
@@ -501,7 +501,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 
 	### print some information ###
-
+	stats_file_entry = {}
 	if not options['spectraFormat'] == 'dta/csv':
 		if options['MSfilter'] and options['MSfilter'] > 0:
 			reportout("> {0:.<30s}{1:>11.2f}".format('MS filter settings', options['MSfilter']))
@@ -509,15 +509,20 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 			reportout("> {0:.<30s}{1:>11.2f}".format('MS/MS filter settings', options['MSMSfilter']))
 		if nb_ms_scans > 0:
 			reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS scans', sum(nb_ms_scans) / len(nb_ms_scans)))
+			stats_file_entry["nb_ms_scans"] = sum(nb_ms_scans)
 		if nb_ms_peaks > 0:
 			reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS peaks', sum(nb_ms_peaks) / len(nb_ms_peaks)))
+			stats_file_entry["nb_ms_peaks"] = sum(nb_ms_peaks)
 		if nb_msms_scans > 0:
 			reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS/MS scans', sum(nb_msms_scans) / len(nb_msms_scans)))
+			stats_file_entry["nb_msms_scans"] = sum(nb_msms_scans)
 		if nb_msms_peaks > 0:
 			reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS/MS peaks', sum(nb_msms_peaks) / len(nb_msms_peaks)))
+			stats_file_entry["nb_msms_peaks"] = sum(nb_msms_peaks)
 
 	loadingtime = time.clock() - starttime
 	reportout("%.2f sec. for reading the spectra" % loadingtime)
+	stats_file_entry["loading_time"] = loadingtime
 
 	if Debug("logMemory"):
 		print "ML> spectra loaded and averaged:", memory_logging.pythonMemory()
@@ -554,6 +559,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 	calibrationtime = time.clock() - starttime - loadingtime
 	reportout("%.2f sec. for calibrating the spectra" % calibrationtime)
+	stats_file_entry["calibration_time"] = calibrationtime
 
 	# align MS spectra
 	print "Aligning MS spectra", alignmentMS
@@ -606,6 +612,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	### some infos ###
 
 	reportout("> {0:.<30s}{1:>11d}\n".format('Nb. of MS peaks (after alg.)', len(scan.listSurveyEntry)))
+	stats_file_entry["nb_ms_peaks_after_alg"] = len(scan.listSurveyEntry)
 
 	if Debug("logMemory"):
 		print "ML> after alignment (MS):", memory_logging.pythonMemory()
@@ -642,6 +649,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 	alignmenttime = time.clock() - starttime - loadingtime - calibrationtime
 	reportout("%.2f sec. for aligning the spectra\n" % alignmenttime)
+	stats_file_entry["alignment_time"] = alignmenttime
 
 	for sample in scan.listSamples:
 		if scan.dictSamples.has_key(sample):
@@ -676,8 +684,22 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	print "Save output to %s." % output
 	saveSC(scan, output)
 
-	reportout("%.2f sec. for the whole import process" % (time.clock() - starttime))
+	total_runtime = time.clock() - starttime
+	reportout("%.2f sec. for the whole import process" % (total_runtime))
 	reportout("\n")
+	stats_file_entry["total_runtime"] = total_runtime
+
+	stats_file_keys = ["nb_ms_scans", "nb_ms_peaks", "nb_msms_scans", "nb_msms_peaks", "nb_ms_peaks_after_alg", "loading_time", "calibration_time", "alignment_time", "total_runtime"]
+	stats_file_data = [stats_file_entry]
+	stats_file = os.path.splitext(output)[0] + "-stats.csv"
+	try:
+		with open(stats_file, 'w') as csvfile:
+			writer = csv.DictWriter(csvfile, fieldnames=stats_file_keys)
+			writer.writeheader()
+			for data in stats_file_data:
+				writer.writerow(data)
+	except IOError:
+		raise LipidXException("Writing of statistics to file '%s' failed." % stats_file)
 
 	if parent:
 		#parent.debug.progressDialog.Destroy()
