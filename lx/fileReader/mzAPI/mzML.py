@@ -600,7 +600,7 @@ class mzFileInMemory:
 		# now there's nothing to do, because there's no handle on the mzML file
 		#pass
 
-	def scan_list(self, start_timeNone, stop_time=None, start_mz=0, stop_mz=99999):
+	def scan_list(self, start_time=None, stop_time=None, start_mz=0, stop_mz=99999):
 		if start_time is None or stop_time is None:
 			(file_start_time, file_stop_time) = self.time_range()
 		if start_time is None:
