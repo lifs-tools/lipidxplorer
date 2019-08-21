@@ -1629,12 +1629,12 @@ intensity."""))
 		self.label_SettingsSection_threshold_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
 		self.label_SettingsSection_threshold_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
 		self.label_SettingsSection_occupationThr = wx.StaticText(self.notebook_1_pane_5, -1, "min occupation")
-		self.label_SettingsSection_occupationThr.SetToolTip(wx.ToolTip("Select a minimum percentage of which a peak should is present in all samples"))
+		self.label_SettingsSection_occupationThr.SetToolTip(wx.ToolTip("Select a minimum percentage with which a peak should be appear in all samples, the value should be between 0 and 1"))
 		self.label_SettingsSection_occupationThr_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
-		self.label_SettingsSection_occupationThr_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "0 < 1")
+		self.label_SettingsSection_occupationThr_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "[0..1]")
 		self.label_SettingsSection_occupationThr_ms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_occupationThr_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
-		self.label_SettingsSection_occupationThr_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "0 < 1")
+		self.label_SettingsSection_occupationThr_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "[0..1]")
 		self.label_SettingsSection_occupationThr_msms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_resDelta = wx.StaticText(self.notebook_1_pane_5, -1, "resolution gradient")
 		self.label_SettingsSection_resDelta.SetToolTip(wx.ToolTip("Give a gradient of how the resolution changes the greater the m/z value is"))
@@ -1650,9 +1650,13 @@ intensity."""))
 		self.label_SettingsSection_calibration_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
 		self.label_SettingsSection_calibration_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
 		self.label_SettingsSection_filter_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
-		self.label_SettingsSection_filter_ms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appearing in all associated scans, the value is between 0 and 1 "))
+		self.label_SettingsSection_filter_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "[0..1]")
+		self.label_SettingsSection_filter_ms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
+		self.label_SettingsSection_filter_ms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appearing in all associated scans, the value should be between 0 and 1"))
 		self.label_SettingsSection_filter_msms = wx.StaticText(self.notebook_1_pane_5, -1, "frequency filter")
 		self.label_SettingsSection_filter_ms_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
+		self.label_SettingsSection_filter_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "[0..1]")
+		self.label_SettingsSection_filter_msms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 
 
 		self.label_SettingsSection_filter_msms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appearing in all associated scans, the value is between 0 and 1 "))
@@ -3961,7 +3965,7 @@ intensity."""))
 				progressMax, style = wx.PD_CAN_ABORT)
 
 		# get the options from GUI settings
-		project = self.readOptionsRun()
+		project = self.readOptions()
 		#project = Options()
 
 		try:
@@ -5027,6 +5031,8 @@ intensity."""))
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
 		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_filter_ms, (9,3),
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
+		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_filter_ms_unit, (9, 5),
+												  wx.DefaultSpan, wx.LEFT | wx.TOP | wx.EXPAND, sizeBorder)
 
 		grid_sizer_19_SettingsSection_gridBag.Add(self.text_ctrl_SettingsSection_filter_msms, (9,7),
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
@@ -5035,6 +5041,8 @@ intensity."""))
 
 		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_filter_ms_ms, (9,6),
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
+		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_filter_msms_unit, (9, 8),
+												  wx.DefaultSpan, wx.LEFT | wx.TOP | wx.EXPAND, sizeBorder)
 
 		grid_sizer_19_SettingsSection_gridBag.Add(self.label_SettingsSection_precursorMassShiftOrbi, (10,6),
 			wx.DefaultSpan, wx.LEFT|wx.TOP|wx.EXPAND, sizeBorder)
