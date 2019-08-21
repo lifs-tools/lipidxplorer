@@ -352,7 +352,7 @@ class mzFile(object):
 		"""
 
 		if data_file.lower().endswith('.lnk'):
-			data_file = follow_link(data_file)
+			data_file = self.follow_link(data_file)
 
 		if data_file.lower().startswith('http://'):
 			import lx.fileReader.mzAPI.mzURL
