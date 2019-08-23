@@ -113,7 +113,7 @@ def add_Sample(
 		else:
 			polarity = pol
 
-		scan = mz_file.scan(t)
+		scan = mz_file.scan(scan_id=sn, time=t)
 
 		# don't consider empty scans
 		if len(scan) == 0:
@@ -159,7 +159,7 @@ def add_Sample(
 		else:
 			polarity = pol
 
-		scan = mz_file.scan(t)
+		scan = mz_file.scan(scan_id=sn, time=t)
 
 		# don't consider empty scans
 		if len(scan) == 0:
@@ -571,7 +571,7 @@ def add_Sample_AVG(
 		else:
 			polarity = pol
 
-		scan = mz_file.scan(t)
+		scan = mz_file.scan(scan_id=sn, time=t)
 
 		# don't consider empty scans
 		if len(scan) == 0:
