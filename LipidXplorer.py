@@ -10,6 +10,7 @@ class MyApp(wx.App):
 				rawimport = False,
 				lipidxplorer = True,
 				version = "1.2.8")
+		self.frame.SetIcon(wx.Icon("lx/stuff/lipidx_ico2.ico", wx.BITMAP_TYPE_ICO))
 		self.frame.Show(True)
 		self.frame.Center()
 		self.SetTopWindow(self.frame)
