@@ -15,6 +15,8 @@ if os.path.isdir("dist/mfql/"):
 
 shutil.copytree(mfqlDir, "dist/mfql/")
 
+shutil.copy("README.md", "dist/")
+
 block_cipher = None
 
 
@@ -33,8 +35,8 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries + [('msvcp100.dll', 'C:\\Windows\\System32\\msvcp100.dll', 'BINARY'),
-                        ('msvcr100.dll', 'C:\\Windows\\System32\\msvcr100.dll', 'BINARY')]
+          a.binaries + [('msvcp100.dll', 'msvcp100.dll', 'BINARY'),
+                        ('msvcr100.dll', 'msvcr100.dll', 'BINARY')]
           if sys.platform == 'win32' else a.binaries,
           a.zipfiles,
           a.datas,
