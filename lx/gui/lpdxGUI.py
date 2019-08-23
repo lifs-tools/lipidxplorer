@@ -729,6 +729,7 @@ class SetAlignmentFrame(wx.Frame):
 		self.radioBox_ms_alignment.SetToolTip(wx.ToolTip(
 			"choose the preferred alignment method"))
 		self.radioBox_ms_alignment.SetSelection(0)
+		self.radioBox_ms_alignment.Hide()
 
 
 		### radio box for ms/ms alignment method ###
@@ -737,6 +738,7 @@ class SetAlignmentFrame(wx.Frame):
 		self.radioBox_ms_alignment.SetToolTip(wx.ToolTip(
 			"choose the preferred alignment method"))
 		self.radioBox_msms_alignment.SetSelection(0)
+		self.radioBox_msms_alignment.Hide()
 
 
 		### radio box for scan averaging method ###
@@ -745,6 +747,7 @@ class SetAlignmentFrame(wx.Frame):
 		self.radioBox_scanAveraging.SetToolTip(wx.ToolTip(
 			"choose the preferred scan averaging method"))
 		self.radioBox_scanAveraging.SetSelection(0)
+		self.radioBox_scanAveraging.Hide()
 
 		self.sizer_h = wx.BoxSizer(wx.HORIZONTAL)
 		self.sizer_v = wx.BoxSizer(wx.VERTICAL)
@@ -1150,7 +1153,8 @@ class LpdxFrame(wx.Frame):
 		self.menu_debug.AppendItem(wx.MenuItem(self.menu_debug, 4, "Debug window"))
 		self.menu_debug.AppendItem(wx.MenuItem(self.menu_debug, 5, "Set debug levels"))
 		self.menu_options = wx.Menu()
-		self.menu_options.AppendItem(wx.MenuItem(self.menu_options, 6, "Set alignment method"))
+		# disabling alignment method dialog
+		# self.menu_options.AppendItem(wx.MenuItem(self.menu_options, 6, "Set alignment method"))
 		self.menu_options.AppendItem(wx.MenuItem(self.menu_options, 7, "Output options"))
 		self.menu_help = wx.Menu()
 		self.menu_help.AppendItem(wx.MenuItem(self.menu_help, 8, "LipidXplorer Documentation"))
@@ -1714,7 +1718,8 @@ intensity."""))
 		self.Bind(wx.EVT_MENU, self.OnMenuProjectSaveAs, id = 3)
 		self.Bind(wx.EVT_MENU, self.OnMenuDebugWin, id = 4)
 		self.Bind(wx.EVT_MENU, self.OnMenuDebugSet, id = 5)
-		self.Bind(wx.EVT_MENU, self.OnMenuAlignmentSet, id = 6)
+		# disable the alignment settings menu
+		#self.Bind(wx.EVT_MENU, self.OnMenuAlignmentSet, id = 6)
 		self.Bind(wx.EVT_MENU, self.OnMenuOutputOptions, id = 7)
 		self.Bind(wx.EVT_MENU, self.OnMenuLipidXDocumentation, id = 8)
 		self.Bind(wx.EVT_MENU, self.OnMenuMFQLTutorial, id = 9)
@@ -2171,9 +2176,9 @@ intensity."""))
 
 		self.debugSetting.Show(True)
 
-	def OnMenuAlignmentSet(self, evt):
-
-		self.alignmentSetting.Show(True)
+	# def OnMenuAlignmentSet(self, evt):
+	#
+	# 	self.alignmentSetting.Show(True)
 
 	def OnMenuOutputOptions(self, evt):
 
