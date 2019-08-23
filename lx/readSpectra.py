@@ -841,8 +841,6 @@ directory>, <the resolution of the mass spec machine>
 			# if entry is a MS/MS spectrum
 			if (entry.get('msLevel') == 2 and importMSMS) or (entry.get('msLevel') == 0 and options['pisSpectra']):
 
-				countMSMS += 1
-
 				# precursor mass is there
 				if entry.get('precursorMz', None) and\
 					entry.get('precursorMz') >= msm1 and\
@@ -867,13 +865,16 @@ directory>, <the resolution of the mass spec machine>
 					t = entry.get('retentionTime', None)
 					tic = entry.get('totIonCurrent', None)
 
-					ms2Scans.append({
-						'time' : t,
-						'totIonCurrent' : tic,
-						'polarity' : polarity,
-						'precursorMz' : precursor,
-						'max_it' : max_it,
-						'scan' : peakList})
+					if len(peakList) > 0:
+						ms2Scans.append({
+							'time' : t,
+							'totIonCurrent' : tic,
+							'polarity' : polarity,
+							'precursorMz' : precursor,
+							'max_it' : max_it,
+							'scan' : peakList})
+						nb_msms_scans += 1
+						countMSMS += 1
 
 					# for the information output
 					info = {}
@@ -918,13 +919,15 @@ directory>, <the resolution of the mass spec machine>
 				else:
 					polarity = entry.get('polarity', None)
 
-				ms1Scans.append({
-					'time' : entry.get('retentionTime'),
-					'totIonCurrent' : entry.get('totIonCurrent'),
-					'polarity' : entry.get('polarity'),
-					'max_it' : max_it,
-					'scan' : peakList})
-				nb_ms_scans += 1
+				if len(peakList) > 0:
+					ms1Scans.append({
+						'time' : entry.get('retentionTime'),
+						'totIonCurrent' : entry.get('totIonCurrent'),
+						'polarity' : entry.get('polarity'),
+						'max_it' : max_it,
+						'scan' : peakList})
+					nb_ms_scans += 1
+					count += 1
 					## for Kai: read out single scan masses and TIC
 					#tolerance = 0.25
 					#for mass in [806.55, 774.56, 761.43, 622.26]:
@@ -943,7 +946,7 @@ directory>, <the resolution of the mass spec machine>
 				#f.close()
 
 
-				count += 1
+
 
 	del smpl
 
@@ -1227,9 +1230,11 @@ directory>, <the resolution of the mass spec machine>
 	lpdxSample.polarity = p
 
 	# print the spectra attributes
-	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS scans', count))
+	# count = nb_ms_scans
+	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS scans', nb_ms_scans))
 	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS peaks', nb_ms_peaks))
-	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS/MS scans', countMSMS))
+	# countMSMS = nb_msms_scans
+	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS/MS scans', nb_msms_scans))
 	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS/MS peaks', nb_msms_peaks))
 	reportout("> {0:.<30s}{1:>11d}".format('Nb. of MS peaks (after avg.)', numPeaks))
 	reportout("Spray stability:")
