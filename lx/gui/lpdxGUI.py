@@ -566,7 +566,6 @@ class TextOutFrame(wx.Frame):
 		self.parent.isRunning = False
 
 	def OnCloseWindow(self, evt):
-
 		self.Show(False)
 		self.parent.debugOpen = False
 
@@ -2266,6 +2265,14 @@ intensity."""))
 
 	def OnCloseApp(self, evt):
 
+		dialog = wx.MessageDialog(self, message="Are you sure you want to quit?", caption="Quit LipidXplorer", style=wx.YES_NO,
+								  pos=wx.DefaultPosition)
+		response = dialog.ShowModal()
+
+		if response != wx.ID_YES:
+			evt.StopPropagation()
+			return
+
 		for key in self.dict_text_ctrl.keys():
 			if self.dict_isChangedAndNotSavedMfqlFile[key]:
 				dlg = wx.MessageDialog(self, "Modified query '%s' is not saved. Save it?" % key, "Ups..",
@@ -2275,12 +2282,20 @@ intensity."""))
 					self.dict_mfqlFile[key].write(self.dict_text_ctrl[key].GetText())
 					self.dict_mfqlFile[key].close()
 
-		#self.Close(True)
+		if wx.GetApp().frame.debugOpen:
+			wx.GetApp().frame.OnMenuDebugWin(None)
+
+		for w in wx.GetTopLevelWindows():
+			# close all open windows
+			wx.CallAfter(w.Close)
+
 		self.Destroy()
 
 		if playSound:
 			wx.Sound.Stop()
 			wx.Sound('../pics/CloseApp.wav').Play()
+
+		sys.exit(1)
 
 	def handleSyntaxErrorException(self):
 
