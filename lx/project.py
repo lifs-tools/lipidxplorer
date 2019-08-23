@@ -80,8 +80,8 @@ class Project(Options):
 		self.formatOptions()
 
 		# add the master scan file path
-		self.options['dumpMasterScanFile'] = self.options['masterScanRun'].split('.')[0] + '-dump.csv'
-		self.options_formatted['dumpMasterScanFile'] = self.options['masterScanRun'].split('.')[0] + '-dump.csv'
+		self.options['dumpMasterScanFile'] = os.path.splitext(self.options['masterScanRun'])[0] + '-dump.csv'
+		self.options_formatted['dumpMasterScanFile'] = os.path.splitext(self.options['masterScanRun'])[0] + '-dump.csv'
 
 		### the query section ###
 
