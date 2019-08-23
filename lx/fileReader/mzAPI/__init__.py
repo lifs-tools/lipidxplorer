@@ -430,16 +430,17 @@ class mzFile(object):
 
 		raise NotImplementedError('Subclasses must implement this method')
 
-	def scan(self, time):
-		"""Gets scan based on the specified scan time
+	def scan(self, scan_id, time):
+		"""Gets scan based on the specified scan id (id attribute in mzML) or the time
 
+		The id will be preferred over the time, and is used as a lookup key in the scan cache.
 		The scan is a list of (mz, intensity, resolution, baseline,
 		noise, charge) tuples. Actually only recent versions of the raw
 		file format returns all of those. Normally only mz and
 		intensity are filled, the others set to zero.
 
 		Example:
-		>>> scan = myPeakFile.scan(20.035)
+		>>> scan = myPeakFile.scan("controllerType=0 controllerNumber=1 scan=3161", 23.21)
 
 		"""
 
