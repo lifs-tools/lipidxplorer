@@ -24,6 +24,7 @@
 #MRM_Q3MS_TEXT As String = "Q3MS "
 #MRM_SRM_TEXT As String = "SRM ms2"
 #MRM_FullNL_TEXT As String = "Full cnl "			' MRM neutral loss
+import mmap
 
 from lx.exceptions import LipidXException
 
@@ -147,7 +148,6 @@ class mzFile(mzAPImzFile):
 	use, there's the _build_info_scans method, but in general it makes
 	more sense to create an .mzi file.
 	"""
-
 	_xp_time = etree.XPath(('./mz:scanList/mz:scan/'
 							'mz:cvParam[@name="scan start time"]/'
 							'attribute::value'),
@@ -186,7 +186,9 @@ class mzFile(mzAPImzFile):
 		if data_file.lower().endswith('.mzml.gz'):
 			self.fileobj = gzip.GzipFile(data_file, mode='rb')
 		else:
-			self.fileobj = open(data_file, mode='rb')
+			with open(data_file, "r+b") as f:
+				self.mmap_fileobj = f
+				self.fileobj = mmap.mmap(f.fileno(), 0)
 
 		if os.path.exists(data_file + '.mzi'):
 			self._info_file = data_file + '.mzi'
@@ -195,9 +197,15 @@ class mzFile(mzAPImzFile):
 			info_fh.close()
 		else:
 			self._info_file = None
+			self._info_scans = None
 
 	def close(self):
 		self.fileobj.close()
+		if self.mmap_fileobj is not None:
+			self.mmap_fileobj.close()
+		self._info_file = None
+		self._info_scans = None
+		self.scan_map = {}
 
 	def scan_list(self, start_time=None, stop_time=None, start_mz=0, stop_mz=99999):
 		if start_time is None:
@@ -207,7 +215,7 @@ class mzFile(mzAPImzFile):
 		if self._info_file:
 			return [ (i['time'], i['mz']) for i in self._info_scans
 					 if (start_time <= i['time'] and ((not stop_time) or i['time'] <= stop_time))
-					 and (i['scan_mode'] == 'MS1' or start_mz <= i['mz'] <= stop_mz) ]
+					 and (i['scan_type'] == 'MS1' or start_mz <= i['mz'] <= stop_mz) ]
 
 		scan_list = []
 
@@ -263,6 +271,10 @@ class mzFile(mzAPImzFile):
 		self.fileobj.seek(0)
 		context = etree.iterparse(self.fileobj, events=('end',),
 								  tag='%sspectrum' % NS)
+		n_ms1 = 0
+		n_ms2 = 0
+		n_ms1_filtered = 0
+		n_ms2_filtered = 0
 		for event, elem in context:
 			xt = self._xp_time(elem)
 			if xt:
@@ -311,7 +323,7 @@ class mzFile(mzAPImzFile):
 							elif self._xp_frg_pis(elem):
 								p = float(self._xp_frg_pis(elem)[0])
 							else:
-								print "this ms2 didn't have a precursor m/z or a fragment scan m/z...", elem.get("id")
+								print "Skipping scan: '%s' ; Could not find a precursor or fragment!" % (elem.get('id'))
 						else:
 							p = precursor
 
@@ -325,6 +337,17 @@ class mzFile(mzAPImzFile):
 
 								scan_name = elem.get('id')
 								scan_info.append((time, mz, scan_name, 'MS2', scan_mode, polarity, total_ic, 0, 0))
+								# load mz and intensity arrays proactively
+								mz, it = zip(*self._scan_from_spec_node(elem, xt))
+								empty = [0 for i in range(len(mz))]
+								self.scan_map[scan_name] = zip(list(mz), list(it), empty, empty, empty, empty)
+								n_ms2 = n_ms2 + 1
+							else:
+								#print "Skipping scan: '%s' ; m/z='%f' is out of defined range!"%(elem.get('id'), mz)
+								n_ms2_filtered = n_ms2_filtered + 1
+						else:
+							#print "Skipping scan: '%s' ; Could not find a precursor!"%(elem.get('id'))
+							n_ms2_filtered = n_ms2_filtered + 1
 					else:
 						if self._xp_prof(elem):
 							scan_mode = 'p'
@@ -333,10 +356,20 @@ class mzFile(mzAPImzFile):
 
 						scan_name = elem.get('id')
 						scan_info.append((time, 0.0, scan_name, 'MS1', scan_mode, polarity, total_ic, 0, 0))
+						# load mz and intensity arrays proactively
+						mz, it = zip(*self._scan_from_spec_node(elem, xt))
+						empty = [0 for i in range(len(mz))]
+						self.scan_map[scan_name] = zip(list(mz), list(it), empty, empty, empty, empty)
+						n_ms1 = n_ms1 + 1
+				else:
+					n_ms1_filtered = n_ms1_filtered + 1
 			else:
 				print "this spectrum didn't have a scan time...", elem.get("id")
+				n_ms1_filtered = n_ms1_filtered + 1
 			elem.clear()
 
+		total_scans = n_ms1+n_ms1_filtered+n_ms2+n_ms2_filtered
+		print "Loaded %d of %d scan info objects, %d MS1 scans, %d MS2 scans, filtered %d MS1 scans and %d MS2 scans."%(len(scan_info), total_scans, n_ms1, n_ms2, n_ms1_filtered, n_ms2_filtered)
 		return scan_info
 
 	def scan_time_from_scan_name(self, scan_name):
@@ -361,9 +394,14 @@ class mzFile(mzAPImzFile):
 		else:
 			print "scan not found:", scan_name
 
-	def scan(self, time):
+	scan_map = {}
+
+	def scan(self, scan_id, time):
 		# this implementation takes a few seconds and uses very little memory
 		# (by keeping only the current closest scan)
+
+		if self.scan_map.has_key(scan_id):
+			return self.scan_map[scan_id]
 
 		if self._info_file:
 			closest_item = self._info_scans.closest(key='time', value=time)
@@ -374,7 +412,6 @@ class mzFile(mzAPImzFile):
 			mz, it = zip(*self._scan_from_spec_node(spec, closest_item['time'], prefix=False))
 			empty = [0 for i in range(len(mz))]
 			return zip(list(mz), list(it), empty, empty, empty, empty)
-			#return self._scan_from_spec_node(spec, closest_item['time'], prefix=False)
 
 		self.fileobj.seek(0)
 		context = etree.iterparse(self.fileobj, events=('end',),
