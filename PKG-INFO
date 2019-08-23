@@ -1,10 +1,10 @@
 Metadata-Version: 1.0
 Name: LipidXplorer
-Version: 1.2.7
+Version: 1.2.8
 Summary: UNKNOWN
-Home-page: https://wiki.mpi-cbg.de/wiki/lipidx/index.php/Main_Page
-Author: Ronny Herzog
+Home-page: https://lifs.isas.de/wiki/index.php/Main_Page
+Author: Ronny Herzog, Jacobo Miranda Ackerman, Fadi Al Machot
 Author-email: herzog@mpi-cbg.de
-License: UNKNOWN
+License: GNU GPL v2
 Description: ...
 Platform: UNKNOWN
