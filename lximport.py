@@ -177,7 +177,7 @@ def lpdxImportCLI(projpath = None):
 
 		project.options['importDir'] = args[0]
 		project.options['masterScan'] = args[1]
-		project.options['dumpMasterScanFileImport'] = args[1].split('.')[0] + '-dump.csv'
+		project.options['dumpMasterScanFileImport'] = os.path.splitext(args[1])[0] + '-dump.csv'
 		project.options['importMSMS'] = True
 		project.options['mzXML'] = True
 

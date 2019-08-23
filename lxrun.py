@@ -119,7 +119,7 @@ def lpdxImportCLI(projpath = None):
 		project.options['scanAveragingMethod'] = "linear"
 
 		project.options['masterScanRun'] = args[0]
-		project.options['dumpMasterScanFile'] = args[0].split('.')[0] + '-dump.csv'
+		project.options['dumpMasterScanFile'] = os.path.splitext(args[0])[0] + '-dump.csv'
 		project.options['importMSMS'] = True
 		project.options['mzXML'] = True
 

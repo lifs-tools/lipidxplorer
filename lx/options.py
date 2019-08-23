@@ -1,3 +1,4 @@
+import os
 import re
 import traceback
 from lx.exceptions import LipidXException
@@ -535,9 +536,9 @@ class Options:
             self.options_formatted['masterScanFileImport'] = o['masterScanImport']
             self.options_formatted['masterScanFileRun'] = o['masterScanRun']
         if not self.isEmpty('dumpMasterScan'):
-            self.options_formatted['dumpMasterScanFile'] = o['masterScanRun'].split('.')[0] + "-dump.csv"
+            self.options_formatted['dumpMasterScanFile'] = os.path.splitext(o['masterScanRun'])[0] + "-dump.csv"
         if not self.isEmpty('complementMasterScan'):
-            self.options_formatted['complementMasterScanFile'] = o['masterScanRun'].split('.')[0] + "-complement.csv"
+            self.options_formatted['complementMasterScanFile'] = os.path.splitext(o['masterScanRun'])[0] + "-complement.csv"
 
         # copy the rest of the string based options to the internal options
         for opt in self.options.keys():
