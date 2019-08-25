@@ -178,6 +178,7 @@ class mzFile(mzAPImzFile):
 						   namespaces=NSd, smart_strings=False)
 	_xp_tic = etree.XPath('./mz:cvParam[@name="total ion current"]/attribute::value',
 						   namespaces=NSd, smart_strings=False)
+	scan_map = {}
 
 	def __init__(self, data_file, **kwargs):
 		self.file_type = 'mzml'
@@ -337,10 +338,13 @@ class mzFile(mzAPImzFile):
 
 								scan_name = elem.get('id')
 								scan_info.append((time, mz, scan_name, 'MS2', scan_mode, polarity, total_ic, 0, 0))
+
+								# caching here changes the results :-/
 								# load mz and intensity arrays proactively
 								mz, it = zip(*self._scan_from_spec_node(elem, xt))
 								empty = [0 for i in range(len(mz))]
 								self.scan_map[scan_name] = zip(list(mz), list(it), empty, empty, empty, empty)
+
 								n_ms2 = n_ms2 + 1
 							else:
 								#print "Skipping scan: '%s' ; m/z='%f' is out of defined range!"%(elem.get('id'), mz)
@@ -356,10 +360,13 @@ class mzFile(mzAPImzFile):
 
 						scan_name = elem.get('id')
 						scan_info.append((time, 0.0, scan_name, 'MS1', scan_mode, polarity, total_ic, 0, 0))
+
+						# caching here changes the results :-/
 						# load mz and intensity arrays proactively
 						mz, it = zip(*self._scan_from_spec_node(elem, xt))
 						empty = [0 for i in range(len(mz))]
 						self.scan_map[scan_name] = zip(list(mz), list(it), empty, empty, empty, empty)
+
 						n_ms1 = n_ms1 + 1
 				else:
 					n_ms1_filtered = n_ms1_filtered + 1
@@ -368,8 +375,8 @@ class mzFile(mzAPImzFile):
 				n_ms1_filtered = n_ms1_filtered + 1
 			elem.clear()
 
-		total_scans = n_ms1+n_ms1_filtered+n_ms2+n_ms2_filtered
-		print "Loaded %d of %d scan info objects, %d MS1 scans, %d MS2 scans, filtered %d MS1 scans and %d MS2 scans."%(len(scan_info), total_scans, n_ms1, n_ms2, n_ms1_filtered, n_ms2_filtered)
+		#total_scans = n_ms1+n_ms1_filtered+n_ms2+n_ms2_filtered
+		#print "Loaded %d of %d scan info objects, %d MS1 scans, %d MS2 scans, filtered %d MS1 scans and %d MS2 scans."%(len(scan_info), total_scans, n_ms1, n_ms2, n_ms1_filtered, n_ms2_filtered)
 		return scan_info
 
 	def scan_time_from_scan_name(self, scan_name):
@@ -393,8 +400,6 @@ class mzFile(mzAPImzFile):
 			elem.clear()
 		else:
 			print "scan not found:", scan_name
-
-	scan_map = {}
 
 	def scan(self, scan_id, time):
 		# this implementation takes a few seconds and uses very little memory
