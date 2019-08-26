@@ -2285,17 +2285,11 @@ intensity."""))
 		if wx.GetApp().frame.debugOpen:
 			wx.GetApp().frame.OnMenuDebugWin(None)
 
-		for w in wx.GetTopLevelWindows():
-			# close all open windows
-			wx.CallAfter(w.Close)
-
 		self.Destroy()
 
 		if playSound:
 			wx.Sound.Stop()
 			wx.Sound('../pics/CloseApp.wav').Play()
-
-		sys.exit(1)
 
 	def handleSyntaxErrorException(self):
 
