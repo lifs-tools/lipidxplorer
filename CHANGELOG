@@ -1,7 +1,11 @@
 21.09.2019 LipidXplorer 1.2.8
 
 New Functionality
-- Added MSFilter and MSMSFilter (TODO fadi / mirandaa: explain the details)
+- Added MSFilter and MSMSFilter
+The MSFilter and MSMSFilter takes a value between  0 and 1 can be chosen representing the fraction of scans in which a certain peak has to be present.
+The filter is applied for both MS and MS/MS according to the given import setting for each scan type. 
+For each precursor ion all associated MS/MS scans are collected according to selection window. Counting of MS/MS scans and association of precursor is done automatically. 
+Accordingly, the number of MS/MS scan can vary for each precursor ion in the shotgun acquisition, as might occur when using a DDA strategy.
 
 - Improved mzML file loading speed from O(n^2) to O(n).
 - Added application and taskbar icons.
