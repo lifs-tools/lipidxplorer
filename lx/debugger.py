@@ -144,11 +144,13 @@ def DebugSet(name=" "):
 
 	elif confParse.has_section(setting):
 		confParse.set(setting, name, "True")
-		confParse.write(open("lpdxopts.ini", 'w'))
+		with open("lpdxopts.ini", 'w') as iniFile:
+			confParse.write(iniFile)
 	else:
 		confParse.add_section(setting)
 		confParse.set(setting, name, "True")
-		confParse.write(open("lpdxopts.ini", 'w'))
+		with open("lpdxopts.ini", 'w') as iniFile:
+			confParse.write(iniFile)
 
 	return(True)
 
@@ -166,7 +168,8 @@ def DebugUnset(name=" "):
 
 	elif confParse.has_option(setting, name):
 		confParse.set(setting, name, "False")
-		confParse.write(open("lpdxopts.ini", 'w'))
+		with open("lpdxopts.ini", 'w') as iniFile:
+			confParse.write(iniFile)
 		return True
 	else:
 		return False

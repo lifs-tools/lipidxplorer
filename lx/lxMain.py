@@ -94,7 +94,8 @@ def startMFQL(options = {}, queries = {}, parent = None):
 		for arg in queries:
 			if re.match('(.*\.mfql$)|(.*\.py$)', arg):
 				#mfqlFiles[arg] = open(arg, 'r').read()
-				mfqlFiles[arg] = open(queries[arg], 'r').read()
+				with open(queries[arg], 'r') as mfqlFile:
+					mfqlFiles[arg] = mfqlFile.read()
 
 	print "\n****** Starting MFQL interpretation ******\n"
 
@@ -184,9 +185,8 @@ def startMFQL(options = {}, queries = {}, parent = None):
 			if parent:
 				parent.writeOutput(options['resultFile'], strResult)
 			else:
-				f = open(options['resultFile'], 'w')
-				f.write(strResult)
-				f.close()
+				with open(options['resultFile'], 'w') as f:
+					f.write(strResult)
 	else:
 		print "\n <Query returned no result.>\n"
 

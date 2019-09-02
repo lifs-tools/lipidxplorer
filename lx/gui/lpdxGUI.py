@@ -429,9 +429,8 @@ class Worker(threading.Thread):
 
 					if dlg.ShowModal() == wx.ID_OK:
 						d = dlg.GetPath()
-						f = open(d, 'w')
-						f.write(strBugReport)
-						f.close()
+						with open(d, 'w') as f:
+							f.write(strBugReport)
 						print d
 
 				else:
@@ -932,11 +931,9 @@ class CSVViewer(wx.Frame):
 				dlgError = wx.MessageDialog(self, "The filename must have '.csv' as ending",
 					"Error", wx.OK)
 
-			fileIn = open(self.filename)
-			fileOut = open(d, 'w')
-			fileOut.write(fileIn.read())
-			fileOut.close()
-			fileIn.close()
+			with open(self.filename) as fileIn:
+				with open(d, 'w') as fileOut:
+					fileOut.write(fileIn.read())
 
 	def Exit(self, event):
 		if getattr(self, 'file',0):
@@ -1004,7 +1001,8 @@ class LpdxFrame(wx.Frame):
 		self.settingDefaults = "DEFAULTS"
 		if not self.confParseOpts.has_section(self.settingDefaults):
 			self.confParseOpts.add_section(self.settingDefaults)
-			self.confParseOpts.write(open("lpdxopts.ini", 'w'))
+			with open("lpdxopts.ini", 'w') as iniFile:
+				self.confParseOpts.write(iniFile)
 
 		# read option from the lpdxopts.ini file if present. If not -
 		# write the option as defined above in self.lpdxOptions
@@ -1021,7 +1019,8 @@ class LpdxFrame(wx.Frame):
 			else:
 				self.confParseOpts.set(self.settingDefaults, option, self.lpdxOptions[option])
 
-		self.confParseOpts.write(open("lpdxopts.ini", 'w'))
+		with open("lpdxopts.ini", 'w') as iniFile:
+			self.confParseOpts.write(iniFile)
 
 		### some user settings which are stored in lpdxopts.ini ###
 		###########################################################
@@ -1878,9 +1877,8 @@ intensity."""))
 					projectFilePath += '%s.' % i
 				projectFilePath += 'lxp'
 
-			f = open(projectFilePath, 'w')
-			configParser.write(f)
-			f.close()
+			with open(projectFilePath, 'w') as f:
+				configParser.write(f)
 
 			self.projectFile = projectFilePath
 
@@ -1912,9 +1910,8 @@ intensity."""))
 		else:
 			defaultFileName = ".lxp"
 
-		f = open(self.projectFile, 'w')
-		configParser.write(f)
-		f.close()
+		with open(self.projectFile, 'w') as f:
+			configParser.write(f)
 
 	def readOptions(self):
 
@@ -2278,12 +2275,15 @@ intensity."""))
 				dlg = wx.MessageDialog(self, "Modified query '%s' is not saved. Save it?" % key, "Ups..",
 					wx.YES|wx.NO|wx.ICON_HAND)
 				if dlg.ShowModal() == wx.ID_YES:
-					self.dict_mfqlFile[key] = open(self.dictMFQLScripts[key], 'w')
-					self.dict_mfqlFile[key].write(self.dict_text_ctrl[key].GetText())
-					self.dict_mfqlFile[key].close()
+					with open(self.dictMFQLScripts[key], 'w') as mfqlFile:
+						self.dict_mfqlFile[key] = mfqlFile
+						mfqlFile.write(self.dict_text_ctrl[key].GetText())
 
 		if wx.GetApp().frame.debugOpen:
 			wx.GetApp().frame.OnMenuDebugWin(None)
+
+		for tlw in wx.GetTopLevelWindows():
+			tlw.Destroy()
 
 		self.Destroy()
 
@@ -2431,9 +2431,8 @@ intensity."""))
 
 			if dlg.ShowModal() == wx.ID_OK:
 				d = dlg.GetPath()
-				f = open(d, 'w')
-				f.write(strBugReport)
-				f.close()
+				with open(d, 'w') as f:
+					f.write(strBugReport)
 				print d
 
 		else:
@@ -2704,9 +2703,8 @@ intensity."""))
 			self.confParse.set(section, 'MSfilter', self.text_ctrl_SettingsSection_filter_ms.GetValue())
 			self.confParse.set(section, 'MSMSfilter', self.text_ctrl_SettingsSection_filter_msms.GetValue())
 
-			fIni = open(self.filePath_LoadIni, 'w+')
-			self.confParse.write(fIni)
-			fIni.close()
+			with open(self.filePath_LoadIni, 'w+') as fIni:
+				self.confParse.write(fIni)
 
 			self.fillConfiguration(section)
 			self.OnSettingsSaved()
@@ -2728,9 +2726,8 @@ intensity."""))
 		self.choice_SelectSettingSection.AppendItems(self.listConfigurations)
 		self.clearConfiguration()
 
-		fIni = open(self.filePath_LoadIni, 'w+')
-		self.confParse.write(fIni)
-		fIni.close()
+		with open(self.filePath_LoadIni, 'w+') as fIni:
+			self.confParse.write(fIni)
 
 	def OnSaveAs_LoadIni(self, evt):
 
@@ -2804,9 +2801,8 @@ intensity."""))
 		self.choice_SelectSettingSection.Clear()
 		self.choice_SelectSettingSection.AppendItems(self.listConfigurations)
 
-		fIni = open(self.filePath_LoadIni, 'w+')
-		self.confParse.write(fIni)
-		fIni.close()
+		with open(self.filePath_LoadIni, 'w+') as fIni:
+			self.confParse.write(fIni)
 
 		self.fillConfiguration(newSection)
 
@@ -2913,8 +2909,6 @@ intensity."""))
 		# generate output file
 		file = filePath.split(os.sep)[-1]
 		fileOut = file.split('.')[0] + '-out.csv'
-		print file.split('.')
-		print ""
 		fileDump = file.split('.')[0] + '-dump.csv'
 		fileComplementSC = file.split('.')[0] + '-complement.sc'
 		path = filePath.split(os.sep)[:-1]
@@ -3341,9 +3335,8 @@ intensity."""))
 
 				if dlg.ShowModal() == wx.ID_OK:
 					d = dlg.GetPath()
-					f = open(d, 'w')
-					f.write(strBugReport)
-					f.close()
+					with open(d, 'w') as f:
+						f.write(strBugReport)
 					print d
 
 			else:
@@ -3396,11 +3389,10 @@ intensity."""))
 				# find right page
 				for i in range(self.notebook_1.GetPageCount()):
 					if self.notebook_1.GetPage(i) == self.dict_button_save[key].GetParent():
-
-						self.dict_mfqlFile[key] = open(self.dictMFQLScripts[key], 'w')
-						self.dict_mfqlFile[key].write(self.dict_text_ctrl[key].GetText())
-						self.dict_mfqlFile[key].close()
-						self.dict_isChangedAndNotSavedMfqlFile[key] = False
+						with open(self.dictMFQLScripts[key], 'w') as mfqlFile:
+							self.dict_mfqlFile[key] = mfqlFile
+							mfqlFile.write(self.dict_text_ctrl[key].GetText())
+							self.dict_isChangedAndNotSavedMfqlFile[key] = False
 						if self.dict_button_save.has_key(key):
 							self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
 
@@ -3445,9 +3437,8 @@ intensity."""))
 						for i in range(self.notebook_1.GetPageCount()):
 							if self.notebook_1.GetPage(i) == self.dict_button_saveAs[key].GetParent():
 
-								f = open(self.dictMFQLScripts[p], 'w')
-								f.write(self.dict_text_ctrl[key].GetText())
-								f.close()
+								with open(self.dictMFQLScripts[p], 'w') as f:
+									f.write(self.dict_text_ctrl[key].GetText())
 								self.dict_isChangedAndNotSavedMfqlFile[p] = False
 								if self.dict_button_save.has_key(key):
 									self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
@@ -3467,9 +3458,8 @@ intensity."""))
 				### end remove entry
 
 				# fill the changed text with the original one
-				o = open(self.dictMFQLScripts[oldText], 'r')
-				self.dict_text_ctrl[oldText].SetText(o.read())
-				o.close()
+				with open(self.dictMFQLScripts[oldText], 'r') as o:
+					self.dict_text_ctrl[oldText].SetText(o.read())
 				self.dict_isChangedAndNotSavedMfqlFile[oldText] = False
 				self.dict_button_save[oldText].SetBackgroundColour((230, 224, 218, 255))
 
@@ -3480,9 +3470,9 @@ intensity."""))
 
 
 			else:
-				self.dict_mfqlFile[p] = open(self.dictMFQLScripts[p], 'w')
-				self.dict_mfqlFile[p].write(self.dict_text_ctrl[p].GetText())
-				self.dict_mfqlFile[p].close()
+				with open(self.dictMFQLScripts[p], 'w') as mfqlFile:
+					self.dict_mfqlFile[p] = mfqlFile
+					mfqlFile.write(self.dict_text_ctrl[p].GetText())
 				self.dict_isChangedAndNotSavedMfqlFile[p] = False
 				if self.dict_button_save.has_key(p):
 					self.dict_button_save[p].SetBackgroundColour((230, 224, 218, 255))
@@ -3496,7 +3486,6 @@ intensity."""))
 	def OnClosePanel(self, evt, key = None, secureCheck = True):
 
 		if (key or key == 0) and self.dict_button_close.has_key(key):
-
 			id = self.dict_button_close[key].GetId()
 
 			for i in range(self.notebook_1.GetPageCount()):
@@ -3514,18 +3503,15 @@ intensity."""))
 						if dlg.ShowModal() == wx.ID_YES:
 
 							savedPage = True
-							self.dict_mfqlFile[key] = open(self.dictMFQLScripts[key], 'w')
-							self.dict_mfqlFile[key].write(self.dict_text_ctrl[key].GetText())
-							self.dict_mfqlFile[key].close()
+							with open(self.dictMFQLScripts[key], 'w') as mfqlFile:
+								self.dict_mfqlFile[key] = mfqlFile
+								mfqlFile.write(self.dict_text_ctrl[key].GetText())
 							self.dict_isChangedAndNotSavedMfqlFile[key] = False
 							if self.dict_button_save.has_key(key):
 								self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
 							dlg.Destroy()
 
-
-					if not savedPage:
-						self.dict_mfqlFile[key].close()
-
+					self.notebook_1.RemovePage(i)
 					self.dict_button_close[key].Destroy()
 					del self.dict_button_close[key]
 					self.dict_button_save[key].Destroy()
@@ -3539,8 +3525,6 @@ intensity."""))
 					self.dict_notebook_editor[key].Destroy()
 					del self.dict_notebook_editor[key]
 
-					self.notebook_1.RemovePage(i)
-
 					del self.dict_mfqlFile[key]
 
 					for k in self.dict_notebook_editor:
@@ -3553,11 +3537,9 @@ intensity."""))
 				savedPage = False
 
 				if evt.GetId() == self.dict_button_close[key].GetId():
-
 					# find right page
 					for i in range(self.notebook_1.GetPageCount()):
 						if self.notebook_1.GetPage(i) == self.dict_button_close[key].GetParent():
-
 							#if self.dict_text_ctrl.IsModified():
 							if self.dict_isChangedAndNotSavedMfqlFile[key]:
 								dlg = wx.MessageDialog(self, "Modified Query '%s' is not saved! Save it?" % key, "Ups...",
@@ -3566,18 +3548,17 @@ intensity."""))
 								if dlg.ShowModal() == wx.ID_YES:
 
 									savedPage = True
-									self.dict_mfqlFile[key] = open(self.dictMFQLScripts[key], 'w')
-									self.dict_mfqlFile[key].write(self.dict_text_ctrl[key].GetText())
-									self.dict_mfqlFile[key].close()
+									with open(self.dictMFQLScripts[key], 'w') as mfqlFile:
+										self.dict_mfqlFile[key] = mfqlFile
+										self.dict_mfqlFile[key].write(self.dict_text_ctrl[key].GetText())
 									self.dict_isChangedAndNotSavedMfqlFile[key] = False
 									if self.dict_button_save.has_key(key):
 										self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
 									dlg.Destroy()
 
 
-							if not savedPage:
-								self.dict_mfqlFile[key].close()
 
+							self.notebook_1.RemovePage(i)
 							self.dict_button_close[key].Destroy()
 							del self.dict_button_close[key]
 							self.dict_button_save[key].Destroy()
@@ -3590,8 +3571,6 @@ intensity."""))
 							del self.dict_text_ctrl[key]
 							self.dict_notebook_editor[key].Destroy()
 							del self.dict_notebook_editor[key]
-
-							self.notebook_1.RemovePage(i)
 
 							del self.dict_mfqlFile[key]
 
@@ -3646,10 +3625,10 @@ intensity."""))
 				self.dict_text_ctrl[curScript].SetMinSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
 
 				# open MFQL file
-				self.dict_mfqlFile[curScript] = open(self.dictMFQLScripts[curScript], 'r')
-				for line in self.dict_mfqlFile[curScript].readlines():
-					self.dict_text_ctrl[curScript].AppendText(line)
-				self.dict_mfqlFile[curScript].close()
+				with open(self.dictMFQLScripts[curScript], 'r') as mfqlFile:
+					self.dict_mfqlFile[curScript] = mfqlFile
+					for line in self.dict_mfqlFile[curScript].readlines():
+						self.dict_text_ctrl[curScript].AppendText(line)
 				self.dict_isChangedAndNotSavedMfqlFile[curScript] = False
 
 				# add the close button
@@ -3738,10 +3717,10 @@ intensity."""))
 				self.dict_text_ctrl[curScript].SetMinSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
 
 				# open MFQL file
-				self.dict_mfqlFile[curScript] = open(self.dictMFQLScripts[curScript], 'r')
-				for line in self.dict_mfqlFile[curScript].readlines():
-					self.dict_text_ctrl[curScript].AppendText(line)
-				self.dict_mfqlFile[curScript].close()
+				with open(self.dictMFQLScripts[curScript], 'r') as mfqlFile:
+					self.dict_mfqlFile[curScript] = mfqlFile
+					for line in self.dict_mfqlFile[curScript].readlines():
+						self.dict_text_ctrl[curScript].AppendText(line)
 				self.dict_isChangedAndNotSavedMfqlFile[curScript] = False
 
 				# add the close button

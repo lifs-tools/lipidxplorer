@@ -46,17 +46,17 @@ def lpdxImportDEF_new(parent, options=None):
 
 	# load occupation threshold settings
 	if os.path.exists("%s\\groups.txt" % scan.importDir):
-		f = open("%s\\groups.txt" % scan.importDir)
-		s = f.readlines()
-		if not s == []:
-			for i in s:
-				#scan.sampleOccThr['MS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
-				#scan.sampleOccThr['MSMS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
-				scan.sampleOccThr['MS'].append((options['MSminOccupation'], [x.strip() for x in i.split(',')]))
-				scan.sampleOccThr['MSMS'].append((options['MSMSminOccupation'], [x.strip() for x in i.split(',')]))
-		else:
-			scan.sampleOccThr['MS'] = [(options['MSminOccupation'], [])]
-			scan.sampleOccThr['MSMS'] = [(options['MSMSminOccupation'], [])]
+		with open("%s\\groups.txt" % scan.importDir) as f:
+			s = f.readlines()
+			if not s == []:
+				for i in s:
+					#scan.sampleOccThr['MS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
+					#scan.sampleOccThr['MSMS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
+					scan.sampleOccThr['MS'].append((options['MSminOccupation'], [x.strip() for x in i.split(',')]))
+					scan.sampleOccThr['MSMS'].append((options['MSMSminOccupation'], [x.strip() for x in i.split(',')]))
+			else:
+				scan.sampleOccThr['MS'] = [(options['MSminOccupation'], [])]
+				scan.sampleOccThr['MSMS'] = [(options['MSMSminOccupation'], [])]
 	else:
 		scan.sampleOccThr['MS'] = [(options['MSminOccupation'], [])]
 		scan.sampleOccThr['MSMS'] = [(options['MSMSminOccupation'], [])]
@@ -294,17 +294,17 @@ def lpdxImportDEF(
 
 	# load occupation threshold settings
 	if os.path.exists("%s\\groups.txt" % importDir):
-		f = open("%s\\groups.txt" % importDir)
-		s = f.readlines()
-		if not s == []:
-			for i in s:
-				#scan.sampleOccThr['MS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
-				#scan.sampleOccThr['MSMS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
-				scan.sampleOccThr['MS'].append((options['MSminOccupation'], [x.strip() for x in i.split(',')]))
-				scan.sampleOccThr['MSMS'].append((options['MSMSminOccupation'], [x.strip() for x in i.split(',')]))
-		else:
-			scan.sampleOccThr['MS'] = [(options['MSminOccupation'], [])]
-			scan.sampleOccThr['MSMS'] = [(options['MSMSminOccupation'], [])]
+		with open("%s\\groups.txt" % importDir) as f:
+			s = f.readlines()
+			if not s == []:
+				for i in s:
+					#scan.sampleOccThr['MS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
+					#scan.sampleOccThr['MSMS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
+					scan.sampleOccThr['MS'].append((options['MSminOccupation'], [x.strip() for x in i.split(',')]))
+					scan.sampleOccThr['MSMS'].append((options['MSMSminOccupation'], [x.strip() for x in i.split(',')]))
+			else:
+				scan.sampleOccThr['MS'] = [(options['MSminOccupation'], [])]
+				scan.sampleOccThr['MSMS'] = [(options['MSMSminOccupation'], [])]
 	else:
 		scan.sampleOccThr['MS'] = [(options['MSminOccupation'], [])]
 		scan.sampleOccThr['MSMS'] = [(options['MSMSminOccupation'], [])]

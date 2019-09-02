@@ -301,12 +301,14 @@ OUT: list of SurveyEntry
 	return sf
 			
 def saveSC(sc, filename):
-	pickle.dump(sc, open(filename, "wb"), pickle.HIGHEST_PROTOCOL)
+	with open(filename, "wb") as scFile:
+		pickle.dump(sc, scFile, pickle.HIGHEST_PROTOCOL)
 
 def loadSC(filename):
 	reportout("Loading SC %s ..." % filename)
 
-	sc = pickle.load(open(filename, "rb"))
+	with open(filename, "rb") as scFile:
+		sc = pickle.load(scFile)
 
 	# for backwards compatiblty
 	if not sc.options.has_key('MStolerance'):

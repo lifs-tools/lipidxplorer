@@ -249,9 +249,8 @@ def make_info_file(data_file, **kwargs):
 
 		#Pickle object
 
-		fh = open(data_file + '.mzi', 'w')
-		cPickle.dump(info_list, fh)
-		fh.close()
+		with open(data_file + '.mzi', 'w') as fh:
+			cPickle.dump(info_list, fh)
 	else:
 		import lx.fileReader.mzAPI.mzML
 		lx.fileReader.mzAPI.mzML.make_info_file(data_file)
