@@ -131,9 +131,8 @@ def make_info_file(data_file):
 	m = mzFile(data_file)
 	m._build_info_scans()
 
-	fh = open(data_file + '.mzi', 'wb')
-	cPickle.dump(m._info_scans, fh)
-	fh.close()
+	with open(data_file + '.mzi', 'wb') as fh:
+		cPickle.dump(m._info_scans, fh)
 
 
 class mzFile(mzAPImzFile):
@@ -193,9 +192,8 @@ class mzFile(mzAPImzFile):
 
 		if os.path.exists(data_file + '.mzi'):
 			self._info_file = data_file + '.mzi'
-			info_fh = open(self._info_file)
-			self._info_scans = cPickle.load(info_fh)
-			info_fh.close()
+			with open(self._info_file) as info_fh:
+				self._info_scans = cPickle.load(info_fh)
 		else:
 			self._info_file = None
 			self._info_scans = None
