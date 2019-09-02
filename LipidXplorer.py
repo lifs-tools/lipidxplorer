@@ -1,5 +1,4 @@
 import os
-
 from lx.gui import lpdxGUI
 import wx
 
@@ -21,6 +20,7 @@ def main():
 	app = MyApp(0)
 	os.chdir(os.getcwd())
 	app.MainLoop()
+	wx.Exit()
 	## end of the software
 
 if __name__ == "__main__":
