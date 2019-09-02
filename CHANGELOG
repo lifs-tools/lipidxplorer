@@ -1,4 +1,26 @@
-20190723 add filtering as per FAM
+21.09.2019 LipidXplorer 1.2.8
+
+New Functionality
+- Added MSFilter and MSMSFilter (TODO fadi / mirandaa: explain the details)
+
+- Improved mzML file loading speed from O(n^2) to O(n).
+- Added application and taskbar icons.
+
+Bug Fixes
+- Updated Wiki locations to https://lifs.isas.de/wiki
+- Fixed MFQL editor dialog closing error on Windows 10 and Python 2.7.
+- Fixed application not exiting properly due to non-terminated threads.
+- Improved file handle closing by switching to auto closing behaviour with 'with'.
+- Fixed output file creation for user accounts with '.' characters in path.
+
+Removed Functionality*
+- Removed sample grouping
+- Removed DTA/CSV + PIS support for input spectra
+
+Deprecated Functionality
+- The mzXML format is deprecated and will be removed for the LipidXplorer 1.3.0 release.
+
+* If you rely on this functionality, please contact us at lifs-support@isas.de
 
 12.08.2008
 
