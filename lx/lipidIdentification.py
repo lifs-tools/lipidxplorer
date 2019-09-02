@@ -25,7 +25,8 @@ def syntaxCheck(
 	if opts['queries'] != [None]:
 		for arg in opts['queries']:
 			if re.match('(.*\.mfql$)|(.*\.py$)', arg):
-				mfqlFiles[arg] = open(opts['queries'][arg], 'r').read()
+				with open(opts['queries'][arg], 'r') as mfqlFile:
+					mfqlFiles[arg] = mfqlFile.read()
 
 	print "\n****** Starting Syntax Check ******\n"
 
@@ -44,7 +45,8 @@ def startFromGUI(
 		for arg in queries:
 			if re.match('(.*\.mfql$)|(.*\.py$)', arg):
 				#mfqlFiles[arg] = open(arg, 'r').read()
-				mfqlFiles[arg] = open(queries[arg], 'r').read()
+				with open(queries[arg], 'r') as mfqlFile:
+					mfqlFiles[arg] = mfqlFile.read()
 
 	print "\n****** Starting MFQL interpretation ******\n"
 
@@ -169,9 +171,8 @@ def writeReport(file = "", options = {}, queries = {}):
 	strReport += "</body></html>"
 	reportBaseFile = os.path.splitext(file)[0]
 	print "Saving report to file " + reportBaseFile + "-report.html"
-	f = open(reportBaseFile + "-report.html", "w")
-	f.write(strReport)
-	f.close()
+	with open(reportBaseFile + "-report.html", "w") as f:
+		f.write(strReport)
 
 def genReportHTML(options = {}, queries = {}):
 
@@ -187,11 +188,10 @@ def genReportHTML(options = {}, queries = {}):
 	for i in queries:
 		txt = ''
 		if i != "":
-			f = open(queries[i], 'r')
-			txt += " \n\n>> filename: %s >>\n\n" % i
-			txt += f.read()
-			strBugReport += txt.replace('\n', '<br>')
-			f.close()
+			with open(queries[i], 'r') as f:
+				txt += " \n\n>> filename: %s >>\n\n" % i
+				txt += f.read()
+				strBugReport += txt.replace('\n', '<br>')
 	strBugReport += "</tt>"
 
 	return strBugReport
