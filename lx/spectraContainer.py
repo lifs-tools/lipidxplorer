@@ -673,14 +673,13 @@ class Sample:
 	def openAndRead(self, fn):
 		"""The name says it."""
 
-		f = open(fn, "r")
-		l = f.readlines()
+		with open(fn, "r") as f:
+			l = f.readlines()
 
 		# may there be an empty file
 		if l == []:
 			raise "File " + fn + " is empty."
 
-		f.close()
 		return l
 
 	def fillTable(self, f, smplName, smplDir, MSthreshold, thresholdType):
@@ -1158,75 +1157,73 @@ MStolerance to an arbitrary value"""
 
 		reportout("Dumping Master Scan content")
 
-		f = open(dump_file, 'w')
+		with open(dump_file, 'w') as f:
 
-		strOut = "\n"
-		strOut += "\nMasterScan: ," + self.name
-		strOut += "\n"
-		strOut += "data folder: , %s\n" % self.importDir
-		strOut += "import configuration file: , %s\n" % self.importSettingsFile
-		strOut += "import configuration: , %s\n" % self.setting
-		strOut += "\n"
-		if self.forcesinglecharge != 0:
-			strOut += "forcesinglecharge: ," + repr(self.forcesinglecharge)
-		strOut += "time range: , (%s, %s)\n" % (repr(self.options['timerange'][0]), repr(self.options['timerange'][1]))
-		strOut += "MS mass range: , (%s, %s)\n" % (repr(self.options['MSmassrange'][0]), repr(self.options['MSmassrange'][1]))
-		if self.options.has_key('MSMSmassrange') and not (self.options.isEmpty('MSMSmassrange')):
-			strOut += "MS/MS mass range: , (%s, %s)\n" % (repr(self.options['MSMSmassrange'][0]), repr(self.options['MSMSmassrange'][1]))
-		strOut += "MS tolerance: ,+/- %s\n" % (repr(self.options['MStolerance']))
-		if self.options.has_key('MSMSfilter') and not (self.options.isEmpty('MSMSfilter')):
-			strOut += "MS frequency filter: %s\n" % (repr(self.options['MSMSfilter']))
-		if self.options.has_key('MSMStolerance') and not (self.options.isEmpty('MSMStolerance')):
-			strOut += "MS/MS tolerance: ,+/- %s\n" % (repr(self.options['MSMStolerance']))
-		strOut += "MS resolution: , %s\n" % (repr(self.options['MSresolution'].tolerance))
-		if self.options.has_key('MSMSresolution') and not (self.options.isEmpty('MSMSresolution')):
-			strOut += "MS/MS resolution: , %s\n" % (repr(self.options['MSMSresolution'].tolerance))
-		else:
-			strOut += "MS/MS resolution: , 0\n"
-		strOut += "MS resolution gradient: , %s\n" % (repr(self.options['MSresolutionDelta']))
-		if self.options.has_key('MSMSresolutionDelta') and not (self.options.isEmpty('MSMSresolutionDelta')):
-			strOut += "MS/MS resolution gradient: , %s\n" % (repr(self.options['MSMSresolutionDelta']))
-		strOut += "MS threshold: , %s\n" % (repr(self.options['MSthreshold']))
-		if self.options.has_key('MSMSthreshold') and not (self.options.isEmpty('MSMSthreshold')):
-			strOut += "MS/MS threshold: , %s\n" % (repr(self.options['MSMSthreshold']))
-		strOut += "MS minimum occupation: ,+/- %s\n" % (repr(self.options['MSminOccupation']))
-		if self.options.has_key('MSMSminOccupation') and not (self.options.isEmpty('MSMSminOccupation')):
-			strOut += "MS/MS minimum occupation: ,+/- %s\n" % (repr(self.options['MSMSminOccupation']))
-		if self.options.has_key('MSfilter') and not (self.options.isEmpty('MSfilter')):
-			strOut += "MS/MS frequency filter: %s\n" % (repr(self.options['MSfilter']))
-			
-					
-		strOut += "\n\n"
+			strOut = "\n"
+			strOut += "\nMasterScan: ," + self.name
+			strOut += "\n"
+			strOut += "data folder: , %s\n" % self.importDir
+			strOut += "import configuration file: , %s\n" % self.importSettingsFile
+			strOut += "import configuration: , %s\n" % self.setting
+			strOut += "\n"
+			if self.forcesinglecharge != 0:
+				strOut += "forcesinglecharge: ," + repr(self.forcesinglecharge)
+			strOut += "time range: , (%s, %s)\n" % (repr(self.options['timerange'][0]), repr(self.options['timerange'][1]))
+			strOut += "MS mass range: , (%s, %s)\n" % (repr(self.options['MSmassrange'][0]), repr(self.options['MSmassrange'][1]))
+			if self.options.has_key('MSMSmassrange') and not (self.options.isEmpty('MSMSmassrange')):
+				strOut += "MS/MS mass range: , (%s, %s)\n" % (repr(self.options['MSMSmassrange'][0]), repr(self.options['MSMSmassrange'][1]))
+			strOut += "MS tolerance: ,+/- %s\n" % (repr(self.options['MStolerance']))
+			if self.options.has_key('MSMSfilter') and not (self.options.isEmpty('MSMSfilter')):
+				strOut += "MS frequency filter: %s\n" % (repr(self.options['MSMSfilter']))
+			if self.options.has_key('MSMStolerance') and not (self.options.isEmpty('MSMStolerance')):
+				strOut += "MS/MS tolerance: ,+/- %s\n" % (repr(self.options['MSMStolerance']))
+			strOut += "MS resolution: , %s\n" % (repr(self.options['MSresolution'].tolerance))
+			if self.options.has_key('MSMSresolution') and not (self.options.isEmpty('MSMSresolution')):
+				strOut += "MS/MS resolution: , %s\n" % (repr(self.options['MSMSresolution'].tolerance))
+			else:
+				strOut += "MS/MS resolution: , 0\n"
+			strOut += "MS resolution gradient: , %s\n" % (repr(self.options['MSresolutionDelta']))
+			if self.options.has_key('MSMSresolutionDelta') and not (self.options.isEmpty('MSMSresolutionDelta')):
+				strOut += "MS/MS resolution gradient: , %s\n" % (repr(self.options['MSMSresolutionDelta']))
+			strOut += "MS threshold: , %s\n" % (repr(self.options['MSthreshold']))
+			if self.options.has_key('MSMSthreshold') and not (self.options.isEmpty('MSMSthreshold')):
+				strOut += "MS/MS threshold: , %s\n" % (repr(self.options['MSMSthreshold']))
+			strOut += "MS minimum occupation: ,+/- %s\n" % (repr(self.options['MSminOccupation']))
+			if self.options.has_key('MSMSminOccupation') and not (self.options.isEmpty('MSMSminOccupation')):
+				strOut += "MS/MS minimum occupation: ,+/- %s\n" % (repr(self.options['MSMSminOccupation']))
+			if self.options.has_key('MSfilter') and not (self.options.isEmpty('MSfilter')):
+				strOut += "MS/MS frequency filter: %s\n" % (repr(self.options['MSfilter']))
 
-		strOut += ",,,,"
-		for i in self.listSamples:
-			strOut += i.rjust(13) + ","
-		strOut += "Peak Quality, Mean, Median, Variance, standardDeviation\n"
 
-		f.write(strOut)
+			strOut += "\n\n"
 
-		reportout("containing:\n%d MS entries and" % len(self.listSurveyEntry))
-		countMSMS = 0
-		for i in sorted(self.listSurveyEntry):
-			# if options['massrange'] is given
-			if (not self.options.has_key('massrange') or (self.options['massrange'][0] <= i.precurmass \
-				and i.precurmass <= self.options['massrange'][1])) and \
-				(not self.options.has_key('polarity') or self.options['polarity'] == i.polarity) :
+			strOut += ",,,,"
+			for i in self.listSamples:
+				strOut += i.rjust(13) + ","
+			strOut += "Peak Quality, Mean, Median, Variance, standardDeviation\n"
 
-				#strOut += i.reprCSV() + "\n"
-				f.write(i.reprCSV() + "\n")
+			f.write(strOut)
 
-				if i.listMSMS != []:
-					for j in sorted(i.listMSMS):
-						#strOut += j.reprCSV() + "\n"
-						f.write(j.reprCSV() + "\n")
-						countMSMS += 1
-					#strOut += "\n"
-					f.write("\n")
+			reportout("containing:\n%d MS entries and" % len(self.listSurveyEntry))
+			countMSMS = 0
+			for i in sorted(self.listSurveyEntry):
+				# if options['massrange'] is given
+				if (not self.options.has_key('massrange') or (self.options['massrange'][0] <= i.precurmass \
+					and i.precurmass <= self.options['massrange'][1])) and \
+					(not self.options.has_key('polarity') or self.options['polarity'] == i.polarity) :
 
-		reportout("%d MS/MS entries." % countMSMS)
+					#strOut += i.reprCSV() + "\n"
+					f.write(i.reprCSV() + "\n")
 
-		f.close()
+					if i.listMSMS != []:
+						for j in sorted(i.listMSMS):
+							#strOut += j.reprCSV() + "\n"
+							f.write(j.reprCSV() + "\n")
+							countMSMS += 1
+						#strOut += "\n"
+						f.write("\n")
+
+			reportout("%d MS/MS entries." % countMSMS)
 
 		return True
 
@@ -1234,41 +1231,41 @@ MStolerance to an arbitrary value"""
 
 		reportout("Dumping Master Scan content")
 
-		f = open(dump_file, 'w')
+		with open(dump_file, 'w') as f:
 
-		strSQL = ""
-		strSQL += ",, Precursormass,"
-		for i in self.listSamples:
-			strSQL += i.rjust(13) + ","
-		strSQL += "QueryName, Chemsc, error,"
-		for i in self.listSamples:
-			strSQL += i.rjust(13) + ","
-		strSQL += "Mass, name, error, frsc, nlsc\n"
-		#strSQL += "Peak Quality, Mean, Median, Variance, standardDeviation\n"
+			strSQL = ""
+			strSQL += ",, Precursormass,"
+			for i in self.listSamples:
+				strSQL += i.rjust(13) + ","
+			strSQL += "QueryName, Chemsc, error,"
+			for i in self.listSamples:
+				strSQL += i.rjust(13) + ","
+			strSQL += "Mass, name, error, frsc, nlsc\n"
+			#strSQL += "Peak Quality, Mean, Median, Variance, standardDeviation\n"
 
-		f.write(strSQL)
+			f.write(strSQL)
 
-		reportout("containing:\n%d MS entries and" % len(self.listSurveyEntry))
-		countMSMS = 0
-		for i in sorted(self.listSurveyEntry):
-			# if options['massrange'] is given
-			if (not self.options.has_key('massrange') or (self.options['massrange'][0] <= i.precurmass \
-				and i.precurmass <= self.options['massrange'][1])) and \
-				(not self.options.has_key('polarity') or self.options['polarity'] == i.polarity) :
+			reportout("containing:\n%d MS entries and" % len(self.listSurveyEntry))
+			countMSMS = 0
+			for i in sorted(self.listSurveyEntry):
+				# if options['massrange'] is given
+				if (not self.options.has_key('massrange') or (self.options['massrange'][0] <= i.precurmass \
+					and i.precurmass <= self.options['massrange'][1])) and \
+					(not self.options.has_key('polarity') or self.options['polarity'] == i.polarity) :
 
-				#strSQL += i.reprCSV_SQL() + "\n"
+					#strSQL += i.reprCSV_SQL() + "\n"
 
-				for line in i.reprCSV_SQL():
-					f.write(line + "\n")
-					#strSQL += line + "\n"
+					for line in i.reprCSV_SQL():
+						f.write(line + "\n")
+						#strSQL += line + "\n"
 
-				#if i.listMSMS != []:
-				#	for j in sorted(i.listMSMS):
-				#		strSQL += j.reprCSV() + "\n"
-				#		countMSMS += 1
-				#	strSQL += "\n"
+					#if i.listMSMS != []:
+					#	for j in sorted(i.listMSMS):
+					#		strSQL += j.reprCSV() + "\n"
+					#		countMSMS += 1
+					#	strSQL += "\n"
 
-		reportout("%d MS/MS entries." % countMSMS)
+			reportout("%d MS/MS entries." % countMSMS)
 
 		return True
 		pass

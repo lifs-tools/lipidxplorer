@@ -1413,9 +1413,8 @@ def loadMSMS(sample, dirmsms, resolution, options):
 	count = 0
 	for i in dtalist:
 		# open file, read
-		f = open(i, "r")
-		l = f.readlines()
-		f.close()
+		with open(i, "r") as f:
+			l = f.readlines()
 
 		count += 1
 

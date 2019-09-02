@@ -398,33 +398,31 @@ class TypeResult:
 		self.mfqlObj.complementSC.listSurveyEntry = []
 		sc = self.mfqlObj.complementSC
 
-		f = open('complementTest.csv', 'w')
-		listMSMS = []
-		for entry in self.mfqlObj.sc.listSurveyEntry:
+		with open('complementTest.csv', 'w') as f:
+			listMSMS = []
+			for entry in self.mfqlObj.sc.listSurveyEntry:
 
-			if (not entry.isIsotope and not entry.isTakenBySuchthat):
+				if (not entry.isIsotope and not entry.isTakenBySuchthat):
 
-				sc.listSurveyEntry.append(copy(entry))
-				sc.listSurveyEntry[-1].listMark = []
-				sc.listSurveyEntry[-1].listPrecurmassSF = []
-				sc.listSurveyEntry[-1].sumComposition = []
+					sc.listSurveyEntry.append(copy(entry))
+					sc.listSurveyEntry[-1].listMark = []
+					sc.listSurveyEntry[-1].listPrecurmassSF = []
+					sc.listSurveyEntry[-1].sumComposition = []
 
-				listMSMS = []
-				isInResult = True
-				index = 0
-				while index < len(entry.listMSMS):
-					if not entry.listMSMS[index].isTakenBySuchthat:
-						listMSMS.append(entry.listMSMS[index])
-						listMSMS[-1].listFragSF = []
-					index += 1
+					listMSMS = []
+					isInResult = True
+					index = 0
+					while index < len(entry.listMSMS):
+						if not entry.listMSMS[index].isTakenBySuchthat:
+							listMSMS.append(entry.listMSMS[index])
+							listMSMS[-1].listFragSF = []
+						index += 1
 
-				sc.listSurveyEntry[-1].listMSMS = listMSMS
-			else:
-				f.write('%.4f, %s, %s\n' % (entry.precurmass, entry.isIsotope, entry.isTakenBySuchthat))
+					sc.listSurveyEntry[-1].listMSMS = listMSMS
+				else:
+					f.write('%.4f, %s, %s\n' % (entry.precurmass, entry.isIsotope, entry.isTakenBySuchthat))
 
-			sc.listSurveyEntry.sort()
-
-		f.close()
+				sc.listSurveyEntry.sort()
 
 	def generateQueryResultSC(self):
 
@@ -3615,9 +3613,8 @@ class TypeDataMatrix:
 					str += '%f,' % e
 			str += '\n'
 
-		f = open(file, 'a')
-		f.write(str)
-		f.close()
+		with open(file, 'a') as f:
+			f.write(str)
 
 	def showGraphics(self):
 
