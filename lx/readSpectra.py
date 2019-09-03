@@ -252,7 +252,7 @@ def add_Sample(
 		#	print "MLh> ", hpy().heap()
 
 		# as per fadi this is called on ms1
-		fadi_denominator = nb_ms_scans
+		fadi_denominator = count
 		fadi_percentage = options['MSfilter']
 		listClusters = linearAlignment(dictSpecEntry.keys(),
 							dictSpecEntry,
@@ -792,11 +792,7 @@ directory>, <the resolution of the mass spec machine>
 		msmsm2 = MSMSmassrange[1]
 
 	global fadi_percentageMSMS
-
-	if options['MSMSfilter']:
-		fadi_percentageMSMS = options['MSMSfilter']
-	else:
-		fadi_percentageMSMS = 1
+	fadi_percentageMSMS = options['MSMSfilter']
 
 	### let's start ###
 
@@ -1017,13 +1013,13 @@ directory>, <the resolution of the mass spec machine>
 
 			dictSpecEntry[repr(count)] = []
 			for mz, it, it_rel, res, bl, ns, cg in ms1scan_entry['scan']:
-				dictSpecEntry[repr(count)].append(specEntry(
-					mass = mz,
-					content = {'sample' : repr(count),
-						'intensity' : it,
-						'intensity_rel' : it_rel}))
-				nb_ms_peaks += 1
-
+				if it > 0.0 and it_rel > 0.0:
+					dictSpecEntry[repr(count)].append(specEntry(
+						mass = mz,
+						content = {'sample' : repr(count),
+							'intensity' : it,
+							'intensity_rel' : it_rel}))
+					nb_ms_peaks += 1
 			avgBasePeakIntensity += ms1scan_entry['max_it']
 			count += 1
 
