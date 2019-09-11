@@ -866,7 +866,7 @@ class CSVViewer(wx.Frame):
 		wx.Frame.__init__(self, parent, ID, title,
 						  (-1,-1),size)
 
-		self.SetFont(wx.Font(9, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
+		self.SetFont(wx.Font(9, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		self.SetSize((600, 400))
 		self.Center()
 		self.filename = file
@@ -1115,9 +1115,9 @@ class LpdxFrame(wx.Frame):
 		wx.Frame.__init__(self, *args, **kwds)
 
 		# set some font things
-		#self.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))#, 0, 0, wx.FONTENCODING_SYSTEM))
+		#self.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))#, 0, 0, wx.FONTENCODING_SYSTEM))
 
-		self.font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL, False)#, 0, 0, wx.FONTENCODING_SYSTEM))
+		self.font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)#, 0, 0, wx.FONTENCODING_SYSTEM))
 		self.SetFont(self.font)
 
 		# font for the units
@@ -1201,7 +1201,7 @@ class LpdxFrame(wx.Frame):
 		self.label_mstools_InputSection_charge = wx.StaticText(self.notebook_1_pane_4, -1, "chg")
 		self.label_mstools_InputSection_accuracy = wx.StaticText(self.notebook_1_pane_4, -1, "acc")
 		self.label_mstools_InputSection_accuracy_blank = wx.StaticText(self.notebook_1_pane_4, -1, "  ")
-		self.label_mstools_InputSection_accuracy_ppm = wx.StaticText(self.notebook_1_pane_4, -1, "ppm")
+		self.label_mstools_InputSection_accuracy_ppm = wx.StaticText(self.notebook_1_pane_4, -1, "ppm	")
 		self.text_ctrl_mstools_InputSection_mz = wx.TextCtrl(self.notebook_1_pane_4, -1, "", style = wx.TE_PROCESS_ENTER)
 		self.text_ctrl_mstools_InputSection_mz.SetToolTip(wx.ToolTip(
 			"Input a m/z value in Da."))
@@ -1243,7 +1243,7 @@ class LpdxFrame(wx.Frame):
 		self.button_Isotopes = buttons.GenButton(self.notebook_1_pane_4, -1, "Get Isotopic distribution")
 		self.button_massToSumComposition.SetToolTip(wx.ToolTip(
 			"Calculate the Isotopic distribution of the given sum composition"))
-		self.checkBox_mstools_Isotopes_nl = wx.CheckBox(self.notebook_1_pane_4, -1, "Neutral Loss")
+		self.checkBox_mstools_Isotopes_nl = wx.CheckBox(self.notebook_1_pane_4, -1, "Neutral Loss	")
 		self.label_mstools_Isotopes_blank = wx.StaticText(self.notebook_1_pane_4, -1, "            ")
 		self.text_ctrl_mstools_Isotopes_output = wx.TextCtrl(self.notebook_1_pane_4, -1, "", style = wx.TE_MULTILINE|wx.TE_READONLY)
 
@@ -1305,11 +1305,11 @@ class LpdxFrame(wx.Frame):
 
 		# options
 		self.label_RunOptions = wx.StaticText(self.notebook_1_pane_3, -1, "Optional settings for this run")
-		self.label_RunOptions_tolerance = wx.StaticText(self.notebook_1_pane_3, -1, "Tolerance")
-		self.label_RunOptions_MS = wx.StaticText(self.notebook_1_pane_3, -1, "MS")
+		self.label_RunOptions_tolerance = wx.StaticText(self.notebook_1_pane_3, -1, "Tolerance	")
+		self.label_RunOptions_MS = wx.StaticText(self.notebook_1_pane_3, -1, "MS	")
 		self.text_ctrl_RunOptions_MS = wx.TextCtrl(self.notebook_1_pane_3, -1, "")
 		self.choice_RunOptions_MS_type = wx.Choice(self.notebook_1_pane_3, -1, choices = self.listChoices_types)
-		self.label_RunOptions_MSMS = wx.StaticText(self.notebook_1_pane_3, -1, "MS/MS")
+		self.label_RunOptions_MSMS = wx.StaticText(self.notebook_1_pane_3, -1, "MS/MS	")
 		self.text_ctrl_RunOptions_MSMS = wx.TextCtrl(self.notebook_1_pane_3, -1, "")
 		self.choice_RunOptions_MSMS_type = wx.Choice(self.notebook_1_pane_3, -1, choices = self.listChoices_types)
 
@@ -1321,22 +1321,23 @@ class LpdxFrame(wx.Frame):
 
 		self.checkBox_OptionsSection_isocorrect_ms = wx.CheckBox(self.notebook_1_pane_3, -1, "Isotopic Correction MS")
 		self.checkBox_OptionsSection_isocorrect_ms.SetValue(True)
+
 		self.checkBox_OptionsSection_isocorrect_ms.SetToolTip(wx.ToolTip(
 			"Isotopic correction of quantitative information in MS spectra"))
 		self.checkBox_OptionsSection_isocorrect_msms = wx.CheckBox(self.notebook_1_pane_3, -1, "Isotopic Correction MS/MS")
 		self.checkBox_OptionsSection_isocorrect_msms.SetValue(True)
 		self.checkBox_OptionsSection_isocorrect_msms.SetToolTip(wx.ToolTip(
 			"Isotopic correction of quantitative information in MS/MS spectra"))
-		self.checkBox_OptionsSection_complement_sc = wx.CheckBox(self.notebook_1_pane_3, -1, "Generate complement MasterScan")
+		self.checkBox_OptionsSection_complement_sc = wx.CheckBox(self.notebook_1_pane_3, -1, "Generate Compl. MasterScan		")
 		self.checkBox_OptionsSection_complement_sc.SetToolTip(wx.ToolTip(
 			"Generate the complement MasterScan and saved it as <name>-complement.sc in the origin directory."))
 		self.checkBox_OptionsSection_dumpMasterScan = wx.CheckBox(self.notebook_1_pane_3, -1, "Dump MasterScan")
 		self.checkBox_OptionsSection_dumpMasterScan.SetToolTip(wx.ToolTip(
 			"Generate a dump of the MasterScan to view its content."))
-		self.checkBox_OptionsSection_tabLimited = wx.CheckBox(self.notebook_1_pane_3, -1, "Tab limited")
+		self.checkBox_OptionsSection_tabLimited = wx.CheckBox(self.notebook_1_pane_3, -1, "Tab delimited	")
 		self.checkBox_OptionsSection_tabLimited.SetToolTip(wx.ToolTip(
 			"Use tabs as delimiter instead as commas."))
-		self.checkBox_OptionsSection_compress = wx.CheckBox(self.notebook_1_pane_3, -1, "Compress")
+		self.checkBox_OptionsSection_compress = wx.CheckBox(self.notebook_1_pane_3, -1, "Compress	")
 		self.checkBox_OptionsSection_compress.SetToolTip(wx.ToolTip(
 			"No output of query names."))
 		self.checkBox_OptionsSection_nohead = wx.CheckBox(self.notebook_1_pane_3, -1, "No head")
@@ -1565,63 +1566,45 @@ intensity."""))
 		self.store_SettingsSection_threshold_msms = "absolute"
 		self.choice_SettingsSection_threshold_msms.SetToolTip(wx.ToolTip("Relative intensity in '%'"))
 
+		# the following line seemingly "resets" the font for the next control... this might be a bug in wxPython
+		self.choice_SettingsSection_threshold_msms.SetFont(
+			wx.Font(self.font_units_size, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
+
 		self.label_SettingsSection_precursorMassShift = wx.StaticText(self.notebook_1_pane_5, -1, "MS1 offset")
+		self.label_SettingsSection_precursorMassShift.SetToolTip(wx.ToolTip(
+			"MS1 m/z offset correction. All MS1 m/z values will be shifted by this value in Da.")
+		)
 
 		self.label_SettingsSection_precursorMassShift_unit = wx.StaticText(self.notebook_1_pane_5, -1, "Da")
-		#self.label_SettingsSection_precursorMassShift.SetToolTip(wx.ToolTip("Precurorsor offset correction: Value in Da, which will be used\
-#as offset correction value for all MS masses."))
-		if balloontip:
-			tipballoon_args['toptitle'] = "MS1 m/z offset correction"
-			msg =  "All MS1 m/z values will be shifted by\n"
-			msg += "this value. Value in Da."
-			tipballoon_args['message'] = msg
-			t = BT.BalloonTip(**tipballoon_args)
-			t.SetStartDelay(tipballoon_startDelay)
-			t.SetTarget(self.label_SettingsSection_precursorMassShift)
-			#t.SetTarget(self.label_SettingsSection_precursorMassShift_unit)
 
 		self.label_SettingsSection_precursorMassShiftOrbi = wx.StaticText(self.notebook_1_pane_5, -1, "PMO")
+		self.label_SettingsSection_precursorMassShiftOrbi.SetToolTip(wx.ToolTip(
+			 "Precursor offset correction (PMO). Specifies a shift for the precursor masses of the MS/MS spectra. " +
+			 "A negative value shifts the precursor m/z value to the left and a positive value to the right. " +
+			 "This function is a workaround for precursor offset shifts which can occur on LTQ Orbitrap machines.")
+		)
 		self.label_SettingsSection_precursorMassShiftOrbi_unit = wx.StaticText(self.notebook_1_pane_5, -1, "Da")
-		if balloontip:
-			tipballoon_args['toptitle'] = "Precursor Offset Correction (PMO)"
-			tipballoon_args['message'] =  "Specifies a shift for the precursor masses of\n"
-			tipballoon_args['message'] += "the MS/MS spectra. A negative value shifts the\n"
-			tipballoon_args['message'] += "precuror m/z value to the left and a positive\n"
-			tipballoon_args['message'] += "value to the right. This function is a\n"
-			tipballoon_args['message'] += "workaround for precursor offset shifts which\n"
-			tipballoon_args['message'] += "can occur on LTQ Orbitrap machines\n"
-			t = BT.BalloonTip(**tipballoon_args)
-			t.SetTarget(self.label_SettingsSection_precursorMassShiftOrbi)
-			t.SetStartDelay(tipballoon_startDelay)
-		#self.label_SettingsSection_precursorMassShiftOrbi.SetToolTip(wx.ToolTip("Precursor Offset Correction: \
-		#Value in Da, specifying a mass shift.\
-		#This is a workaround for wrongly written mzXML files coming from some LTQ Orbitrap machines."))
+
 		self.label_SettingsSection_selectionWindow = wx.StaticText(self.notebook_1_pane_5, -1, "selection window")
 		self.label_SettingsSection_selectionWindow.SetToolTip(wx.ToolTip("Specify the half-width of the precursor isolation window."))
 		self.label_SettingsSection_selectionWindow_unit = wx.StaticText(self.notebook_1_pane_5, -1, "Da")
-		self.label_SettingsSection_selectionWindow_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_timerange = wx.StaticText(self.notebook_1_pane_5, -1, "timerange")
 		self.label_SettingsSection_timerange.SetToolTip(wx.ToolTip("Select a timerange from within the spectra should be imported"))
 		self.label_SettingsSection_timerange_unit = wx.StaticText(self.notebook_1_pane_5, -1, "sec.")
-		self.label_SettingsSection_timerange_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_massrange = wx.StaticText(self.notebook_1_pane_5, -1, "m/z range")
 		self.label_SettingsSection_massrange.SetToolTip(wx.ToolTip("Select a m/z range from within the spectra should be imported"))
 		self.label_SettingsSection_massrange_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
 		self.label_SettingsSection_massrange_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "m/z,m/z")
-		self.label_SettingsSection_massrange_ms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_massrange_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
 		self.label_SettingsSection_massrange_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "m/z,m/z")
-		self.label_SettingsSection_massrange_msms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_resolution = wx.StaticText(self.notebook_1_pane_5, -1, "resolution")
 		self.label_SettingsSection_resolution_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
 		strTT = """Set the resolution of the acquired spectra according to mass spec settings.
 \nNOTE that this resolution referes to the smalles mass in the spectra. The change of resolution for greater masses is handled with the 'resolution gradien' below."""
 		self.label_SettingsSection_resolution.SetToolTip(wx.ToolTip(strTT))
 		self.label_SettingsSection_resolution_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "FMHW")
-		self.label_SettingsSection_resolution_ms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_resolution_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
 		self.label_SettingsSection_resolution_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "FMHW")
-		self.label_SettingsSection_resolution_msms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_tolerance = wx.StaticText(self.notebook_1_pane_5, -1, "tolerance")
 		self.label_SettingsSection_tolerance.SetToolTip(wx.ToolTip("Set the accuracy of the acquired masses according to mass spec settings"))
 		self.label_SettingsSection_tolerance_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
@@ -1634,18 +1617,14 @@ intensity."""))
 		self.label_SettingsSection_occupationThr.SetToolTip(wx.ToolTip("Select a minimum percentage with which a peak should be appear in all samples, the value should be between 0 and 1"))
 		self.label_SettingsSection_occupationThr_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
 		self.label_SettingsSection_occupationThr_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "[0..1]")
-		self.label_SettingsSection_occupationThr_ms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_occupationThr_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
 		self.label_SettingsSection_occupationThr_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "[0..1]")
-		self.label_SettingsSection_occupationThr_msms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_resDelta = wx.StaticText(self.notebook_1_pane_5, -1, "resolution gradient")
 		self.label_SettingsSection_resDelta.SetToolTip(wx.ToolTip("Give a gradient of how the resolution changes the greater the m/z value is"))
 		self.label_SettingsSection_resDelta_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
 		self.label_SettingsSection_resDelta_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "res/(m/z)")
-		self.label_SettingsSection_resDelta_ms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_resDelta_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
 		self.label_SettingsSection_resDelta_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "res/(m/z)")
-		self.label_SettingsSection_resDelta_msms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_calibration = wx.StaticText(self.notebook_1_pane_5, -1, "calibration masses")
 		self.label_SettingsSection_calibration.SetToolTip(wx.ToolTip("Given m/z values are used for linear recalibration of the spectra"))
 		#self.label_SettingsSection_calibration_unit = wx.StaticText(pane, -1, "m/z, m/z, ...")
@@ -1653,16 +1632,13 @@ intensity."""))
 		self.label_SettingsSection_calibration_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
 		self.label_SettingsSection_filter_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
 		self.label_SettingsSection_filter_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "[0..1]")
-		self.label_SettingsSection_filter_ms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.label_SettingsSection_filter_ms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appearing in all associated scans, the value should be between 0 and 1"))
 		self.label_SettingsSection_filter_msms = wx.StaticText(self.notebook_1_pane_5, -1, "frequency filter")
 		self.label_SettingsSection_filter_ms_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
 		self.label_SettingsSection_filter_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "[0..1]")
-		self.label_SettingsSection_filter_msms_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 
 
 		self.label_SettingsSection_filter_msms.SetToolTip(wx.ToolTip("A minimum frequency for a peak appearing in all associated scans, the value is between 0 and 1 "))
-		#self.label_SettingsSection_calibration_unit.SetFont(wx.Font(self.font_units_size, wx.FONTFAMILY_DEFAULT, wx.FONTWEIGHT_NORMAL, wx.FONTSTYLE_NORMAL))
 		self.text_ctrl_SettingsSection_precursorMassShift = wx.TextCtrl(self.notebook_1_pane_5, -1, '')
 		self.text_ctrl_SettingsSection_precursorMassShiftOrbi = wx.TextCtrl(self.notebook_1_pane_5, -1, '')
 		self.text_ctrl_SettingsSection_selectionWindow = wx.TextCtrl(self.notebook_1_pane_5, -1, '')
@@ -4707,7 +4683,7 @@ intensity."""))
 
 		# mfql Queries
 		grid_sizer_1_RunCard.Add((10,10))
-		grid_sizer_1_RunCard.Add(self.label_mfqlQueriesSection, 0, wx.LEFT, border_labels)
+		grid_sizer_1_RunCard.Add(self.label_mfqlQueriesSection, 0, wx.LEFT | wx.EXPAND, border_labels)
 		grid_sizer_5_listBox = wx.GridBagSizer(7,1)
 		grid_sizer_5_listBox.Add(self.list_box_1, (0,0), (6,1) , wx.TOP|wx.LEFT|wx.RIGHT|wx.EXPAND, 10)
 		grid_sizer_5_listBox.Add((20, 55), (0,1), wx.DefaultSpan, wx.ALL, 0)
@@ -4750,7 +4726,7 @@ intensity."""))
 		grid_sizer_1_RunCard.Add(grid_sizer_10_textBrowse_V, 0, 0, 0)
 
 		# options
-		grid_sizer_1_RunCard.Add(self.label_RunOptions, 0, wx.LEFT|wx.BOTTOM, border_labels)
+		grid_sizer_1_RunCard.Add(self.label_RunOptions, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND, border_labels)
 
 		grid_sizer_29_OptionsSection = wx.GridBagSizer(1,6)
 		grid_sizer_29_OptionsSection.Add(self.label_RunOptions_tolerance, (0,0), wx.DefaultSpan, wx.ALL|wx.EXPAND, 2)
@@ -4767,31 +4743,31 @@ intensity."""))
 		#grid_sizer_29_OptionsSection.Add(self.label_RunOptions_MSMS_minocc, (1,4), wx.DefaultSpan, wx.ALL|wx.EXPAND, 2)
 		#grid_sizer_29_OptionsSection.Add(self.text_ctrl_RunOptions_MSMS_minocc, (1,5), wx.DefaultSpan, wx.ALL|wx.EXPAND, 2)
 
-		grid_sizer_1_RunCard.Add(grid_sizer_29_OptionsSection, 0, wx.LEFT, 10)
+		grid_sizer_1_RunCard.Add(grid_sizer_29_OptionsSection, 0, wx.LEFT | wx.EXPAND, 10)
 		grid_sizer_1_RunCard.Add((20,20))
 
 		grid_sizer_24_OptionsSection = wx.BoxSizer(wx.HORIZONTAL)
 		grid_sizer_11_OptionsSection = wx.BoxSizer(wx.VERTICAL)
-		grid_sizer_11_OptionsSection.Add(self.checkBox_OptionsSection_isocorrect_ms, 0, wx.LEFT, 10)
-		grid_sizer_11_OptionsSection.Add(self.checkBox_OptionsSection_isocorrect_msms, 0, wx.LEFT, 10)
-		grid_sizer_11_OptionsSection.Add(self.checkBox_OptionsSection_complement_sc, 0, wx.LEFT, 10)
+		grid_sizer_11_OptionsSection.Add(self.checkBox_OptionsSection_isocorrect_ms, 0, wx.LEFT | wx.EXPAND, 10)
+		grid_sizer_11_OptionsSection.Add(self.checkBox_OptionsSection_isocorrect_msms, 0, wx.LEFT | wx.EXPAND, 10)
+		grid_sizer_11_OptionsSection.Add(self.checkBox_OptionsSection_complement_sc, 0, wx.LEFT | wx.EXPAND, 10)
 		grid_sizer_26_OptionsSection = wx.BoxSizer(wx.VERTICAL)
-		grid_sizer_26_OptionsSection.Add(self.checkBox_OptionsSection_dumpMasterScan, 0, wx.LEFT, 10)
+		grid_sizer_26_OptionsSection.Add(self.checkBox_OptionsSection_dumpMasterScan, 0, wx.LEFT | wx.EXPAND, 10)
 		grid_sizer_13_DumpSection = wx.BoxSizer(wx.VERTICAL)
-		grid_sizer_13_DumpSection.Add(self.button_Open_DumpSection, 0, wx.ALL, 5)
-		grid_sizer_26_OptionsSection.Add(grid_sizer_13_DumpSection, 0, wx.LEFT, 10)
+		grid_sizer_13_DumpSection.Add(self.button_Open_DumpSection, 0, wx.ALL | wx.EXPAND, 5)
+		grid_sizer_26_OptionsSection.Add(grid_sizer_13_DumpSection, 0, wx.LEFT | wx.EXPAND, 10)
 		grid_sizer_25_OptionsSection = wx.BoxSizer(wx.VERTICAL)
-		grid_sizer_25_OptionsSection.Add(self.checkBox_OptionsSection_nohead, 0, wx.LEFT, 10)
-		grid_sizer_25_OptionsSection.Add(self.checkBox_OptionsSection_compress, 0, wx.LEFT, 10)
-		grid_sizer_25_OptionsSection.Add(self.checkBox_OptionsSection_tabLimited, 0, wx.LEFT, 10)
+		grid_sizer_25_OptionsSection.Add(self.checkBox_OptionsSection_nohead, 0, wx.LEFT | wx.EXPAND, 10)
+		grid_sizer_25_OptionsSection.Add(self.checkBox_OptionsSection_compress, 0, wx.LEFT | wx.EXPAND, 10)
+		grid_sizer_25_OptionsSection.Add(self.checkBox_OptionsSection_tabLimited, 0, wx.LEFT | wx.EXPAND, 10)
 		grid_sizer_31_OptionsSection = wx.BoxSizer(wx.VERTICAL)
-		grid_sizer_31_OptionsSection.Add(self.checkBox_generateStatistics, 0, wx.LEFT, 10)
-		grid_sizer_31_OptionsSection.Add(self.checkBox_noPermutations, 0, wx.LEFT, 10)
+		grid_sizer_31_OptionsSection.Add(self.checkBox_generateStatistics, 0, wx.LEFT | wx.EXPAND, 10)
+		grid_sizer_31_OptionsSection.Add(self.checkBox_noPermutations, 0, wx.LEFT | wx.EXPAND, 10)
 		grid_sizer_24_OptionsSection.Add(grid_sizer_11_OptionsSection, 0, wx.EXPAND, 0)
 		grid_sizer_24_OptionsSection.Add(grid_sizer_25_OptionsSection, 0, wx.EXPAND, 0)
 		grid_sizer_24_OptionsSection.Add(grid_sizer_31_OptionsSection, 0, wx.EXPAND, 0)
 		grid_sizer_24_OptionsSection.Add(grid_sizer_26_OptionsSection, 0, wx.EXPAND, 0)
-		grid_sizer_1_RunCard.Add(grid_sizer_24_OptionsSection, 0, 0, 0)
+		grid_sizer_1_RunCard.Add(grid_sizer_24_OptionsSection, 0, wx.EXPAND, 0)
 
 		# run
 		grid_sizer_13_RunButton = wx.BoxSizer(wx.VERTICAL)
