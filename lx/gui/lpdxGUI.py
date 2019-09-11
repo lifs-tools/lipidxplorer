@@ -1115,8 +1115,6 @@ class LpdxFrame(wx.Frame):
 		wx.Frame.__init__(self, *args, **kwds)
 
 		# set some font things
-		#self.SetFont(wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))#, 0, 0, wx.FONTENCODING_SYSTEM))
-
 		self.font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)#, 0, 0, wx.FONTENCODING_SYSTEM))
 		self.SetFont(self.font)
 
@@ -1130,10 +1128,10 @@ class LpdxFrame(wx.Frame):
 		self.notebook_1_pane_4 = wx.Panel(self.notebook_1, -1)
 		self.notebook_1_pane_5 = wx.Panel(self.notebook_1, -1)
 
-		self.notebook_1_pane_2.SetFont(self.font)
-		self.notebook_1_pane_3.SetFont(self.font)
-		self.notebook_1_pane_4.SetFont(self.font)
-		self.notebook_1_pane_5.SetFont(self.font)
+		#self.notebook_1_pane_2.SetFont(self.font)
+		#self.notebook_1_pane_3.SetFont(self.font)
+		#self.notebook_1_pane_4.SetFont(self.font)
+		#self.notebook_1_pane_5.SetFont(self.font)
 
 		### Initialize the Frame ###
 		############################
@@ -1194,14 +1192,16 @@ class LpdxFrame(wx.Frame):
 
 		strFancy = '<font color="red" weight="bold" size="11">Mass vs. Sum Composition</font>'
 		self.label_mstools_InputSection = fancytext.StaticFancyText(self.notebook_1_pane_4, -1, strFancy)
+		self.label_mstools_InputSection.SetFont(
+			wx.Font(self.font_units_size, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		self.label_mstools_InputSection_mz = wx.StaticText(self.notebook_1_pane_4, -1, "m/z value")
-		self.label_mstools_InputSection_sumComposition = wx.StaticText(self.notebook_1_pane_4, -1, "sc-constraint or sum composition                   ")
+		self.label_mstools_InputSection_sumComposition = wx.StaticText(self.notebook_1_pane_4, -1, "sc-constraint or sum composition")
 		self.label_mstools_InputSection_doubleBond_1 = wx.StaticText(self.notebook_1_pane_4, -1, "lDB")
 		self.label_mstools_InputSection_doubleBond_2 = wx.StaticText(self.notebook_1_pane_4, -1, "hDB")
 		self.label_mstools_InputSection_charge = wx.StaticText(self.notebook_1_pane_4, -1, "chg")
 		self.label_mstools_InputSection_accuracy = wx.StaticText(self.notebook_1_pane_4, -1, "acc")
 		self.label_mstools_InputSection_accuracy_blank = wx.StaticText(self.notebook_1_pane_4, -1, "  ")
-		self.label_mstools_InputSection_accuracy_ppm = wx.StaticText(self.notebook_1_pane_4, -1, "ppm	")
+		self.label_mstools_InputSection_accuracy_ppm = wx.StaticText(self.notebook_1_pane_4, -1, "ppm")
 		self.text_ctrl_mstools_InputSection_mz = wx.TextCtrl(self.notebook_1_pane_4, -1, "", style = wx.TE_PROCESS_ENTER)
 		self.text_ctrl_mstools_InputSection_mz.SetToolTip(wx.ToolTip(
 			"Input a m/z value in Da."))
@@ -1232,6 +1232,8 @@ class LpdxFrame(wx.Frame):
 		# second half
 		strFancy = '<font color="red" weight="bold" size="11">Isotopes of molecules</font>'
 		self.label_mstools_Isotopes = fancytext.StaticFancyText(self.notebook_1_pane_4, -1, strFancy)
+		self.label_mstools_Isotopes.SetFont(
+			wx.Font(self.font_units_size, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		self.label_mstools_Isotopes_precursor = wx.StaticText(self.notebook_1_pane_4, -1, "Ion sum composition                  ")
 		self.label_mstools_Isotopes_fragment = wx.StaticText(self.notebook_1_pane_4, -1, "Fragment sum composition                  ")
 		self.text_ctrl_mstools_Isotopes_precursor = wx.TextCtrl(self.notebook_1_pane_4, -1, "", style = wx.TE_PROCESS_ENTER)
@@ -1243,7 +1245,7 @@ class LpdxFrame(wx.Frame):
 		self.button_Isotopes = buttons.GenButton(self.notebook_1_pane_4, -1, "Get Isotopic distribution")
 		self.button_massToSumComposition.SetToolTip(wx.ToolTip(
 			"Calculate the Isotopic distribution of the given sum composition"))
-		self.checkBox_mstools_Isotopes_nl = wx.CheckBox(self.notebook_1_pane_4, -1, "Neutral Loss	")
+		self.checkBox_mstools_Isotopes_nl = wx.CheckBox(self.notebook_1_pane_4, -1, "Neutral Loss")
 		self.label_mstools_Isotopes_blank = wx.StaticText(self.notebook_1_pane_4, -1, "            ")
 		self.text_ctrl_mstools_Isotopes_output = wx.TextCtrl(self.notebook_1_pane_4, -1, "", style = wx.TE_MULTILINE|wx.TE_READONLY)
 
@@ -1257,6 +1259,8 @@ class LpdxFrame(wx.Frame):
 		# mfql Queries
 		strFancy = '<font color="red" weight="bold" size="11">Select/Add MFQL files</font>'
 		self.label_mfqlQueriesSection = fancytext.StaticFancyText(self.notebook_1_pane_3, -1, strFancy)
+		self.label_mfqlQueriesSection.SetFont(
+			wx.Font(self.font_units_size, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		self.label_mfqlQueriesSection.SetToolTip(wx.ToolTip(
 			"MFQL scripts have to be selected for LipidXplorer to query the data."))
 		self.list_box_1 = wx.ListBox(self.notebook_1_pane_3, -1, pos=(10,10), choices=[], name="", style = wx.LB_EXTENDED)
@@ -1328,16 +1332,16 @@ class LpdxFrame(wx.Frame):
 		self.checkBox_OptionsSection_isocorrect_msms.SetValue(True)
 		self.checkBox_OptionsSection_isocorrect_msms.SetToolTip(wx.ToolTip(
 			"Isotopic correction of quantitative information in MS/MS spectra"))
-		self.checkBox_OptionsSection_complement_sc = wx.CheckBox(self.notebook_1_pane_3, -1, "Generate Compl. MasterScan		")
+		self.checkBox_OptionsSection_complement_sc = wx.CheckBox(self.notebook_1_pane_3, -1, "Generate Complement MasterScan")
 		self.checkBox_OptionsSection_complement_sc.SetToolTip(wx.ToolTip(
 			"Generate the complement MasterScan and saved it as <name>-complement.sc in the origin directory."))
 		self.checkBox_OptionsSection_dumpMasterScan = wx.CheckBox(self.notebook_1_pane_3, -1, "Dump MasterScan")
 		self.checkBox_OptionsSection_dumpMasterScan.SetToolTip(wx.ToolTip(
 			"Generate a dump of the MasterScan to view its content."))
-		self.checkBox_OptionsSection_tabLimited = wx.CheckBox(self.notebook_1_pane_3, -1, "Tab delimited	")
+		self.checkBox_OptionsSection_tabLimited = wx.CheckBox(self.notebook_1_pane_3, -1, "Tab delimited")
 		self.checkBox_OptionsSection_tabLimited.SetToolTip(wx.ToolTip(
 			"Use tabs as delimiter instead as commas."))
-		self.checkBox_OptionsSection_compress = wx.CheckBox(self.notebook_1_pane_3, -1, "Compress	")
+		self.checkBox_OptionsSection_compress = wx.CheckBox(self.notebook_1_pane_3, -1, "Compress")
 		self.checkBox_OptionsSection_compress.SetToolTip(wx.ToolTip(
 			"No output of query names."))
 		self.checkBox_OptionsSection_nohead = wx.CheckBox(self.notebook_1_pane_3, -1, "No head")
@@ -1386,7 +1390,8 @@ intensity."""))
 		# folder with data files
 		strFancy = '<font color="red" weight="bold" size="11">Select the folder containing the mass spectra</font>'
 		self.label_ImportDataSection = fancytext.StaticFancyText(self.notebook_1_pane_2, -1, strFancy)
-
+		self.label_ImportDataSection.SetFont(
+			wx.Font(self.font_units_size, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 	#	self.label_ImportDataSection = wx.StaticText(self.notebook_1_pane_2, -1, "Select data folder and type of files")
 		self.text_ctrl_ImportDataSection = wx.TextCtrl(self.notebook_1_pane_2, -1, "", style=wx.TE_PROCESS_ENTER)
 		self.text_ctrl_ImportDataSection.SetToolTip(wx.ToolTip(
@@ -1522,6 +1527,8 @@ intensity."""))
 		#strFancy = '<font color="$8CFA8C" size="12">Select setting</font>'
 		strFancy = '<font color="red" weight="bold" size="11">Select a Configuration</font>'
 		self.label_SelectSettingSection = fancytext.StaticFancyText(self.notebook_1_pane_5, -1, strFancy)
+		self.label_SelectSettingSection.SetFont(
+			wx.Font(self.font_units_size, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 		self.label_SelectSettingSection.SetToolTip(wx.ToolTip(
 			"A section with import settings must be selected for the data import."))
 
@@ -5032,7 +5039,6 @@ intensity."""))
 
 		### Import Settings ###
 		##############################
-
 		self.notebook_1.AddPage(self.notebook_1_pane_2, "Import Source")
 		self.counterNotebookPages += 1
 		self.dictNotebookPages["Import"] = self.counterNotebookPages
