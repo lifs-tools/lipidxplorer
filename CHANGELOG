@@ -16,6 +16,7 @@ Bug Fixes
 - Fixed application not exiting properly due to non-terminated threads.
 - Improved file handle closing by switching to auto closing behaviour with 'with'.
 - Fixed output file creation for user accounts with '.' characters in path.
+- Fixed UI label truncations and spacing issues on Windows 10.
 
 Removed Functionality*
 - Removed sample grouping
