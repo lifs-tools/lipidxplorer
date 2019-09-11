@@ -14,5 +14,8 @@ setup(
 			"icon_resources": [(1, "lx/stuff/lipidx_ico.ico")]
 		}],
 	scripts = ['LipidXplorer.py'],
-	long_description = "..."
+	long_description = "LipidXplorer is a software that is designed to support bottom-up and top-down shotgun lipidomics experiments performed "+
+					   "on all types of tandem mass spectrometers. Lipid identification does not rely on a database resource of reference "+
+					   "or simulated mass spectra but uses user-defined molecular fragment queries. It supports accurate, isotope-corrected "+
+					   "quantification based on the identified MS1 or MS2 level fragments."
 )
