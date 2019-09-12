@@ -10,32 +10,32 @@ dependencies:
   - future=0.17.1=py27_0
   - icc_rt=2019.0.0=h0cc432a_1
   - intel-openmp=2019.4=245
-  - libiconv=1.15=hda2e4ec_7
+  - libiconv=1.15=vc9h6e1f958_5
   - libxml2=2.9.9=h325896a_0
   - libxslt=1.1.33=h803002f_0
   - lxml=4.3.4=py27h31b8cb8_0
   - macholib=1.11=py_0
   - mkl=2019.4=245
-  - mkl_fft=1.0.12=py27h44c1dab_0
+  - mkl-service=2.3.0=py27h0b88c2a_0
+  - mkl_fft=1.0.14=py27h44c1dab_0
   - numpy=1.16.3=py27h5fc8d92_0
   - numpy-base=1.16.3=py27hb1d0314_0
   - pandas=0.24.2=py27hc56fc5f_0
   - pefile=2019.4.18=py_0
-  - pip=19.1.1=py27_0
+  - pip=19.2.2=py27_0
   - pycrypto=2.6.1=py27h0c8e037_9
   - pyinstaller=3.4=py27h7a46e7a_1
   - python=2.7.16=hcb6e200_0
   - python-dateutil=2.8.0=py27_0
-  - pytz=2019.1=py_0
+  - pytz=2019.2=py_0
   - pywin32=223=py27h0c8e037_1
   - pywin32-ctypes=0.2.0=py27_0
   - setuptools=41.0.1=py27_0
   - six=1.12.0=py27_0
   - sqlite=3.29.0=h0c8e037_0
   - vc=9=h7299396_1
-  - vs2008_runtime=9.00.30729.1=hfaea7d5_1
+  - vs2008_runtime=9.00.30729.5054=0
   - wheel=0.33.4=py27_0
   - wincertstore=0.2=py27hf04cefb_0
-  - wxpython=3.0=py27_0
-  - zlib=1.2.11=h3cc03e0_3
-
+  - wxpython=4.0.4=py27hc56fc5f_0
+  - zlib=1.2.11=vc9ha80f4e8_1
