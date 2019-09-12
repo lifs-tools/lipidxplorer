@@ -13,8 +13,10 @@ pipeline {
                 }
             }
             steps {
-                sh 'cd /src/ && pip install -r requirements.txt'
-                sh 'cd /src/ && pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" LipidXplorer.spec'
+                sh 'ls *'
+                sh 'ls /src/*'
+                sh 'pip install -r requirements.txt'
+                sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" LipidXplorer.spec'
             }
             post {
                 success {
