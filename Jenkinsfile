@@ -5,14 +5,9 @@ pipeline {
     }
     stages {
         stage('Deliver') {
-            agent {
-                docker {
-                    image 'cdrx/pyinstaller-windows:python2'
-                    args '-v ${PWD}:/src --entrypoint /bin/sh'
-                }
-            }
+
             steps {
-                sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" LipidXplorer.spec'
+                sh 'docker run --rm -v ${PWD}:/src cdrx/pyinstaller-windows:python2 pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" LipidXplorer.spec'
             }
             post {
                 success {
