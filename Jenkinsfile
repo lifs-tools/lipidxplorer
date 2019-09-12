@@ -8,7 +8,8 @@ pipeline {
             agent {
                 docker {
                     image "cdrx/pyinstaller-windows:python2"
-                    args "-v ${WORKSPACE}:/src --entrypoint=\'\'"
+                    args "-v ${PWD}:/src --entrypoint=\'\'"
+                    reuseNode true
                 }
             }
             steps {
