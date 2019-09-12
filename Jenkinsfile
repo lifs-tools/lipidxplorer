@@ -4,8 +4,6 @@ pipeline {
         skipStagesAfterUnstable()
     }
     stages {
-        stage('Prepare') {
-        }
         stage('Deliver') {
             agent {
                 docker {
