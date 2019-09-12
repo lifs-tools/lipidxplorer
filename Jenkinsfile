@@ -8,15 +8,15 @@ pipeline {
             agent {
                 docker {
                     image "cdrx/pyinstaller-windows:python2"
-                    args "-v ${env.WORKSPACE}:/src --entrypoint=''"
+                    args "-v ${env.WORKSPACE}:/src --entrypoint=\'\'"
                 }
             }
             steps {
-                sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${env.BUILD_NUMBER}" LipidXplorer.spec'
+                sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" LipidXplorer.spec'
             }
             post {
                 success {
-                    archiveArtifacts 'LipidXplorer-1.2.8.${env.BUILD_NUMBER}.zip'
+                    archiveArtifacts 'LipidXplorer-1.2.8.${BUILD_NUMBER}.zip'
                 }
             }
         }
