@@ -13,7 +13,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" LipidXplorer.spec'
+                sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" --upx-dir=/usr/local/share/ LipidXplorer.spec'
             }
             post {
                 success {
