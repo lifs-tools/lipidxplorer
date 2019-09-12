@@ -8,7 +8,7 @@ pipeline {
             agent {
                 docker {
                     image "cdrx/pyinstaller-windows:python2"
-                    args "-v /jenkins_home/jobs/lipidxplorer/workspace:/src --entrypoint=\'\'"
+                    args "-u root --privileged -v /jenkins_home/jobs/lipidxplorer/workspace:/src --entrypoint=\'\'"
                     reuseNode true
                 }
             }
