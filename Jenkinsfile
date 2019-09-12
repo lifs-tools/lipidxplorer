@@ -8,7 +8,7 @@ pipeline {
             agent {
                 docker {
                     image "cdrx/pyinstaller-windows:python2"
-                    args "-u root --privileged -v /jenkins_home/jobs/lipidxplorer/workspace:/src --entrypoint=/bin/sh --c \"apt-get update -y && apt-get install -y upx-ucl && /entrypoint.sh\""
+                    args "-u root --privileged -v /jenkins_home/jobs/lipidxplorer/workspace:/src --entrypoint=/bin/sh -c \"apt-get update -y && apt-get install -y upx-ucl && /entrypoint.sh\""
                     reuseNode true
                 }
             }
