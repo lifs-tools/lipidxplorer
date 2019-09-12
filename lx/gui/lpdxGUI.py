@@ -510,7 +510,7 @@ class TextOutFrame(wx.Frame):
 
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.text_ctrl = stc.StyledTextCtrl(self,
-			style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.VSCROLL|wx.TE_AUTO_SCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE)#, size = wx.Point(835, 700))
+			style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.VSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE)#, size = wx.Point(835, 700))
 		# IDEA: use styled text to make a syntax highlighting
 		#self.text_ctrl = PythonSTC(self, -1,
 		#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.VSCROLL|wx.TE_AUTO_SCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE)#, size = wx.Point(835, 700))
@@ -1142,26 +1142,26 @@ class LpdxFrame(wx.Frame):
 
 		self.menubar = wx.MenuBar()
 		self.menu_project = wx.Menu()
-		self.menu_project.AppendItem(wx.MenuItem(self.menu_project, 1, "Load project"))
-		self.menu_project.AppendItem(wx.MenuItem(self.menu_project, 2, "Save project"))
-		self.menu_project.AppendItem(wx.MenuItem(self.menu_project, 3, "Save project as ..."))
+		self.menu_project.Append(wx.MenuItem(self.menu_project, 1, "Load project"))
+		self.menu_project.Append(wx.MenuItem(self.menu_project, 2, "Save project"))
+		self.menu_project.Append(wx.MenuItem(self.menu_project, 3, "Save project as ..."))
 		self.menu_debug = wx.Menu()
-		self.menu_debug.AppendItem(wx.MenuItem(self.menu_debug, 4, "Debug window"))
-		self.menu_debug.AppendItem(wx.MenuItem(self.menu_debug, 5, "Set debug levels"))
+		self.menu_debug.Append(wx.MenuItem(self.menu_debug, 4, "Debug window"))
+		self.menu_debug.Append(wx.MenuItem(self.menu_debug, 5, "Set debug levels"))
 		self.menu_options = wx.Menu()
 		# disabling alignment method dialog
-		# self.menu_options.AppendItem(wx.MenuItem(self.menu_options, 6, "Set alignment method"))
-		self.menu_options.AppendItem(wx.MenuItem(self.menu_options, 7, "Output options"))
+		# self.menu_options.Append(wx.MenuItem(self.menu_options, 6, "Set alignment method"))
+		self.menu_options.Append(wx.MenuItem(self.menu_options, 7, "Output options"))
 		self.menu_help = wx.Menu()
-		self.menu_help.AppendItem(wx.MenuItem(self.menu_help, 8, "LipidXplorer Documentation"))
-		self.menu_help.AppendItem(wx.MenuItem(self.menu_help, 9, "MFQL tutorial"))
-		self.menu_help.AppendItem(wx.MenuItem(self.menu_help, 10, "MFQL reference"))
+		self.menu_help.Append(wx.MenuItem(self.menu_help, 8, "LipidXplorer Documentation"))
+		self.menu_help.Append(wx.MenuItem(self.menu_help, 9, "MFQL tutorial"))
+		self.menu_help.Append(wx.MenuItem(self.menu_help, 10, "MFQL reference"))
 		self.menu_help.AppendSeparator()
-		self.menu_help.AppendItem(wx.MenuItem(self.menu_help, 11, "Help with 'Import Settings'"))
-		self.menu_help.AppendItem(wx.MenuItem(self.menu_help, 12, "Help with 'Run'"))
-		self.menu_help.AppendItem(wx.MenuItem(self.menu_help, 13, "Help with 'MS Tools'"))
+		self.menu_help.Append(wx.MenuItem(self.menu_help, 11, "Help with 'Import Settings'"))
+		self.menu_help.Append(wx.MenuItem(self.menu_help, 12, "Help with 'Run'"))
+		self.menu_help.Append(wx.MenuItem(self.menu_help, 13, "Help with 'MS Tools'"))
 		self.menu_help.AppendSeparator()
-		self.menu_help.AppendItem(wx.MenuItem(self.menu_help, 14, "About LipidXplorer"))
+		self.menu_help.Append(wx.MenuItem(self.menu_help, 14, "About LipidXplorer"))
 		self.menu_about = wx.Menu()
 		self.menubar.Append(self.menu_project, "&Project")
 		self.menubar.Append(self.menu_debug, "&Debug")
@@ -2648,7 +2648,7 @@ intensity."""))
 		self.currentConfiguration = ''
 
 		self.choice_SelectSettingSection.Clear()
-		self.choice_SelectSettingSection.AppendItems(self.listConfigurations)
+		self.choice_SelectSettingSection.Append(self.listConfigurations)
 		self.clearConfiguration()
 
 	def OnSave_LoadIni(self, evt):
@@ -2706,7 +2706,7 @@ intensity."""))
 		self.currentConfiguration = ''
 
 		self.choice_SelectSettingSection.Clear()
-		self.choice_SelectSettingSection.AppendItems(self.listConfigurations)
+		self.choice_SelectSettingSection.Appends(self.listConfigurations)
 		self.clearConfiguration()
 
 		with open(self.filePath_LoadIni, 'w+') as fIni:
@@ -2782,7 +2782,7 @@ intensity."""))
 
 		#self.choice_SelectSettingSection.Set(sorted(self.confParse.sections()))
 		self.choice_SelectSettingSection.Clear()
-		self.choice_SelectSettingSection.AppendItems(self.listConfigurations)
+		self.choice_SelectSettingSection.Appends(self.listConfigurations)
 
 		with open(self.filePath_LoadIni, 'w+') as fIni:
 			self.confParse.write(fIni)
@@ -2866,7 +2866,10 @@ intensity."""))
 				self.filePath_Output += 'csv'
 
 		dlg.Destroy()
-		self.text_ctrl_OutputSection.SetValue(self.filePath_Output)
+		try:
+			self.text_ctrl_OutputSection.SetValue(self.filePath_Output)
+		except AttributeError:
+			print "No output file specified!"
 
 	def OnBrowse_MasterScan(self, evt):
 
