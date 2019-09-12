@@ -13,8 +13,8 @@ pipeline {
                 }
             }
             steps {
-                sh 'apt update && apt install wget'
-                sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" -noupx LipidXplorer.spec'
+                sh 'cd /src/ && pip install -r requirements.txt'
+                sh 'cd /src/ && pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" LipidXplorer.spec'
             }
             post {
                 success {
