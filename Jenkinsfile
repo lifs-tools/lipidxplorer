@@ -4,11 +4,13 @@ pipeline {
         skipStagesAfterUnstable()
     }
     stages {
+        stage('Prepare') {
+        }
         stage('Deliver') {
             agent {
                 docker {
                     image "cdrx/pyinstaller-windows:python2"
-                    args "-v ${WORKSPACE}:/src --entrypoint=\'\'"
+                    args "-v /jenkins_home/jobs/lipidxplorer/workspace:/src --entrypoint=\'\'"
                     reuseNode true
                 }
             }
@@ -17,7 +19,7 @@ pipeline {
             }
             post {
                 success {
-                    archiveArtifacts '/src/LipidXplorer-1.2.8.${BUILD_NUMBER}.zip'
+                    archiveArtifacts '/jenkins_home/jobs/pipeline_example/workspace/LipidXplorer-1.2.8.${BUILD_NUMBER}.zip'
                 }
             }
         }
