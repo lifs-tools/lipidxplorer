@@ -14,7 +14,7 @@ pipeline {
             }
             steps {
                 sh 'apt-get update -y && apt-get install -y upx-ucl'
-                sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" --upx-dir=/usr/local/share/ LipidXplorer.spec'
+                sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" --upx-dir=/usr/bin LipidXplorer.spec'
             }
             post {
                 success {
