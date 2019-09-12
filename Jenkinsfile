@@ -8,11 +8,12 @@ pipeline {
             agent {
                 docker {
                     image "cdrx/pyinstaller-windows:python2"
-                    args "-u root --privileged -v /var/jenkins_home/workspace/lipidxplorer:/src --entrypoint=/bin/bash apt-get update -y && apt-get install -y upx-ucl"
+                    args "-u root --privileged -v /var/jenkins_home/workspace/lipidxplorer:/src --entrypoint=''"
                     reuseNode true
                 }
             }
             steps {
+                sh 'apt-get update -y && apt-get install -y upx-ucl'
                 sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" --upx-dir=/usr/local/share/ LipidXplorer.spec'
             }
             post {
