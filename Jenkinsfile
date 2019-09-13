@@ -13,7 +13,6 @@ pipeline {
                 }
             }
             steps {
-                sh 'pip install -r requirements.txt'
                 sh 'pyinstaller --distpath="LipidXplorer-1.2.8.${BUILD_NUMBER}" LipidXplorer.spec'
             }
             post {
