@@ -40,6 +40,15 @@ To create the exe in the `LipidXplorer-1.2.8` folder, please run the following c
 
 This will also create a zip archive of the `distpath` folder in the root directory of the project: `LipidXplorer-1.2.8.zip`.
 
+## Creating a Linux Executable
+
+The same instructions for creation of a standalone executable also apply under Linux. Please make sure, that you have a proper Anaconda environment
+installed and activated. Then run the following command:
+
+    pyinstaller --distpath="LipidXplorer-1.2.8" LipidXplorer.spec
+
+This will also create a zip archive of the `distpath` folder in the root directory of the project: `LipidXplorer-1.2.8.zip`.
+
 ## Versioning
 
 We use [Semantic Versioning](http://semver.org/) for versioning of the software.
