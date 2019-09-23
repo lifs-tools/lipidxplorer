@@ -8,7 +8,15 @@ For each precursor ion all associated MS/MS scans are collected according to sel
 Accordingly, the number of MS/MS scan can vary for each precursor ion in the shotgun acquisition, as might occur when using a DDA strategy.
 
 - Improved mzML file loading speed from O(n^2) to O(n).
+This improves loading speed of mzML files significantly and brings them on par with mzXML files considering import of data.
+
 - Added application and taskbar icons.
+
+- (Developers) Anaconda package management.
+LipidXplorer now comes with a dependency definition for an Anaconda environment for development under Windows. Please check the GitLab README.md file for further information.
+
+- LipidXplorer executable distributions (convenience binaries).
+LipidXplorer is now distributed as a Windows and Linux archive containing executables that come with all dependencies included. These can be downloaded from https://lifs.isas.de/lipidxplorer.
 
 Bug Fixes
 - Updated Wiki locations to https://lifs.isas.de/wiki
@@ -17,6 +25,7 @@ Bug Fixes
 - Improved file handle closing by switching to auto closing behaviour with 'with'.
 - Fixed output file creation for user accounts with '.' characters in path.
 - Fixed UI label truncations and spacing issues on Windows 10.
+- Updated wxPython dependency from 3.0 to 4.0.4.
 
 Removed Functionality*
 - Removed sample grouping
