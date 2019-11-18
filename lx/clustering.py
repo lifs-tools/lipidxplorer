@@ -15,7 +15,7 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 
-from types import TupleType
+# from types import TupleType...is now tuple
 
 class ClusteringError(Exception):
    pass
@@ -639,13 +639,13 @@ class KMeansClustering:
       self.__initial_length = len(data)
 
       # test if each item is of same dimensions
-      if len(data) > 1 and isinstance(data[0], TupleType):
+      if len(data) > 1 and isinstance(data[0], tuple):
          control_length = len(data[0])
          for item in data[1:]:
             if len(item) != control_length:
                raise ValueError("Each item in the data list must have the same amount of dimensions. Item", item, "was out of line!")
       # now check if we need and have a distance function
-      if len(data) > 1 and not isinstance(data[0], TupleType) and distance is None:
+      if len(data) > 1 and not isinstance(data[0], tuple) and distance is None:
          raise ValueError("You supplied non-standard items but no distance function! We cannot continue!")
       # we now know that we have tuples, and assume therefore that it's items are numeric
       elif distance is None:
