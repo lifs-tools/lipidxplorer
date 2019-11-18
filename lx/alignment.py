@@ -1789,7 +1789,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	#   [avg, [specEntry1, specEntry2, ..., specEntryN]]
 
 	# sort the list
-	listResult[0].sort()
+	listResult[0].sort(key=str)
 
 	for count in range(numLoops):
 
