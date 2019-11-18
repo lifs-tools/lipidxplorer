@@ -1,7 +1,4 @@
-try:
-	from . import ply.lex as lex
-except ImportError:
-	import lx.mfql.ply.lex as lex
+import ply.lex as lex
 
 from lx.mfql.runtimeStatic import *
 from lx.mfql.runtimeExecution import *
@@ -128,7 +125,7 @@ lexer = lex.lex(reflags = re.I, debug = 0, optimize = 0)
 ########################### Parser starts here ################################
 ###############################################################################
 
-from . import ply.yacc as yacc
+import ply.yacc as yacc
 
 # for the testing: the first semantics
 
