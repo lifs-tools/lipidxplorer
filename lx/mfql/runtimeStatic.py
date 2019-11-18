@@ -4,6 +4,7 @@ from lx.mfql.constants import *
 from lx.debugger import  Debug, DebugSet, DebugUnset, DebugMessage
 from copy import deepcopy, copy
 from fnmatch import fnmatch
+from math import *
 
 
 class TypeBooleanTerm:
@@ -1807,7 +1808,7 @@ class TypeFunction:
 
 	def evaluate(self, scane, vars, env, queryName, sc = None):
 
-		from math import *
+		# from math import *
 		if self.name in self.funs.listFuns:
 			return self.funs.startFun(self.name, self.arguments, vars)
 		else:
