@@ -15,6 +15,13 @@ class optionsDict(DictMixin):
     def __setitem__(self, key, value):
         self._data[key] = value
 
+    def __len__(self):
+        return len(self.mylist)
+    
+    def __iter__(self):
+        for i in self.mylist:
+            yield i
+
     def __getitem__(self, key):
         if self._isEmpty(self._data[key]):
             for line in traceback.format_stack()[:-1]:
