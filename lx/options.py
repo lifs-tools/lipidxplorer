@@ -16,10 +16,10 @@ class optionsDict(DictMixin):
         self._data[key] = value
 
     def __len__(self):
-        return len(self.mylist)
+        return len(self._data)
     
     def __iter__(self):
-        for i in self.mylist:
+        for i in self._data:
             yield i
 
     def __getitem__(self, key):
