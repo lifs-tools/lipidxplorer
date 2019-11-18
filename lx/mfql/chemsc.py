@@ -11,25 +11,7 @@ import os
 from copy import deepcopy, copy
 from lx.mfql.runtimeStatic import TypeTolerance
 
-import platform
-
-if platform.machine() == "i686":
-	if platform.python_version_tuple()[1] == '6': # Python 2.6
-		#import lx.mfql.calcsf26_32.calcsf26 as calcsf
-		import lx.mfql.calcsf26_32.calcsf as calcsf
-	if platform.python_version_tuple()[1] == '7': # Python 2.7
-		import lx.mfql.calcsf27_32.calcsf as calcsf
-elif platform.machine() == "x86":
-	if platform.python_version_tuple()[1] == '6': # Python 2.6
-		#import lx.mfql.calcsf26_32.calcsf26 as calcsf
-		import lx.mfql.calcsf26_32.calcsf as calcsf
-	if platform.python_version_tuple()[1] == '7': # Python 2.7
-		import lx.mfql.calcsf27_32.calcsf as calcsf
-elif platform.machine() == "AMD64":
-	if platform.python_version_tuple()[1] == '6': # Python 2.6
-		import lx.mfql.calcsf26_64.calcsf as calcsf
-	if platform.python_version_tuple()[1] == '7': # Python 2.7
-		import lx.mfql.calcsf27_64.calcsf as calcsf
+import lx.mfql.calcsf_cached as calcsf
 sys.path.append('..' + os.sep + 'lib' + os.sep)
 
 #if sys.platform == 'win32' or sys.platform == 'cygwin':
