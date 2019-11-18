@@ -1405,7 +1405,7 @@ def loadMSMS(sample, dirmsms, resolution, options):
 	# load all .dta files
 	files = glob(fnp + "%s/*.dta" % fn2)
 	if files == []:
-		raise "No .dta files in directory ", i
+		raise Exception("No .dta files in directory ", i)
 
 	dtalist = dtalist + files
 
