@@ -108,7 +108,7 @@ def _append_text(parent, element, text):
 try:
     from html.entities import name2codepoint # Python 3
 except ImportError:
-    from htmlentitydefs import name2codepoint
+    from html.entities import name2codepoint
 import re
 
 handle_entities = re.compile("&(\w+);").sub
@@ -119,7 +119,7 @@ def unescape(string):
     # work around oddities in BeautifulSoup's entity handling
     def unescape_entity(m):
         try:
-            return unichr(name2codepoint[m.group(1)])
+            return chr(name2codepoint[m.group(1)])
         except KeyError:
             return m.group(0) # use as is
     return handle_entities(unescape_entity, string)

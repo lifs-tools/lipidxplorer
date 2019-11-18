@@ -7,15 +7,15 @@ import re
 __all__ = ['html_annotate', 'htmldiff']
 
 try:
-    _unicode = unicode
+    _unicode = str
 except NameError:
     # Python 3
     _unicode = str
 try:
-    basestring = __builtins__["basestring"]
+    str = __builtins__["basestring"]
 except (KeyError, NameError):
     # Python 3
-    basestring = str
+    str = str
 
 ############################################################
 ## Annotation
@@ -716,7 +716,7 @@ def start_tag(el):
     """
     return '<%s%s>' % (
         el.tag, ''.join([' %s="%s"' % (name, cgi.escape(value, True))
-                         for name, value in el.attrib.items()]))
+                         for name, value in list(el.attrib.items())]))
 
 def end_tag(el):
     """ The text representation of an end tag for a tag.  Includes
@@ -751,7 +751,7 @@ def serialize_html_fragment(el, skip_outer=False):
 
     If skip_outer is true, then don't serialize the outermost tag
     """
-    assert not isinstance(el, basestring), (
+    assert not isinstance(el, str), (
         "You should pass in an element, not a string like %r" % el)
     html = etree.tostring(el, method="html", encoding=_unicode)
     if skip_outer:

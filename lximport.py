@@ -4,7 +4,7 @@ import os
 import sys
 import re
 from optparse import OptionParser
-import ConfigParser
+import configparser
 
 from lx.lxMain import startImport
 
@@ -44,7 +44,7 @@ def lpdxImportCLI(projpath = None):
 	######################################################
 	###              collect the options               ###
 
-	confParse = ConfigParser.ConfigParser()
+	confParse = configparser.ConfigParser()
 
 	optParser = OptionParser(usage="\nlpdxCLI.py [options] [experiment/] [output.sc]\n")
 
@@ -198,10 +198,10 @@ def lpdxImportCLI(projpath = None):
 		try:
 			project.options['masterScan'] = args[1]#cliOptions.masterScanFile
 		except IndexError:
-			print "ERROR: The masterscan file was not specified. Use the ",
-			print "option -m"
+			print("ERROR: The masterscan file was not specified. Use the ", end=' ')
+			print("option -m")
 
-	for opt in cliOptions.__dict__.keys():
+	for opt in list(cliOptions.__dict__.keys()):
 		if not cliOptions.__dict__[opt] is None:
 			project.options[opt] = cliOptions.__dict__[opt]
 
@@ -214,11 +214,11 @@ def lpdxImportCLI(projpath = None):
 	# print the options
 	for k in options:
 		try:
-			print "{0:24} : {1:12}".format(k, str(options[k]))
+			print("{0:24} : {1:12}".format(k, str(options[k])))
 		except:
-			print "{0:24} : None".format(k)
+			print("{0:24} : None".format(k))
 
-	if 'masterScan' in cliOptions.__dict__.keys():
+	if 'masterScan' in list(cliOptions.__dict__.keys()):
 		options['masterScan'] = cliOptions.__dict__['masterScan']
 
 	### start import ###

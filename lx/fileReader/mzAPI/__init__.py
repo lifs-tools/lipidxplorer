@@ -30,7 +30,7 @@ __author__ = 'Jignesh Parikh, James Webber'
 
 import os
 import re
-import cPickle
+import pickle
 
 #import pythoncom
 #from win32com.shell import shell
@@ -250,7 +250,7 @@ def make_info_file(data_file, **kwargs):
 		#Pickle object
 
 		with open(data_file + '.mzi', 'w') as fh:
-			cPickle.dump(info_list, fh)
+			pickle.dump(info_list, fh)
 	else:
 		import lx.fileReader.mzAPI.mzML
 		lx.fileReader.mzAPI.mzML.make_info_file(data_file)
@@ -272,7 +272,7 @@ class mzInfoFile(tuple):
 		Assumes all dictionaries have same keys.
 		"""
 
-		return self[0].keys()
+		return list(self[0].keys())
 
 	def sort_by_field(self, field=None):
 		if field:

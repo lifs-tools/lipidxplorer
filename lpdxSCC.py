@@ -38,7 +38,7 @@ Availible subcommands:\n\
 			accuracy = 1000000 / 5
 
 		if not args[0] or not args[1]:
-			print "You forgot the arguments/subcommands!"
+			print("You forgot the arguments/subcommands!")
 		else:
 			if args[0] == "msc":
 				elscp = parseElemSeq(args[2])
@@ -48,20 +48,20 @@ Availible subcommands:\n\
 					rsltlist.append((i.getWeight(), i))
 				#	rsltlist = sorted(rsltlist)
 				if rsltlist == []:
-					print "No sum composition found for %s with m/z %2.f" % (elscp, float(args[1]))
+					print("No sum composition found for %s with m/z %2.f" % (elscp, float(args[1])))
 				for mass, scp in rsltlist:
-					print "%.4f" % mass, scp, "error: %.4f" % (float(args[1]) - scp.getWeight())
+					print("%.4f" % mass, scp, "error: %.4f" % (float(args[1]) - scp.getWeight()))
 
 			elif args[0] == "scm":
-				print "Check, if you did not forget to add the charge!"
+				print("Check, if you did not forget to add the charge!")
 				elscp = parseElemSeq(args[1])
 				rslt = elscp.getWeight()
-				print "Weight is:", rslt, "; Double Bounds are:", elscp.get_DB()
+				print("Weight is:", rslt, "; Double Bounds are:", elscp.get_DB())
 
 			elif args[0] == "sfsc":
 				elscp = parseElemSeq(args[1])
 				for i in elscp.get_norangeElemSeq():
-					print i, i.getWeight()
+					print(i, i.getWeight())
 
 			elif args[0] == "corrDP":
 
@@ -158,7 +158,7 @@ Availible subcommands:\n\
 				# calc the ankle
 				phi = math.acos(sum / (lenghtVSpec1 * lenghtVSpec2))
 				
-				print 'dot product: %.4f, similarity: %.2f %%' % (sum, 100 - (phi * 100) / math.pi)
+				print('dot product: %.4f, similarity: %.2f %%' % (sum, 100 - (phi * 100) / math.pi))
 
 			elif args[0] == "corrPC":
 
@@ -259,9 +259,9 @@ Availible subcommands:\n\
 				# significance test
 				t = r * math.sqrt((len(vSpec1) - 2) / math.sqrt(1 - (r * r)))
 
-				print 'correlation r: %.4f,\nsignificance t: %.4f' % (r, t)
+				print('correlation r: %.4f,\nsignificance t: %.4f' % (r, t))
 			else:
-				print "No valid command:", args[0]
+				print("No valid command:", args[0])
 
 if __name__ == "__main__":
 	main()	

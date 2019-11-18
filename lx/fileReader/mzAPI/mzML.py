@@ -44,8 +44,8 @@ import os
 import re
 
 import base64
-import cPickle
-import cStringIO
+import pickle
+import io
 import gzip
 import struct
 import zlib
@@ -132,7 +132,7 @@ def make_info_file(data_file):
 	m._build_info_scans()
 
 	with open(data_file + '.mzi', 'wb') as fh:
-		cPickle.dump(m._info_scans, fh)
+		pickle.dump(m._info_scans, fh)
 
 
 class mzFile(mzAPImzFile):
@@ -193,7 +193,7 @@ class mzFile(mzAPImzFile):
 		if os.path.exists(data_file + '.mzi'):
 			self._info_file = data_file + '.mzi'
 			with open(self._info_file) as info_fh:
-				self._info_scans = cPickle.load(info_fh)
+				self._info_scans = pickle.load(info_fh)
 		else:
 			self._info_file = None
 			self._info_scans = None
@@ -240,11 +240,11 @@ class mzFile(mzAPImzFile):
 							if start_mz <= mz <= stop_mz:
 								scan_list.append((time,mz))
 						else:
-							print "this ms2 didn't have precursor mz...", elem.get("id")
+							print("this ms2 didn't have precursor mz...", elem.get("id"))
 					else:
 						scan_list.append((time,0.0))
 			else:
-				print "this spectrum didn't have a scan time...", elem.get("id")
+				print("this spectrum didn't have a scan time...", elem.get("id"))
 
 			elem.clear()
 
@@ -322,7 +322,7 @@ class mzFile(mzAPImzFile):
 							elif self._xp_frg_pis(elem):
 								p = float(self._xp_frg_pis(elem)[0])
 							else:
-								print "Skipping scan: '%s' ; Could not find a precursor or fragment!" % (elem.get('id'))
+								print("Skipping scan: '%s' ; Could not find a precursor or fragment!" % (elem.get('id')))
 						else:
 							p = precursor
 
@@ -339,9 +339,9 @@ class mzFile(mzAPImzFile):
 
 								# caching here changes the results :-/
 								# load mz and intensity arrays proactively
-								mz, it = zip(*self._scan_from_spec_node(elem, xt))
+								mz, it = list(zip(*self._scan_from_spec_node(elem, xt)))
 								empty = [0 for i in range(len(mz))]
-								self.scan_map[scan_name] = zip(list(mz), list(it), empty, empty, empty, empty)
+								self.scan_map[scan_name] = list(zip(list(mz), list(it), empty, empty, empty, empty))
 
 								n_ms2 = n_ms2 + 1
 							else:
@@ -361,15 +361,15 @@ class mzFile(mzAPImzFile):
 
 						# caching here changes the results :-/
 						# load mz and intensity arrays proactively
-						mz, it = zip(*self._scan_from_spec_node(elem, xt))
+						mz, it = list(zip(*self._scan_from_spec_node(elem, xt)))
 						empty = [0 for i in range(len(mz))]
-						self.scan_map[scan_name] = zip(list(mz), list(it), empty, empty, empty, empty)
+						self.scan_map[scan_name] = list(zip(list(mz), list(it), empty, empty, empty, empty))
 
 						n_ms1 = n_ms1 + 1
 				else:
 					n_ms1_filtered = n_ms1_filtered + 1
 			else:
-				print "this spectrum didn't have a scan time...", elem.get("id")
+				print("this spectrum didn't have a scan time...", elem.get("id"))
 				n_ms1_filtered = n_ms1_filtered + 1
 			elem.clear()
 
@@ -394,16 +394,16 @@ class mzFile(mzAPImzFile):
 				if x:
 					return float(x[0])
 				else:
-					print "this spectrum didn't have a scan time"
+					print("this spectrum didn't have a scan time")
 			elem.clear()
 		else:
-			print "scan not found:", scan_name
+			print("scan not found:", scan_name)
 
 	def scan(self, scan_id, time):
 		# this implementation takes a few seconds and uses very little memory
 		# (by keeping only the current closest scan)
 
-		if self.scan_map.has_key(scan_id):
+		if scan_id in self.scan_map:
 			return self.scan_map[scan_id]
 
 		if self._info_file:
@@ -412,14 +412,14 @@ class mzFile(mzAPImzFile):
 			self.fileobj.seek(spec_start)
 			spec = etree.XML(self.fileobj.read(spec_size))
 
-			mz, it = zip(*self._scan_from_spec_node(spec, closest_item['time'], prefix=False))
+			mz, it = list(zip(*self._scan_from_spec_node(spec, closest_item['time'], prefix=False)))
 			empty = [0 for i in range(len(mz))]
-			return zip(list(mz), list(it), empty, empty, empty, empty)
+			return list(zip(list(mz), list(it), empty, empty, empty, empty))
 
 		self.fileobj.seek(0)
 		context = etree.iterparse(self.fileobj, events=('end',),
 								  tag='%sspectrum' % NS)
-		event,elem = context.next()
+		event,elem = next(context)
 		min_dtime = abs(time - float((self._xp_time(elem) or (0.0,))[0]))
 		closest_elem = elem
 
@@ -428,9 +428,9 @@ class mzFile(mzAPImzFile):
 			if x:
 				x = float(x[0])
 				if x == time:
-					mz, it = zip(*self._scan_from_spec_node(elem, x))
+					mz, it = list(zip(*self._scan_from_spec_node(elem, x)))
 					empty = [0 for i in range(len(mz))]
-					return zip(list(mz), list(it), empty, empty, empty, empty)
+					return list(zip(list(mz), list(it), empty, empty, empty, empty))
 					#return self._scan_from_spec_node(elem, x)
 				elif abs(time - x) < min_dtime:
 					min_dtime = abs(time - x)
@@ -441,9 +441,9 @@ class mzFile(mzAPImzFile):
 			else:
 				elem.clear()
 		else:
-			mz, it = zip(*self._scan_from_spec_node(closest_elem, float((self._xp_time(closest_elem) or (0.0,))[0])))
+			mz, it = list(zip(*self._scan_from_spec_node(closest_elem, float((self._xp_time(closest_elem) or (0.0,))[0]))))
 			empty = [0 for i in range(len(mz))]
-			return zip(list(mz), list(it), empty, empty, empty, empty)
+			return list(zip(list(mz), list(it), empty, empty, empty, empty))
 			#return self._scan_from_spec_node(closest_elem, float((self._xp_time(closest_elem) or (0.0,))[0]))
 
 	def xic(self, start_time, stop_time, start_mz, stop_mz, filter=None):
@@ -477,7 +477,7 @@ class mzFile(mzAPImzFile):
 						scan = self._scan_from_spec_node(elem, time, prefix=(p==NS))
 						xic_data.append((time, sum(i for mz,i in scan if start_mz <= mz <= stop_mz)))
 				else:
-					print "this spectrum didn't have a scan time...", s.get("id")
+					print("this spectrum didn't have a scan time...", s.get("id"))
 			elem.clear()
 
 		xic_data.sort()
@@ -539,7 +539,7 @@ class mzFile(mzAPImzFile):
 				'scan_mode', 'offset', 'size')
 
 		self._info_file = ":memory:"
-		self._info_scans = mzInfoFile(dict(zip(keys, si + (offsets[i], sizes[i])))
+		self._info_scans = mzInfoFile(dict(list(zip(keys, si + (offsets[i], sizes[i]))))
 									  for i,si in enumerate(scan_info))
 
 	def _scan_from_spec_node(self, spec, scan_time, prefix=True):
@@ -575,7 +575,7 @@ class mzFile(mzAPImzFile):
 
 			if bin.find('%scvParam[@name="m/z array"]' % p) is not None:
 				if mz_array:
-					print "Overwriting m/z array!?"
+					print("Overwriting m/z array!?")
 				if compression:
 					if not bin.find('%sbinary' % p).text is None:
 						mz_array = struct.unpack(fmt,
@@ -590,7 +590,7 @@ class mzFile(mzAPImzFile):
 						mz_array = [0.0]
 			elif bin.find('%scvParam[@name="intensity array"]' % p) is not None:
 				if int_array:
-					print "Overwriting intensity array!?"
+					print("Overwriting intensity array!?")
 				if compression:
 					if not bin.find('%sbinary' % p).text is None:
 						int_array = struct.unpack(fmt,
@@ -604,18 +604,18 @@ class mzFile(mzAPImzFile):
 					else:
 						int_array = [0.0]
 			else:
-				print ("Found some other kind of binary array in here",
-					   [b.get('name') for b in bin.iterfind('%scvParam[@name]' % p)])
+				print(("Found some other kind of binary array in here",
+					   [b.get('name') for b in bin.iterfind('%scvParam[@name]' % p)]))
 
 		if (mz_array and int_array):
-			return mzScan(zip(mz_array, int_array), scan_time, mode=scan_mode)
+			return mzScan(list(zip(mz_array, int_array)), scan_time, mode=scan_mode)
 		else:
 			if mz_array:
-				print "No intensity values"
+				print("No intensity values")
 			elif int_array:
-				print "No m/z values"
+				print("No m/z values")
 			else:
-				print "No m/z or intensity values"
+				print("No m/z or intensity values")
 			return None
 
 
@@ -663,11 +663,11 @@ class mzFileInMemory:
 							if start_mz <= mz <= stop_mz:
 								scan_list.append((time, mz))
 						else:
-							print "this ms2 didn't have precursor mz...", s.get("id")
+							print("this ms2 didn't have precursor mz...", s.get("id"))
 					else:
 						scan_list.append((time, 0.0))
 			else:
-				print "this spectrum didn't have a scan time...", s.get("id")
+				print("this spectrum didn't have a scan time...", s.get("id"))
 
 		return scan_list
 
@@ -700,7 +700,7 @@ class mzFileInMemory:
 								scan_name = s.get('id')
 								scan_info.append((time, mz, scan_name, 'MS2', scan_mode, 0, 0))
 						else:
-							print "this ms2 didn't have precursor mz...", s.get("id")
+							print("this ms2 didn't have precursor mz...", s.get("id"))
 					else:
 						if s.find('%scvParam[@name="profile spectrum"]' % NS) is not None:
 							scan_mode = 'p'
@@ -710,7 +710,7 @@ class mzFileInMemory:
 						scan_name = s.get('id')
 						scan_info.append((time, 0.0, scan_name, 'MS1', scan_mode, 0, 0))
 			else:
-				print "this spectrum didn't have a scan time...", s.get("id")
+				print("this spectrum didn't have a scan time...", s.get("id"))
 
 		return scan_info
 
@@ -721,9 +721,9 @@ class mzFileInMemory:
 			if st is not None:
 				return float(st.get("value"))
 			else:
-				print "this spectrum didn't have a scan time"
+				print("this spectrum didn't have a scan time")
 		else:
-			print "scan not found:", scan_name
+			print("scan not found:", scan_name)
 
 	def scan(self, time):
 
@@ -735,9 +735,9 @@ class mzFileInMemory:
 
 		spec = min_cv.getparent().getparent().getparent()
 
-		mz, it = zip(*self._scan_from_spec_node(spec, float(min_cv.get('value'))))
+		mz, it = list(zip(*self._scan_from_spec_node(spec, float(min_cv.get('value')))))
 		empty = [0 for i in range(len(mz))]
-		return zip(list(mz), list(it), empty, empty, empty, empty)
+		return list(zip(list(mz), list(it), empty, empty, empty, empty))
 
 		#return self._scan_from_spec_node(spec, float(min_cv.get('value')))
 
@@ -763,7 +763,7 @@ class mzFileInMemory:
 					scan = self._scan_from_spec_node(s, time)
 					xic_data.append((time, sum(i for mz,i in scan if start_mz <= mz <= stop_mz)))
 			else:
-				print "this spectrum didn't have a scan time...", s.get("id")
+				print("this spectrum didn't have a scan time...", s.get("id"))
 
 		return xic_data
 
@@ -801,7 +801,7 @@ class mzFileInMemory:
 
 			if bin.find('%scvParam[@name="m/z array"]' % NS) is not None:
 				if mz_array:
-					print "Overwriting m/z array!?"
+					print("Overwriting m/z array!?")
 				if compression:
 					mz_array = struct.unpack(fmt,
 											 zlib.decompress(base64.standard_b64decode(bin.find('%sbinary' % NS).text)))
@@ -810,7 +810,7 @@ class mzFileInMemory:
 											 base64.standard_b64decode(bin.find('%sbinary' % NS).text))
 			elif bin.find('%scvParam[@name="intensity array"]' % NS) is not None:
 				if int_array:
-					print "Overwriting intensity array!?"
+					print("Overwriting intensity array!?")
 				if compression:
 					int_array = struct.unpack(fmt,
 											  zlib.decompress(base64.standard_b64decode(bin.find('%sbinary' % NS).text)))
@@ -818,16 +818,16 @@ class mzFileInMemory:
 					int_array = struct.unpack(fmt,
 											  base64.standard_b64decode(bin.find('%sbinary' % NS).text))
 			else:
-				print ("Found some other kind of binary array in here",
-					   [b.get('name') for b in bin.iterfind('%scvParam[@name]' % NS)])
+				print(("Found some other kind of binary array in here",
+					   [b.get('name') for b in bin.iterfind('%scvParam[@name]' % NS)]))
 
 		if (mz_array and int_array):
-			return mzScan(zip(mz_array, int_array), scan_time, mode=scan_mode)
+			return mzScan(list(zip(mz_array, int_array)), scan_time, mode=scan_mode)
 		else:
 			if mz_array:
-				print "No intensity values"
+				print("No intensity values")
 			elif int_array:
-				print "No m/z values"
+				print("No m/z values")
 			else:
-				print "No m/z or intensity values"
+				print("No m/z or intensity values")
 			return None

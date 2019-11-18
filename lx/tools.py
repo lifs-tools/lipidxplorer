@@ -1,6 +1,7 @@
 ### functions returning the content of objects ###
 import sys, traceback, threading, re
 from UserDict import DictMixin
+from functools import reduce
 
 class staticTypeDict(DictMixin):
 	'''A static typed dictionary'''
@@ -16,7 +17,7 @@ class staticTypeDict(DictMixin):
 		type.'''
 
 		if not isinstance(value, type(())):
-			if key in self._data.keys():
+			if key in list(self._data.keys()):
 				if not self._type[key] == type(value):
 					raise TypeError(value)
 				else:
@@ -34,7 +35,7 @@ class staticTypeDict(DictMixin):
 
 	def __repr__(self):
 		result = []
-		for key in self._data.keys():
+		for key in list(self._data.keys()):
 			result.append('%s: %s' % (repr(key), repr(self._data[key])))
 		return ''.join(['{', ', '.join(result), '}'])
 
@@ -116,7 +117,7 @@ def combinations_with_replacement(iterable, r):
     indices = [0] * r
     yield tuple(pool[i] for i in indices)
     while True:
-        for i in reversed(range(r)):
+        for i in reversed(list(range(r))):
             if indices[i] != n - 1:
                 break
         else:
@@ -132,11 +133,11 @@ def permutations(iterable, r=None):
     r = n if r is None else r
     if r > n:
         return
-    indices = range(n)
-    cycles = range(n, n-r, -1)
+    indices = list(range(n))
+    cycles = list(range(n, n-r, -1))
     yield tuple(pool[i] for i in indices[:r])
     while n:
-        for i in reversed(range(r)):
+        for i in reversed(list(range(r))):
             cycles[i] -= 1
             if cycles[i] == 0:
                 indices[i:] = indices[i+1:] + indices[i:i+1]
@@ -216,17 +217,17 @@ def mkCrossProduct2(*args):
 	return ans
 
 def mkCrossProduct3(*sets):
-	wheels = map(iter, sets) # wheels like in an odometer
-	digits = [it.next() for it in wheels]
+	wheels = list(map(iter, sets)) # wheels like in an odometer
+	digits = [next(it) for it in wheels]
 	while True:
 		yield digits[:]
 		for i in range(len(digits)-1, -1, -1):
 			try:
-				digits[i] = wheels[i].next()
+				digits[i] = next(wheels[i])
 				break
 			except StopIteration:
 				wheels[i] = iter(sets[i])
-				digits[i] = wheels[i].next()
+				digits[i] = next(wheels[i])
 		else:
 			break
 
@@ -254,25 +255,25 @@ def print_exc_plus():
 #	stack.reverse()
 
 	traceback.print_exc()
-	print "Locals by frame, innermost last"
+	print("Locals by frame, innermost last")
 	for frame in stack:
-		print
-		print "Frame %s in %s at line %s" % (frame.f_code.co_name,
+		print()
+		print("Frame %s in %s at line %s" % (frame.f_code.co_name,
 			frame.f_code.co_filename,
-			frame.f_lineno)
-		for key, value in frame.f_locals.items():
-			print "\t%20s = " % key,
+			frame.f_lineno))
+		for key, value in list(frame.f_locals.items()):
+			print("\t%20s = " % key, end=' ')
 			#We have to be careful not to cause a new error in our error
 			#printer! Calling str() on an unknown object could cause an
 			#error we don't want.
 			try:
-				print value
+				print(value)
 			except:
-				print "<ERROR WHILE PRINTING VALUE>"
+				print("<ERROR WHILE PRINTING VALUE>")
 
 def printDict(di, format="%-25s %s"):
-	for (key, val) in di.items():
-		print format % (str(key)+':', val)
+	for (key, val) in list(di.items()):
+		print(format % (str(key)+':', val))
 
 def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
 	"""Print a nicely formatted overview of an object.
@@ -342,7 +343,7 @@ def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
 		elif (isinstance(attr, types.MethodType) or
 	 isinstance(attr, types.FunctionType)):
 			methods.append( (slot, attr) )
-		elif isinstance(attr, types.TypeType):
+		elif isinstance(attr, type):
 			classes.append( (slot, attr) )
 		else:
 			attrs.append( (slot, attr) )
@@ -372,57 +373,57 @@ def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
 		objclass = type(obj).__name__
 	intro = "Instance of class '%s' as defined in module %s with id %d" % \
 			(objclass, objmodule, id(obj))
-	print '\n'.join(prettyPrint(intro, maxlen))
+	print('\n'.join(prettyPrint(intro, maxlen)))
 
 	# Object's Docstring
 	if objdoc is None:
 		objdoc = str(objdoc)
 	else:
 		objdoc = ('"""' + objdoc.strip()  + '"""')
-	print
-	print prettyPrintCols( ('Documentation string:',
+	print()
+	print(prettyPrintCols( ('Documentation string:',
 				truncstring(objdoc, maxspew)),
-		normalwidths, ' ')
+		normalwidths, ' '))
 
 	# Built-in methods
 	if builtins:
 		bi_str   = delchars(str(builtins), "[']") or str(None)
-		print
-		print prettyPrintCols( ('Built-in Methods:',
+		print()
+		print(prettyPrintCols( ('Built-in Methods:',
 		truncstring(bi_str, maxspew)),
-		 normalwidths, ', ')
+		 normalwidths, ', '))
 
 	# Classes
 	if classes:
-		print
-		print 'Classes:'
+		print()
+		print('Classes:')
 	for (classname, classtype) in classes:
 		classdoc = getattr(classtype, '__doc__', None) or '<No documentation>'
-		print prettyPrintCols( ('',
+		print(prettyPrintCols( ('',
 		classname,
 		truncstring(classdoc, maxspew)),
-		 tabbedwidths, ' ')
+		 tabbedwidths, ' '))
 
 	# User methods
 	if methods:
-		print
-		print 'Methods:'
+		print()
+		print('Methods:')
 	for (methodname, method) in methods:
 		methoddoc = getattr(method, '__doc__', None) or '<No documentation>'
-		print prettyPrintCols( ('',
+		print(prettyPrintCols( ('',
 		methodname,
 		truncstring(methoddoc, maxspew)),
-		 tabbedwidths, ' ')
+		 tabbedwidths, ' '))
 
 	# Attributes
 	if attrs:
-		print
-		print 'Attributes:'
+		print()
+		print('Attributes:')
 	for (attr, val) in attrs:
-		print prettyPrintCols( ('',
+		print(prettyPrintCols( ('',
 		attr,
 		truncstring(str(val), maxspew)),
-		 tabbedwidths, ' ')
+		 tabbedwidths, ' '))
 
 def prettyPrintCols(strings, widths, split=' '):
 	"""Pretty prints text in colums, with each string breaking at
@@ -431,7 +432,7 @@ def prettyPrintCols(strings, widths, split=' '):
 
 	assert len(strings) == len(widths)
 
-	strings = map(nukenewlines, strings)
+	strings = list(map(nukenewlines, strings))
 
 	# pretty print each column
 	cols = [''] * len(strings)
@@ -442,7 +443,7 @@ def prettyPrintCols(strings, widths, split=' '):
 	format = ''.join(["%%-%ds" % width for width in widths[0:-1]]) + "%s"
 
 	def formatline(*cols):
-		return format % tuple(map(lambda s: (s or ''), cols))
+		return format % tuple([(s or '') for s in cols])
 
 	# generate the formatted text
 	return '\n'.join(map(formatline, *cols))
@@ -511,7 +512,7 @@ class Browser:
 
 	def make_instance( self, value, piter ):
 		if hasattr( value, "__dict__" ):
-			for _name, _value in value.__dict__.items():
+			for _name, _value in list(value.__dict__.items()):
 				_piter = self.make_row( piter, "."+_name, _value )
 				_path = self.treestore.get_path( _piter )
 				self.otank[ _path ] = (_name, _value)
@@ -519,9 +520,9 @@ class Browser:
 	def make_mapping( self, value, piter ):
 		keys = []
 		if hasattr( value, "keys" ):
-			keys = value.keys()
+			keys = list(value.keys())
 		elif hasattr( value, "__len__"):
-			keys = range( len(value) )
+			keys = list(range( len(value)))
 		for key in keys:
 			_name = "[%s]"%str(key)
 			_piter = self.make_row( piter, _name, value[key] )
@@ -588,11 +589,11 @@ def dumpObjTree( name, value ):
 
 def dbgout(text):
 	#print "[%s] %s" % (sys._getframe(1).f_code.co_name, text)
-	print text
+	print(text)
 	return None
 
 def reportout(text):
-	print text
+	print(text)
 	return None
 
 def strToBool(s):
@@ -658,7 +659,7 @@ def permute2(seqs):
 	if n == 0:
 		return []
 	if n == 1:
-		return map(lambda i: (i,), seqs[0])
+		return [(i,) for i in seqs[0]]
 	# find good splitting point
 	prods = []
 	prod = 1
@@ -676,7 +677,7 @@ def permute2(seqs):
 	for x in b:
 		sprayb[len(sprayb):] = [x] * lena
 	import operator
-	return map(operator.add, a * len(b), sprayb)
+	return list(map(operator.add, a * len(b), sprayb))
 
 # kSubset() and nkRange: Copyright 2006 Gerard Flanagan
 def kSubsets( alist, k ):
@@ -689,9 +690,9 @@ def kSubsets( alist, k ):
 
 def nkRange(n,k):
     m = n - k + 1
-    indexer = range(0, k)
-    vector = range(1, k+1)
-    last = range(m, n+1)
+    indexer = list(range(0, k))
+    vector = list(range(1, k+1))
+    last = list(range(m, n+1))
     yield vector
     while vector != last:
         high_value = -1
@@ -727,7 +728,7 @@ def atLeastOneisIn(lst1, lst2):
 	return False
 
 def sortDictKeys(adict, compare = 'string'):
-	items = adict.items()
+	items = list(adict.items())
 	if compare == 'float':
 		items.sort(cmp = lambda i,j : (cmp(float(i[0]), float(j[0]))))
 	else:
@@ -798,8 +799,8 @@ def unionSF(seq1, seq2, newTag):
 
 def log(str):
 
-	print "[", sys._getframe(1).f_code.co_name,"]\n", str
-	print ""
+	print("[", sys._getframe(1).f_code.co_name,"]\n", str)
+	print("")
 
 def xlcmp(x, yin):
 	different = True
@@ -815,7 +816,7 @@ def sort_by_attr2_old(seq, attr):
 #	intermed = [ (getattr(seq[i][0],attr), i, seq[i][0]) for i in xrange(len(seq)) ]
 
 	inter = []
-	for i in xrange(len(seq)):
+	for i in range(len(seq)):
 		if not isinstance(seq[i][0], str):
 			inter.append((getattr(seq[i][0],attr), i, seq[i][0]))
 		else:
@@ -827,7 +828,7 @@ def sort_by_attr2(seq, attr):
 #	intermed = [ (getattr(seq[i][0],attr), i, seq[i][0]) for i in xrange(len(seq)) ]
 
 	inter = []
-	for i in xrange(len(seq)):
+	for i in range(len(seq)):
 		if not isinstance(seq[i], str):
 			inter.append((getattr(seq[i],attr), i, seq[i]))
 		else:
@@ -887,38 +888,38 @@ WHITEBG = '\033[47m'
 
 def move(new_x, new_y):
   'Move cursor to new_x, new_y'
-  print '\033[' + str(new_x) + ';' + str(new_y) + 'H'
+  print('\033[' + str(new_x) + ';' + str(new_y) + 'H')
 
 def moveUp(lines):
   'Move cursor up # of lines'
-  print '\033[' + str(lines) + 'A'
+  print('\033[' + str(lines) + 'A')
 
 def moveDown(lines):
   'Move cursor down # of lines'
-  print '\033[' + str(lines) + 'B'
+  print('\033[' + str(lines) + 'B')
 
 def moveForward(chars):
   'Move cursor forward # of chars'
-  print '\033[' + str(chars) + 'C'
+  print('\033[' + str(chars) + 'C')
 
 def moveBack(chars):
   'Move cursor backward # of chars'
-  print '\033[' + str(chars) + 'D'
+  print('\033[' + str(chars) + 'D')
 
 def save():
   'Saves cursor position'
-  print '\033[s'
+  print('\033[s')
 
 def restore():
   'Restores cursor position'
-  print '\033[u'
+  print('\033[u')
 
 def clear():
   'Clears screen and homes cursor'
-  print '\033[2J'
+  print('\033[2J')
 
 def clrtoeol():
   'Clears screen to end of line'
-  print '\033[K'
+  print('\033[K')
 
 

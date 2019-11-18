@@ -234,7 +234,7 @@ def _build_path_iterator(path, namespaces):
         raise SyntaxError("cannot use absolute path on element")
     stream = iter(xpath_tokenizer(path, namespaces))
     try:
-        _next = stream.next
+        _next = stream.__next__
     except AttributeError:
         # Python 3
         _next = stream.__next__
@@ -271,7 +271,7 @@ def find(elem, path, namespaces=None):
     it = iterfind(elem, path, namespaces)
     try:
         try:
-            _next = it.next
+            _next = it.__next__
         except AttributeError:
             return next(it)
         else:

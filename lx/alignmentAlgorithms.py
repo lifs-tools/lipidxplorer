@@ -12,7 +12,7 @@ class specMSEntry:
 	def __repr__(self):
 		str = "%.4f -> " % (self.avgPrecurmass)
 		for i in self.listMasses:
-			str += "%s, " % i[1].keys()
+			str += "%s, " % list(i[1].keys())
 		return str + '\n'
 
 
@@ -25,7 +25,7 @@ class specEntry:
 
 	def __repr__(self):
 		str = "{0:6}".format(self.mass)
-		for k in self.content.keys():
+		for k in list(self.content.keys()):
 			str += " > {0:12}: {1:6}".format(k, self.content[k])
 		return str
 
@@ -209,7 +209,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 		for i in entry[1]: # entry[1] contains the merged specEntries
 			mass = i.mass # store the mass for empty specEntries
 
-			if not cluster.has_key(i.content['sample']): # fill the output dictionary 'cluster'
+			if i.content['sample'] not in cluster: # fill the output dictionary 'cluster'
 				cluster[i.content['sample']] = i
 
 				if merge:
@@ -222,7 +222,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 
 		if merge: # merge if merging function is given
 			for sample in listSamples:
-				if clusterToMerge.has_key(sample):
+				if sample in clusterToMerge:
 					if len(clusterToMerge[sample]) > 1: # merge only, if there is more than one entry
 						cluster[sample] = merge(sample, clusterToMerge[sample], linearAlignment, mergeTolerance, mergeDeltaRes)
 					else:
@@ -230,7 +230,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 
 		# fill cluster with empty masses to have a full entry
 		for sample in listSamples:
-			if not cluster.has_key(sample):
+			if sample not in cluster:
 				cluster[sample] = specEntry(
 					mass = entry[1][0].mass)
 

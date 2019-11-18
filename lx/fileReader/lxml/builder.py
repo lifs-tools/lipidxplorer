@@ -54,14 +54,14 @@ except NameError:
         return hasattr(f, '__call__')
 
 try:
-    basestring = __builtins__["basestring"]
+    str = __builtins__["basestring"]
 except (NameError, KeyError):
-    basestring = str
+    str = str
 
 try:
-    unicode = __builtins__["unicode"]
+    str = __builtins__["unicode"]
 except (NameError, KeyError):
-    unicode = str
+    str = str
 
 
 class ElementMaker(object):
@@ -185,13 +185,13 @@ class ElementMaker(object):
                 elem.text = (elem.text or "") + item
         if str not in typemap:
             typemap[str] = add_text
-        if unicode not in typemap:
-            typemap[unicode] = add_text
+        if str not in typemap:
+            typemap[str] = add_text
 
         def add_dict(elem, item):
             attrib = elem.attrib
-            for k, v in item.items():
-                if isinstance(v, basestring):
+            for k, v in list(item.items()):
+                if isinstance(v, str):
                     attrib[k] = v
                 else:
                     attrib[k] = typemap[type(v)](None, v)
