@@ -648,7 +648,7 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 
 				# generate a list of specEntry elements
 				dictSpecEntry[sample] = []
-				scan.dictSamples[sample].listMsms.sort()
+				scan.dictSamples[sample].listMsms.sort(key=str)
 				for i in scan.dictSamples[sample].listMsms:
 					dictSpecEntry[sample].append(specEntry(
 						mass = i.precurmass,
