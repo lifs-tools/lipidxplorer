@@ -34,13 +34,13 @@ from ImportSpectra import ImportSpectra
 
 def vDict(d, keys, standard_value):
 	for key in keys:
-		if not key in d.keys():
+		if not key in list(d.keys()):
 			d[key] = standard_value
 	return d
 
 def dictPathToFile(d):
 	new = {}
-	for key in d.keys():
+	for key in list(d.keys()):
 		new[key.split(os.sep)[-1]] = d[key]
 	return new
 
@@ -440,17 +440,17 @@ alignmentMSMS, scanAvg, importMSMS = True):
 
 	nb_of_peak_entries = importedSpectra.getNumberOfPeakEntries();
 
-	print "Store the spectra in the MasterScan spectra data base"
+	print("Store the spectra in the MasterScan spectra data base")
 
 	# show some progress
 	nb_progress_steps = 20
-	print ""
-	print "                   |                    | <- finished"
+	print("")
+	print("                   |                    | <- finished")
 
 	for index in range(nb_of_peak_entries):
 
 		if index % (nb_of_peak_entries / nb_progress_steps) == 0:
-			print ".",
+			print(".", end=' ')
 
 		entry = importedSpectra.getPeakEntry(index)
 		scan.listSurveyEntry.append(
@@ -490,8 +490,8 @@ alignmentMSMS, scanAvg, importMSMS = True):
 				assert scan.listSurveyEntry[-1].listMSMS[-1].polarity != 0
 
 
-	print ""
-	print "Save output to %s." % output
+	print("")
+	print("Save output to %s." % output)
 	saveSC(scan, output)
 
 	# put "success" to the GUI
@@ -619,7 +619,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 				nb_msms_scans.append(ret[4])
 				nb_msms_peaks.append(ret[5])
 
-		if not len(dictBasePeakIntensity.keys()) > 0:
+		if not len(list(dictBasePeakIntensity.keys())) > 0:
 			raise LipidXException("Something wrong with the calculation of the base peaks")
 
 	else:
@@ -649,12 +649,12 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 	if (not scan.options.isEmpty('precursorMassShift')) and scan.options['precursorMassShift']:
 		if scan.options['precursorMassShift'] != 0:
-			print "Applying precursor mass shift"
+			print("Applying precursor mass shift")
 			scan.shiftPrecursors(scan.options['precursorMassShift'])
 
 	if (not scan.options.isEmpty('precursorMassShiftOrbi')) and scan.options['precursorMassShiftOrbi']:
 		if scan.options['precursorMassShiftOrbi'] != 0:
-			print "Applying precursor mass shift for Scanline error on Orbitrap data."
+			print("Applying precursor mass shift for Scanline error on Orbitrap data.")
 			scan.shiftPrecursorsInRawFilterLine(scan.options['precursorMassShiftOrbi'])
 
 	#if parent:
@@ -680,7 +680,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	reportout("%.2f sec. for calibrating the spectra" % calibrationtime)
 
 	# align MS spectra
-	print "Aligning MS spectra", alignmentMS
+	print("Aligning MS spectra", alignmentMS)
 
 	#if Debug("logMemory"):
 	#	print "ML> before alignment (MS):", memory_logging.pythonMemory()
@@ -757,7 +757,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	reportout("%.2f sec. for aligning the spectra\n" % alignmenttime)
 
 	for sample in scan.listSamples:
-		if scan.dictSamples.has_key(sample):
+		if sample in scan.dictSamples:
 			del scan.dictSamples[sample]
 	del scan.dictSamples
 
@@ -782,7 +782,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	for se in scan.listSurveyEntry:
 		se.sortAndIndedice()
 
-	print "Save output to %s." % output
+	print("Save output to %s." % output)
 	saveSC(scan, output)
 
 	reportout("%.2f sec. for the whole import process" % (time.clock() - starttime))
@@ -898,7 +898,7 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 				#listSamples.append(ret[2])
 				#dictSamples[ret[2]] = ret[3]
 
-			if not len(dictBasePeakIntensity.keys()) > 0:
+			if not len(list(dictBasePeakIntensity.keys())) > 0:
 				raise LipidXException("Something wrong with the calculation of the base peaks")
 
 
@@ -911,12 +911,12 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 
 			if (not scan.options.isEmpty('precursorMassShift')) and scan.options['precursorMassShift']:
 				if scan.options['precursorMassShift'] != 0:
-					print "Applying precursor mass shift"
+					print("Applying precursor mass shift")
 					scan.shiftPrecursors(scan.options['precursorMassShift'])
 
 			if (not scan.options.isEmpty('precursorMassShiftOrbi')) and scan.options['precursorMassShiftOrbi']:
 				if scan.options['precursorMassShiftOrbi'] != 0:
-					print "Applying precursor mass shift for Scanline error on Orbitrap data."
+					print("Applying precursor mass shift for Scanline error on Orbitrap data.")
 					scan.shiftPrecursorsInRawFilterLine(scan.options['precursorMassShiftOrbi'])
 
 			scan.listSamples.sort()
@@ -940,7 +940,7 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 			#	print "MLh> ", hpy().heap()
 
 			# align MS spectra
-			print "Aligning MS spectra", alignmentMS
+			print("Aligning MS spectra", alignmentMS)
 
 			# for PIS
 			if options['pisSpectra']:
@@ -989,8 +989,8 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 	### align the chunks ###
 
 	if Debug("logMemory"):
-		print "ML> before alignment of the chunks:", memory_logging.pythonMemory()
-		print "MLh> before alignment of the chunks:", hpy().heap()
+		print("ML> before alignment of the chunks:", memory_logging.pythonMemory())
+		print("MLh> before alignment of the chunks:", hpy().heap())
 
 	# generate a list of specEntry elements for the alignment of the SurveyEntries
 	dictSpecEntry = {}
@@ -1001,7 +1001,7 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 				mass = entry.precurmass,
 				content = {'sample' : repr(i), 'surveyEntry' : entry}))
 
-	listClusters = linearAlignment(dictSpecEntry.keys(),
+	listClusters = linearAlignment(list(dictSpecEntry.keys()),
 			dictSpecEntry,
 			scan.options['MSresolution'])
 
@@ -1045,12 +1045,12 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 		avgMass = 0
 		count = 0
 		polarity = 0
-		for chunk in dictSpecEntry.keys():#cl.keys():
-			if cl.has_key(chunk):
+		for chunk in list(dictSpecEntry.keys()):#cl.keys():
+			if chunk in cl:
 				if cl[chunk].content:
 					polarity = cl[chunk].content['surveyEntry'].polarity
-					for key in cl[chunk].content['surveyEntry'].dictIntensity.keys():
-						if not dictIntensity.has_key(key):
+					for key in list(cl[chunk].content['surveyEntry'].dictIntensity.keys()):
+						if key not in dictIntensity:
 							dictIntensity[key] = cl[chunk].content['surveyEntry'].dictIntensity[key]
 							dictScans[key] = cl[chunk].content['surveyEntry'].dictScans[key]
 							dictBasePeakIntensity[key] = cl[chunk].content['surveyEntry'].dictBasePeakIntensity[key]
@@ -1063,11 +1063,11 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 		avgMass /= count
 
 		for sample in scan_original.listSamples:
-			if not sample in dictIntensity.keys():
+			if not sample in list(dictIntensity.keys()):
 				dictIntensity[sample] = 0.0
-			if not sample in dictScans.keys():
+			if not sample in list(dictScans.keys()):
 				dictScans[sample] = 1 # 1 - because we take the sqrt
-			if not sample in dictBasePeakIntensity.keys():
+			if not sample in list(dictBasePeakIntensity.keys()):
 				dictBasePeakIntensity[sample] = 0
 
 		# check occupation threshold
@@ -1127,7 +1127,7 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 
 	# free space in the MasterScan
 	for sample in scan_original.listSamples:
-		if scan_original.dictSamples.has_key(sample):
+		if sample in scan_original.dictSamples:
 			del scan_original.dictSamples[sample]
 	del scan_original.dictSamples
 
@@ -1139,7 +1139,7 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 	#	print "ML> after alignment of MS/MS:", memory_logging.pythonMemory()
 	#	print "MLh> ", hpy().heap()
 
-	print "Save output to %s." % output
+	print("Save output to %s." % output)
 	saveSC(scan_original, output)
 
 	reportout("%.2f sec. for the whole import process" % (time.clock() - starttime))

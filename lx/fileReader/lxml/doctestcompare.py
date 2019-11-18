@@ -45,7 +45,7 @@ __all__ = ['PARSE_HTML', 'PARSE_XML', 'NOPARSE_MARKUP', 'LXMLOutputChecker',
            'LHTMLOutputChecker', 'install', 'temp_install']
 
 try:
-    _basestring = basestring
+    _basestring = str
 except NameError:
     _basestring = (str, bytes)
 
@@ -410,8 +410,8 @@ def temp_install(html=False, del_module=None):
         check_func = frame.f_locals['check'].__func__
         checker_check_func = checker.check_output.__func__
     else:
-        check_func = frame.f_locals['check'].im_func
-        checker_check_func = checker.check_output.im_func
+        check_func = frame.f_locals['check'].__func__
+        checker_check_func = checker.check_output.__func__
     # Because we can't patch up func_globals, this is the only global
     # in check_output that we care about:
     doctest.etree = etree
@@ -433,18 +433,18 @@ class _RestoreChecker(object):
         self.install_dt_self()
     def install_clone(self):
         if _IS_PYTHON_3:
-            self.func_code = self.check_func.__code__
-            self.func_globals = self.check_func.__globals__
+            self.__code__ = self.check_func.__code__
+            self.__globals__ = self.check_func.__globals__
             self.check_func.__code__ = self.clone_func.__code__
         else:
-            self.func_code = self.check_func.func_code
-            self.func_globals = self.check_func.func_globals
-            self.check_func.func_code = self.clone_func.func_code
+            self.__code__ = self.check_func.__code__
+            self.__globals__ = self.check_func.__globals__
+            self.check_func.__code__ = self.clone_func.__code__
     def uninstall_clone(self):
         if _IS_PYTHON_3:
-            self.check_func.__code__ = self.func_code
+            self.check_func.__code__ = self.__code__
         else:
-            self.check_func.func_code = self.func_code
+            self.check_func.__code__ = self.__code__
     def install_dt_self(self):
         self.prev_func = self.dt_self._DocTestRunner__record_outcome
         self.dt_self._DocTestRunner__record_outcome = self

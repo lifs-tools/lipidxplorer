@@ -90,7 +90,7 @@ import os
 import os.path
 import sys
 
-import ConfigParser
+import configparser
 
 ## Set up the Debug part of this code...
 
@@ -98,7 +98,7 @@ __vars = {}
 global __debug
 __debug = False
 	
-confParse = ConfigParser.ConfigParser()
+confParse = configparser.ConfigParser()
 try:
 	confParse.read("lpdxopts.ini")
 	setting = "DEBUG"
@@ -223,5 +223,5 @@ def DebugMessage(msg, level="DEBUG"):
 	del current
 	
 __version__ = '$Id$'
-if Debug('version'): print __version__
+if Debug('version'): print(__version__)
 

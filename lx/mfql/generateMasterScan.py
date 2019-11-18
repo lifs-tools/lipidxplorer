@@ -9,7 +9,7 @@ def genMasterScan(mfqlObj):
 
 	ms = mfqlObj.sc
 
-	for varname in mfqlObj.dictDefinitionTable[mfqlObj.queryName].keys():
+	for varname in list(mfqlObj.dictDefinitionTable[mfqlObj.queryName].keys()):
 		var = mfqlObj.dictDefinitionTable[mfqlObj.queryName][varname]
 
 		if var.__class__ == TypeSFConstraint:

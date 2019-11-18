@@ -61,7 +61,7 @@ def add_Sample(
 		comtypes.CoInitialize()
 
 	ps = None # the ProcessSpectra object
-	if kwargs.has_key("processSpectra"):
+	if "processSpectra" in kwargs:
 		ps = kwargs["processSpectra"]
 
 
@@ -202,7 +202,7 @@ def add_Sample(
 	del scans
 
 	if Debug("logMemory"):
-		print "ML> MS scans read from raw file:", memory_logging.pythonMemory()
+		print("ML> MS scans read from raw file:", memory_logging.pythonMemory())
 	#	print "MLh> ", hpy().heapu()
 
 	# get MS2 scans
@@ -669,7 +669,7 @@ directory>, <the resolution of the mass spec machine>
 			count += 1
 
 		if scanAveraging == 'linear':
-			listClusters = linearAlignment(dictSpecEntry.keys(),
+			listClusters = linearAlignment(list(dictSpecEntry.keys()),
 								dictSpecEntry,
 								options['MSresolution'],
 								merge = mergeSumIntensity,
@@ -677,7 +677,7 @@ directory>, <the resolution of the mass spec machine>
 								mergeDeltaRes = options['MSresolutionDelta'])
 
 		elif scanAveraging == 'heuristic':
-			listClusters = heuristicAlignment(dictSpecEntry.keys(),
+			listClusters = heuristicAlignment(list(dictSpecEntry.keys()),
 								dictSpecEntry,
 								options['MSresolution'],
 								merge = mergeSumIntensity,
@@ -728,12 +728,12 @@ directory>, <the resolution of the mass spec machine>
 			sumIntensity = 0
 			sumIntensity_relative = 0
 
-			for sample in dictSpecEntry.keys():
-				if cl.has_key(sample) and cl[sample].content != {}:
+			for sample in list(dictSpecEntry.keys()):
+				if sample in cl and cl[sample].content != {}:
 					sumMass += cl[sample].mass
 					sumMassIntensity += cl[sample].mass * cl[sample].content['intensity']
 					sumIntensity += cl[sample].content['intensity']
-					if cl[sample].content.has_key('intensity_rel'):
+					if 'intensity_rel' in cl[sample].content:
 						sumIntensity_relative += cl[sample].content['intensity_rel']
 
 			out = specEntry(
@@ -1065,7 +1065,7 @@ def loadMSMS(sample, dirmsms, resolution, options):
 					fileName = i,
 					MSMSthreshold = options['MSMSthreshold']))
 
-	print "Number of *.dta files:", count
+	print("Number of *.dta files:", count)
 
 	sample.listMsms.sort()
 

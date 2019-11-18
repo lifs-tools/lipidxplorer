@@ -4,7 +4,7 @@
 import threading
 import re
 try:
-    from urlparse import urljoin
+    from urllib.parse import urljoin
 except ImportError:
     # Python 3
     from urllib.parse import urljoin
@@ -29,15 +29,15 @@ except (KeyError, NameError):
     # Python < 2.6
     bytes = str
 try:
-    unicode = __builtins__["unicode"]
+    str = __builtins__["unicode"]
 except (KeyError, NameError):
     # Python 3
-    unicode = str
+    str = str
 try:
-    basestring = __builtins__["basestring"]
+    str = __builtins__["basestring"]
 except (KeyError, NameError):
     # Python 3
-    basestring = (str, bytes)
+    str = (str, bytes)
 
 def __fix_docstring(s):
     if not s:
@@ -84,13 +84,13 @@ def _transform_result(typ, result):
     """
     if issubclass(typ, bytes):
         return tostring(result, encoding='utf-8')
-    elif issubclass(typ, unicode):
-        return tostring(result, encoding=unicode)
+    elif issubclass(typ, str):
+        return tostring(result, encoding=str)
     else:
         return result
 
 def _nons(tag):
-    if isinstance(tag, basestring):
+    if isinstance(tag, str):
         if tag[0] == '{' and tag[1:len(XHTML_NAMESPACE)+1] == XHTML_NAMESPACE:
             return tag.split('}')[-1]
     return tag
@@ -190,7 +190,7 @@ class HtmlMixin(object):
         parent = self.getparent()
         assert parent is not None
         previous = self.getprevious()
-        if self.text and isinstance(self.tag, basestring):
+        if self.text and isinstance(self.tag, str):
             # not a Comment, etc.
             if previous is None:
                 parent.text = (parent.text or '') + self.text
@@ -440,7 +440,7 @@ class _MethodFunc(object):
         self.__doc__ = getattr(source_class, self.name).__doc__
     def __call__(self, doc, *args, **kw):
         result_type = type(doc)
-        if isinstance(doc, basestring):
+        if isinstance(doc, str):
             if 'copy' in kw:
                 raise TypeError(
                     "The keyword 'copy' can only be used with element inputs to %s, not a string input" % self.name)
@@ -500,11 +500,11 @@ class HtmlElementClassLookup(etree.CustomElementClassLookup):
             mixers = {}
             for name, value in mixins:
                 if name == '*':
-                    for n in classes.keys():
+                    for n in list(classes.keys()):
                         mixers.setdefault(n, []).append(value)
                 else:
                     mixers.setdefault(name, []).append(value)
-            for name, mix_bases in mixers.items():
+            for name, mix_bases in list(mixers.items()):
                 cur = classes.get(name, HtmlElement)
                 bases = tuple(mix_bases + [cur])
                 classes[name] = type(cur.__name__, bases, {})
@@ -592,11 +592,11 @@ def fragment_fromstring(html, create_parent=False, base_url=None,
         base_url=base_url, **kw)
 
     if create_parent:
-        if not isinstance(create_parent, basestring):
+        if not isinstance(create_parent, str):
             create_parent = 'div'
         new_root = Element(create_parent)
         if elements:
-            if isinstance(elements[0], basestring):
+            if isinstance(elements[0], str):
                 new_root.text = elements[0]
                 del elements[0]
             new_root.extend(elements)
@@ -702,7 +702,7 @@ def _contains_block_level_tag(el):
 def _element_name(el):
     if isinstance(el, etree.CommentBase):
         return 'comment'
-    elif isinstance(el, basestring):
+    elif isinstance(el, str):
         return 'string'
     else:
         return _nons(el.tag)
@@ -733,8 +733,8 @@ class FormElement(HtmlElement):
         """
         return FieldsDict(self.inputs)
     def _fields__set(self, value):
-        prev_keys = self.fields.keys()
-        for key, value in value.iteritems():
+        prev_keys = list(self.fields.keys())
+        for key, value in value.items():
             if key in prev_keys:
                 prev_keys.remove(key)
             self.fields[key] = value
@@ -845,7 +845,7 @@ def submit_form(form, extra_values=None, open_http=None):
     values = form.form_values()
     if extra_values:
         if hasattr(extra_values, 'items'):
-            extra_values = extra_values.items()
+            extra_values = list(extra_values.items())
         values.extend(extra_values)
     if open_http is None:
         open_http = open_http_urllib
@@ -860,7 +860,8 @@ def open_http_urllib(method, url, values):
         raise ValueError("cannot submit, no URL provided")
     ## FIXME: should test that it's not a relative URL or something
     try:
-        from urllib import urlencode, urlopen
+        from urllib.parse import urlencode
+        from urllib.request import urlopen
     except ImportError: # Python 3
         from urllib.request import urlopen
         from urllib.parse import urlencode
@@ -887,7 +888,7 @@ class FieldsDict(DictMixin):
         raise KeyError(
             "You cannot remove keys from ElementDict")
     def keys(self):
-        return self.inputs.keys()
+        return list(self.inputs.keys())
     def __contains__(self, item):
         return item in self.inputs
 
@@ -1007,7 +1008,7 @@ class TextareaElement(InputMixin, HtmlElement):
             serialisation_method = 'html'
         for el in self:
             # it's rare that we actually get here, so let's not use ''.join()
-            content += etree.tostring(el, method=serialisation_method, encoding=unicode)
+            content += etree.tostring(el, method=serialisation_method, encoding=str)
         return content
     def _value__set(self, value):
         del self[:]
@@ -1053,7 +1054,7 @@ class SelectElement(InputMixin, HtmlElement):
 
     def _value__set(self, value):
         if self.multiple:
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 raise TypeError(
                     "You must pass in a sequence")
             self.value.clear()
@@ -1347,7 +1348,7 @@ class InputElement(InputMixin, HtmlElement):
                 self.checked = False
             else:
                 self.checked = True
-                if isinstance(value, basestring):
+                if isinstance(value, str):
                     self.set('value', value)
         else:
             self.set('value', value)
@@ -1443,7 +1444,7 @@ def html_to_xhtml(html):
     prefix = "{%s}" % XHTML_NAMESPACE
     for el in html.iter():
         tag = el.tag
-        if isinstance(tag, basestring):
+        if isinstance(tag, str):
             if tag[0] != '{':
                 el.tag = prefix + tag
 

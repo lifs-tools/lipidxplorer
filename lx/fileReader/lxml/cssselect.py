@@ -11,7 +11,7 @@ __all__ = ['SelectorSyntaxError', 'ExpressionError',
            'CSSSelector']
 
 try:
-    _basestring = basestring
+    _basestring = str
 except NameError:
     _basestring = str
 
@@ -62,8 +62,8 @@ class CSSSelector(etree.XPath):
 ## Token objects:
 
 try:
-    _unicode = unicode
-    _unichr = unichr
+    _unicode = str
+    _unichr = chr
 except NameError:
     # Python 3
     _unicode = str
@@ -676,7 +676,7 @@ def parse_selector_group(stream):
     while 1:
         result.append(parse_selector(stream))
         if stream.peek() == ',':
-            stream.next()
+            next(stream)
         else:
             break
     if len(result) == 1:
@@ -692,10 +692,10 @@ def parse_selector(stream):
             return result
         elif peek in ('+', '>', '~'):
             # A combinator
-            combinator = stream.next()
+            combinator = next(stream)
             # Ignore optional whitespace after a combinator
             while stream.peek() == ' ':
-                stream.next()
+                next(stream)
         else:
             combinator = ' '
         consumed = len(stream.used)
@@ -711,14 +711,14 @@ def parse_simple_selector(stream):
     if peek != '*' and not isinstance(peek, Symbol):
         element = namespace = '*'
     else:
-        next = stream.next()
+        next = next(stream)
         if next != '*' and not isinstance(next, Symbol):
             raise SelectorSyntaxError(
                 "Expected symbol, got '%s'" % next)
         if stream.peek() == '|':
             namespace = next
-            stream.next()
-            element = stream.next()
+            next(stream)
+            element = next(stream)
             if element != '*' and not isinstance(next, Symbol):
                 raise SelectorSyntaxError(
                     "Expected symbol, got '%s'" % next)
@@ -734,39 +734,39 @@ def parse_simple_selector(stream):
                 # You can't have two hashes
                 # (FIXME: is there some more general rule I'm missing?)
                 break
-            stream.next()
-            result = Hash(result, stream.next())
+            next(stream)
+            result = Hash(result, next(stream))
             has_hash = True
             continue
         elif peek == '.':
-            stream.next()
-            result = Class(result, stream.next())
+            next(stream)
+            result = Class(result, next(stream))
             continue
         elif peek == '[':
-            stream.next()
+            next(stream)
             result = parse_attrib(result, stream)
-            next = stream.next()
+            next = next(stream)
             if not next == ']':
                 raise SelectorSyntaxError(
                     "] expected, got '%s'" % next)
             continue
         elif peek == ':' or peek == '::':
-            type = stream.next()
-            ident = stream.next()
+            type = next(stream)
+            ident = next(stream)
             if not isinstance(ident, Symbol):
                 raise SelectorSyntaxError(
                     "Expected symbol, got '%s'" % ident)
             if stream.peek() == '(':
-                stream.next()
+                next(stream)
                 peek = stream.peek()
                 if isinstance(peek, String):
-                    selector = stream.next()
+                    selector = next(stream)
                 elif isinstance(peek, Symbol) and is_int(peek):
-                    selector = int(stream.next())
+                    selector = int(next(stream))
                 else:
                     # FIXME: parse_simple_selector, or selector, or...?
                     selector = parse_simple_selector(stream)
-                next = stream.next()
+                next = next(stream)
                 if not next == ')':
                     raise SelectorSyntaxError(
                         "Expected ')', got '%s' and '%s'"
@@ -777,7 +777,7 @@ def parse_simple_selector(stream):
             continue
         else:
             if peek == ' ':
-                stream.next()
+                next(stream)
             break
         # FIXME: not sure what "negation" is
     return result
@@ -791,20 +791,20 @@ def is_int(v):
         return True
 
 def parse_attrib(selector, stream):
-    attrib = stream.next()
+    attrib = next(stream)
     if stream.peek() == '|':
         namespace = attrib
-        stream.next()
-        attrib = stream.next()
+        next(stream)
+        attrib = next(stream)
     else:
         namespace = '*'
     if stream.peek() == ']':
         return Attrib(selector, namespace, attrib, 'exists', None)
-    op = stream.next()
+    op = next(stream)
     if not op in ('^=', '$=', '*=', '=', '~=', '|=', '!='):
         raise SelectorSyntaxError(
             "Operator expected, got '%s'" % op)
-    value = stream.next()
+    value = next(stream)
     if not isinstance(value, (Symbol, String)):
         raise SelectorSyntaxError(
             "Expected string or symbol, got '%s'" % value)
@@ -977,12 +977,12 @@ class TokenStream(object):
         self.peeked = None
         self._peeking = False
         try:
-            self.next_token = self.tokens.next
+            self.next_token = self.tokens.__next__
         except AttributeError:
             # Python 3
             self.next_token = self.tokens.__next__
 
-    def next(self):
+    def __next__(self):
         if self._peeking:
             self._peeking = False
             self.used.append(self.peeked)
@@ -996,7 +996,7 @@ class TokenStream(object):
                 return None
 
     def __iter__(self):
-        return iter(self.next, None)
+        return iter(self.__next__, None)
 
     def peek(self):
         if not self._peeking:

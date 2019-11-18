@@ -97,7 +97,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 				with open(queries[arg], 'r') as mfqlFile:
 					mfqlFiles[arg] = mfqlFile.read()
 
-	print "\n****** Starting MFQL interpretation ******\n"
+	print("\n****** Starting MFQL interpretation ******\n")
 
 	# collect masterscan file
 	if options['masterScanRun']:
@@ -124,7 +124,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	mfqlObj.options = options
 
 	# give the options from the loaded MasterScan
-	for i in mfqlObj.sc.options.keys():
+	for i in list(mfqlObj.sc.options.keys()):
 		if i in Options.importOptions and (not mfqlObj.sc.options.isEmpty(i)):
 			mfqlObj.options[i] = mfqlObj.sc.options[i]
 
@@ -167,7 +167,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 		else:
 			strResult = ''
 
-		for k in result.dictQuery.values():
+		for k in list(result.dictQuery.values()):
 			if not options['compress']:
 				strResult += "\n###,%s\n" % k.name
 			strResult += k.strOutput
@@ -180,7 +180,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 
 		# put out
 		if not options['resultFile']:
-			print strResult
+			print(strResult)
 		else:
 			if parent:
 				parent.writeOutput(options['resultFile'], strResult)
@@ -188,7 +188,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 				with open(options['resultFile'], 'w') as f:
 					f.write(strResult)
 	else:
-		print "\n <Query returned no result.>\n"
+		print("\n <Query returned no result.>\n")
 
 	# maybe dump the complementary MasterScan
 	if options['complementMasterScan']:
@@ -215,7 +215,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	del masterscan
 	del mfqlObj
 
-	print "\nOverall time needed for identification: %d:%d" % ((time.clock() - start) / 60, (time.clock() - start) % 60)
+	print("\nOverall time needed for identification: %d:%d" % ((time.clock() - start) / 60, (time.clock() - start) % 60))
 
 	# return successfull
 	if parent:

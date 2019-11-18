@@ -10,7 +10,7 @@ import wx.grid
 from wx.lib.newevent import NewEvent
 import traceback
 from lx.tools import odict
-from cStringIO import StringIO
+from io import StringIO
 
 DRAG_SOURCE = wx.NewId()
 wxStdOut, EVT_STDOUT= NewEvent()
@@ -149,7 +149,7 @@ class InputFileDropTarget(wx.FileDropTarget):
 				self.parent.dictInputFiles[l[-1]] = p
 
 		#self.parent.list_box_1.Set(sorted(self.parent.dictMFQLScripts.keys()))
-		self.parent.listBox_inputFiles.Set(self.parent.dictInputFiles.keys())
+		self.parent.listBox_inputFiles.Set(list(self.parent.dictInputFiles.keys()))
 
 class ChooseColFrame(wx.Frame):
 
@@ -434,7 +434,7 @@ class MyFrame(wx.Frame):
 			for entry in entries:
 				del self.dictInputFiles[entry]
 
-			self.listBox_inputFiles.Set(self.dictInputFiles.keys())
+			self.listBox_inputFiles.Set(list(self.dictInputFiles.keys()))
 
 	def OnBrowse1(self, evt):
 		dlg = wx.FileDialog(self, "Xcalibur spectra directory", style=wx.DD_DEFAULT_STYLE|wx.FD_SAVE)
@@ -466,7 +466,7 @@ class MyFrame(wx.Frame):
 				l = p.split(os.sep)
 				self.dictInputFiles[l[-1]] = p
 
-		self.listBox_inputFiles.Set(self.dictInputFiles.keys())
+		self.listBox_inputFiles.Set(list(self.dictInputFiles.keys()))
 
 	def OnBrowse2(self, evt):
 		dlg = wx.FileDialog(self, "LipidX aligned spectra (from the MasterScan)", style=wx.DD_DEFAULT_STYLE|wx.FD_SAVE)
@@ -506,7 +506,7 @@ class MyFrame(wx.Frame):
 				dlg.Destroy()
 				return None
 
-		for file in self.dictInputFiles.keys():
+		for file in list(self.dictInputFiles.keys()):
 
 			csvInputFiles[file] = csv.DictReader(open(self.dictInputFiles[file], 'rb'), delimiter=",")
 
@@ -530,7 +530,7 @@ class MyFrame(wx.Frame):
 					try:
 						values.append(row_sorted[col])
 					except KeyError:
-						print "KeyError in %s with %s" % (file,col)
+						print("KeyError in %s with %s" % (file,col))
 
 				# format the values to a dictionary entry, which will form the output
 				for index in range(len(values)):
@@ -541,13 +541,13 @@ class MyFrame(wx.Frame):
 				# the strValues are the content of the primary key
 
 				# add the entries to the ouput
-				if not self.dictOutput.has_key(strValues):
+				if strValues not in self.dictOutput:
 					self.dictOutput[strValues] = odict()
 					self.dictOutput[strValues][file] = row_sorted
 				else:
 					self.dictOutput[strValues][file] = row_sorted
 
-				for key in row_sorted.keys():
+				for key in list(row_sorted.keys()):
 					if key:
 						if not key in allKeys:
 							allKeys.append(key)
@@ -580,19 +580,19 @@ class MyFrame(wx.Frame):
 
 		col_m = re.compile('.*:')
 
-		print " *** Preparing the output format *** "
+		print(" *** Preparing the output format *** ")
 
 		# collect the filenames of the files to merge
 		filenames = []
-		for i in self.dictOutput.keys():
-			for file in self.dictOutput[i].keys():
+		for i in list(self.dictOutput.keys()):
+			for file in list(self.dictOutput[i].keys()):
 				if not file in filenames:
 					filenames.append(file)
 
 		# generate dummy entries for filename for empty files
-		for i in self.dictOutput.keys():
+		for i in list(self.dictOutput.keys()):
 			for file in filenames:
-				if not file in self.dictOutput[i].keys():
+				if not file in list(self.dictOutput[i].keys()):
 					self.dictOutput[i][file] = odict()
 
 		# sort out the intensity columns and the non intensity columns
@@ -611,14 +611,14 @@ class MyFrame(wx.Frame):
 		# collect all the intensity columns
 		#count = 0
 		#samples = []
-		for entry in self.dictOutput.keys():
+		for entry in list(self.dictOutput.keys()):
 
 			for file in filenames:
 				count = 0
 				samples = []
 				if self.dictOutput[entry][file] != {}:
 					for col in columnsChoosenIntensity:
-						for sample in self.dictOutput[entry][file].keys():
+						for sample in list(self.dictOutput[entry][file].keys()):
 							if re.match('%s.*' % col, sample):
 								if not sample in colIntensitiesSamples:
 									colIntensitiesSamples.append(sample)
@@ -626,7 +626,7 @@ class MyFrame(wx.Frame):
 								count += 1
 
 				# sort the samples according to thier origin
-				if not file in fileSamples.keys() and count > 0:
+				if not file in list(fileSamples.keys()) and count > 0:
 					fileSamples[file] = odict()
 					fileSamples[file]['samples'] = samples
 					fileSamples[file]['count'] = count
@@ -637,20 +637,20 @@ class MyFrame(wx.Frame):
 
 		# collect the intensity data into dictOutputSamples
 		dictOutputSamples = odict()
-		for entry in self.dictOutput.keys():
+		for entry in list(self.dictOutput.keys()):
 			# put all entries from different files into one dictionary
 			dictOutputSamples[entry] = odict()
 			for file in filenames:
 				dictOutputSamples[entry][file] = odict()
-				for sample in self.dictOutput[entry][file].keys():
-					if not dictOutputSamples.has_key(sample):
+				for sample in list(self.dictOutput[entry][file].keys()):
+					if sample not in dictOutputSamples:
 						dictOutputSamples[entry][file][sample] = self.dictOutput[entry][file][sample]
 					else:
 						dictOutputSamples[entry][file]['%s-%s' % (sample, file)] = self.dictOutput[entry][file][sample]
 						if '%s-%s' % (sample, file) not in colIntensitiesSamples:
 							colIntensitiesSamples.append('%s-%s' % (sample, file))
 
-		print " *** Start the alignment *** "
+		print(" *** Start the alignment *** ")
 
 		#####################################
 		### START writing the output file ###
@@ -668,7 +668,7 @@ class MyFrame(wx.Frame):
 			outputCSV.write("%s," % file)
 			for i in range(len(columnsChoosenNonIntensity) - 1):
 				outputCSV.write(",")
-			if fileSamples.has_key(file):
+			if file in fileSamples:
 				for i in range(fileSamples[file]['count']):
 					outputCSV.write(",")
 		outputCSV.write("\n")
@@ -683,8 +683,8 @@ class MyFrame(wx.Frame):
 				outputCSV.write("%s," % col)
 				outputKeys[file].append(col)
 
-			print ">>>", fileSamples
-			if file in fileSamples.keys():
+			print(">>>", fileSamples)
+			if file in list(fileSamples.keys()):
 				for sample in colIntensitiesSamples:
 					if sample in fileSamples[file]['samples']:
 						outputCSV.write("%s," % sample)
@@ -693,7 +693,7 @@ class MyFrame(wx.Frame):
 
 		### go through the aligned entries ###
 		countEntries = 0
-		lengthEntries = len(self.dictOutput.keys())
+		lengthEntries = len(list(self.dictOutput.keys()))
 		f_output = open(self.text_ctrl_inputFile2.GetValue(), 'w+')
 		f_output.write(outputCSV.getvalue())
 
@@ -711,8 +711,8 @@ class MyFrame(wx.Frame):
 				for file in filenames:
 					for col in outputKeys[file]:
 						keys += 1
-						if self.dictOutput[entry][file].has_key(col) or \
-							dictOutputSamples[entry][file].has_key(col):
+						if col in self.dictOutput[entry][file] or \
+							col in dictOutputSamples[entry][file]:
 							count += 1
 
 				# if the user checks the "only full occupied"
@@ -720,7 +720,7 @@ class MyFrame(wx.Frame):
 				if count == keys:
 					cont = True
 					for col in self.colsToAlign:
-						if self.dictOutput[entry][file].has_key(col):
+						if col in self.dictOutput[entry][file]:
 							if self.dictOutput[entry][file][col] == '':
 								cont = False
 			else:
@@ -729,9 +729,9 @@ class MyFrame(wx.Frame):
 			if cont:
 
 				if countEntries % 10 == 0:
-					print "\n%d done - %d to go" % (countEntries, lengthEntries - countEntries)
+					print("\n%d done - %d to go" % (countEntries, lengthEntries - countEntries))
 				else:
-					print ".",
+					print(".", end=' ')
 
 				# write the entries of the colums to align
 				csvOut += '%s,' % entry
@@ -740,10 +740,10 @@ class MyFrame(wx.Frame):
 					#if self.dictOutput[entry][file] != {}:
 
 					for col in outputKeys[file]:
-						if self.dictOutput[entry][file].has_key(col):
+						if col in self.dictOutput[entry][file]:
 							#outputCSV.write('%s,' % self.dictOutput[entry][file][col])
 							csvOut += '%s,' % self.dictOutput[entry][file][col]
-						elif dictOutputSamples[entry][file].has_key(col):
+						elif col in dictOutputSamples[entry][file]:
 							#outputCSV.write('%s,' % dictOutputSamples[entry][file][col])
 							csvOut += '%s,' % dictOutputSamples[entry][file][col]
 						else:
@@ -752,8 +752,8 @@ class MyFrame(wx.Frame):
 
 				f_output.write(csvOut + '\n')
 
-		print ""
-		print " *** Write the output file *** "
+		print("")
+		print(" *** Write the output file *** ")
 
 		### write the output to the given filename ###
 		#f = open(self.text_ctrl_inputFile2.GetValue(), 'w')
@@ -761,7 +761,7 @@ class MyFrame(wx.Frame):
 		#f.close()
 		f_output.close()
 
-		print " *** Finished *** "
+		print(" *** Finished *** ")
 
 class MyApp(wx.App):
 

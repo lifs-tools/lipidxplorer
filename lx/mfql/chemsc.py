@@ -217,7 +217,7 @@ class RangeElement(Element):
 		self._constElement = True
 
 	def set_range(self, l, r, s = 1):
-		self._range = range(l,r,s)
+		self._range = list(range(l,r,s))
 		self._rangeElement = True
 
 	def set_enum(self, enum):
@@ -279,7 +279,7 @@ class ElementSequence:
 		self._seq[t.sym] = t
 
 	def checkElements(self):
-		for i in self._seq.values():
+		for i in list(self._seq.values()):
 			if i.__class__ != ConstElement:
 				raise TypeError("ElementSequence only allows ConstElement")
 
@@ -293,21 +293,21 @@ class ElementSequence:
 			return None
 
 	def keys(self):
-		return self._seq.keys()
+		return list(self._seq.keys())
 
 	def values(self):
-		return self._seq.values()
+		return list(self._seq.values())
 
 	def has_key(self, k):
-		return self._seq.has_key(k)
+		return k in self._seq
 
 	def __len__(self):
-		return len(self._seq.keys())
+		return len(list(self._seq.keys()))
 
 	def __repr__(self):
 		""" Return sum form in a good readable string """
 		l = ""
-		for i in self._seq.values():
+		for i in list(self._seq.values()):
 			l += "%s%d " % (i.sym, i._count)
 		return l
 
@@ -316,8 +316,8 @@ class ElementSequence:
 		if elemseq.__class__ == ElementSequence:
 
 			if len(elemseq) == len(self):
-				for elem in self._seq.keys():
-					if elemseq._seq.has_key(elem):
+				for elem in list(self._seq.keys()):
+					if elem in elemseq._seq:
 						if self._seq[elem]._count != elemseq._seq[elem]._count:
 							return -1
 					else:
@@ -393,11 +393,11 @@ class ElementSequence:
 		result = deepcopy(self)
 
 		for i in set(result._seq.keys()).union(set(elemseq._seq.keys())):
-			if result._seq.has_key(i) and elemseq._seq.has_key(i):
+			if i in result._seq and i in elemseq._seq:
 				result._seq[i]._count += elemseq._seq[i]._count
-			elif result._seq.has_key(i) and not elemseq._seq.has_key(i):
+			elif i in result._seq and i not in elemseq._seq:
 				pass
-			elif not result._seq.has_key(i) and elemseq._seq.has_key(i):
+			elif i not in result._seq and i in elemseq._seq:
 				result._seq[i] = elemseq.get_element(i)
 
 		# reset weight and db
@@ -410,8 +410,8 @@ class ElementSequence:
 
 		result = deepcopy(self)
 
-		for i in elemseq._seq.keys():
-			if result._seq.has_key(i):
+		for i in list(elemseq._seq.keys()):
+			if i in result._seq:
 				result._seq[i]._count -= elemseq._seq[i]._count
 				if result._seq[i]._count < 0:
 					del result._seq[i]
@@ -428,7 +428,7 @@ class ElementSequence:
 
 		result = deepcopy(self)
 
-		for i in result._seq.keys():
+		for i in list(result._seq.keys()):
 			result._seq[i] *= int
 
 		# reset weight and db
@@ -458,7 +458,7 @@ class ElementSequence:
 
 		if self._weight == 0.0:
 
-			for thing in self._seq.values():
+			for thing in list(self._seq.values()):
 				self._weight += float(thing.get_weight())
 
 			if self.charge != 0:
@@ -504,7 +504,7 @@ class SCConstraint(ElementSequence):
 		self._seq[t.sym] = t
 
 	def checkElements(self):
-		for i in self._seq.values():
+		for i in list(self._seq.values()):
 			if i.__class__ != RangeElement:
 				raise TypeError("SCConstraint only allows RangeElement")
 
@@ -512,7 +512,7 @@ class SCConstraint(ElementSequence):
 
 		minMass = 0
 		maxMass = 0
-		for i in self._seq.keys():
+		for i in list(self._seq.keys()):
 			minMass += self._seq[i]._range[0] * self._seq[i].mw
 			maxMass += self._seq[i]._range[-1] * self._seq[i].mw
 
@@ -540,7 +540,7 @@ class SCConstraint(ElementSequence):
 	def __repr__(self):
 		""" Return sum form in a good readable string """
 		l = ""
-		for i in self._seq.values():
+		for i in list(self._seq.values()):
 
 			if i.isEnum():
 				l = l + i.sym + "["
@@ -705,7 +705,7 @@ class SCConstraint(ElementSequence):
 		"""See if the self sc constraint covers the given elemseq"""
 		import types
 
-		if type(elemseq) == types.ListType:
+		if type(elemseq) == list:
 			flagelem = False
 			for k in elemseq:
 				if self.covers(k):
@@ -715,8 +715,8 @@ class SCConstraint(ElementSequence):
 			if elemseq.__class__ != ElementSequence:
 				raise TypeError("covers() needs an ElementSequence as parameter")
 
-			for elem in elemseq.keys():
-				if self._seq.has_key(elem) and elemseq[elem] in self._seq[elem]._range:
+			for elem in list(elemseq.keys()):
+				if elem in self._seq and elemseq[elem] in self._seq[elem]._range:
 					pass
 				else:
 					return False
@@ -737,7 +737,7 @@ class SCConstraint(ElementSequence):
 
 		# symbol list of the sequence
 		l = []
-		for i in self._seq.values():
+		for i in list(self._seq.values()):
 			l.append(i.sym)
 
 		if isinstance(tolerance, TypeTolerance):
@@ -1036,8 +1036,8 @@ class SCConstraint(ElementSequence):
 		a sf-constrain.
 		"""
 		buf = deepcopy(self)
-		for i in elemseq.keys():
-			if self.has_key(i.sym):
+		for i in list(elemseq.keys()):
+			if i.sym in self:
 				# normal case
 				if len(self._seq[i.sym]._range) == 1 and len(i._range) == 1:
 					elem._range[0] -= i._range[0]

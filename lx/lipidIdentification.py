@@ -28,7 +28,7 @@ def syntaxCheck(
 				with open(opts['queries'][arg], 'r') as mfqlFile:
 					mfqlFiles[arg] = mfqlFile.read()
 
-	print "\n****** Starting Syntax Check ******\n"
+	print("\n****** Starting Syntax Check ******\n")
 
 	return 1
 
@@ -48,7 +48,7 @@ def startFromGUI(
 				with open(queries[arg], 'r') as mfqlFile:
 					mfqlFiles[arg] = mfqlFile.read()
 
-	print "\n****** Starting MFQL interpretation ******\n"
+	print("\n****** Starting MFQL interpretation ******\n")
 
 	# collect masterscan file
 	if options['masterScan']:
@@ -76,7 +76,7 @@ def startFromGUI(
 	mfqlObj.options = options
 
 	# give the options from the loaded MasterScan
-	for i in mfqlObj.sc.options.keys():
+	for i in list(mfqlObj.sc.options.keys()):
 		if i in Options.importOptions and (not mfqlObj.sc.options.isEmpty(i)):
 			mfqlObj.options[i] = mfqlObj.sc.options[i]
 
@@ -119,7 +119,7 @@ def startFromGUI(
 		else:
 			strResult = ''
 
-		for k in result.dictQuery.values():
+		for k in list(result.dictQuery.values()):
 			if not options['compress']:
 				strResult += "\n###,%s\n" % k.name
 			strResult += k.strOutput
@@ -128,7 +128,7 @@ def startFromGUI(
 
 		# put out
 		if not options['resultFile']:
-			print strResult
+			print(strResult)
 		else:
 			if parent:
 				parent.writeOutput(options['resultFile'], strResult)
@@ -136,7 +136,7 @@ def startFromGUI(
 				writeOutput(options['resultFile'], strResult)
 
 	else:
-		print "\n <Query returned no result.>\n"
+		print("\n <Query returned no result.>\n")
 
 	# maybe dump the complementary MasterScan
 	if options['complementMasterScan']:
@@ -164,13 +164,13 @@ def startFromGUI(
 		return parent.CONST_THREAD_SUCCESSFUL
 
 def writeReport(file = "", options = {}, queries = {}):
-	print "Writing HTML report from lipidIdentification.py"
+	print("Writing HTML report from lipidIdentification.py")
 	strReport = "<html><head></head><body>"
 	strReport += "<br>"
 	strReport += "%s" % genReportHTML(options, queries)
 	strReport += "</body></html>"
 	reportBaseFile = os.path.splitext(file)[0]
-	print "Saving report to file " + reportBaseFile + "-report.html"
+	print("Saving report to file " + reportBaseFile + "-report.html")
 	with open(reportBaseFile + "-report.html", "w") as f:
 		f.write(strReport)
 

@@ -18,7 +18,7 @@ class optionsDict(DictMixin):
     def __getitem__(self, key):
         if self._isEmpty(self._data[key]):
             for line in traceback.format_stack()[:-1]:
-                print line.strip()
+                print(line.strip())
             raise LipidXException("The key '%s' is not given" % key)
         return self._data[key]
 
@@ -27,7 +27,7 @@ class optionsDict(DictMixin):
 
     def __repr__(self):
         result = []
-        for key in self._data.keys():
+        for key in list(self._data.keys()):
             result.append('%s: %s' % (repr(key), repr(self._data[key])))
         return ''.join(['{', ', '.join(result), '}'])
 
@@ -43,7 +43,7 @@ class optionsDict(DictMixin):
         return list(self._data.keys())
 
     def has_key(self, key):
-        return self._data.has_key(key)
+        return key in self._data
 
     def copy(self):
         copyDict = optionsDict()
@@ -55,7 +55,7 @@ class optionsDict(DictMixin):
 
     def getOrdinary(self):
         ordinary = {}
-        for key in self._data.keys():
+        for key in list(self._data.keys()):
             ordinary[key] = self._data[key]
         return ordinary
 
@@ -183,7 +183,7 @@ class Options:
 
         # fill 'self.options' if 'options' is given
         if not options is None:
-            for key in self.options.keys():
+            for key in list(self.options.keys()):
                 self.options[key] = options[key]
 
 
@@ -198,7 +198,7 @@ class Options:
     def isEmpty(self, option):
 
         if isinstance(option, type("")):
-            if option in self.options.keys():
+            if option in list(self.options.keys()):
                 option = self.options[option]
 
         if isinstance(option, type([])):
@@ -407,7 +407,7 @@ class Options:
 
         o = self.options
 
-        for option in o.keys():
+        for option in list(o.keys()):
             if not option in ['MScalibration', 'MSMScalibration']:
                 try:
                     if floating_point_m.match(o[option]):
@@ -416,7 +416,7 @@ class Options:
                     pass
 
         # convert Boolean values
-        for option in o.keys():
+        for option in list(o.keys()):
             if o[option] == 'True':
                 self.options_formatted[option] = True
             if o[option] == 'False':
@@ -541,8 +541,8 @@ class Options:
             self.options_formatted['complementMasterScanFile'] = os.path.splitext(o['masterScanRun'])[0] + "-complement.csv"
 
         # copy the rest of the string based options to the internal options
-        for opt in self.options.keys():
-            if not opt in self.options_formatted.keys():
+        for opt in list(self.options.keys()):
+            if not opt in list(self.options_formatted.keys()):
                 self.options_formatted[opt] = self.options[opt]
 
 
@@ -553,7 +553,7 @@ class Options:
 
         o = self.options
 
-        for option in o.keys():
+        for option in list(o.keys()):
             if not option in ['MScalibration', 'MSMScalibration']:
                 try:
                     if floating_point_m.match(o[option]):
@@ -562,7 +562,7 @@ class Options:
                     pass
 
         # convert Boolean values
-        for option in o.keys():
+        for option in list(o.keys()):
             if o[option] == 'True':
                 self.options_formatted[option] = True
             if o[option] == 'False':
@@ -596,8 +596,8 @@ class Options:
         self.options_formatted['loopNr'] = 3
 
         # copy the rest of the string based options to the internal options
-        for opt in self.options.keys():
-            if not opt in self.options_formatted.keys():
+        for opt in list(self.options.keys()):
+            if not opt in list(self.options_formatted.keys()):
                 self.options_formatted[opt] = self.options[opt]
 
     def getOptions(self):

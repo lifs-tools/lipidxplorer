@@ -1,5 +1,5 @@
 try:
-	import ply.lex as lex
+	from . import ply.lex as lex
 except ImportError:
 	import lx.mfql.ply.lex as lex
 
@@ -116,7 +116,7 @@ def t_UNDERSCORE(t):
 
 def t_error(t):
 	if not ord(t.value[0]) == 13:
-		print "Illegal character %s (%s) in line %d" % (t.value[0], ord(t.value[0]), t.lexer.lineno)
+		print("Illegal character %s (%s) in line %d" % (t.value[0], ord(t.value[0]), t.lexer.lineno))
 	t.lexer.skip(1)
 
 # build lexer
@@ -128,7 +128,7 @@ lexer = lex.lex(reflags = re.I, debug = 0, optimize = 0)
 ########################### Parser starts here ################################
 ###############################################################################
 
-import ply.yacc as yacc
+from . import ply.yacc as yacc
 
 # for the testing: the first semantics
 
@@ -170,7 +170,7 @@ def p_script(p):
 
 def p_script_error(p):
 	'''script : error variables identification'''
-	print "SYNTAX ERROR: 'QUERYNAME' is missing"
+	print("SYNTAX ERROR: 'QUERYNAME' is missing")
 
 
 ### VARIABLES ###
@@ -524,10 +524,10 @@ def p_identification_normal_old(p):
 		genMasterScan(mfqlObj)
 
 	elif mfqlObj.parsePart == 'identification':
-		print "generating combinatorics ...",
+		print("generating combinatorics ...", end=' ')
 		for se in mfqlObj.sc.listSurveyEntry:
 			mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.clock())
 
 	if len(p) == 8:
 
@@ -564,16 +564,16 @@ def p_identification_normal_new(p):
 		genMasterScan(mfqlObj)
 
 	elif mfqlObj.parsePart == 'identification':
-		print "generating combinatorics ...",
+		print("generating combinatorics ...", end=' ')
 		for se in mfqlObj.sc.listSurveyEntry:
 			mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.clock())
 
 	if mfqlObj.parsePart == 'identification':
-		print "generating combinatorics ...",
+		print("generating combinatorics ...", end=' ')
 		for se in mfqlObj.sc.listSurveyEntry:
 			mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.clock())
 
 
 	if len(p) == 6:
@@ -624,7 +624,7 @@ def p_marks(p):
 
 			# find variables which are DEFINEd but not used in IDENTIFY
 			# they might be used later in SUCHTHAT
-			for i in mfqlObj.dictDefinitionTable[mfqlObj.queryName].keys():
+			for i in list(mfqlObj.dictDefinitionTable[mfqlObj.queryName].keys()):
 				if not i in [x.name for x in p[1].list()]:
 					name = i.split(mfqlObj.namespaceConnector)
 					raise SyntaxErrorException("The variable '%s' in query '%s'has to be used in IDENTIFY" %\
@@ -724,9 +724,9 @@ def p_boolmarks_toScan(p):
 def p_evalMarks(p):
 	'''evalMarks : '''
 	if mfqlObj.parsePart == 'identification':
-		print "IDENTIFY the masses of interest ...",
+		print("IDENTIFY the masses of interest ...", end=' ')
 		mfqlObj.scan.evaluate()
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.clock())
 	pass
 
 def p_suchthat_single(p):
@@ -748,7 +748,7 @@ def p_bterm(p):
 	# apply SUCHTHAT filter if vars were found
 	if mfqlObj.parsePart == 'report':
 
-		print "testing constraints of SUCHTHAT ...",
+		print("testing constraints of SUCHTHAT ...", end=' ')
 		report = []
 		count = 0
 		for se in mfqlObj.result[mfqlObj.queryName].sc:
@@ -764,7 +764,7 @@ def p_bterm(p):
 
 					# check if the variable of se contain at least one coming from the current query
 					isIn = False
-					for key in vars.keys():
+					for key in list(vars.keys()):
 						if mfqlObj.queryName == key.split(mfqlObj.namespaceConnector)[0]:
 							isIn = True
 							break
@@ -795,7 +795,7 @@ def p_bterm(p):
 													queryName = mfqlObj.queryName)]
 
 										if tmpRes[1] != []:
-											for key in vars_plus_empty.keys():
+											for key in list(vars_plus_empty.keys()):
 												for se in vars_plus_empty[key].se:
 													if se:
 														se.isTakenBySuchthat = True
@@ -831,7 +831,7 @@ def p_bterm(p):
 											queryName = mfqlObj.queryName)]
 
 								if tmpRes[1] != []:
-									for key in vars.keys():
+									for key in list(vars.keys()):
 										for se in vars[key].se:
 											if se:
 												se.isTakenBySuchthat = True
@@ -854,7 +854,7 @@ def p_bterm(p):
 								#result.append(tmpRes)
 
 		p[0] = report
-		print "%.2f sec. for %d comparisons" % (time.clock(), count)
+		print("%.2f sec. for %d comparisons" % (time.clock(), count))
 
 def p_booleanterm_logic(p):
 	'''booleanterm : booleanterm AND booleanterm
@@ -1075,7 +1075,7 @@ def p_rContent(p):
 
 def p_error(p):
 	if not p:
-		print "SYNTAX ERROR at EOF"
+		print("SYNTAX ERROR at EOF")
 		raise SyntaxErrorException("SYNTAX ERROR at EOF")
 	else:
 		#print "SYNTAX ERROR at '%s' in line %d of file '%s' " % (p.value, p.lineno, mfqlObj.queryName)
@@ -1107,7 +1107,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	if mode == 'generateTargetList':
 
 		###  ###
-		for k in dictData.keys():
+		for k in list(dictData.keys()):
 
 			mfqlObj.filename = k
 			numQueries = 0
@@ -1121,7 +1121,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		saveMasterScan(mfqlObj)
 
 	### do the IDENTIFY(cation) ###
-	for k in dictData.keys():
+	for k in list(dictData.keys()):
 
 		mfqlObj.filename = k
 		numQueries = 0
@@ -1134,7 +1134,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 	if isotopicCorrectionMS:
 		#mfqlObj.result.isotopicCorrectionMSMS()
-		print "type II isotopic correction in MS ...",
+		print("type II isotopic correction in MS ...", end=' ')
 		mfqlObj.result.isotopicCorrectionMS()
 
 		#gprogressCount += 1
@@ -1144,15 +1144,15 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		#		parent.debug.progressDialog.Destroy()
 		#		return parent.CONST_THREAD_USER_ABORT
 
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.clock())
 	else:
-		print "type II isotopic correction for MS is switched off"
+		print("type II isotopic correction for MS is switched off")
 
 	# testwise put it here before MS/MS correction, because MS/MS correction has to
 	# note the change first
-	print "generating result MasterScan ...",
+	print("generating result MasterScan ...", end=' ')
 	mfqlObj.result.generateResultSC()
-	print "%.2f sec." % time.clock()
+	print("%.2f sec." % time.clock())
 
 	## debugging ###
 	#for se in mfqlObj.result.mfqlObj.resultSC:
@@ -1163,7 +1163,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		#		print mark.intensity
 
 	if isotopicCorrectionMSMS:
-		print "type II isotopic correction in MS/MS ...",
+		print("type II isotopic correction in MS/MS ...", end=' ')
 		mfqlObj.result.isotopicCorrectionMSMS()
 
 		#gprogressCount += 1
@@ -1173,22 +1173,22 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		#		parent.debug.progressDialog.Destroy()
 		#		return parent.CONST_THREAD_USER_ABORT
 
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.clock())
 	else:
-		print "type II isotopic correction for MS/MS is switched off"
+		print("type II isotopic correction for MS/MS is switched off")
 
 	if not Debug("noMonoisotopicCorrection"):
-		print "type I isotopic correction in MS and MS/MS ...",
+		print("type I isotopic correction in MS and MS/MS ...", end=' ')
 		if isotopicCorrectionMS or isotopicCorrectionMSMS:
 			mfqlObj.result.correctMonoisotopicPeaks()
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.clock())
 
 	if Debug("removeIsotopes"):# and (isotopicCorrectionMS or isotopicCorrectionMSMS):
 		mfqlObj.result.removeIsotopicCorrected()
 
-	print "generate query result MasterScans ...",
+	print("generate query result MasterScans ...", end=' ')
 	mfqlObj.result.generateQueryResultSC()
-	print "%.2f sec." % time.clock()
+	print("%.2f sec." % time.clock())
 
 	#for q in mfqlObj.result.dictQuery.keys():
 	#	print ">>>", q
@@ -1198,12 +1198,12 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	#			print ">>> >>>", len(msmse.listMark)
 
 	# check for isobaric species
-	print "checking if there are isobaric species ...",
+	print("checking if there are isobaric species ...", end=' ')
 	mfqlObj.result.checkIsobaricSpeciesBeforeSUCHTHAT()
-	print "%.2f sec." % time.clock()
+	print("%.2f sec." % time.clock())
 
 	### do the REPORT ###
-	for k in dictData.keys():
+	for k in list(dictData.keys()):
 
 		#log.setLevel(logging.INFO)
 		#log.info("Processing %s", k, extra = func)
@@ -1226,9 +1226,9 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		#mfqlObj.result.deIsotopingMSMS_complement()
 		#print "%.2f sec." % time.clock()
 
-		print "generate complement MasterScan ..."
+		print("generate complement MasterScan ...")
 		mfqlObj.result.generateComplementSC()
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.clock())
 
 	if options['noPermutations']:
 		mfqlObj.result.removePermutations()
@@ -1242,18 +1242,18 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	#			print mark.name, [x.precurmass for x in mark.se], mark.frsc, mark.nlsc
 	#			print mark.intensity
 
-	print "checking if there are still isobaric species ...",
+	print("checking if there are still isobaric species ...", end=' ')
 	mfqlObj.result.checkIsobaricSpeciesAfterSUCHTHAT()
-	print "%.2f sec." % time.clock()
+	print("%.2f sec." % time.clock())
 
-	print "generate report ...",
+	print("generate report ...", end=' ')
 	mfqlObj.result.generateReport(options)
-	print "%.2f sec." % time.clock()
+	print("%.2f sec." % time.clock())
 
 	if generateStatistics and mfqlObj.result.mfqlOutput:
-		print "generate statistics ...",
+		print("generate statistics ...", end=' ')
 		mfqlObj.result.generateStatistics(options)
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.clock())
 
 	#print "generate graphics ...",
 	#mfqlObj.result.generateGraphics()

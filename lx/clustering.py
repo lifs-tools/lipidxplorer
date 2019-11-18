@@ -130,7 +130,7 @@ def printmatrix(list):
    format =  " %%%is |" % maxlen
    format = "|" + format*colcount
    for row in list:
-      print format % tuple(row)
+      print(format % tuple(row))
 
 def magnitude(a):
    "calculates the magnitude of a vecor"
@@ -219,7 +219,7 @@ class Cluster:
       """
       flattened_items = []
       if len(args) == 0: collection = self.__items
-      else:              collection = args[0].items()
+      else:              collection = list(args[0].items())
 
       for item in collection:
          if isinstance(item, Cluster):
@@ -239,12 +239,12 @@ class Cluster:
       """
       Pretty-prints this cluster. Useful for debuging
       """
-      print depth*"   " + "[level %s]" % self.__level
+      print(depth*"   " + "[level %s]" % self.__level)
       for item in self.__items:
          if isinstance(item, Cluster):
             item.display(depth+1)
          else:
-            print depth*"   "+"%s" % item
+            print(depth*"   "+"%s" % item)
 
    def topology(self):
       """
@@ -429,7 +429,7 @@ class HierarchicalClustering(BaseClusterMethod):
       elif method == 'uclus':
          self.linkage = self.uclusDistance
       else:
-         raise ValueError, 'distance method must be one of single, complete, average of uclus'
+         raise ValueError('distance method must be one of single, complete, average of uclus')
 
    def uclusDistance(self, x, y):
       """
@@ -729,7 +729,7 @@ available. You supplied %d items, and asked for %d clusters.""" %
       """
       # initialise the clusters with empty lists
       self.__clusters = []
-      for x in xrange(clustercount): self.__clusters.append([])
+      for x in range(clustercount): self.__clusters.append([])
 
       # distribute the items into the clusters
       count = 0
@@ -866,14 +866,14 @@ def get_cluster_elements(clust):
 
 def printclust(clust,labels=None,n=0):
 	# indent to make a hierarchy layout
-	for i in range(n): print ' ',
+	for i in range(n): print(' ', end=' ')
 	if clust.id<0:
 		# negative id means that this is branch
-		print '-'
+		print('-')
 	else:
 		# positive id means that this is an endpoint
-		if labels==None: print clust.id
-		else: print labels[clust.id]
+		if labels==None: print(clust.id)
+		else: print(labels[clust.id])
 
 	# now print the right and left branches
 	if clust.left!=None: printclust(clust.left,labels=labels,n=n+1)
