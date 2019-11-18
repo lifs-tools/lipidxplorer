@@ -357,18 +357,18 @@ class Options:
 
 
         if not self.isEmpty('MSminOccupation'):
-            if not self.options['MSminOccupation'] >= 0 and not float(self.options['MSminOccupation']) <= 1:
+            if not float(self.options['MSminOccupation']) >= 0 and not float(self.options['MSminOccupation']) <= 1:
                 raise LipidXException("Min occupation setting for MS should be 0 >= 1.")
         if not self.isEmpty('MSMSminOccupation'):
-            if not self.options['MSMSminOccupation'] >= 0 and not float(self.options['MSMSminOccupation']) <= 1:
+            if not float(self.options['MSMSminOccupation']) >= 0 and not float(self.options['MSMSminOccupation']) <= 1:
                 raise LipidXException("Min occupation setting for MS/MS should be 0 >= 1.")
 
 
         if not self.isEmpty('MSresolutionDelta'):
-            if not self.options['MSresolutionDelta'] >= 0 and not self.options['MSresolutionDelta'] <= 1:
+            if not float(self.options['MSresolutionDelta']) >= 0 and not float(self.options['MSresolutionDelta']) <= 1:
                 raise LipidXException("The resolution gradian setting for MS should be 0 >= 1.")
         if not self.isEmpty('MSMSresolutionDelta'):
-            if not self.options['MSMSresolutionDelta'] >= 0 and not self.options['MSMSminOccupation'] <= 1:
+            if not float(self.options['MSMSresolutionDelta']) >= 0 and not float(self.options['MSMSminOccupation']) <= 1:
                 raise LipidXException("Min occupation setting for MS/MS should be 0 >= 1.")
 
         if not self.isEmpty('alignmentMethodMS'):
