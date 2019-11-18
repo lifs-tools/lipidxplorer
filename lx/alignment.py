@@ -133,13 +133,16 @@ class specEntry:
 		self.charge = charge
 
 	def __repr__(self):
-		str = "{0:6}".format(self.mass)
+		txt = "{0:6}".format(self.mass)
 		for k in list(self.content.keys()):
-			str += " > {0:12}: {1:6}".format(k, self.content[k])
-		return str
+			txt += " > {0:12}: {1:6}".format(k, str(self.content[k]))
+		return txt
 
 	def __cmp__(self, other):
 		return cmp(self.mass, other.mass)
+
+	def __lt__(self, other):
+		return self.mass < other.mass
 
 def mkSurveyHeuristic(sc, polarity, numLoops = None, deltaRes = 0, minocc = None, msThreshold = None, checkoccupation = True):
 	""" Align the MS spectra."""
