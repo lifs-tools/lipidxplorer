@@ -2,7 +2,7 @@
 An interface to html5lib that mimics the lxml.html interface.
 """
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from html5lib import HTMLParser as _HTMLParser
 from html5lib.treebuilders.etree_lxml import TreeBuilder
@@ -12,7 +12,7 @@ from lxml.html import _contains_block_level_tag, XHTML_NAMESPACE
 
 # python3 compatibility
 try:
-    _strings = basestring
+    _strings = str
 except NameError:
     _strings = (bytes, str)
 
@@ -104,11 +104,11 @@ def fragment_fromstring(html, create_parent=False,
         no_leading_text=not accept_leading_text, **kw)
 
     if create_parent:
-        if not isinstance(create_parent, basestring):
+        if not isinstance(create_parent, str):
             create_parent = 'div'
         new_root = Element(create_parent)
         if elements:
-            if isinstance(elements[0], basestring):
+            if isinstance(elements[0], str):
                 new_root.text = elements[0]
                 del elements[0]
             new_root.extend(elements)
@@ -174,8 +174,8 @@ def parse(filename_url_or_file, guess_charset=True, parser=None):
     """
     if parser is None:
         parser = html_parser
-    if isinstance(filename_url_or_file, basestring):
-        fp = urllib.urlopen(filename_url_or_file)
+    if isinstance(filename_url_or_file, str):
+        fp = urllib.request.urlopen(filename_url_or_file)
     else:
         fp = filename_url_or_file
     return parser.parse(fp, useChardet=guess_charset)

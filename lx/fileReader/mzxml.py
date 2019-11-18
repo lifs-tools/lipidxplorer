@@ -1,6 +1,6 @@
 
 try:
-	from elementtree import ElementTree as ET
+	from .elementtree import ElementTree as ET
 except ImportError:
 	from lx.fileReader.elementtree import ElementTree as ET
 
@@ -37,7 +37,7 @@ class Spectrum:
 		return self.md_
 	def __str__(self):
 		s = "BEGIN SPECTRUM\n"
-		i = self.md_.items()
+		i = list(self.md_.items())
 		i.sort(key=lambda i: i[0])
 		for (k,v) in i:
 			s += "%s:\t%s\n"%(k,v)
@@ -93,13 +93,13 @@ class MzXMLFileReader:
 		self.ns = ''
 
 	def __iter__(self):
-		return self.next()
+		return next(self)
 
 	def extract_scan(self,ele):
 
 		scan = Spectrum()
 
-		for (k,v) in ele.attrib.iteritems():
+		for (k,v) in ele.attrib.items():
 			scan.set(k,self.typemap.get(k,str)(v))
 
 		if scan.get('num') != None:
@@ -128,7 +128,7 @@ class MzXMLFileReader:
 				# print e
 				if prop in ('precursorMz',):
 					scan.set(prop,self.typemap.get(prop,str)(e.text))
-				for (k,v) in e.attrib.iteritems():
+				for (k,v) in e.attrib.items():
 					t = '%s.%s'%(prop,k)
 					scan.set(t,self.typemap.get(t,str)(v))
 				break
@@ -142,7 +142,7 @@ class MzXMLFileReader:
 
 		return scan
 
-	def next(self):
+	def __next__(self):
 		for (event, ele) in ET.iterparse(self.handle,('start','end')):
 			# print event,self.context,ele.tag,ele.attrib
 
@@ -153,7 +153,7 @@ class MzXMLFileReader:
 				else:
 					self.context.append(ele.tag)
 				if self.context in (['mzXML'],['msRun']):
-					for (k,v) in ele.attrib.iteritems():
+					for (k,v) in ele.attrib.items():
 						if k.endswith('schemaLocation'):
 							self.ns = '{%s}'%(v.split()[0],)
 				continue
@@ -173,7 +173,7 @@ class MzXMLFileReader:
 			self.context.pop()
 
 
-from elementtree.SimpleXMLWriter import XMLWriter
+from .elementtree.SimpleXMLWriter import XMLWriter
 
 class MzXMLFileWriter:
 	def __init__(self,s,f):
@@ -242,7 +242,7 @@ class MzXMLFileWriter:
 						'peaksCount',
 						'polarity',
 						):
-				if scan_metadata.has_key(tag):
+				if tag in scan_metadata:
 					attrib[tag] = str(scan_metadata[tag])
 					del scan_metadata[tag]
 			scannum += 1
@@ -251,7 +251,7 @@ class MzXMLFileWriter:
 			del scan_metadata['scan']
 			del scan_metadata['ordinal']
 
-			if scan_metadata.has_key('retentionTime'):
+			if 'retentionTime' in scan_metadata:
 				attrib['retentionTime'] = "PT%fS"%(scan_metadata['retentionTime'])
 				del scan_metadata['retentionTime']
 
@@ -259,24 +259,24 @@ class MzXMLFileWriter:
 			self.scanOffset[scannum] = self.h.chars()+5
 			self.w.start('scan',attrib)
 
-			if scan_metadata.has_key('precursorMz'):
+			if 'precursorMz' in scan_metadata:
 				attrib = {}
 				for tag in ('precursorMz.precursorIntensity',
 							'precursorMz.windowWideness',
 							'precursorMz.precursorScanNum',
 							'precursorMz.precursorCharge'):
-				   if scan_metadata.has_key(tag):
+				   if tag in scan_metadata:
 					   attrib[tag[len('precursorMz.'):]] = str(scan_metadata[tag])
 					   del scan_metadata[tag]
 				self.w.data('\n	  ');
 				self.w.element('precursorMz',str(scan_metadata['precursorMz']),attrib)
 				del scan_metadata['precursorMz']
 
-			if scan_metadata.has_key('scanOrigin.num'):
+			if 'scanOrigin.num' in scan_metadata:
 				attrib = {}
 				for tag in ('scanOrigin.num',
 							'scanOrigin.parentFileID'):
-				   if scan_metadata.has_key(tag):
+				   if tag in scan_metadata:
 					   attrib[tag[len('scanOrigin.'):]] = str(scan_metadata[tag])
 					   del scan_metadata[tag]
 				self.w.data('\n	  ');
@@ -296,7 +296,7 @@ class MzXMLFileWriter:
 			self.w.data(b64encode(peaks.tostring()))
 			self.w.end()
 
-			for (k,v) in scan_metadata.iteritems():
+			for (k,v) in scan_metadata.items():
 				self.w.data('\n	  ');
 				self.w.element('nameValue',name=k,value=str(v))
 
@@ -329,9 +329,9 @@ class PrecursorSort:
 		self.input = input
 
 	def __iter__(self):
-		return self.next()
+		return next(self)
 
-	def next(self):
+	def __next__(self):
 		spectra = list(self.input)
 		spectra.sort(key = lambda s: s.get('precursorMz',None),reverse=(not self.asc))
 		for s in spectra:

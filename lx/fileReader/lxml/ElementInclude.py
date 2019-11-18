@@ -53,8 +53,8 @@ form of custom URL resolvers.
 from lxml import etree
 import copy
 try:
-    from urlparse import urljoin
-    from urllib2 import urlopen
+    from urllib.parse import urljoin
+    from urllib.request import urlopen
 except ImportError:
     # Python 3
     from urllib.parse import urljoin

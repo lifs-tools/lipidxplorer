@@ -493,7 +493,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 			# os if you enable memory logging it crashes in the same way
 
 
-		if not len(dictBasePeakIntensity.keys()) > 0:
+		if not len(list(dictBasePeakIntensity.keys())) > 0:
 			raise LipidXException("Something wrong with the calculation of the base peaks")
 
 	else:
@@ -525,17 +525,17 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	stats_file_entry["loading_time"] = loadingtime
 
 	if Debug("logMemory"):
-		print "ML> spectra loaded and averaged:", memory_logging.pythonMemory()
+		print("ML> spectra loaded and averaged:", memory_logging.pythonMemory())
 	#	print "MLh> spectra loaded and averaged: ", hpy().heap()
 
 	if (not scan.options.isEmpty('precursorMassShift')) and scan.options['precursorMassShift']:
 		if scan.options['precursorMassShift'] != 0:
-			print "Applying precursor mass shift"
+			print("Applying precursor mass shift")
 			scan.shiftPrecursors(scan.options['precursorMassShift'])
 
 	if (not scan.options.isEmpty('precursorMassShiftOrbi')) and scan.options['precursorMassShiftOrbi']:
 		if scan.options['precursorMassShiftOrbi'] != 0:
-			print "Applying precursor mass shift for Scanline error on Orbitrap data."
+			print("Applying precursor mass shift for Scanline error on Orbitrap data.")
 			scan.shiftPrecursorsInRawFilterLine(scan.options['precursorMassShiftOrbi'])
 
 	#if parent:
@@ -562,16 +562,16 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	stats_file_entry["calibration_time"] = calibrationtime
 
 	# align MS spectra
-	print "Aligning MS spectra", alignmentMS
+	print("Aligning MS spectra", alignmentMS)
 
 	if Debug("logMemory"):
-		print "ML> before alignment (MS):", memory_logging.pythonMemory()
+		print("ML> before alignment (MS):", memory_logging.pythonMemory())
 
 
 	### the PIS alignment algorithm ###
 
 	if options['pisSpectra']:
-		print "Aligning PIS spectra", alignmentMS
+		print("Aligning PIS spectra", alignmentMS)
 		alignPIS(scan, [-1,1],
 					numLoops = options['loopNr'],
 					deltaRes = scan.options['MSMSresolutionDelta'],
@@ -615,7 +615,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	stats_file_entry["nb_ms_peaks_after_alg"] = len(scan.listSurveyEntry)
 
 	if Debug("logMemory"):
-		print "ML> after alignment (MS):", memory_logging.pythonMemory()
+		print("ML> after alignment (MS):", memory_logging.pythonMemory())
 	#	print "MLh> after alignment (MS):", hpy().heap()
 
 	#if not keepGoing:
@@ -652,12 +652,12 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	stats_file_entry["alignment_time"] = alignmenttime
 
 	for sample in scan.listSamples:
-		if scan.dictSamples.has_key(sample):
+		if sample in scan.dictSamples:
 			del scan.dictSamples[sample]
 	del scan.dictSamples
 
 	if Debug("logMemory"):
-		print "ML> after alignment of MS/MS:", memory_logging.pythonMemory()
+		print("ML> after alignment of MS/MS:", memory_logging.pythonMemory())
 	#	print "MLh> ", hpy().heap()
 
 	progressCount += 1
@@ -681,7 +681,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		splitext = os.path.splitext(output)
 		output = splitext[0] + "-" + scan.setting + splitext[1]
 
-	print "Save output to %s." % output
+	print("Save output to %s." % output)
 	saveSC(scan, output)
 
 	total_runtime = time.clock() - starttime
@@ -810,7 +810,7 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 				#listSamples.append(ret[2])
 				#dictSamples[ret[2]] = ret[3]
 
-			if not len(dictBasePeakIntensity.keys()) > 0:
+			if not len(list(dictBasePeakIntensity.keys())) > 0:
 				raise LipidXException("Something wrong with the calculation of the base peaks")
 
 
@@ -823,12 +823,12 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 
 			if (not scan.options.isEmpty('precursorMassShift')) and scan.options['precursorMassShift']:
 				if scan.options['precursorMassShift'] != 0:
-					print "Applying precursor mass shift"
+					print("Applying precursor mass shift")
 					scan.shiftPrecursors(scan.options['precursorMassShift'])
 
 			if (not scan.options.isEmpty('precursorMassShiftOrbi')) and scan.options['precursorMassShiftOrbi']:
 				if scan.options['precursorMassShiftOrbi'] != 0:
-					print "Applying precursor mass shift for Scanline error on Orbitrap data."
+					print("Applying precursor mass shift for Scanline error on Orbitrap data.")
 					scan.shiftPrecursorsInRawFilterLine(scan.options['precursorMassShiftOrbi'])
 
 			scan.listSamples.sort()
@@ -853,7 +853,7 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 			#	print "MLh> ", hpy().heap()
 
 			# align MS spectra
-			print "Aligning MS spectra", alignmentMS
+			print("Aligning MS spectra", alignmentMS)
 
 			# for PIS
 			if options['pisSpectra']:
@@ -902,8 +902,8 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 	### align the chunks ###
 
 	if Debug("logMemory"):
-		print "ML> before alignment of the chunks:", memory_logging.pythonMemory()
-		print "MLh> before alignment of the chunks:", hpy().heap()
+		print("ML> before alignment of the chunks:", memory_logging.pythonMemory())
+		print("MLh> before alignment of the chunks:", hpy().heap())
 
 	# generate a list of specEntry elements for the alignment of the SurveyEntries
 	dictSpecEntry = {}
@@ -914,7 +914,7 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 				mass = entry.precurmass,
 				content = {'sample' : repr(i), 'surveyEntry' : entry}))
 
-	listClusters = linearAlignment(dictSpecEntry.keys(),
+	listClusters = linearAlignment(list(dictSpecEntry.keys()),
 			dictSpecEntry,
 			scan.options['MSresolution'])
 
@@ -958,12 +958,12 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 		avgMass = 0
 		count = 0
 		polarity = 0
-		for chunk in dictSpecEntry.keys():#cl.keys():
-			if cl.has_key(chunk):
+		for chunk in list(dictSpecEntry.keys()):#cl.keys():
+			if chunk in cl:
 				if cl[chunk].content:
 					polarity = cl[chunk].content['surveyEntry'].polarity
-					for key in cl[chunk].content['surveyEntry'].dictIntensity.keys():
-						if not dictIntensity.has_key(key):
+					for key in list(cl[chunk].content['surveyEntry'].dictIntensity.keys()):
+						if key not in dictIntensity:
 							dictIntensity[key] = cl[chunk].content['surveyEntry'].dictIntensity[key]
 							dictScans[key] = cl[chunk].content['surveyEntry'].dictScans[key]
 							dictBasePeakIntensity[key] = cl[chunk].content['surveyEntry'].dictBasePeakIntensity[key]
@@ -976,11 +976,11 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 		avgMass /= count
 
 		for sample in scan_original.listSamples:
-			if not sample in dictIntensity.keys():
+			if not sample in list(dictIntensity.keys()):
 				dictIntensity[sample] = 0.0
-			if not sample in dictScans.keys():
+			if not sample in list(dictScans.keys()):
 				dictScans[sample] = 1 # 1 - because we take the sqrt
-			if not sample in dictBasePeakIntensity.keys():
+			if not sample in list(dictBasePeakIntensity.keys()):
 				dictBasePeakIntensity[sample] = 0
 
 		# check occupation threshold
@@ -1040,7 +1040,7 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 
 	# free space in the MasterScan
 	for sample in scan_original.listSamples:
-		if scan_original.dictSamples.has_key(sample):
+		if sample in scan_original.dictSamples:
 			del scan_original.dictSamples[sample]
 	del scan_original.dictSamples
 
@@ -1052,7 +1052,7 @@ def doImport_alt(options, scan_original, importDir, output, parent, listFiles, i
 	#	print "ML> after alignment of MS/MS:", memory_logging.pythonMemory()
 	#	print "MLh> ", hpy().heap()
 
-	print "Save output to %s." % output
+	print("Save output to %s." % output)
 	saveSC(scan_original, output)
 
 	reportout("%.2f sec. for the whole import process" % (time.clock() - starttime))

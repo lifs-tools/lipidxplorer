@@ -7,7 +7,7 @@ details.
 import re
 import copy
 try:
-    from urlparse import urlsplit
+    from urllib.parse import urlsplit
 except ImportError:
     # Python 3
     from urllib.parse import urlsplit
@@ -23,16 +23,16 @@ except NameError:
     from sets import Set as set
 
 try:
-    unichr = __builtins__['unichr']
+    chr = __builtins__['unichr']
 except (NameError, KeyError):
     # Python 3
-    unichr = chr
+    chr = chr
 
 try:
-    unicode = __builtins__['unicode']
+    str = __builtins__['unicode']
 except (NameError, KeyError):
     # Python 3
-    unicode = str
+    str = str
 
 try:
     bytes = __builtins__['bytes']
@@ -41,9 +41,9 @@ except (NameError, KeyError):
     bytes = str
 
 try:
-    basestring = __builtins__['basestring']
+    str = __builtins__['basestring']
 except (NameError, KeyError):
-    basestring = (str, bytes)
+    str = (str, bytes)
 
 
 __all__ = ['clean_html', 'clean', 'Cleaner', 'autolink', 'autolink_html',
@@ -204,7 +204,7 @@ class Cleaner(object):
     whitelist_tags = set(['iframe', 'embed'])
 
     def __init__(self, **kw):
-        for name, value in kw.items():
+        for name, value in list(kw.items()):
             if not hasattr(self, name):
                 raise TypeError(
                     "Unknown parameter: %s=%r" % (name, value))
@@ -260,7 +260,7 @@ class Cleaner(object):
             safe_attrs = set(defs.safe_attrs)
             for el in doc.iter():
                 attrib = el.attrib
-                for aname in attrib.keys():
+                for aname in list(attrib.keys()):
                     if aname not in safe_attrs:
                         del attrib[aname]
         if self.javascript:
@@ -268,7 +268,7 @@ class Cleaner(object):
                 # safe_attrs handles events attributes itself
                 for el in doc.iter():
                     attrib = el.attrib
-                    for aname in attrib.keys():
+                    for aname in list(attrib.keys()):
                         if aname.startswith('on'):
                             del attrib[aname]
             doc.rewrite_links(self._remove_javascript_link,
@@ -489,7 +489,7 @@ class Cleaner(object):
 
     def clean_html(self, html):
         result_type = type(html)
-        if isinstance(html, basestring):
+        if isinstance(html, str):
             doc = fromstring(html)
         else:
             doc = copy.deepcopy(html)
@@ -624,7 +624,7 @@ def _link_text(text, link_regexes, avoid_hosts, factory):
                 
 def autolink_html(html, *args, **kw):
     result_type = type(html)
-    if isinstance(html, basestring):
+    if isinstance(html, str):
         doc = fromstring(html)
     else:
         doc = copy.deepcopy(html)
@@ -643,7 +643,7 @@ _avoid_word_break_classes = ['nobreak']
 def word_break(el, max_width=40,
                avoid_elements=_avoid_word_break_elements,
                avoid_classes=_avoid_word_break_classes,
-               break_character=unichr(0x200b)):
+               break_character=chr(0x200b)):
     """
     Breaks any long words found in the body of the text (not attributes).
 

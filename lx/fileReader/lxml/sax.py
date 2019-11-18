@@ -85,9 +85,9 @@ class ElementTreeContentHandler(ContentHandler):
         if attributes:
             attrs = {}
             try:
-                iter_attributes = attributes.iteritems()
+                iter_attributes = iter(attributes.items())
             except AttributeError:
-                iter_attributes = attributes.items()
+                iter_attributes = list(attributes.items())
 
             for name_tuple, value in iter_attributes:
                 if name_tuple[0]:
@@ -195,7 +195,7 @@ class ElementTreeProducer(object):
 
         new_prefixes = []
         build_qname = self._build_qname
-        attribs = element.items()
+        attribs = list(element.items())
         if attribs:
             attr_values = {}
             attr_qnames = {}
