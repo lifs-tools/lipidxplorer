@@ -69,10 +69,10 @@ class odict(DictMixin):
 	
 	#as per https://stackoverflow.com/questions/11165188/how-to-achieve-the-functionality-of-userdict-dictmixin-in-python-3
 	def __len__(self):
-		return len(self.mylist)
+		return len(self._data)
 
 	def __iter__(self):
-		for i in self.mylist:
+		for i in self._data:
 			yield i
 
 	def __setitem__(self, key, value):
