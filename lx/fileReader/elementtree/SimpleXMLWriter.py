@@ -116,7 +116,7 @@ del _escape
 # the following functions assume an ascii-compatible encoding
 # (or "utf-16")
 
-def escape_cdata(s, encoding=None, replace=string.replace):
+def escape_cdata(s, encoding=None, replace=str.replace):
     s = replace(s, "&", "&amp;")
     s = replace(s, "<", "&lt;")
     s = replace(s, ">", "&gt;")
@@ -127,7 +127,7 @@ def escape_cdata(s, encoding=None, replace=string.replace):
             return encode_entity(s)
     return s
 
-def escape_attrib(s, encoding=None, replace=string.replace):
+def escape_attrib(s, encoding=None, replace=str.replace):
     s = replace(s, "&", "&amp;")
     s = replace(s, "'", "&apos;")
     s = replace(s, "\"", "&quot;")
