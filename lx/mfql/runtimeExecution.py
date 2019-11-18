@@ -3387,8 +3387,8 @@ class TypeResult:
 					if i[j].type == 1:
 						listSCMSMS.append(i[j])
 
-		listSCMS.sort(cmp = lambda x,y: cmp(x.mass, y.mass))
-		listSCMSMS.sort(cmp = lambda x,y: cmp(x.mass, y.mass))
+		listSCMS.sort(key = lambda x: x.mass)
+		listSCMSMS.sort(key = lambda x: x.mass)
 
 		index = 0
 		isospec = 0
