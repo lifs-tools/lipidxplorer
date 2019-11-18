@@ -371,7 +371,7 @@ def add_Sample(
 	# maybe there is no MS/MS?
 	if len(ms2Scans) > 0:
 		for ms2scan_entry in sorted(ms2Scans,
-				cmp = lambda x,y : cmp(x['precursorMz'], y['precursorMz'])):
+				key = lambda x : x['precursorMz']):
 			if ms2scan_entry['scan'] != []:
 
 				# add the fragment mass to the fragment spectrum
