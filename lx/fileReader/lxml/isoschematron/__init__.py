@@ -14,15 +14,15 @@ except (KeyError, NameError):
     # Python < 2.6
     bytes = str
 try:
-    unicode = __builtins__["unicode"]
+    str = __builtins__["unicode"]
 except (KeyError, NameError):
     # Python 3
-    unicode = str
+    str = str
 try:
-    basestring = __builtins__["basestring"]
+    str = __builtins__["basestring"]
 except (KeyError, NameError):
     # Python 3
-    basestring = str
+    str = str
 
 
 __all__ = ['extract_xsd', 'extract_rng', 'iso_dsdl_include',
@@ -86,13 +86,13 @@ def stylesheet_params(**kwargs):
     Else convert arg to string.
     """
     result = {}
-    for key, val in kwargs.items():
-        if isinstance(val, basestring):
+    for key, val in list(kwargs.items()):
+        if isinstance(val, str):
             val = _etree.XSLT.strparam(val)
         elif val is None:
             raise TypeError('None not allowed as a stylesheet parameter')
         elif not isinstance(val, _etree.XPath):
-            val = unicode(val)
+            val = str(val)
         result[key] = val
     return result
 
@@ -105,7 +105,7 @@ def _stylesheet_param_dict(paramsDict, kwargsDict):
     """
     # beware of changing mutable default arg
     paramsDict = dict(paramsDict)
-    for k, v in kwargsDict.items():
+    for k, v in list(kwargsDict.items()):
         if v is not None: # None values do not override
             paramsDict[k] = v
     paramsDict = stylesheet_params(**paramsDict)

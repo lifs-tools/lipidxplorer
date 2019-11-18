@@ -20,7 +20,7 @@
 
 import wiffbridge
 import re, os
-import cPickle
+import pickle
 from mzAPI import mzScan, mzFile as mzAPImzFile
 
 class mzFile(mzAPImzFile):
@@ -36,7 +36,7 @@ class mzFile(mzAPImzFile):
         if os.path.exists(data_file + '.mzi'):
             self.info_file = data_file + '.mzi'
             info_fh = open(self.info_file)
-            self.info_scans = cPickle.load(info_fh)
+            self.info_scans = pickle.load(info_fh)
             info_fh.close()
 
     def close(self):

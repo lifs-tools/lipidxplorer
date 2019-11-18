@@ -14,7 +14,7 @@ class TypeScan:
 
 		self.scanTerm = None
 
-		if argv.has_key('mark'):
+		if 'mark' in argv:
 			tmp = argv['mark']
 			if isinstance(tmp, TypeObject):
 				if tmp.elementSequence.isSFConstraint:
@@ -45,23 +45,23 @@ class TypeScan:
 #				if op[0] == 'maxocc':
 #					self.maxocc = op[1]
 
-		if argv.has_key('name'):
+		if 'name' in argv:
 			self.name = argv['name']
 		else:
 			self.name = None
-		if argv.has_key('sfconstraint'):
+		if 'sfconstraint' in argv:
 			self.sfconstraint = argv['sfconstraint']
 		else:
 			self.sfconstraint = None
-		if argv.has_key('scope'):
+		if 'scope' in argv:
 			self.scope = argv['scope']
 		else:
 			self.scope = None
-		if argv.has_key('masterscan'):
+		if 'masterscan' in argv:
 			self.masterscan = argv['masterscan']
 		else:
 			self.masterscan = None
-		if argv.has_key('expression'):
+		if 'expression' in argv:
 			self.expression = argv['expression']
 		else:
 			self.expression = None
@@ -175,7 +175,7 @@ class TypeScan:
 						### searching in positive MS with sf-constraint
 						if m.scope == "MS1+" and se.polarity > 0:# and isinstance(m, TypeSFConstraint):
 
-							if not m.name in scanEntry.dictMarks.keys():
+							if not m.name in list(scanEntry.dictMarks.keys()):
 								scanEntry.dictMarks[m.name] = []
 
 							# sf-constraint given
@@ -249,7 +249,7 @@ class TypeScan:
 													notIn = False
 
 											if notIn:
-												if not m.name in scanEntry.dictMarks.keys():
+												if not m.name in list(scanEntry.dictMarks.keys()):
 													scanEntry.dictMarks[m.name] = []
 												scanEntry.dictMarks[m.name].append(mark)
 												se.listMark.append(mark)
@@ -302,7 +302,7 @@ class TypeScan:
 											notIn = False
 
 									if notIn:
-										if not m.name in scanEntry.dictMarks.keys():
+										if not m.name in list(scanEntry.dictMarks.keys()):
 											scanEntry.dictMarks[m.name] = []
 										scanEntry.dictMarks[m.name].append(mark)
 										se.listMark.append(mark)
@@ -370,7 +370,7 @@ class TypeScan:
 											notIn = False
 
 									if notIn:
-										if not m.name in scanEntry.dictMarks.keys():
+										if not m.name in list(scanEntry.dictMarks.keys()):
 											scanEntry.dictMarks[m.name] = []
 										scanEntry.dictMarks[m.name].append(mark)
 										se.listMark.append(mark)
@@ -437,7 +437,7 @@ class TypeScan:
 												notIn = False
 
 										if notIn:
-											if not ml.name in scanEntry.dictMarks.keys():
+											if not ml.name in list(scanEntry.dictMarks.keys()):
 												scanEntry.dictMarks[ml.name] = []
 											scanEntry.dictMarks[ml.name].append(mark)
 											se.listMark.append(mark)
@@ -489,7 +489,7 @@ class TypeScan:
 										notIn = False
 
 								if notIn:
-									if not m.name in scanEntry.dictMarks.keys():
+									if not m.name in list(scanEntry.dictMarks.keys()):
 										scanEntry.dictMarks[m.name] = []
 									scanEntry.dictMarks[m.name].append(mark)
 									se.listMark.append(mark)
@@ -497,7 +497,7 @@ class TypeScan:
 						### searching in negative MS
 						elif m.scope == "MS1-" and se.polarity < 0:# and isinstance(m, TypeSFConstraint):
 
-							if not m.name in scanEntry.dictMarks.keys():
+							if not m.name in list(scanEntry.dictMarks.keys()):
 								scanEntry.dictMarks[m.name] = []
 
 							# sf-constraint given
@@ -570,7 +570,7 @@ class TypeScan:
 
 											if notIn:
 												se.listMark.append(mark)
-												if not m.name in scanEntry.dictMarks.keys():
+												if not m.name in list(scanEntry.dictMarks.keys()):
 													scanEntry.dictMarks[m.name] = []
 												scanEntry.dictMarks[m.name].append(mark)
 
@@ -637,7 +637,7 @@ class TypeScan:
 
 									if notIn:
 										se.listMark.append(mark)
-										if not m.name in scanEntry.dictMarks.keys():
+										if not m.name in list(scanEntry.dictMarks.keys()):
 											scanEntry.dictMarks[m.name] = []
 										scanEntry.dictMarks[m.name].append(mark)
 
@@ -704,7 +704,7 @@ class TypeScan:
 
 										if notIn:
 											se.listMark.append(mark)
-											if not ml.name in scanEntry.dictMarks.keys():
+											if not ml.name in list(scanEntry.dictMarks.keys()):
 												scanEntry.dictMarks[ml.name] = []
 											scanEntry.dictMarks[ml.name].append(mark)
 
@@ -752,7 +752,7 @@ class TypeScan:
 
 								if not mark in se.listMark:
 									se.listMark.append(mark)
-									if not m.name in scanEntry.dictMarks.keys():
+									if not m.name in list(scanEntry.dictMarks.keys()):
 										scanEntry.dictMarks[m.name] = []
 									scanEntry.dictMarks[m.name].append(mark)
 
@@ -776,7 +776,7 @@ class TypeScan:
 						elif m.scope == "MS2+" and se.polarity > 0\
 								and se.listPrecurmassSF != []:
 
-							if not m.name in scanEntry.dictMarks.keys():
+							if not m.name in list(scanEntry.dictMarks.keys()):
 								scanEntry.dictMarks[m.name] = []
 
 							positionMSMS = 0
@@ -1807,7 +1807,7 @@ class TypeScan:
 						elif m.scope == "MS2-" and se.polarity < 0\
 								and se.listPrecurmassSF != []:
 
-							if not m.name in scanEntry.dictMarks.keys():
+							if not m.name in list(scanEntry.dictMarks.keys()):
 								scanEntry.dictMarks[m.name] = []
 
 							positionMSMS = 0
@@ -2999,7 +2999,7 @@ class TypeMarkTerm:
 
 		if isinstance(self.leftSide, TypeSFConstraint) or isinstance(self.leftSide, TypeElementSequence)\
 			or isinstance(self.leftSide, TypeFloat) or isinstance(self.leftSide, TypeList):
-			if res.has_key(self.leftSide.name) and res[self.leftSide.name] != []:
+			if self.leftSide.name in res and res[self.leftSide.name] != []:
 				leftResult = True
 
 		elif isinstance(self.leftSide, TypeMarkTerm):
@@ -3007,7 +3007,7 @@ class TypeMarkTerm:
 
 		if isinstance(self.rightSide, TypeSFConstraint) or isinstance(self.rightSide, TypeElementSequence)\
 			or isinstance(self.rightSide, TypeFloat) or isinstance(self.rightSide, TypeList):
-			if res.has_key(self.rightSide.name) and res[self.rightSide.name] != []:
+			if self.rightSide.name in res and res[self.rightSide.name] != []:
 				rightResult = True
 
 		elif isinstance(self.rightSide, TypeMarkTerm):
@@ -3115,22 +3115,22 @@ class TypeScanEntry:
 		else:
 			str = '* > '
 
-		for i in self.dictMarks.keys():
+		for i in list(self.dictMarks.keys()):
 			for m in self.dictMarks[i]:
 				str += ' ' + m.encodedName + '; '
 		return str
 
 	def __getitem__(self, item):
 		if isinstance(item, int) or isinstance(item, slice):
-			return self.dictMarks.values()[item]
+			return list(self.dictMarks.values())[item]
 		else:
 			return self.dictMarks[item]
 
 	def __len__(self):
-		return len(self.dictMarks.keys()) + 1
+		return len(list(self.dictMarks.keys())) + 1
 
 	def has_key(self, item):
-		return self.dictMarks.has_key(item)
+		return item in self.dictMarks
 
 	def keys(self):
-		return self.dictMarks.keys()
+		return list(self.dictMarks.keys())

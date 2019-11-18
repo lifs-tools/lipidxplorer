@@ -4,9 +4,9 @@ import os, sys
 #sys.path.append('../lib')
 #sys.path.insert(0,'../..')
 
-import ply.lex as lex
+from . import ply.lex as lex
 from lx.exceptions import SyntaxErrorException
-from chemParser import parseElemSeq
+from .chemParser import parseElemSeq
 import time
 
 keywords = (
@@ -93,7 +93,7 @@ lexer = lex.lex(reflags = re.I, debug = 0, optimize = 0)
 ########################### Parser starts here ################################
 ###############################################################################
 
-import ply.yacc as yacc
+from . import ply.yacc as yacc
 
 # for the testing: the first semantics
 
@@ -144,7 +144,7 @@ def p_script(p):
 
 def p_script_error(p):
 	'''script : error variables identification'''
-	print "SYNTAX ERROR: 'QUERYNAME' is missing"
+	print("SYNTAX ERROR: 'QUERYNAME' is missing")
 
 
 ### VARIABLES ###
@@ -429,10 +429,10 @@ def p_rContent(p):
 
 def p_error(p):
 	if not p:
-		print "SYNTAX ERROR at EOF in %s" % mfqlObj.filename
+		print("SYNTAX ERROR at EOF in %s" % mfqlObj.filename)
 		raise SyntaxErrorException("SYNTAX ERROR at EOF", mfqlObj.filename, mfqlObj.queryName, -1)
 	else:
-		print "Syntax error after '%s'\nfile: \t%s\nquery: \t%s\nline: \t%s" % (p.value, mfqlObj.filename, mfqlObj.queryName, p.lexer.lineno)
+		print("Syntax error after '%s'\nfile: \t%s\nquery: \t%s\nline: \t%s" % (p.value, mfqlObj.filename, mfqlObj.queryName, p.lexer.lineno))
 		raise SyntaxErrorException(None, mfqlObj.filename, mfqlObj.queryName, p.lexer.lineno)
 
 parser = yacc.yacc(debug = 1, optimize = 0)
@@ -450,7 +450,7 @@ def startSyntaxCheck(dictData, mfqlObjIn):
 	mfqlObj.namespaceConnector = '_'
 
 	### do the IDENTIFY(cation) ###
-	for k in dictData.keys():
+	for k in list(dictData.keys()):
 
 		mfqlObj.filename = k
 

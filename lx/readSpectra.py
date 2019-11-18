@@ -255,7 +255,7 @@ def add_Sample(
 		# as per fadi this is called on ms1
 		fadi_denominator = count
 		fadi_percentage = options['MSfilter']
-		listClusters = linearAlignment(dictSpecEntry.keys(),
+		listClusters = linearAlignment(list(dictSpecEntry.keys()),
 							dictSpecEntry,
 							options['MSresolution'],
 							merge = mergeSumIntensity,
@@ -301,11 +301,11 @@ def add_Sample(
 
 			# get the averaged intensity
 			for sample in keys:#cl.keys():
-				if cl.has_key(sample) and cl[sample].content != {}:
+				if sample in cl and cl[sample].content != {}:
 					sumMass += cl[sample].mass
 					sumMassIntensity += cl[sample].mass * cl[sample].content['intensity']
 					sumIntensity += cl[sample].content['intensity']
-					if cl[sample].content.has_key('intensity_rel'):
+					if 'intensity_rel' in cl[sample].content:
 						sumIntensity_relative += cl[sample].content['intensity_rel']
 
 			# empty intensity? make an empty entry
@@ -519,7 +519,7 @@ def add_Sample_AVG(
 	# get base peak intensity
 	basePeakIntensity = 0
 	for i in spectrum:
-		print "%.4f,%.1f" % (i[0], i[1])
+		print("%.4f,%.1f" % (i[0], i[1]))
 		if i[1] > basePeakIntensity:
 			basePeakIntensity = i[1]
 
@@ -1029,7 +1029,7 @@ directory>, <the resolution of the mass spec machine>
 		if scanAveraging == 'linear':
 			fadi_denominator = count
 			fadi_percentage = options['MSfilter']
-			listClusters = linearAlignment(dictSpecEntry.keys(),
+			listClusters = linearAlignment(list(dictSpecEntry.keys()),
 								dictSpecEntry,
 								options['MSresolution'],
 								merge = mergeSumIntensity,
@@ -1038,7 +1038,7 @@ directory>, <the resolution of the mass spec machine>
 								fadi_denominator = fadi_denominator, fadi_percentage=fadi_percentage)
 
 		elif scanAveraging == 'heuristic':
-			listClusters = heuristicAlignment(dictSpecEntry.keys(),
+			listClusters = heuristicAlignment(list(dictSpecEntry.keys()),
 								dictSpecEntry,
 								options['MSresolution'],
 								merge = mergeSumIntensity,
@@ -1050,8 +1050,8 @@ directory>, <the resolution of the mass spec machine>
 			strings = []
 			for cl in listClusters:
 				str = ''
-				for sample in dictSpecEntry.keys():#cl.keys():
-					if cl.has_key(sample):
+				for sample in list(dictSpecEntry.keys()):#cl.keys():
+					if sample in cl:
 						if cl[sample].content:
 							str +=  "  {0:>9.4f} - {1:>12.1f}  ".format(cl[sample].mass, cl[sample].content['intensity'])
 							#str +=  "  %.4f  " % cl[sample].content['intensity']
@@ -1059,15 +1059,15 @@ directory>, <the resolution of the mass spec machine>
 							try:
 								str +=  " /{0:>9.4f} - {1:>12}/ ".format(cl[sample].mass, '')
 							except TypeError:
-								print "TypeError:", cl[sample].mass
+								print("TypeError:", cl[sample].mass)
 							except :
 								import sys
-								print(sys.exc_info()[0])
+								print((sys.exc_info()[0]))
 					else:
 						str +=  " /{0:>9} - {1:>12}/ ".format('empty', '')
 				strings.append(str)
 
-			print('\n'.join(strings))
+			print(('\n'.join(strings)))
 
 
 		### averaging of the MS1 scans ###
@@ -1101,12 +1101,12 @@ directory>, <the resolution of the mass spec machine>
 			sumIntensity = 0
 			sumIntensity_relative = 0
 
-			for sample in dictSpecEntry.keys():
-				if cl.has_key(sample) and cl[sample].content != {}:
+			for sample in list(dictSpecEntry.keys()):
+				if sample in cl and cl[sample].content != {}:
 					sumMass += cl[sample].mass
 					sumMassIntensity += cl[sample].mass * cl[sample].content['intensity']
 					sumIntensity += cl[sample].content['intensity']
-					if cl[sample].content.has_key('intensity_rel'):
+					if 'intensity_rel' in cl[sample].content:
 						sumIntensity_relative += cl[sample].content['intensity_rel']
 
 			out = specEntry(
@@ -1450,7 +1450,7 @@ def loadMSMS(sample, dirmsms, resolution, options):
 					fileName = i,
 					MSMSthreshold = options['MSMSthreshold']))
 
-	print "Number of *.dta files:", count
+	print("Number of *.dta files:", count)
 
 	sample.listMsms.sort()
 

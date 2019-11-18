@@ -16,13 +16,13 @@ import wx.grid
 import wx.html
 import csv
 import re
-import ConfigParser
+import configparser
 import threading
 import multiprocessing
 import traceback
 
 from wx.lib.newevent import NewEvent
-import Queue
+import queue
 
 sysPath = '..' + os.sep + 'lib'
 sys.path.append(sysPath)
@@ -234,7 +234,7 @@ class MFQLDropTarget(wx.FileDropTarget):
 				self.parent.dictMFQLScripts[l[-1]] = p
 
 		#self.parent.list_box_1.Set(sorted(self.parent.dictMFQLScripts.keys()))
-		self.parent.list_box_1.Set(self.parent.dictMFQLScripts.keys())
+		self.parent.list_box_1.Set(list(self.parent.dictMFQLScripts.keys()))
 
 
 USE_GENERIC = 1
@@ -283,7 +283,7 @@ def opj(path):
 	"""Convert paths to the platform-specific separator"""
 	import os
 
-	st = apply(os.path.join, tuple(path.split('/')))
+	st = os.path.join(*tuple(path.split('/')))
 	# HACK: on Linux, a leading / gets lost...
 	if path.startswith('/'):
 	    st = '/' + st
@@ -303,8 +303,8 @@ class Worker(threading.Thread):
 		threading.Thread.__init__(self, **kwds)
 		#self.setDaemon(True)
 		self.setDaemon(False)
-		self.requestQ = Queue.Queue()#requestQ
-		self.resultQ = Queue.Queue()#resultQ
+		self.requestQ = queue.Queue()#requestQ
+		self.resultQ = queue.Queue()#resultQ
 		self.parent = wx.GetApp()
 		self.start()
 
@@ -316,7 +316,7 @@ class Worker(threading.Thread):
 	def run(self):
 
 		sys.stdout = SysOutListener()
-		print "\n***Debugging Mode!***"
+		print("\n***Debugging Mode!***")
 		sys.stderr = SysOutListener()
 		while True:
 			dlg = None
@@ -393,7 +393,7 @@ class Worker(threading.Thread):
 					wx.GetApp().frame.OnMenuDebugWin(None)
 				wx.PostEvent(wx.GetApp().frame, evt)
 				(excName, excArgs, excTb, exc) = formatExceptionInfo()
-				print excName, exc
+				print(excName, exc)
 
 				text = "The following error occured:\n\n"
 				text += "** %s : %s **\n\n\n" % (excName, exc)
@@ -431,7 +431,7 @@ class Worker(threading.Thread):
 						d = dlg.GetPath()
 						with open(d, 'w') as f:
 							f.write(strBugReport)
-						print d
+						print(d)
 
 				else:
 					dlg.Destroy()
@@ -883,7 +883,7 @@ class CSVViewer(wx.Frame):
 		#grab a sample and see if there is a header
 		sample=self.file.read(8192)
 		self.file.seek(0)
-		colnames=csvfile.next()
+		colnames=next(csvfile)
 
 		self.box_sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -973,8 +973,8 @@ class RunOptions:
 
 	def has_key(self, key):
 		has_key = False
-		if self.value.has_key(key): has_key = True
-		if self.type.has_key(key): has_key = True
+		if key in self.value: has_key = True
+		if key in self.type: has_key = True
 		return has_key
 
 class LpdxFrame(wx.Frame):
@@ -994,7 +994,7 @@ class LpdxFrame(wx.Frame):
 		# was present
 		self.lpdxOptions['defaultImportSettings'] = ('lpdxImportSettings_benchmark.ini', type(''))
 
-		self.confParseOpts = ConfigParser.ConfigParser()
+		self.confParseOpts = configparser.ConfigParser()
 		self.confParseOpts.read("lpdxopts.ini")
 
 		# options for the alignment
@@ -1006,7 +1006,7 @@ class LpdxFrame(wx.Frame):
 
 		# read option from the lpdxopts.ini file if present. If not -
 		# write the option as defined above in self.lpdxOptions
-		for option in self.lpdxOptions.keys():
+		for option in list(self.lpdxOptions.keys()):
 			if self.confParseOpts.has_option(self.settingDefaults, option):
 				o = self.confParseOpts.get(self.settingDefaults, option)
 				if not o in ['True', 'False']:
@@ -1038,7 +1038,7 @@ class LpdxFrame(wx.Frame):
 		self.defaultFileType = 'mzML'
 		self.rawToolTip = ""
 
-		if kwds.has_key("optimized") and kwds['optimized']:
+		if "optimized" in kwds and kwds['optimized']:
 			self.optimized = True
 		else:
 			self.optimized = False
@@ -1515,7 +1515,7 @@ intensity."""))
 		# set initially *.ini file
 		self.filePath_LoadIni = self.text_ctrl_LoadIniSection.GetValue()
 		self.text_ctrl_LoadIniSection.SetValue(self.filePath_LoadIni)
-		self.confParse = ConfigParser.ConfigParser()
+		self.confParse = configparser.ConfigParser()
 		self.confParse.read(self.text_ctrl_LoadIniSection.GetLineText(0))
 
 		self.button_Browse_LoadIniSection = buttons.GenButton(self.notebook_1_pane_5, -1, "Browse")
@@ -1826,12 +1826,12 @@ intensity."""))
 		# initialize config parser and fill it with the options
 		sectionP = "project"
 		sectionQ = "mfql"
-		configParser = ConfigParser.ConfigParser()
+		configParser = configparser.ConfigParser()
 		configParser.add_section(sectionP)
 		configParser.add_section(sectionQ)
-		for opt in project.options.keys():
+		for opt in list(project.options.keys()):
 			configParser.set(sectionP, opt, project.options[opt])
-		for query in project.mfql.keys():
+		for query in list(project.mfql.keys()):
 			configParser.set(sectionQ, query + "-name", query)
 			configParser.set(sectionQ, query, project.mfql[query])
 
@@ -1878,12 +1878,12 @@ intensity."""))
 		# initialize config parser and fill it with the options
 		sectionP = "project"
 		sectionQ = "mfql"
-		configParser = ConfigParser.ConfigParser()
+		configParser = configparser.ConfigParser()
 		configParser.add_section(sectionP)
 		configParser.add_section(sectionQ)
-		for opt in project.options.keys():
+		for opt in list(project.options.keys()):
 			configParser.set(sectionP, opt, project.options[opt])
-		for query in project.mfql.keys():
+		for query in list(project.mfql.keys()):
 			configParser.set(sectionQ, query + "-name", query)
 			configParser.set(sectionQ, query, project.mfql[query])
 
@@ -1965,7 +1965,7 @@ intensity."""))
 		# option key used in lpdxImport.py, substituted by 'dataType'
 		project.options['spectraFormat'] = self.combo_ctrl_ImportDataSection.GetValue()
 
-		for query in self.dictMFQLScripts.keys():
+		for query in list(self.dictMFQLScripts.keys()):
 			project.mfql[query] = self.dictMFQLScripts[query]
 
 		return project
@@ -2011,7 +2011,7 @@ intensity."""))
 		# option key used in lpdxImport.py, substituted by 'dataType'
 		project.options['spectraFormat'] = self.combo_ctrl_ImportDataSection.GetValue()
 
-		for query in self.dictMFQLScripts.keys():
+		for query in list(self.dictMFQLScripts.keys()):
 			project.mfql[query] = self.dictMFQLScripts[query]
 
 		return project
@@ -2125,12 +2125,12 @@ intensity."""))
 			self.checkBox_generateStatistics.SetValue(strToBool(options['statistics']))
 			self.checkBox_noPermutations.SetValue(strToBool(options['noPermutations']))
 			#project.options['mzXML'] = None # option key used in lpdxImport.py, substituted by 'dataType'
-		except TypeError, AttributeError:
+		except TypeError as AttributeError:
 			pass
 
 		# set local variables
 		self.dictMFQLScripts = project.mfql
-		self.list_box_1.Set(self.dictMFQLScripts.keys())
+		self.list_box_1.Set(list(self.dictMFQLScripts.keys()))
 		self.filePath_Dump = options['dumpMasterScanFile']
 
 		# if a setting was given we make it our current config
@@ -2231,14 +2231,14 @@ intensity."""))
 
 	def OnStcChange(self, evt):
 
-		for key in self.dict_text_ctrl.keys():
+		for key in list(self.dict_text_ctrl.keys()):
 			if evt.GetId() == self.dict_text_ctrl[key].GetId():
 
 				# find right page
 				for i in range(self.notebook_1.GetPageCount()):
 					if self.notebook_1.GetPage(i) == self.dict_text_ctrl[key].GetParent():
 						self.dict_isChangedAndNotSavedMfqlFile[key] = True
-						if self.dict_button_save.has_key(key):
+						if key in self.dict_button_save:
 							# this is normal gray: (230, 224, 218, 255)
 							if not self.dict_button_save[key].GetBackgroundColour() == (250, 80, 80, 215):
 								self.dict_button_save[key].SetBackgroundColour((250, 80, 80, 215))
@@ -2253,7 +2253,7 @@ intensity."""))
 			evt.StopPropagation()
 			return
 
-		for key in self.dict_text_ctrl.keys():
+		for key in list(self.dict_text_ctrl.keys()):
 			if self.dict_isChangedAndNotSavedMfqlFile[key]:
 				dlg = wx.MessageDialog(self, "Modified query '%s' is not saved. Save it?" % key, "Ups..",
 					wx.YES|wx.NO|wx.ICON_HAND)
@@ -2379,7 +2379,7 @@ intensity."""))
 			wx.GetApp().frame.OnMenuDebugWin(None)
 		wx.PostEvent(wx.GetApp().frame, evt)
 		(excName, excArgs, excTb, exc) = formatExceptionInfo()
-		print excName, exc
+		print(excName, exc)
 
 		text = "The following error occured:\n\n"
 		text += "** %s : %s **\n\n\n" % (excName, exc)
@@ -2416,7 +2416,7 @@ intensity."""))
 				d = dlg.GetPath()
 				with open(d, 'w') as f:
 					f.write(strBugReport)
-				print d
+				print(d)
 
 		else:
 			dlg.Destroy()
@@ -2465,7 +2465,7 @@ intensity."""))
 									strCentroid = ''
 								strStartWiff = 'mzWiff -FPC1 %s --mzXML "%s"' % (strCentroid, os.path.join(root, f))#s, wiffOut)
 
-							print strStartWiff
+							print(strStartWiff)
 							exitCode = os.system(strStartWiff)
 						count += 1
 						thinking.Update(count)
@@ -2530,7 +2530,7 @@ intensity."""))
 									strCentroid = ''
 								strStartRaw = 'readw --precursorFromFilterLine --mzXML %s "%s" "%s"' % (strCentroid, os.path.join(root, f), fout)
 
-							print strStartRaw
+							print(strStartRaw)
 							exitCode = os.system(strStartRaw)
 						count += 1
 						thinking.Update(count)
@@ -2640,7 +2640,7 @@ intensity."""))
 		self.text_ctrl_LoadIniSection.SetValue(filePath_LoadIni)
 		self.filePath_LoadIni = filePath_LoadIni
 
-		self.confParse = ConfigParser.ConfigParser()
+		self.confParse = configparser.ConfigParser()
 		self.confParse.read(self.text_ctrl_LoadIniSection.GetLineText(0))
 
 		self.listConfigurations = sorted(self.confParse.sections())
@@ -2726,7 +2726,7 @@ intensity."""))
 		# now *.ini load since now
 		if not self.confParse:
 
-			self.confParse = ConfigParser.ConfigParser()
+			self.confParse = configparser.ConfigParser()
 
 			msgDlg = wx.MessageDialog(self, "You have to load an existing *.ini file first. Do you want to create one?",
 			'Caption', wx.YES|wx.NO|wx.CANCEL|wx.ICON_INFORMATION)
@@ -2869,7 +2869,7 @@ intensity."""))
 		try:
 			self.text_ctrl_OutputSection.SetValue(self.filePath_Output)
 		except AttributeError:
-			print "No output file specified!"
+			print("No output file specified!")
 
 	def OnBrowse_MasterScan(self, evt):
 
@@ -3228,8 +3228,8 @@ intensity."""))
 					wx.GetApp().frame.OnMenuDebugWin(None)
 
 				# give queues to the Worker class for threadsave data handling
-				requestQ = Queue.Queue()
-				resultQ = Queue.Queue()
+				requestQ = queue.Queue()
+				resultQ = queue.Queue()
 				worker = Worker(self, requestQ, resultQ)
 
 				startImport(options = options,
@@ -3285,7 +3285,7 @@ intensity."""))
 				wx.GetApp().frame.OnMenuDebugWin(None)
 			wx.PostEvent(wx.GetApp().frame, evt)
 			(excName, excArgs, excTb, exc) = formatExceptionInfo()
-			print excName, exc
+			print(excName, exc)
 
 			text = "The following error occured:\n\n"
 			text += "** %s : %s **\n\n\n" % (excName, exc)
@@ -3323,7 +3323,7 @@ intensity."""))
 					d = dlg.GetPath()
 					with open(d, 'w') as f:
 						f.write(strBugReport)
-					print d
+					print(d)
 
 			else:
 				dlg.Destroy()
@@ -3347,7 +3347,7 @@ intensity."""))
 				self.dictMFQLScripts[l[-1]] = p
 
 			#self.list_box_1.Set(sorted(self.dictMFQLScripts.keys()))
-			self.list_box_1.Set(self.dictMFQLScripts.keys())
+			self.list_box_1.Set(list(self.dictMFQLScripts.keys()))
 
 		dlg.Destroy()
 
@@ -3363,13 +3363,13 @@ intensity."""))
 			for i in os.listdir(self.filePath_MFQLDir):
 				if re.match('.*\.mfql', i):
 					self.dictMFQLScripts[i] = self.filePath_MFQLDir + os.sep + i
-			self.list_box_1.Set(self.dictMFQLScripts.keys())
+			self.list_box_1.Set(list(self.dictMFQLScripts.keys()))
 
 		dlg.Destroy()
 
 	def OnSavePanel(self, evt):
 
-		for key in self.dict_button_save.keys():
+		for key in list(self.dict_button_save.keys()):
 			if evt.GetId() == self.dict_button_save[key].GetId():
 
 				# find right page
@@ -3379,7 +3379,7 @@ intensity."""))
 							self.dict_mfqlFile[key] = mfqlFile
 							mfqlFile.write(self.dict_text_ctrl[key].GetText())
 							self.dict_isChangedAndNotSavedMfqlFile[key] = False
-						if self.dict_button_save.has_key(key):
+						if key in self.dict_button_save:
 							self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
 
 	def OnNewPanel(self, evt):
@@ -3407,14 +3407,14 @@ intensity."""))
 					p += 'mfql'
 
 
-			if not self.dictMFQLScripts.has_key(p):
+			if p not in self.dictMFQLScripts:
 
 				self.dictMFQLScripts[p] = ''
 				for i in dlg.GetPath().split(os.sep)[:-1]:
 					self.dictMFQLScripts[p] += i + os.sep
 				self.dictMFQLScripts[p] += p
 
-				for key in self.dict_button_saveAs.keys():
+				for key in list(self.dict_button_saveAs.keys()):
 					if evt.GetId() == self.dict_button_saveAs[key].GetId():
 
 						oldText = key
@@ -3426,7 +3426,7 @@ intensity."""))
 								with open(self.dictMFQLScripts[p], 'w') as f:
 									f.write(self.dict_text_ctrl[key].GetText())
 								self.dict_isChangedAndNotSavedMfqlFile[p] = False
-								if self.dict_button_save.has_key(key):
+								if key in self.dict_button_save:
 									self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
 
 
@@ -3439,8 +3439,8 @@ intensity."""))
 				#	self.OnClosePanel(evt, key, secureCheck = False)
 
 				# update list_box in Run panel
-				self.list_box_1.Set(self.dictMFQLScripts.keys())
-				self.list_box_1.SetSelection(self.dictMFQLScripts.keys().index(p))
+				self.list_box_1.Set(list(self.dictMFQLScripts.keys()))
+				self.list_box_1.SetSelection(list(self.dictMFQLScripts.keys()).index(p))
 				### end remove entry
 
 				# fill the changed text with the original one
@@ -3460,7 +3460,7 @@ intensity."""))
 					self.dict_mfqlFile[p] = mfqlFile
 					mfqlFile.write(self.dict_text_ctrl[p].GetText())
 				self.dict_isChangedAndNotSavedMfqlFile[p] = False
-				if self.dict_button_save.has_key(p):
+				if p in self.dict_button_save:
 					self.dict_button_save[p].SetBackgroundColour((230, 224, 218, 255))
 
 	#self.key_button[i].GetParent().GetParent().RemovePage(n)
@@ -3471,7 +3471,7 @@ intensity."""))
 
 	def OnClosePanel(self, evt, key = None, secureCheck = True):
 
-		if (key or key == 0) and self.dict_button_close.has_key(key):
+		if (key or key == 0) and key in self.dict_button_close:
 			id = self.dict_button_close[key].GetId()
 
 			for i in range(self.notebook_1.GetPageCount()):
@@ -3493,7 +3493,7 @@ intensity."""))
 								self.dict_mfqlFile[key] = mfqlFile
 								mfqlFile.write(self.dict_text_ctrl[key].GetText())
 							self.dict_isChangedAndNotSavedMfqlFile[key] = False
-							if self.dict_button_save.has_key(key):
+							if key in self.dict_button_save:
 								self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
 							dlg.Destroy()
 
@@ -3519,7 +3519,7 @@ intensity."""))
 					return None
 
 		else:
-			for key in self.dict_button_close.keys():
+			for key in list(self.dict_button_close.keys()):
 				savedPage = False
 
 				if evt.GetId() == self.dict_button_close[key].GetId():
@@ -3538,7 +3538,7 @@ intensity."""))
 										self.dict_mfqlFile[key] = mfqlFile
 										self.dict_mfqlFile[key].write(self.dict_text_ctrl[key].GetText())
 									self.dict_isChangedAndNotSavedMfqlFile[key] = False
-									if self.dict_button_save.has_key(key):
+									if key in self.dict_button_save:
 										self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
 									dlg.Destroy()
 
@@ -3571,7 +3571,7 @@ intensity."""))
 
 		if playSound:
 			wx.Sound('../pics/OpenFile.wav').Play()
-		sortedKeys = self.dictMFQLScripts.keys()
+		sortedKeys = list(self.dictMFQLScripts.keys())
 
 		if not newFile:
 			for index in self.list_box_1.GetSelections():
@@ -3581,7 +3581,7 @@ intensity."""))
 				# add a page to the notebook
 				if self.dict_notebook_editor == {}:
 					self.dict_notebook_editor = {curScript : wx.Panel(self.notebook_1, -1)}
-				elif not self.dict_notebook_editor.has_key(curScript):
+				elif curScript not in self.dict_notebook_editor:
 					self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
 				else:
 					return None
@@ -3675,7 +3675,7 @@ intensity."""))
 				# add a page to the notebook
 				if self.dict_notebook_editor == {}:
 					self.dict_notebook_editor = {curScript : wx.Panel(self.notebook_1, -1)}
-				elif not self.dict_notebook_editor.has_key(curScript):
+				elif curScript not in self.dict_notebook_editor:
 					self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
 				else:
 					return None
@@ -3762,7 +3762,7 @@ intensity."""))
 			# add a page to the notebook
 			if self.dict_notebook_editor == {}:
 				self.dict_notebook_editor = {curScript : wx.Panel(self.notebook_1, -1)}
-			elif not self.dict_notebook_editor.has_key(curScript):
+			elif curScript not in self.dict_notebook_editor:
 				self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
 			else:
 				return None
@@ -3871,14 +3871,14 @@ intensity."""))
 				self.dictMFQLScripts[p] += i + os.sep
 			self.dictMFQLScripts[p] += p
 
-			self.list_box_1.Set(self.dictMFQLScripts.keys())
-			self.list_box_1.SetSelection(self.dictMFQLScripts.keys().index(p), select = True)
+			self.list_box_1.Set(list(self.dictMFQLScripts.keys()))
+			self.list_box_1.SetSelection(list(self.dictMFQLScripts.keys()).index(p), select = True)
 
 			f = open(self.dictMFQLScripts[p], 'w')
 			f.write('')
 			f.close()
 			self.dict_isChangedAndNotSavedMfqlFile[p] = False
-			if self.dict_button_save.has_key(p):
+			if p in self.dict_button_save:
 				self.dict_button_save[p].SetBackgroundColour((230, 224, 218, 255))
 
 			self.OnOpenFile(None)
@@ -3887,14 +3887,14 @@ intensity."""))
 
 	def OnRemoveEntry(self, evt):
 
-		sortedKeys = self.dictMFQLScripts.keys()
+		sortedKeys = list(self.dictMFQLScripts.keys())
 
 		for index in self.list_box_1.GetSelections():
 			del self.dictMFQLScripts[sortedKeys[index]]
 			self.OnClosePanel(evt, sortedKeys[index])
 
 		#self.list_box_1.Set(sorted(self.dictMFQLScripts.keys()))
-		self.list_box_1.Set(self.dictMFQLScripts.keys())
+		self.list_box_1.Set(list(self.dictMFQLScripts.keys()))
 
 	def OnRunLipidX(self, evt):
 
@@ -3910,8 +3910,8 @@ intensity."""))
 
 
 		# generate one big *mfql script, since windows has a restriction on length of command line
-		if len(self.dictMFQLScripts.keys()) > 0:
-			for k in self.dictMFQLScripts.keys():
+		if len(list(self.dictMFQLScripts.keys())) > 0:
+			for k in list(self.dictMFQLScripts.keys()):
 				progressMax += 1
 
 		# do a syntax check. The purpose is actually to count the queries. This is nessecary if there
@@ -3962,8 +3962,8 @@ intensity."""))
 			self.filePath_Dump = options['dumpMasterScanFile']
 
 			# give queues to the Worker class for threadsave data handling
-			requestQ = Queue.Queue()
-			resultQ = Queue.Queue()
+			requestQ = queue.Queue()
+			resultQ = queue.Queue()
 
 			# thread
 			worker = Worker(self, requestQ, resultQ)
@@ -4024,7 +4024,7 @@ intensity."""))
 				wx.GetApp().frame.OnMenuDebugWin(None)
 			wx.PostEvent(wx.GetApp().frame, evt)
 			(excName, excArgs, excTb, exc) = formatExceptionInfo()
-			print excName, exc
+			print(excName, exc)
 
 			text = "The following error occured:\n\n"
 			text += "** %s : %s **\n\n\n" % (excName, exc)
@@ -4063,7 +4063,7 @@ intensity."""))
 					f = open(d, 'w')
 					f.write(strBugReport)
 					f.close()
-					print d
+					print(d)
 
 			else:
 				dlg.Destroy()
@@ -4378,7 +4378,7 @@ intensity."""))
 
 			for option in self.optsImport:
 				self.optsRun[option] = self.optsImport[option]
-		except ConfigParser.NoSectionError:
+		except configparser.NoSectionError:
 			pass
 
 	def getMasterScanInfo(self):
@@ -4435,7 +4435,7 @@ intensity."""))
 		strBugReport = "<h3>Options</h3>\n"
 
 		strBugReport += "<table>\n"
-		for k in options.keys():
+		for k in list(options.keys()):
 			strBugReport += "<tr><td>%s:</td><td>%s</td></tr>\n" % (k, options[k])
 		strBugReport += "</table><br>\n"
 
@@ -4471,11 +4471,11 @@ intensity."""))
 
 		strBugReport = "\nImport Panel\n\n"
 
-		for k in self.optsImport.keys():
+		for k in list(self.optsImport.keys()):
 			strBugReport += "%s:\t\t%s\n" % (k, self.optsImport[k])
 
 		strBugReport += "\n\nMFQL Panel\n\n"
-		for k in self.optsRun.keys():
+		for k in list(self.optsRun.keys()):
 			if k != 'mfqlFiles':
 				strBugReport += "%s:\t\t%s\n" % (k, self.optsRun[k])
 

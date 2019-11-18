@@ -1,5 +1,5 @@
 import os, re
-import ConfigParser
+import configparser
 from lx.options import Options
 from lx.exceptions import LipidXException
 from lx.mfql.runtimeStatic import TypeTolerance
@@ -23,7 +23,7 @@ class Project(Options):
 
 		# fill 'self.options' if 'options' is given
 		if not options is None:
-			for key in self.options.keys():
+			for key in list(self.options.keys()):
 				self.options[key] = options[key]
 
 
@@ -35,7 +35,7 @@ class Project(Options):
 			return None
 
 		self.projectFilePath = projectFilePath
-		self.confParse = ConfigParser.ConfigParser()
+		self.confParse = configparser.ConfigParser()
 		self.confParse.read(self.projectFilePath)
 
 	def load(self, path):
@@ -46,7 +46,7 @@ class Project(Options):
 		if not os.path.exists(path):
 			raise LipidXException("File %s does not exist." % path)
 			return None
-		self.confParse = ConfigParser.ConfigParser()
+		self.confParse = configparser.ConfigParser()
 		self.confParse.read(path)
 
 		# the new MasterScan option (>1.2.4)
@@ -67,11 +67,11 @@ class Project(Options):
 		### the options ###
 
 		# fill the option dictionary
-		for opt in self.options.keys():
+		for opt in list(self.options.keys()):
 			try:
 				self.options[opt] = self.confParse.get(self.sectionP, opt)
-			except ConfigParser.NoOptionError:
-				print "Option '%s' is not contained in the project file" % opt
+			except configparser.NoOptionError:
+				print("Option '%s' is not contained in the project file" % opt)
 
 		# method from the Options superclass
 		self.importSettingsSet = self.allImportSettingsSet()
@@ -97,14 +97,14 @@ class Project(Options):
 				dictMfql[key] = value
 
 		# read the mfql scripts with the right names
-		for m in dictMfql.keys():
+		for m in list(dictMfql.keys()):
 			r = re.match("(.*)-name", m)
 			if r:
 				self.mfql[dictMfql[m]] = dictMfql[r.group(1)]
 				del dictMfql[m]
 				del dictMfql[r.group(1)]
 
-		for m in dictMfql.keys():
+		for m in list(dictMfql.keys()):
 			self.mfql[m] = dictMfql[m]
 
 	def writeOptionsToIni(self):
@@ -153,7 +153,7 @@ class GUIProject(Project):
 		o = self.options
 
 		# convert Boolean values
-		for option in o.keys():
+		for option in list(o.keys()):
 			if o[option] == 'True':
 				self.options_formatted[option] = True
 			if o[option] == 'False':
@@ -206,8 +206,8 @@ class GUIProject(Project):
 		self.options_formatted['loopNr'] = 3
 
 		# copy the rest of the string based options to the internal options
-		for opt in self.options.keys():
-			if not opt in self.options_formatted.keys():
+		for opt in list(self.options.keys()):
+			if not opt in list(self.options_formatted.keys()):
 				self.options_formatted[opt] = self.options[opt]
 
 
