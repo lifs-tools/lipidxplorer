@@ -507,16 +507,16 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 			reportout("> {0:.<30s}{1:>11.2f}".format('MS filter settings', options['MSfilter']))
 		if options['MSMSfilter'] and options['MSMSfilter'] > 0:
 			reportout("> {0:.<30s}{1:>11.2f}".format('MS/MS filter settings', options['MSMSfilter']))
-		if nb_ms_scans > 0:
+		if len(nb_ms_scans) > 0:
 			reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS scans', sum(nb_ms_scans) / len(nb_ms_scans)))
 			stats_file_entry["nb_ms_scans"] = sum(nb_ms_scans)
-		if nb_ms_peaks > 0:
+		if len(nb_ms_peaks) > 0:
 			reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS peaks', sum(nb_ms_peaks) / len(nb_ms_peaks)))
 			stats_file_entry["nb_ms_peaks"] = sum(nb_ms_peaks)
-		if nb_msms_scans > 0:
+		if len(nb_msms_scans) > 0:
 			reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS/MS scans', sum(nb_msms_scans) / len(nb_msms_scans)))
 			stats_file_entry["nb_msms_scans"] = sum(nb_msms_scans)
-		if nb_msms_peaks > 0:
+		if len(nb_msms_peaks) > 0:
 			reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS/MS peaks', sum(nb_msms_peaks) / len(nb_msms_peaks)))
 			stats_file_entry["nb_msms_peaks"] = sum(nb_msms_peaks)
 
