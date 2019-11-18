@@ -1,6 +1,6 @@
 ### functions returning the content of objects ###
 import sys, traceback, threading, re
-from UserDict import DictMixin
+from collections import MutableMapping as DictMixin
 from functools import reduce
 
 class staticTypeDict(DictMixin):
@@ -9,6 +9,14 @@ class staticTypeDict(DictMixin):
 	def __init__(self):
 		self._data = {}
 		self._type = {}
+
+	#as per https://stackoverflow.com/questions/11165188/how-to-achieve-the-functionality-of-userdict-dictmixin-in-python-3
+	def __len__(self):
+		return len(self.mylist)
+
+	def __iter__(self):
+		for i in self.mylist:
+			yield i
 
 	def __setitem__(self, key, value):
 		'''If value is a tuple with (value, type),
@@ -58,6 +66,14 @@ class odict(DictMixin):
 	def __init__(self):
 		self._keys = []
 		self._data = {}
+	
+	#as per https://stackoverflow.com/questions/11165188/how-to-achieve-the-functionality-of-userdict-dictmixin-in-python-3
+	def __len__(self):
+		return len(self.mylist)
+
+	def __iter__(self):
+		for i in self.mylist:
+			yield i
 
 	def __setitem__(self, key, value):
 		if key not in self._data:
