@@ -4,7 +4,7 @@ import traceback
 from lx.exceptions import LipidXException
 from lx.mfql.runtimeStatic import TypeTolerance
 from lx.tools import odict
-from UserDict import DictMixin
+from collections import MutableMapping as DictMixin
 
 class optionsDict(DictMixin):
     '''A special type of dictionary which handels its own exceptions.'''

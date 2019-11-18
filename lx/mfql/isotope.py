@@ -20,7 +20,7 @@ Converted to Python 1/10/08 by
 Brian H. Clowers bhclowers@gmail.com
 '''
 import numpy as N
-import numpy.fft.fftpack as F
+import numpy.fft as F
 import time
 
 def next2pow(x):
