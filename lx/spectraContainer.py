@@ -206,6 +206,8 @@ class MSMSEntry:
 
 	def __cmp__(self, otherself):
 		return cmp(self.mass, otherself.mass)
+	def __lt__(self, otherself):
+		return self.mass<otherself.mass
 
 class MSMS:
 	"""Class for a DTA File"""
@@ -1361,6 +1363,9 @@ class SurveyEntry:
 		self.removedByIsotopicCorrection_MS = False
 		self.removedByIsotopicCorrection_MSMS = False
 
+	def __lt__(self, other):
+		return self.precurmass < other.precurmass
+
 	def __repr__(self):
 
 		str = ("/%s/ . %.4f | " % (("%d" % self.polarity)[0], float(self.precurmass))).rjust(9)
@@ -1391,7 +1396,7 @@ class SurveyEntry:
 		for sf in self.listPrecurmassSF:
 			tmp = -((sf.getWeight() - self.precurmass) / self.precurmass) * 1000000
 			listSF.append((sf, tmp))
-		listSF.sort(cmp = lambda x,y : cmp(x[1], y[1]))
+		listSF.sort(key = lambda x : x[1])
 
 		if not tab:
 
