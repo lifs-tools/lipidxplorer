@@ -24,7 +24,9 @@ class peakCluster:
 
 	def __cmp__(self, other):
 		return cmp(self.mass, other.mass)
-
+	
+	def __lt__(self, other):
+		return self.mass < other.mass
 
 	#def findPeak(self, mass = None, key = None):
 	def findPeak(self, key = None):
@@ -644,14 +646,13 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 		listAt = []
 
 		dictSpecEntry = {}
-
 		for sample in scan.listSamples:
 
 			if msmsThere:
 
 				# generate a list of specEntry elements
 				dictSpecEntry[sample] = []
-				scan.dictSamples[sample].listMsms.sort(key=str)
+				scan.dictSamples[sample].listMsms.sort()
 				for i in scan.dictSamples[sample].listMsms:
 					dictSpecEntry[sample].append(specEntry(
 						mass = i.precurmass,
@@ -1792,8 +1793,8 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	#   [avg, [specEntry1, specEntry2, ..., specEntryN]]
 
 	# sort the list
-	listResult[0].sort(key=str)
-
+	listResult[0].sort()
+	
 	for count in range(numLoops):
 
 		current = 0
