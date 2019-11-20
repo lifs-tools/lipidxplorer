@@ -746,7 +746,7 @@ def atLeastOneisIn(lst1, lst2):
 def sortDictKeys(adict, compare = 'string'):
 	items = list(adict.items())
 	if compare == 'float':
-		items.sort(cmp = lambda i,j : (cmp(float(i[0]), float(j[0]))))
+		items.sort(key = lambda i : float(i[0]))
 	else:
 		items.sort()
 	return [key for key, value in items]
