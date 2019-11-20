@@ -867,7 +867,7 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 
 					listSurveyEntry = listSECharge
 
-					iterEntry = sorted(listSECharge, lambda x,y: cmp(x.precurmass, y.precurmass)).__iter__()
+					iterEntry = sorted(listSECharge, key = lambda x: x.precurmass).__iter__()
 
 					iterListAvg = sortDictKeys(adict = msmsLists, compare = 'float').__iter__()
 
