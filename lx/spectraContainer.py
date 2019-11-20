@@ -264,6 +264,7 @@ class MSMS:
 
 	def __cmp__(self, otherself):
 		return cmp(self.precurmass, otherself.precurmass)
+		
 	def __lt__(self, otherself):
 		return self.precurmass<otherself.precurmass
 
