@@ -20,6 +20,10 @@ shutil.copy("README.md", DISTPATH+"/")
 shutil.copy("CHANGELOG", DISTPATH+"/")
 shutil.copy("COPYRIGHT.txt", DISTPATH+"/")
 shutil.copy("LICENSES-third-party.txt", DISTPATH+"/")
+shutil.copy("lpdxImportSettings_benchmark.ini", DISTPATH+"/")
+shutil.copy("lpdxImportSettings_tutorial.ini", DISTPATH+"/")
+shutil.copy("lpdxopts.ini", DISTPATH+"/")
+shutil.copy("ReleaseNotes.docx", DISTPATH+"/")
 
 block_cipher = None
 

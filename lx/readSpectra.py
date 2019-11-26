@@ -66,6 +66,7 @@ def add_Sample(
 	if options['timerange']:
 		t1 = options['timerange'][0] / 60
 		t2 = options['timerange'][1] / 60
+		reportout("Limiting timerange from %f to %f (sec), %f to %f (min)" % (options['timerange'][0], options['timerange'][1], t1, t2))
 
 	if options['pisSpectra']:
 		msm1 = options['MSMSmassrange'][0]
@@ -478,6 +479,7 @@ def add_Sample_AVG(
 	if options['timerange']:
 		t1 = options['timerange'][0] / 60
 		t2 = options['timerange'][1] / 60
+		reportout("Limiting timerange from %f to %f (sec), %f to %f (min)" % (options['timerange'][0], options['timerange'][1], t1, t2))
 
 	if options['pisSpectra']:
 		msm1 = options['MSMSmassrange'][0]
@@ -782,6 +784,7 @@ directory>, <the resolution of the mass spec machine>
 	if timerange:
 		t1 = timerange[0]
 		t2 = timerange[1]
+		reportout("Limiting timerange from %f to %f (sec), %f to %f (min)" % (t1, t2, t1/60.0, t2/60.0))
 
 	if MSmassrange:
 		msm1 = MSmassrange[0]

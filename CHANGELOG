@@ -1,3 +1,9 @@
+26.11.2019 LipidXplorer 1.2.8.1
+
+Bug Fixes
+- Fixed broken Import Settings "Select a Configuration Save As..." and "Delete"
+- Added additional log output to print time limits applied to scan selection in seconds and minutes
+
 21.09.2019 LipidXplorer 1.2.8
 
 New Functionality
