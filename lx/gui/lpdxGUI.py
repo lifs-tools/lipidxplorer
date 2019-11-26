@@ -2706,7 +2706,7 @@ intensity."""))
 		self.currentConfiguration = ''
 
 		self.choice_SelectSettingSection.Clear()
-		self.choice_SelectSettingSection.Appends(self.listConfigurations)
+		self.choice_SelectSettingSection.Append(self.listConfigurations)
 		self.clearConfiguration()
 
 		with open(self.filePath_LoadIni, 'w+') as fIni:
@@ -2782,7 +2782,7 @@ intensity."""))
 
 		#self.choice_SelectSettingSection.Set(sorted(self.confParse.sections()))
 		self.choice_SelectSettingSection.Clear()
-		self.choice_SelectSettingSection.Appends(self.listConfigurations)
+		self.choice_SelectSettingSection.Append(self.listConfigurations)
 
 		with open(self.filePath_LoadIni, 'w+') as fIni:
 			self.confParse.write(fIni)
