@@ -1,0 +1,12 @@
+# Screening for CE - MS/MS# Fragment 369# written 2017 - 02 - 13# Lars F. Eggers
+QUERYNAME = CholesterolMSMS;DEFINE PR = 'C[41..49] H[30..200] O[2] N[1]' WITH DBR = (4.5,10.5), CHG = +1;DEFINE FR ='C[27] H[45]' WITH DBR = (1,8), CHG = +1;
+
+
+IDENTIFY
+	# marking
+	PR IN MS1+ AND	FR in MS2+
+SUCHTHAT	(avg(FR.intensity)/avg(PR.intensity) >=0.1 AND avg(FR.intensity)/avg(PR.intensity) <=10) AND	PR.chemsc[C]/PR.chemsc[db] >= 4.6
+  
+REPORT 
+	SPECIE = "CE %d:%d" % "((PR.chemsc)[C] - 27, (PR.chemsc)[db] - 4.5)";  	CLASS = "CE";	MASS = PR.mass;	IDMSLEVEL = 2;	QUANTMSLEVEL = 2;		ISOBARIC = PR.isobaric;	CHEMSC = PR.chemsc;	ERRppm = "%2.2f" % "(PR.errppm)";	FRERRppm = "%2.2f" % "(FR.errppm)";	INT = FR.intensity;	QUALA = PR.intensity;	QUALB = PR.intensity;	QUALC = PR.intensity;;
+################ end script ##################
