@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
 	name = "LipidXplorer",
-	version = "1.2.8",
+	version = "1.2.8_dev",
 	author = "Ronny Herzog, Jacobo Miranda Ackerman, Fadi Al Machot, Nils Hoffmann",
 	author_email = "lifs-support@isas.de",
 	url = "https://lifs.isas.de/wiki/index.php/Main_Page",
