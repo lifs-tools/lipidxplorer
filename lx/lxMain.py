@@ -152,6 +152,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 
 	# process the result
 	result = mfqlObj.result
+	make_resultDF(result, options['resultFile']+"_df.csv")
 
 	if result.mfqlOutput:
 		strHead = ''
@@ -221,4 +222,16 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	if parent:
 		#parent.debug.progressDialog.Destroy()
 		return parent.CONST_THREAD_SUCCESSFUL
+
+def make_resultDF(result, resultFile):
+	import pandas as pd
+	dfs = []
+	for k in result.dictQuery:
+		dataDict = result.dictQuery[k].dataMatrix
+		df = pd.DataFrame(dataDict._data)
+		df['mfql_name'] = k
+		dfs.append(df)
+	df = pd.concat(dfs)
+	df.to_csv(resultFile)
+
 
