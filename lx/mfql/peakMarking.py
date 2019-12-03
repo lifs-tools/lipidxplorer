@@ -2999,7 +2999,7 @@ class TypeMarkTerm:
 
 		if isinstance(self.leftSide, TypeSFConstraint) or isinstance(self.leftSide, TypeElementSequence)\
 			or isinstance(self.leftSide, TypeFloat) or isinstance(self.leftSide, TypeList):
-			if self.leftSide.name in res and res[self.leftSide.name] != []:
+			if self.leftSide.name in res.keys() and res[self.leftSide.name] != []:
 				leftResult = True
 
 		elif isinstance(self.leftSide, TypeMarkTerm):
@@ -3007,7 +3007,7 @@ class TypeMarkTerm:
 
 		if isinstance(self.rightSide, TypeSFConstraint) or isinstance(self.rightSide, TypeElementSequence)\
 			or isinstance(self.rightSide, TypeFloat) or isinstance(self.rightSide, TypeList):
-			if self.rightSide.name in res and res[self.rightSide.name] != []:
+			if self.rightSide.name in res.keys() and res[self.rightSide.name] != []:
 				rightResult = True
 
 		elif isinstance(self.rightSide, TypeMarkTerm):
