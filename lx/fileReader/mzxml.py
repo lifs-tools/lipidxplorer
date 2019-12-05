@@ -168,9 +168,9 @@ class MzXMLFileReader:
 			self.context.pop()
 
 
-from .elementtree.SimpleXMLWriter import XMLWriter
+# from .elementtree.SimpleXMLWriter import XMLWriter
 
-class MzXMLFileWriter:
+# class MzXMLFileWriter:
 	def __init__(self,s,f):
 		self.h = charCounter(open(f,'w'))
 		self.w = XMLWriter(self.h)
@@ -214,109 +214,109 @@ class MzXMLFileWriter:
 ##		 self.w.data('\n	');
 ##		 self.w.end()
 
-		lastscanlevel = [ 0 ]
-		scannum = 0;
-		for s in self.s:
-			scan_metadata = dict(s.metadata())
+		# lastscanlevel = [ 0 ]
+		# scannum = 0;
+		# for s in self.s:
+		# 	scan_metadata = dict(s.metadata())
 
-			while scan_metadata['msLevel'] <= lastscanlevel[-1]:
-				self.w.data('\n	');
-				self.w.end('scan')
-				lastscanlevel.pop()
+		# 	while scan_metadata['msLevel'] <= lastscanlevel[-1]:
+		# 		self.w.data('\n	');
+		# 		self.w.end('scan')
+		# 		lastscanlevel.pop()
 
-			lastscanlevel.append(scan_metadata['msLevel'])
-			attrib = {}
-			for tag in ('lowMz',
-						'highMz',
-						'totIonCurrent',
-						'basePeakMz',
-						'basePeakIntensity',
-						'startMz',
-						'endMz',
-						'msLevel',
-						'peaksCount',
-						'polarity',
-						):
-				if tag in scan_metadata:
-					attrib[tag] = str(scan_metadata[tag])
-					del scan_metadata[tag]
-			scannum += 1
-			attrib['num'] = str(scannum)
-			del scan_metadata['num']
-			del scan_metadata['scan']
-			del scan_metadata['ordinal']
+		# 	lastscanlevel.append(scan_metadata['msLevel'])
+		# 	attrib = {}
+		# 	for tag in ('lowMz',
+		# 				'highMz',
+		# 				'totIonCurrent',
+		# 				'basePeakMz',
+		# 				'basePeakIntensity',
+		# 				'startMz',
+		# 				'endMz',
+		# 				'msLevel',
+		# 				'peaksCount',
+		# 				'polarity',
+		# 				):
+		# 		if tag in scan_metadata:
+		# 			attrib[tag] = str(scan_metadata[tag])
+		# 			del scan_metadata[tag]
+		# 	scannum += 1
+		# 	attrib['num'] = str(scannum)
+		# 	del scan_metadata['num']
+		# 	del scan_metadata['scan']
+		# 	del scan_metadata['ordinal']
 
-			if 'retentionTime' in scan_metadata:
-				attrib['retentionTime'] = "PT%fS"%(scan_metadata['retentionTime'])
-				del scan_metadata['retentionTime']
+		# 	if 'retentionTime' in scan_metadata:
+		# 		attrib['retentionTime'] = "PT%fS"%(scan_metadata['retentionTime'])
+		# 		del scan_metadata['retentionTime']
 
-			self.w.data('\n	');
-			self.scanOffset[scannum] = self.h.chars()+5
-			self.w.start('scan',attrib)
+		# 	self.w.data('\n	');
+		# 	self.scanOffset[scannum] = self.h.chars()+5
+		# 	self.w.start('scan',attrib)
 
-			if 'precursorMz' in scan_metadata:
-				attrib = {}
-				for tag in ('precursorMz.precursorIntensity',
-							'precursorMz.windowWideness',
-							'precursorMz.precursorScanNum',
-							'precursorMz.precursorCharge'):
-				   if tag in scan_metadata:
-					   attrib[tag[len('precursorMz.'):]] = str(scan_metadata[tag])
-					   del scan_metadata[tag]
-				self.w.data('\n	  ');
-				self.w.element('precursorMz',str(scan_metadata['precursorMz']),attrib)
-				del scan_metadata['precursorMz']
+		# 	if 'precursorMz' in scan_metadata:
+		# 		attrib = {}
+		# 		for tag in ('precursorMz.precursorIntensity',
+		# 					'precursorMz.windowWideness',
+		# 					'precursorMz.precursorScanNum',
+		# 					'precursorMz.precursorCharge'):
+		# 		   if tag in scan_metadata:
+		# 			   attrib[tag[len('precursorMz.'):]] = str(scan_metadata[tag])
+		# 			   del scan_metadata[tag]
+		# 		self.w.data('\n	  ');
+		# 		self.w.element('precursorMz',str(scan_metadata['precursorMz']),attrib)
+		# 		del scan_metadata['precursorMz']
 
-			if 'scanOrigin.num' in scan_metadata:
-				attrib = {}
-				for tag in ('scanOrigin.num',
-							'scanOrigin.parentFileID'):
-				   if tag in scan_metadata:
-					   attrib[tag[len('scanOrigin.'):]] = str(scan_metadata[tag])
-					   del scan_metadata[tag]
-				self.w.data('\n	  ');
-				self.w.element('scanOrigin',attrib=attrib)
+		# 	if 'scanOrigin.num' in scan_metadata:
+		# 		attrib = {}
+		# 		for tag in ('scanOrigin.num',
+		# 					'scanOrigin.parentFileID'):
+		# 		   if tag in scan_metadata:
+		# 			   attrib[tag[len('scanOrigin.'):]] = str(scan_metadata[tag])
+		# 			   del scan_metadata[tag]
+		# 		self.w.data('\n	  ');
+		# 		self.w.element('scanOrigin',attrib=attrib)
 
-			self.w.data('\n	  ');
-			self.w.start('peaks',
-						 precision="32",
-						 byteOrder="network",
-						 pairOrder="m/z-int")
-			peaks = array('f');
-			for (mz,it) in zip(s.mz(),s.it()):
-				peaks.append(mz)
-				peaks.append(it)
-			if sys.byteorder != 'big':
-				peaks.byteswap()
-			self.w.data(b64encode(peaks.tostring()))
-			self.w.end()
+		# 	self.w.data('\n	  ');
+		# 	self.w.start('peaks',
+		# 				 precision="32",
+		# 				 byteOrder="network",
+		# 				 pairOrder="m/z-int")
+		# 	peaks = array('f');
+		# 	for (mz,it) in zip(s.mz(),s.it()):
+		# 		peaks.append(mz)
+		# 		peaks.append(it)
+		# 	if sys.byteorder != 'big':
+		# 		peaks.byteswap()
+		# 	self.w.data(b64encode(peaks.tostring()))
+		# 	self.w.end()
 
-			for (k,v) in scan_metadata.items():
-				self.w.data('\n	  ');
-				self.w.element('nameValue',name=k,value=str(v))
+		# 	for (k,v) in scan_metadata.items():
+		# 		self.w.data('\n	  ');
+		# 		self.w.element('nameValue',name=k,value=str(v))
 
-			# self.w.end()
+		# 	# self.w.end()
 
-		while lastscanlevel[-1] != 0:
-			self.w.data('\n	');
-			self.w.end('scan')
-			lastscanlevel.pop()
+		# while lastscanlevel[-1] != 0:
+		# 	self.w.data('\n	');
+		# 	self.w.end('scan')
+		# 	lastscanlevel.pop()
 
-		self.w.data('\n  ');
-		self.w.end('msRun')
-		self.w.data('\n  ');
-		indexOffset = self.h.chars()+3
-		self.w.start('index',name='scan')
-		for i in sorted(self.scanOffset.keys()):
-			self.w.data('\n	');
-			self.w.element('offset',str(self.scanOffset[i]),id=str(i))
-		self.w.data('\n  ');
-		self.w.end()
-		self.w.data('\n  ');
-		self.w.element('indexOffset',str(indexOffset))
-		self.w.data('\n');
-		self.w.close(mzxmlid)
-		self.w.data('\n');
+		# self.w.data('\n  ');
+		# self.w.end('msRun')
+		# self.w.data('\n  ');
+		# indexOffset = self.h.chars()+3
+		# self.w.start('index',name='scan')
+		# for i in sorted(self.scanOffset.keys()):
+		# 	self.w.data('\n	');
+		# 	self.w.element('offset',str(self.scanOffset[i]),id=str(i))
+		# self.w.data('\n  ');
+		# self.w.end()
+		# self.w.data('\n  ');
+		# self.w.element('indexOffset',str(indexOffset))
+		# self.w.data('\n');
+		# self.w.close(mzxmlid)
+		# self.w.data('\n');
 
 class PrecursorSort:
 	def __init__(self,input,asc=True):
