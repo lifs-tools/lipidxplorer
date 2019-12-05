@@ -1,38 +1,28 @@
 #!/usr/bin/python
+import csv
+import os, sys, re
+from optparse import OptionParser
 
-import os, sys
 import time
 
-# sysPath = '..' + os.sep + 'lib'
-# sys.path.append(sysPath)
+sysPath = '..' + os.sep + 'lib'
+sys.path.append(sysPath)
 
-from lx.tools import reportout , unique
-from lx.spectraContainer import MasterScan #, SurveyEntry
+from lx.tools import reportout, unique
+from lx.mfql.runtimeStatic import TypeTolerance
+from lx.exceptions import LipidXException
+from lx.spectraContainer import MasterScan, SurveyEntry
 from lx.spectraTools import recalibrateMS, recalibrateMSMS, saveSC
-from lx.readSpectra import add_Sample, add_mzXMLSample #, add_DTASample
-from lx.alignment import mkSurveyLinear, mkSurveyHierarchical, \
- 		mkSurveyHeuristic, mkMSMSEntriesLinear_new, \
- 		mkMSMSEntriesHeuristic_new#, specEntry, linearAlignment
+from lx.readSpectra import add_Sample, add_mzXMLSample, add_DTASample
+from lx.alignment import alignPIS, mkSurveyLinear, mkSurveyHierarchical, \
+		mkSurveyHeuristic, mkMSMSEntriesLinear_new, \
+		mkMSMSEntriesHeuristic_new, specEntry, linearAlignment
 
-def getAMasterScan(options):
-	# generate MasterScan object
-	scan = MasterScan(options)
+from lx.debugger import Debug
 
-	# scan.importSettingsFile = options['ini']
-	#scan.setting = options['setting']
-	# scan.setting = options['setting']
-	scan.importDir = options['importDir']
+# for debugging
+#from guppy import hpy
 
-	# check if last char is a '/':
-	if scan.importDir[-1] == os.sep:
-		scan.importDir = scan.importDir[:-1]
-
-	scan.sampleOccThr['MS'] = [(options['MSminOccupation'], [])]
-	scan.sampleOccThr['MSMS'] = [(options['MSMSminOccupation'], [])]
-
-	# scan.listFiles = listFiles
-
-	return  scan
 
 def lpdxImportDEF_new(parent, options=None):
 	'''This version of importDEF does not process the options, since
