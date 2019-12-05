@@ -168,9 +168,9 @@ class MzXMLFileReader:
 			self.context.pop()
 
 
-# from .elementtree.SimpleXMLWriter import XMLWriter
+from .elementtree.SimpleXMLWriter import XMLWriter
 
-# class MzXMLFileWriter:
+class MzXMLFileWriter:
 	def __init__(self,s,f):
 		self.h = charCounter(open(f,'w'))
 		self.w = XMLWriter(self.h)
