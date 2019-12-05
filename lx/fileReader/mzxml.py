@@ -1,13 +1,8 @@
+from lxml import etree as ET
 
-try:
-	from .elementtree import ElementTree as ET
-except ImportError:
-	from lx.fileReader.elementtree import ElementTree as ET
-
-import re
 from base64 import b64encode, b64decode, b32decode
 from array import array
-import sys
+import sys, re
 
 class Spectrum:
 	def __init__(self):
@@ -37,7 +32,7 @@ class Spectrum:
 		return self.md_
 	def __str__(self):
 		s = "BEGIN SPECTRUM\n"
-		i = list(self.md_.items())
+		i = self.md_.items()
 		i.sort(key=lambda i: i[0])
 		for (k,v) in i:
 			s += "%s:\t%s\n"%(k,v)
@@ -93,7 +88,7 @@ class MzXMLFileReader:
 		self.ns = ''
 
 	def __iter__(self):
-		return next(self)
+		return self.next()
 
 	def extract_scan(self,ele):
 
