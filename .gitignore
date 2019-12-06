@@ -1,3 +1,4 @@
 .*
 *.pyc
 lx/mfql/parsetab.py
+test_resources/small_test/small_test-report.html
