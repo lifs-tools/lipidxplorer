@@ -234,4 +234,9 @@ def make_resultDF(result, resultFile):
 	df = pd.concat(dfs)
 	df.to_csv(resultFile)
 
+	#to write as in origianl
+	# head, body for df.groupby('class')
+	# 	print(head)
+	# 	print(body)
+
 
