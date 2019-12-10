@@ -7,7 +7,7 @@ import pymzml
 
 import pymzml
 
-def mzML2DataFrames_faster(filename): #this is with pytheomics
+def mzML2DataFrames_faster(filename): #this is with pytheomics, TODO try mobiusklein/ms_deisotope
     idx_list = [] #TODO this should be a np.array
     fs_list = []
     i_list = []
