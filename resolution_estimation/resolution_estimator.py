@@ -14,6 +14,7 @@ def estimate(file, bins = 50):
     # as in https://stackoverflow.com/questions/42006058/binning-data-in-a-pandas-dataframe-into-intervals
     # aslo try and use https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.html
     #and cummax
+    #bins may be root of number of samples
     df['m_bin'] = pd.cut(df.m, bins)
     idxmax = df.groupby('m_bin')['r'].idxmin()
 
