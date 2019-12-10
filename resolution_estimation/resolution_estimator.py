@@ -25,9 +25,9 @@ def estimate(file, bins = 50):
 
     df['m_diff'] = df.groupby('scanNum')["m"].diff()
     # as in https://en.wikipedia.org/wiki/Resolution_(mass_spectrometry)
-    #https://en.wikipedia.org/wiki/Full_width_at_half_maximum 2.63
-    # df['est_r'] = df['m']/df['m_diff']
-    df['est_r'] = df['m'].min() / df['m_diff']  # not sure why its one magnitude lower
+    #https://en.wikipedia.org/wiki/Full_width_at_half_maximum in sigmas 2.355/3
+    #because peak to peak is 3 sigma, so m_diff/3 =1 sigma 
+    df['est_r'] = df['m'].min()/(df['m_diff'] * 2.355/3 ) #test
     idxmax1 = df.groupby('m_bin')['est_r'].idxmax()
     # df.iloc[idxmax1.values].plot.scatter(x='m', y='est_r')
 
