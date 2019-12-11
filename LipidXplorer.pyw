@@ -8,7 +8,7 @@ class MyApp(wx.App):
 		self.frame = lpdxGUI.LpdxFrame(None, -1, "",
 				rawimport = False,
 				lipidxplorer = True,
-				version = "1.2.8")
+				version = "1.2.8.1")
 		self.frame.SetIcon(wx.Icon("lx/stuff/lipidx_ico2.ico", wx.BITMAP_TYPE_ICO))
 		self.frame.Show(True)
 		self.frame.Center()
