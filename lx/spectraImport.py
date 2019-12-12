@@ -20,6 +20,9 @@ from lx.alignment import alignPIS, mkSurveyLinear, mkSurveyHierarchical, \
 
 from lx.debugger import Debug
 
+from lx.readSpectra_refactor import add_Sample as add_Sample_ref
+
+
 # for debugging
 #from guppy import hpy
 
@@ -455,6 +458,18 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 					MSMSthresholdType = scan.options['MSMSthresholdType'])
 
 			elif options['spectraFormat'] == 'mzML': # the new import routine, :-)
+				# ret_ref = add_Sample_ref(scan, i[0], i[1],
+				# 	options = scan.options,
+				# 	timerange = scan.options['timerange'],
+				# 	MSmassrange = scan.options['MSmassrange'],
+				# 	MSMSmassrange = scan.options['MSMSmassrange'],
+				# 	scanAveraging = scanAvg,
+				# 	isGroup = isGroup,
+				# 	importMSMS = importMSMS,
+				# 	MSthresholdType = scan.options['MSthresholdType'],
+				# 	MSMSthresholdType = scan.options['MSMSthresholdType'],
+				# 	fileformat = "mzML")
+				
 				ret = add_Sample(scan, i[0], i[1],
 					options = scan.options,
 					timerange = scan.options['timerange'],
@@ -466,6 +481,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 					MSthresholdType = scan.options['MSthresholdType'],
 					MSMSthresholdType = scan.options['MSMSthresholdType'],
 					fileformat = "mzML")
+				print(ret[0])
 
 			#elif options['spectraFormat'] == 'raw':
 				#ret = add_Sample(scan, i[0], i[1],
