@@ -146,7 +146,7 @@ def add_Sample(
 
 	# get MS2 scans
 	get_ms2Scans = [(t, mz, sn, sm, pol, tic, np, bp) for t, mz, sn, st, sm, pol, tic, np, bp \
-			in mz_file.scan_info(t1, t2, msm1, msm2) if st == 'MS2']
+			in mz_file.scan_info(t1, t2, msm1, msm2) if st == 'MS2'] #TODO this is  bug, scan_info(t1, t2, msmsm1, msmsm2)
 
 	ms2Scans = []
 	for t, precursor, sn, sm, pol, tic, np, bp in get_ms2Scans:
