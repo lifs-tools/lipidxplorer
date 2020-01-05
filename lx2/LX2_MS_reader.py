@@ -62,6 +62,7 @@ class SpectraUtil:
         self.peaksDF = self._original__peaksDF
         self._filename = filename
 
+    @staticmethod
     def fromFile(filename, test_sample=False):
         return SpectraUtil(*mzML2DataFrames(filename, test_sample), filename)
     
