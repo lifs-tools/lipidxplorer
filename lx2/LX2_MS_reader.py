@@ -8,7 +8,7 @@ import logging, os
 log = logging.getLogger(os.path.basename(__file__))
 from pyteomics import mzml, auxiliary
 
-def mzML2DataFrames(filename): #this is with pytheomics
+def mzML2DataFrames(filename, test_sample = False): #this is with pytheomics
     scans = []
     peaks_dfs = []
     
@@ -43,8 +43,7 @@ def mzML2DataFrames(filename): #this is with pytheomics
             peaks_dfs.append(df)
             
             #for testing
-            if len(scans) >100: #TODO remove this
-                print(' remove this ')
+            if test_sample and len(scans) >100: #TODO remove this
                 break
         
         scansDF = pd.DataFrame(scans, columns=['id','idx','filter_string','time','msLevel','positive_scan','precursor_id', 'max_i', 'tic','target_mz'])
@@ -63,8 +62,8 @@ class SpectraUtil:
         self.peaksDF = self._original__peaksDF
         self._filename = filename
 
-    def fromFile(filename):
-        return SpectraUtil(*mzML2DataFrames(filename), filename)
+    def fromFile(filename, test_sample=False):
+        return SpectraUtil(*mzML2DataFrames(filename, test_sample), filename)
     
     #note to help debug maybe use
     # @property
@@ -137,4 +136,4 @@ class SpectraUtil:
 
 if __name__ == "__main__":
     filename = 'test_resources\\small_test\\190321_Serum_Lipidextract_368723_01.mzML'
-    spectraUtil     = SpectraUtil.fromFile(filename)
+    spectraUtil     = SpectraUtil.fromFile(filename, test_sample=True)
