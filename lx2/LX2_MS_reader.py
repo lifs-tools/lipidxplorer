@@ -133,7 +133,3 @@ class SpectraUtil:
         s_targetDF[on] = s_targetDF[on].astype(tmp_type)
 
         return pd.merge_asof(s_peaksDF, s_targetDF, left_on=on, right_on=on ,tolerance=tol ,direction='nearest').dropna()
-
-if __name__ == "__main__":
-    filename = 'test_resources\\small_test\\190321_Serum_Lipidextract_368723_01.mzML'
-    spectraUtil     = SpectraUtil.fromFile(filename, test_sample=True)
