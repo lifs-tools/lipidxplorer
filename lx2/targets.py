@@ -41,13 +41,16 @@ class MFQL_util():
 
     def _cal_dbr(self):
         x = self._df.get('Cl',0) + self._df.get('Br', 0) + self._df.get('I',0) + self._df.get('F',0)
-        self._df['dbr'] = self._df['C'] + 1 - self._df['H']/2 - x/2 + self._df['N']/2
+        self._df['dbr'] = self._df.get('C', 0) + 1 - self._df.get('H', 0)/2 - x/2 + self._df.get('N', 0)/2
 
     def _cal_chem(self):
         #https://stackoverflow.com/questions/52673285/performance-of-pandas-apply-vs-np-vectorize-to-create-new-column-from-existing-c
         self._df['chem'] = ''
         for colName in self._df.columns.intersection(self.mass_of.keys()):
             self._df['chem'] += colName + self._df[colName].apply(str) + ' '
+
+    def set_dbr(self, dbr_u, dbr_l):
+        self._df = self._df.loc[self._df.dbr.between(dbr_u, dbr_l)]
     
     @staticmethod
     def makeAllCombo(pr_df, fr_df):
