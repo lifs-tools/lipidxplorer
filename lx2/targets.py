@@ -56,7 +56,7 @@ class MFQL_util():
     def makeAllCombo(pr_df, fr_df):
         pr_df.loc[:, 'key']=0
         fr_df.loc[:, 'key']=0
-        in_df = pr_df.merge(fr_df, on='key', suffixes=('_pr','_fr') )
+        in_df = pr_df.merge(fr_df, on='key', suffixes=('_PR','_FR') )
         
         pr_df.drop('key', 1, inplace=True)
         fr_df.drop('key', 1, inplace=True)
@@ -68,7 +68,7 @@ class MFQL_util():
             parts = col.split('_')
             new_names[col]=str(parts[-1])+ '_'+ str('_'.join(parts[:-1]))
 
-        in_df.rename(new_names, inplace = True)
+        in_df.rename(columns=new_names, inplace = True)
         return in_df 
     
     @staticmethod
