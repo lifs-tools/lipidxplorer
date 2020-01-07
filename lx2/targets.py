@@ -63,10 +63,10 @@ class MFQL_util():
     
     @staticmethod
     def makeAllCombo(pr_df, fr_df):
+        pr_df = pr_df.add_prefix('PR_')
+        fr_df = fr_df.add_prefix('FR_')
         pr_df.loc[:, 'key']=0
         fr_df.loc[:, 'key']=0
-        pr_df.add_prefix('PR_')
-        fr_df.add_prefix('FR_')
         in_df = pr_df.merge(fr_df, on='key')
         
         pr_df.drop('key', 1, inplace=True)
