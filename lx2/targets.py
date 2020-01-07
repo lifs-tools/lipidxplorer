@@ -51,6 +51,15 @@ class MFQL_util():
 
     def set_dbr(self, dbr_u, dbr_l):
         self._df = self._df.loc[self._df.dbr.between(dbr_u, dbr_l)]
+
+    @staticmethod
+    def removeDoubleID(matchesDF):
+        matchesDF['err'] = matchesDF['m'] - matchesDF['target']
+        matchesDF['err'] = matchesDF['err'].abs()
+        matchesDF['min_err'] = matchesDF.groupby(['id','chem'])['err'].transform('min')
+        matchesDF = matchesDF.loc[matchesDF['err'] == matchesDF['min_err']]
+        matchesDF.drop('min_err', axis = 1, inplace=True)
+        return matchesDF
     
     @staticmethod
     def makeAllCombo(pr_df, fr_df):
