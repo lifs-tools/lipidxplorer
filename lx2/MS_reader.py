@@ -132,5 +132,6 @@ class SpectraUtil:
         
         tmp_type = peaksDF[on].dtype
         s_targetDF[on] = s_targetDF[on].astype(tmp_type)
+        s_targetDF['target'] = s_targetDF[on]
 
         return pd.merge_asof(s_peaksDF, s_targetDF, left_on=on, right_on=on ,tolerance=tol ,direction='nearest').dropna()
