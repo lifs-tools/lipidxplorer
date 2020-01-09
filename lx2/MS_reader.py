@@ -82,7 +82,7 @@ class SpectraUtil:
     
     def get_current_copy(self):
         print(f'a copy of the current set... just in case')
-        return SpectraUtil(self.self.scansDF, self.self.peaksDF, self._filename)
+        return SpectraUtil( self.scansDF, self.peaksDF, self._filename)
 
     def set_timerange(self,t0,t1):
         print(f'time range in seconds: {t0} to {t1}')
