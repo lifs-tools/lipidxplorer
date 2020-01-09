@@ -97,20 +97,22 @@ class MFQL_util():
     
     @staticmethod
     def summaryDF(df, prefix='PR_'):
-        columns = ['chem', 'm_mean', 'm_std', 'i_mean', 'i_std', 'count']
+        columns = ['chem', 'm_mean', 'm_std', 'ppm_mean', 'i_mean', 'i_std', 'count']
         columns = [prefix+col for col in columns]
         tups = []
         for e,g_df in df.groupby(columns[0]):
+            ppm = g_df[prefix+'err'].mean()/g_df[prefix+'target'].iloc[0] * 1_000_000 
             tup = (e, 
             g_df[prefix+'m'].mean(), 
             g_df[prefix+'m'].std(), 
+            ppm,
             g_df[prefix+'i'].mean(),
             g_df[prefix+'i'].std(),
             g_df[prefix+'m'].count())
             tups.append(tup)
         df_summary = pd.DataFrame(tups, columns=columns)
 
-        sort_col = columns[-1]
-        df_summary.sort_values(sort_col, ascending =False, inplace = True)
-        summary_top = df_summary[sort_col] >= df_summary[sort_col].quantile(.9)
-        return df_summary.loc[summary_top]
+        sort_col = columns[3]
+        df_summary.sort_values(sort_col, ascending =True, inplace = True)
+        sort_smallest = df_summary[sort_col] <= df_summary[sort_col].quantile(.1)
+        return df_summary.loc[sort_smallest]
