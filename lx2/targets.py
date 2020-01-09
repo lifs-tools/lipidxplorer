@@ -76,5 +76,20 @@ class MFQL_util():
         return in_df 
     
     @staticmethod
+    def devideAddCombo(all_df):
+        all_df.sort_values(['PR_err', 'FR_err'], inplace = True)
+        cols = all_df.columns
+        pr_cols = [col for col in cols if col.startswith('PR_')]
+        fr_cols = [col for col in cols if col.startswith('FR_')]
+
+        pr_df = all_df.loc[:,pr_cols]
+        fr_df = all_df.loc[:,fr_cols]
+        pr_df.sort_values('PR_err', inplace=True)
+        pr_df.drop_duplicates(inplace = True)
+        fr_df.drop_duplicates(inplace = True)
+        return pr_df, fr_df  
+
+    
+    @staticmethod
     def suchThat(df, query):
         return df.query(query)
