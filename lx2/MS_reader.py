@@ -121,7 +121,7 @@ class SpectraUtil:
         # for scantuple in spectraUtil.scansDF.itertuples():
         #   dosomething(spectraUtil.get_fragment_peaks(scantuple.Index))
         return self._original__peaksDF.loc[self._original__peaksDF.index.isin(self.get_fragment_scans(scan_index).index)]
-    
+        
     def get_nearest(self, targetsDF, peaksDF = None, on = 'm', tol=0.01):
         print(f'find the nearest Peaks to the target_peaks with a tolerance of {tol}')
         if peaksDF == None:
