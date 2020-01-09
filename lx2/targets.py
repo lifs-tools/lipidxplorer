@@ -94,3 +94,23 @@ class MFQL_util():
     @staticmethod
     def suchThat(df, query):
         return df.query(query)
+    
+    @staticmethod
+    def summaryDF(df, prefix='PR_'):
+        columns = ['chem', 'm_mean', 'm_std', 'i_mean', 'i_std', 'count']
+        columns = [prefix+col for col in columns]
+        tups = []
+        for e,g_df in df.groupby(columns[0]):
+            tup = (e, 
+            g_df[prefix+'m'].mean(), 
+            g_df[prefix+'m'].std(), 
+            g_df[prefix+'i'].mean(),
+            g_df[prefix+'i'].std(),
+            g_df[prefix+'m'].count())
+            tups.append(tup)
+        df_summary = pd.DataFrame(tups, columns=columns)
+
+        sort_col = columns[-1]
+        df_summary.sort_values(sort_col, ascending =False, inplace = True)
+        summary_top = df_summary[sort_col] >= df_summary[sort_col].quantile(.9)
+        return df_summary.loc[summary_top]
