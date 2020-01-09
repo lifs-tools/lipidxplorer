@@ -48,6 +48,7 @@ class MFQL_util():
         self._df['chem'] = ''
         for colName in self._df.columns.intersection(self.mass_of.keys()):
             self._df['chem'] += colName + self._df[colName].apply(str) + ' '
+        self._df['chem']= self._df['chem'].str[:-1]
 
     def set_dbr(self, dbr_u, dbr_l):
         self._df = self._df.loc[self._df.dbr.between(dbr_u, dbr_l)]
