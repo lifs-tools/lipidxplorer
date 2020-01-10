@@ -123,6 +123,18 @@ class MFQL_util():
     @staticmethod
     def lollipop_plot(m, i):
         # https://python-graph-gallery.com/180-basic-lollipop-plot/
+        # https://stackoverflow.com/questions/1358977/how-to-make-several-plots-on-a-single-page-using-matplotlib
+
         (markerline, stemlines, baseline) =plt.stem(m, i)#, markerfmt=' ')
         plt.setp(baseline, visible=False)
         return plt
+
+    @staticmethod
+    def showAll_lollipop( df, prefix='PR_', sample = False):
+        groups = df.groupby([prefix+'C', prefix+'dbr'])
+        for e,g_df in groups:
+            plt = MFQL_util.lollipop_plot(g_df[prefix+'m'],g_df[prefix+'i'])
+            plt.title(e)
+            plt.xlim([g_df[prefix+'m'].min(),g_df[prefix+'m'].max()])
+            plt.show()
+            if sample: break #ony show one
