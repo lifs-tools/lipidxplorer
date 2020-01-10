@@ -54,7 +54,7 @@ class MFQL_util():
         self._df = self._df.loc[self._df.dbr.between(dbr_u, dbr_l)]
 
     @staticmethod
-    def keepMinErrorPeaks(matchesDF, max_ppm = 5):
+    def set_max_ppm(matchesDF, max_ppm = 5):
         matchesDF['err'] = matchesDF['m'] - matchesDF['target']
         matchesDF['err'] = matchesDF['err'].abs()
         matchesDF['min_err'] = matchesDF.groupby(['id','chem'])['err'].transform('min')
@@ -82,14 +82,14 @@ class MFQL_util():
     
     @staticmethod
     def devideAllCombo(all_df):
-        all_df.sort_values(['PR_err', 'FR_err'], inplace = True)
+        all_df.sort_values(['PR_ppm', 'FR_ppm'], inplace = True)
         cols = all_df.columns
         pr_cols = [col for col in cols if col.startswith('PR_')]
         fr_cols = [col for col in cols if col.startswith('FR_')]
 
         pr_df = all_df.loc[:,pr_cols]
         fr_df = all_df.loc[:,fr_cols]
-        pr_df.sort_values('PR_err', inplace=True)
+        pr_df.sort_values('PR_ppm', inplace=True)
         pr_df.drop_duplicates(inplace = True)
         fr_df.drop_duplicates(inplace = True)
         return pr_df, fr_df  
@@ -100,23 +100,20 @@ class MFQL_util():
         return df.query(query)
     
     @staticmethod
-    def summaryDF(df, prefix='PR_', quantile=0.1):
-        columns = ['chem', 'm_mean', 'm_std', 'ppm_mean', 'i_mean', 'i_rsd', 'count']
+    def summaryDF(df, prefix='PR_', quantile=0.25):
+        columns = ['chem', 'ppm_mean', 'i_mean', 'i_rsd', 'count']
         columns = [prefix+col for col in columns]
         tups = []
         for e,g_df in df.groupby(columns[0]):
-            ppm = g_df[prefix+'err'].mean()/g_df[prefix+'target'].iloc[0] * 1_000_000 
             tup = (e, 
-            g_df[prefix+'m'].mean(), 
-            g_df[prefix+'m'].std(), 
-            ppm,
+            g_df[prefix+'ppm'].mean(),
             g_df[prefix+'i'].mean(),
             g_df[prefix+'i'].std()/g_df[prefix+'i'].mean() *100,
             g_df[prefix+'m'].count())
             tups.append(tup)
         df_summary = pd.DataFrame(tups, columns=columns)
 
-        sort_col = columns[5]
+        sort_col = columns[1]
         df_summary.sort_values(sort_col, ascending =True, inplace = True)
         sort_smallest = df_summary[sort_col] <= df_summary[sort_col].quantile(quantile)
         return df_summary.loc[sort_smallest]
