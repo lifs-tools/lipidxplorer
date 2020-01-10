@@ -101,10 +101,11 @@ class MFQL_util():
     
     @staticmethod
     def summaryDF(df, prefix='PR_', quantile=0.25):
-        columns = ['chem', 'ppm_mean', 'i_mean', 'i_rsd', 'count']
+        groups = df.groupby([prefix+'C', prefix+'dbr'])
+        columns = ['C_dbr', 'ppm_mean', 'i_mean', 'i_rsd', 'count']
         columns = [prefix+col for col in columns]
         tups = []
-        for e,g_df in df.groupby(columns[0]):
+        for e,g_df in groups:
             tup = (e, 
             g_df[prefix+'ppm'].mean(),
             g_df[prefix+'i'].mean(),
