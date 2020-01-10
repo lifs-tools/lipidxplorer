@@ -54,12 +54,16 @@ class MFQL_util():
         self._df = self._df.loc[self._df.dbr.between(dbr_u, dbr_l)]
 
     @staticmethod
-    def keepMinErrorPeaks(matchesDF):
+    def keepMinErrorPeaks(matchesDF, max_ppm = 5):
         matchesDF['err'] = matchesDF['m'] - matchesDF['target']
         matchesDF['err'] = matchesDF['err'].abs()
         matchesDF['min_err'] = matchesDF.groupby(['id','chem'])['err'].transform('min')
         matchesDF = matchesDF.loc[matchesDF['err'] == matchesDF['min_err']]
         matchesDF.drop('min_err', axis = 1, inplace=True)
+
+        matchesDF['ppm'] = matchesDF['err'] / matchesDF['target'] * 1_000_000
+        matchesDF = matchesDF.loc[matchesDF['ppm'] <= max_ppm]
+        matchesDF.drop('err', axis = 1, inplace=True)
         return matchesDF
     
     @staticmethod
@@ -77,7 +81,7 @@ class MFQL_util():
         return in_df 
     
     @staticmethod
-    def devideAddCombo(all_df):
+    def devideAllCombo(all_df):
         all_df.sort_values(['PR_err', 'FR_err'], inplace = True)
         cols = all_df.columns
         pr_cols = [col for col in cols if col.startswith('PR_')]
@@ -96,8 +100,8 @@ class MFQL_util():
         return df.query(query)
     
     @staticmethod
-    def summaryDF(df, prefix='PR_'):
-        columns = ['chem', 'm_mean', 'm_std', 'ppm_mean', 'i_mean', 'i_std', 'count']
+    def summaryDF(df, prefix='PR_', quantile=0.1):
+        columns = ['chem', 'm_mean', 'm_std', 'ppm_mean', 'i_mean', 'i_rsd', 'count']
         columns = [prefix+col for col in columns]
         tups = []
         for e,g_df in df.groupby(columns[0]):
@@ -107,12 +111,12 @@ class MFQL_util():
             g_df[prefix+'m'].std(), 
             ppm,
             g_df[prefix+'i'].mean(),
-            g_df[prefix+'i'].std(),
+            g_df[prefix+'i'].std()/g_df[prefix+'i'].mean() *100,
             g_df[prefix+'m'].count())
             tups.append(tup)
         df_summary = pd.DataFrame(tups, columns=columns)
 
-        sort_col = columns[3]
+        sort_col = columns[5]
         df_summary.sort_values(sort_col, ascending =True, inplace = True)
-        sort_smallest = df_summary[sort_col] <= df_summary[sort_col].quantile(.1)
+        sort_smallest = df_summary[sort_col] <= df_summary[sort_col].quantile(quantile)
         return df_summary.loc[sort_smallest]
