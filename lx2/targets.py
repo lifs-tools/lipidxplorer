@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from collections import namedtuple
 
 class MFQL_util():
@@ -118,3 +119,10 @@ class MFQL_util():
         df_summary.sort_values(sort_col, ascending =True, inplace = True)
         sort_smallest = df_summary[sort_col] <= df_summary[sort_col].quantile(quantile)
         return df_summary.loc[sort_smallest]
+
+    @staticmethod
+    def lollipop_plot(m, i):
+        # https://python-graph-gallery.com/180-basic-lollipop-plot/
+        (markerline, stemlines, baseline) =plt.stem(m, i)#, markerfmt=' ')
+        plt.setp(baseline, visible=False)
+        return plt
