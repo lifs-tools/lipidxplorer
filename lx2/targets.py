@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import namedtuple
 
-class MFQL_util():
+class Targets_util():
 
     mass_of = {
         'C' : 12,
@@ -55,7 +55,7 @@ class MFQL_util():
         self._df = self._df.loc[self._df.dbr.between(dbr_u, dbr_l)]
 
     @staticmethod
-    def set_max_ppm(matchesDF, max_ppm = 5):
+    def set_max_ppm(matchesDF, max_daltons = 0.01):
         matchesDF['err'] = matchesDF['m'] - matchesDF['target']
         matchesDF['err'] = matchesDF['err'].abs()
         matchesDF['min_err'] = matchesDF.groupby(['id','chem'])['err'].transform('min')
@@ -63,8 +63,8 @@ class MFQL_util():
         matchesDF.drop('min_err', axis = 1, inplace=True)
 
         matchesDF['ppm'] = matchesDF['err'] / matchesDF['target'] * 1_000_000
-        matchesDF = matchesDF.loc[matchesDF['ppm'] <= max_ppm]
-        matchesDF.drop('err', axis = 1, inplace=True)
+        matchesDF = matchesDF.loc[matchesDF['err'] <= max_daltons]
+        # matchesDF.drop('err', axis = 1, inplace=True)
         return matchesDF
     
     @staticmethod
@@ -133,7 +133,7 @@ class MFQL_util():
     def showAll_lollipop( df, prefix='PR_', sample = False):
         groups = df.groupby([prefix+'C', prefix+'dbr'])
         for e,g_df in groups:
-            plt = MFQL_util.lollipop_plot(g_df[prefix+'m'],g_df[prefix+'i'])
+            plt = Targets_util.lollipop_plot(g_df[prefix+'m'],g_df[prefix+'i'])
             plt.title(e)
             plt.xlim([g_df[prefix+'m'].min(),g_df[prefix+'m'].max()])
             plt.show()
