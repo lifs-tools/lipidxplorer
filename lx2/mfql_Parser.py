@@ -441,64 +441,10 @@ def p_error(p):
         detail = "Syntax error at '%s' in file at position %s %s" % (p .value,p.lineno , p.lexpos)
         raise SyntaxError(detail)
 
-
 parser = yacc.yacc(debug=0, optimize=1)
 
-if __name__ == '__main__':
-    mfql = '''
-    ##########################################################
-    # Identify PC SPCCIES #
-    ##########################################################
+def fromFile(filename):
+    with open(filename, 'rU') as f:
+        mfql_str = f.read()
+    return parser.parse(mfql_str)
 
-    QUERYNAME = PCFAS;
-        DEFINE pr = 'C[30..80] H[40..300] O[10] N[1] P[1]' WITH DBR = (2.5,14.5), CHG = -1;
-        DEFINE FA1 = 'C[10..40] H[20..100] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
-        DEFINE FA2 ='C[10..40] H[20..100] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
-
-    IDENTIFY
-        pr IN MS1- AND
-        FA1 IN MS2- AND
-        FA2 IN MS2-
-
-    SUCHTHAT
-        isOdd(pr.chemsc[H]) AND
-        isOdd(pr.chemsc[db]*2) AND
-        FA1.chemsc + FA2.chemsc + 'C9 H19 N1 O6 P1' == pr.chemsc
-
-    REPORT
-        PRM = pr.mass;
-        EC = pr.chemsc;
-        CLASS = "PC" % "()";
-
-        PRC = "%d" % "((pr.chemsc)[C] - 9)";
-        PRDB = "%d" % "((pr.chemsc)[db] - 2.5)";
-        PROH = "%d" % "((pr.chemsc)[O] - 10)";
-        SPECIE = "PC %d:%d:%d" % "((pr.chemsc)[C]-9, pr.chemsc[db] - 2.5, pr.chemsc[O]-10)";
-
-        PRERR = "%2.2f" % "(pr.errppm)";
-        PRI = pr.intensity;
-
-        FA1M = FA2.mass; 
-        FA1C = "%d" % "((FA2.chemsc)[C])";
-        FA1DB = "%d" % "((FA2.chemsc)[db] - 1.5)"; 
-        FA1ERR = "%2.2f" % "(FA2.errppm)";
-        FA1I = FA2.intensity;
-
-        FA2M = FA1.mass; 
-        FA2C = "%d" % "((FA1.chemsc)[C])";
-        FA2DB = "%d" % "((FA1.chemsc)[db] - 1.5)"; 
-        FA2ERR = "%2.2f" % "(FA1.errppm)";
-        FA2I = FA1.intensity;
-        ;
-
-    ################ end script ##################
-
-    '''
-
-    result = parser.parse(mfql, lexer = lexer, debug=0)
-    expected = '''
-    {'report': [ReportItem(id='PRM', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'mass'])]), ReportItem(id='EC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])]), ReportItem(id='CLASS', p_values=['"PC"', '%', '"()"']), ReportItem(id='PRC', p_values=['"%d"', '%', '"((pr.chemsc)[C] - 9)"']), ReportItem(id='PRDB', p_values=['"%d"', '%', '"((pr.chemsc)[db] - 2.5)"']), ReportItem(id='PROH', p_values=['"%d"', '%', '"((pr.chemsc)[O] - 10)"']), ReportItem(id='SPECIE', p_values=['"PC %d:%d:%d"', '%', '"((pr.chemsc)[C]-9, pr.chemsc[db] - 2.5, pr.chemsc[O]-10)"']), ReportItem(id='PRERR', p_values=['"%2.2f"', '%', '"(pr.errppm)"']), ReportItem(id='PRI', p_values=[Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'intensity'])]), ReportItem(id='FA1M', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'mass'])]), ReportItem(id='FA1C', p_values=['"%d"', '%', '"((FA2.chemsc)[C])"']), ReportItem(id='FA1DB', p_values=['"%d"', '%', '"((FA2.chemsc)[db] - 1.5)"']), ReportItem(id='FA1ERR', p_values=['"%2.2f"', '%', '"(FA2.errppm)"']), ReportItem(id='FA1I', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'intensity'])]), ReportItem(id='FA2M', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'mass'])]), ReportItem(id='FA2C', p_values=['"%d"', '%', '"((FA1.chemsc)[C])"']), ReportItem(id='FA2DB', p_values=['"%d"', '%', '"((FA1.chemsc)[db] - 1.5)"']), ReportItem(id='FA2ERR', p_values=['"%2.2f"', '%', '"(FA1.errppm)"']), ReportItem(id='FA2I', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'intensity'])])], 'scriptname': 'PCFAS', 'identification': Evaluable(operation='AND', term_1=Evaluable(operation='AND', term_1=Evaluable(operation='IN', term_1='pr', term_2='MS1-'), term_2=Evaluable(operation='IN', term_1='FA1', term_2='MS2-')), term_2=Evaluable(operation='IN', term_1='FA2', term_2='MS2-')), 'variables': [Var(id='pr', object=ElementSeq(txt='C[30..80] H[40..300] O[10] N[1] P[1]'), Options={'dbr': (2.5, 14.5), 'chg': -1}), Var(id='FA1', object=ElementSeq(txt='C[10..40] H[20..100] O[2]'), Options={'dbr': (1.5, 7.5), 'chg': -1}), Var(id='FA2', object=ElementSeq(txt='C[10..40] H[20..100] O[2]'), Options={'dbr': (1.5, 7.5), 'chg': -1})], 'suchthat': Evaluable(operation='AND', term_1=Evaluable(operation='AND', term_1=Func(func='isOdd', on=[Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'H', ']'])]), term_2=Func(func='isOdd', on=[Evaluable(operation='*', term_1=Obj(p_rule='p_withAttr_accessItem_', p_values=['pr', '.', 'chemsc', '[', 'db', ']']), term_2=2)])), term_2=Evaluable(operation='==', term_1=Evaluable(operation='+', term_1=Evaluable(operation='+', term_1=Obj(p_rule='p_withAttr_id', p_values=['FA1', '.', 'chemsc']), term_2=Obj(p_rule='p_withAttr_id', p_values=['FA2', '.', 'chemsc'])), term_2=ElementSeq(txt='C9 H19 N1 O6 P1')), term_2=Obj(p_rule='p_withAttr_id', p_values=['pr', '.', 'chemsc'])))}
- '''
-    expected = expected.strip()
-    print(result)
-    assert (str(result) == expected)
