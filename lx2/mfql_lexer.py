@@ -83,4 +83,4 @@ def t_error(t):
 
 # build lexer
 
-lexer = lex.lex(reflags = re.I, debug = 0, optimize = 1)
+lexer = lex.lex()#= lex.lex(reflags = re.I, debug = 0, optimize = 0)
