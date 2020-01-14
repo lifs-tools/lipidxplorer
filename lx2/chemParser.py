@@ -79,3 +79,6 @@ def p_error(p):
     raise TypeError("unknown text at %r" % (p.value,))
 
 parser = yacc.yacc(debug=0, optimize=1)
+
+def txt2dict(txt):
+    return parser.parse(txt)
