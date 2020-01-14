@@ -1,0 +1,160 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> chemical_equation
+Rule 1     chemical_equation -> <empty>
+Rule 2     chemical_equation -> species_list
+Rule 3     species_list -> species_list species
+Rule 4     species_list -> species
+Rule 5     species -> SYMBOL
+Rule 6     species -> SYMBOL NUM
+Rule 7     species -> SYMBOL LPAREN NUM RPAREN
+Rule 8     species -> SYMBOL LPAREN NUM DOT DOT NUM RPAREN
+
+Terminals, with rules where they appear
+
+DOT                  : 8 8
+LPAREN               : 7 8
+NUM                  : 6 7 8 8
+RPAREN               : 7 8
+SYMBOL               : 5 6 7 8
+error                : 
+
+Nonterminals, with rules where they appear
+
+chemical_equation    : 0
+species              : 3 4
+species_list         : 2 3
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . chemical_equation
+    (1) chemical_equation -> .
+    (2) chemical_equation -> . species_list
+    (3) species_list -> . species_list species
+    (4) species_list -> . species
+    (5) species -> . SYMBOL
+    (6) species -> . SYMBOL NUM
+    (7) species -> . SYMBOL LPAREN NUM RPAREN
+    (8) species -> . SYMBOL LPAREN NUM DOT DOT NUM RPAREN
+
+    $end            reduce using rule 1 (chemical_equation -> .)
+    SYMBOL          shift and go to state 4
+
+    chemical_equation              shift and go to state 1
+    species_list                   shift and go to state 2
+    species                        shift and go to state 3
+
+state 1
+
+    (0) S' -> chemical_equation .
+
+
+
+state 2
+
+    (2) chemical_equation -> species_list .
+    (3) species_list -> species_list . species
+    (5) species -> . SYMBOL
+    (6) species -> . SYMBOL NUM
+    (7) species -> . SYMBOL LPAREN NUM RPAREN
+    (8) species -> . SYMBOL LPAREN NUM DOT DOT NUM RPAREN
+
+    $end            reduce using rule 2 (chemical_equation -> species_list .)
+    SYMBOL          shift and go to state 4
+
+    species                        shift and go to state 5
+
+state 3
+
+    (4) species_list -> species .
+
+    SYMBOL          reduce using rule 4 (species_list -> species .)
+    $end            reduce using rule 4 (species_list -> species .)
+
+
+state 4
+
+    (5) species -> SYMBOL .
+    (6) species -> SYMBOL . NUM
+    (7) species -> SYMBOL . LPAREN NUM RPAREN
+    (8) species -> SYMBOL . LPAREN NUM DOT DOT NUM RPAREN
+
+    SYMBOL          reduce using rule 5 (species -> SYMBOL .)
+    $end            reduce using rule 5 (species -> SYMBOL .)
+    NUM             shift and go to state 6
+    LPAREN          shift and go to state 7
+
+
+state 5
+
+    (3) species_list -> species_list species .
+
+    SYMBOL          reduce using rule 3 (species_list -> species_list species .)
+    $end            reduce using rule 3 (species_list -> species_list species .)
+
+
+state 6
+
+    (6) species -> SYMBOL NUM .
+
+    SYMBOL          reduce using rule 6 (species -> SYMBOL NUM .)
+    $end            reduce using rule 6 (species -> SYMBOL NUM .)
+
+
+state 7
+
+    (7) species -> SYMBOL LPAREN . NUM RPAREN
+    (8) species -> SYMBOL LPAREN . NUM DOT DOT NUM RPAREN
+
+    NUM             shift and go to state 8
+
+
+state 8
+
+    (7) species -> SYMBOL LPAREN NUM . RPAREN
+    (8) species -> SYMBOL LPAREN NUM . DOT DOT NUM RPAREN
+
+    RPAREN          shift and go to state 9
+    DOT             shift and go to state 10
+
+
+state 9
+
+    (7) species -> SYMBOL LPAREN NUM RPAREN .
+
+    SYMBOL          reduce using rule 7 (species -> SYMBOL LPAREN NUM RPAREN .)
+    $end            reduce using rule 7 (species -> SYMBOL LPAREN NUM RPAREN .)
+
+
+state 10
+
+    (8) species -> SYMBOL LPAREN NUM DOT . DOT NUM RPAREN
+
+    DOT             shift and go to state 11
+
+
+state 11
+
+    (8) species -> SYMBOL LPAREN NUM DOT DOT . NUM RPAREN
+
+    NUM             shift and go to state 12
+
+
+state 12
+
+    (8) species -> SYMBOL LPAREN NUM DOT DOT NUM . RPAREN
+
+    RPAREN          shift and go to state 13
+
+
+state 13
+
+    (8) species -> SYMBOL LPAREN NUM DOT DOT NUM RPAREN .
+
+    SYMBOL          reduce using rule 8 (species -> SYMBOL LPAREN NUM DOT DOT NUM RPAREN .)
+    $end            reduce using rule 8 (species -> SYMBOL LPAREN NUM DOT DOT NUM RPAREN .)
+
