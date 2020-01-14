@@ -37,7 +37,7 @@ def t_error(t):
     raise TypeError("Unknown text '%s'" % (t.value,))
 
 
-lexer = lex.lex()
+lexer1 = lex.lex()
 
 def p_chemical_equation(p):
     """
@@ -78,7 +78,7 @@ def p_single_species(p):
 def p_error(p):
     raise TypeError("unknown text at %r" % (p.value,))
 
-parser = yacc.yacc(debug=0, optimize=1)
+parser1 = yacc.yacc()#(debug=0, optimize=0)
 
 def txt2dict(txt):
-    return parser.parse(txt)
+    return parser1.parse(txt, lexer=lexer1)
