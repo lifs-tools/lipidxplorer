@@ -7,6 +7,7 @@
 #   count the number of times each element occurs in the equation.
 
 import ply.lex as lex
+import ply.yacc as yacc
 
 tokens = (
     "SYMBOL",
@@ -38,14 +39,43 @@ def t_error(t):
 
 lexer = lex.lex()
 
-data = '''C[41..49] H[30..200] O[2] N[1]'''
- 
- # Give the lexer some input
-lexer.input(data)
- 
- # Tokenize
-while True:
-    tok = lexer.token()
-    if not tok: 
-        break      # No more input
-    print(tok)
+def p_chemical_equation(p):
+    """
+    chemical_equation :
+    chemical_equation : species_list
+    """
+    if len(p) == 1:
+        # the empty string means there are no atomic symbols
+        p[0] = {}
+    else:
+        p[0] = p[1]
+
+def p_species_list(p):
+    "species_list :  species_list species"
+    p[1].update(p[2])
+    p[0] = p[1]
+
+def p_species(p):
+    "species_list : species"
+    p[0] = p[1]
+
+def p_single_species(p):
+    """
+    species : SYMBOL
+    species : SYMBOL NUM
+    species : SYMBOL LPAREN NUM RPAREN
+    species : SYMBOL LPAREN NUM DOT DOT NUM RPAREN
+    """
+    if len(p) == 2:
+        p[0] = {p[1]: (1,1)}
+    elif len(p) == 3:
+        p[0] = {p[1]: (p[2],p[2])}
+    elif len(p) == 5:
+        p[0] = {p[1]: (p[3],p[3])}
+    elif len(p) == 8:
+        p[0] = {p[1]: (p[3],p[6])}
+
+def p_error(p):
+    raise TypeError("unknown text at %r" % (p.value,))
+
+parser = yacc.yacc(debug=0, optimize=1)
