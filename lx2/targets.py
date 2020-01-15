@@ -55,7 +55,7 @@ class Targets_util():
         self._df = self._df.loc[self._df.dbr.between(dbr_u, dbr_l)]
 
     @staticmethod
-    def set_max_ppm(matchesDF, max_daltons = 0.01):
+    def set_max_daltons(matchesDF, max_daltons = 0.01):
         matchesDF['err'] = matchesDF['m'] - matchesDF['target']
         matchesDF['err'] = matchesDF['err'].abs()
         matchesDF['min_err'] = matchesDF.groupby(['id','chem'])['err'].transform('min')
@@ -138,3 +138,7 @@ class Targets_util():
             plt.xlim([g_df[prefix+'m'].min(),g_df[prefix+'m'].max()])
             plt.show()
             if sample: break #ony show one
+
+    
+
+
