@@ -124,7 +124,6 @@ class Targets_util():
     def lollipop_plot(m, i):
         # https://python-graph-gallery.com/180-basic-lollipop-plot/
         # https://stackoverflow.com/questions/1358977/how-to-make-several-plots-on-a-single-page-using-matplotlib
-
         (markerline, stemlines, baseline) =plt.stem(m, i)#, markerfmt=' ')
         plt.setp(baseline, visible=False)
         return plt
