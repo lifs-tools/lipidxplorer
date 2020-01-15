@@ -1,6 +1,18 @@
 import warnings
 
 from data_structs import Obj, ElementSeq, Evaluable, Func
+from chemParser import txt2dict
+from targets import Targets_util
+
+def ElementSeq2m(elementSeq):
+    txt = elementSeq.txt
+    tmp = txt2dict(txt)
+    target = Targets_util(tmp)
+    target._makeRanges()
+    target._makeDF()
+    target._cal_M()
+    return target._df['m'][0]
+
 
 def txt(evaluable):
     if type(evaluable) in [int,float]:
@@ -9,7 +21,7 @@ def txt(evaluable):
         if len(evaluable) == 1 :
             res = txt(evaluable[0])
     elif isinstance(evaluable, Evaluable):
-        res = f'{txt(evaluable.term_1)} {evaluable.operation} {txt(evaluable.term_2)}'
+        res = f'{txt(evaluable.term_1)} {evaluable.operation.lower()} {txt(evaluable.term_2)}'
     elif isinstance(evaluable, Func):
         if evaluable.func == 'isOdd':
             res = f'{txt(evaluable.on)} % 2 == 0'
@@ -19,9 +31,9 @@ def txt(evaluable):
                 res = f'{evaluable.p_values[0]}_{evaluable.p_values[-2]}'
         elif evaluable.p_rule == 'p_withAttr_id':
             if evaluable.p_values[2] == 'chemsc':
-                res = f'{evaluable.p_values[0]}_m'
+                res = f'{evaluable.p_values[0]}_target'
     elif isinstance(evaluable, ElementSeq):
-        res = '999'
+        res = f'{ElementSeq2m(evaluable)}'
     else:
         warnings.warn(f'could not evaluate {evaluable}')
         res = str(evaluable)
