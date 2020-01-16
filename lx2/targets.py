@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import namedtuple
+from chemParser import txt2dict
 
 class Targets_util():
 
@@ -137,6 +138,14 @@ class Targets_util():
             plt.xlim([g_df[prefix+'m'].min(),g_df[prefix+'m'].max()])
             plt.show()
             if sample: break #ony show one
+    
+    @staticmethod
+    def var2Target(var):
+        elements = txt2dict(var.object.txt)
+        target = Targets_util(elements)
+        dbrs = var.Options.get('dbr',(None, None))
+        target.set_dbr(*dbrs)
+        return target
 
     
 
