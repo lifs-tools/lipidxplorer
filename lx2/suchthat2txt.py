@@ -15,6 +15,7 @@ def ElementSeq2m(elementSeq):
 
 
 def txt(evaluable):
+    res = None
     if type(evaluable) in [int,float]:
         res = str(evaluable)
     elif isinstance(evaluable, list):
@@ -25,13 +26,19 @@ def txt(evaluable):
     elif isinstance(evaluable, Func):
         if evaluable.func == 'isOdd':
             res = f'{txt(evaluable.on)} % 2 == 0'
+        if evaluable.func == 'avg':
+            res = f'{txt(evaluable.on)}' # do nothing
     elif isinstance(evaluable, Obj):
         if evaluable.p_rule == 'p_withAttr_accessItem_':
             if evaluable.p_values[2] == 'chemsc':
-                res = f'{evaluable.p_values[0]}_{evaluable.p_values[-2]}'
+                item = evaluable.p_values[-2]
+                if item == 'db': item = 'dbr' # refa: rename db to dbr
+                res = f'{evaluable.p_values[0]}_{item}'
         elif evaluable.p_rule == 'p_withAttr_id':
             if evaluable.p_values[2] == 'chemsc':
                 res = f'{evaluable.p_values[0]}_target'
+            elif evaluable.p_values[2] == 'intensity':
+                res = f'{evaluable.p_values[0]}_i'
     elif isinstance(evaluable, ElementSeq):
         res = f'{ElementSeq2m(evaluable)}'
     else:
