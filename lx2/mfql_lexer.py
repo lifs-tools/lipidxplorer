@@ -14,15 +14,22 @@ tokens = keywords + (
     'EQUALS', 'IS', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'LPAREN',
     'RPAREN', 'LT', 'LE', 'GT', 'GE', 'IFA', 'IFF', 'NE', 'COMMA', 'SEMICOLON',
     'FLOAT', 'STRING', 'ID', 'INTEGER', 'DOT', 'PERCENT', 'LBRACE',
-    'RBRACE', 'LBRACKET', 'RBRACKET', 'SFSTRING', 'ARROW', 'ARROWR'
+    'RBRACE', 'LBRACKET', 'RBRACKET', 'SFSTRING', 'ARROW', 'ARROWR',
+    'STUPLE'
 )
 
-#
+# https://stackoverflow.com/questions/2910338/python-yacc-lexer-token-priority
 
 def t_ID(t):
     r'[a-zA-Z$][a-zA-Z$0-9]*'
     if t.value in keywords or t.value.upper() in keywords:
         t.type = t.value.upper()
+    return t
+
+def t_STRING(t):
+    r'\".*?\"'
+    if t.value.startswith('"('):
+        t.type = 'STUPLE'
     return t
 
 # regular expression rules for simple tokens
@@ -51,7 +58,8 @@ t_COMMA   = r'\,'
 t_SEMICOLON = r';'
 t_FLOAT   = r'(\+|-)?((\d*\.\d+)(E[\+-]?\d+)?|([1-9]\d*E[\+-]?\d+))'
 t_INTEGER = r'(\+|-)?\d+'
-t_STRING  = r'\".*?\"'
+# t_STRING  = r'\".*?\"'
+# t_STUPLE  = r'\".*?\"'
 t_SFSTRING  = r'\'.*?\''
 t_DOT	  = r'\.'
 t_PERCENT = r'%'
