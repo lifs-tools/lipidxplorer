@@ -444,8 +444,23 @@ def p_error(p):
 parser = yacc.yacc()#(debug=0, optimize=0)
 
 def fromFile(filename):
-    with open(filename, 'rU') as f:
+    with open(filename, 'r') as f:
         mfql_str = f.read()
     res = parser.parse(mfql_str, lexer=lexer)
     return res
+
+
+if __name__ == "__main__":
+    filename = 'test_resources\\small_test\\170213_CE_pos_MSMS.mfql'
+    with open(filename, 'r') as f:
+        mfql_str = f.read()
+    
+    lexer.input(mfql_str)
+    while True:
+     tok = lexer.token()
+     if not tok: 
+         break      # No more input
+    print(tok)
+    mfql_dict = parser.parse(mfql_str, lexer=lexer)
+    print(mfql_dict['report'][0].p_values[0])
 
