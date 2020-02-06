@@ -457,10 +457,10 @@ if __name__ == "__main__":
     
     lexer.input(mfql_str)
     while True:
-     tok = lexer.token()
-     if not tok: 
-         break      # No more input
-    print(tok)
+        tok = lexer.token()
+        if not tok: 
+            break      # No more input
+        print(tok)
     mfql_dict = parser.parse(mfql_str, lexer=lexer)
     print(mfql_dict['report'][0].p_values[0])
 
