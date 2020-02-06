@@ -450,18 +450,18 @@ def fromFile(filename):
     return res
 
 
-if __name__ == "__main__":
-    filename = 'test_resources\\small_test\\170213_CE_pos_MSMS.mfql'
-    with open(filename, 'r') as f:
-        mfql_str = f.read()
+# if __name__ == "__main__":
+#     filename = 'test_resources\\small_test\\170213_CE_pos_MSMS.mfql'
+#     with open(filename, 'r') as f:
+#         mfql_str = f.read()
     
-    lexer.input(mfql_str)
-    while True:
-        tok = lexer.token()
-        if not tok: 
-            break      # No more input
-        print(tok)
-    mfql_dict = parser.parse(mfql_str, lexer=lexer)
-    print(mfql_dict['report'])
-    print('done')
+#     lexer.input(mfql_str)
+#     while True:
+#         tok = lexer.token()
+#         if not tok: 
+#             break      # No more input
+#         print(tok)
+#     mfql_dict = parser.parse(mfql_str, lexer=lexer)
+#     print(mfql_dict['report'])
+#     print('done')
 
