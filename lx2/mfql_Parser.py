@@ -427,7 +427,7 @@ def p_reportContent_single(p):
 
 
 def p_rContent(p):
-    '''reportItem : ID IS STRING PERCENT STRING SEMICOLON
+    '''reportItem : ID IS STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON
                 | ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
                 | ID IS expression SEMICOLON'''
 
@@ -462,5 +462,6 @@ if __name__ == "__main__":
             break      # No more input
         print(tok)
     mfql_dict = parser.parse(mfql_str, lexer=lexer)
-    print(mfql_dict['report'][0].p_values[0])
+    print(mfql_dict['report'])
+    print('done')
 
