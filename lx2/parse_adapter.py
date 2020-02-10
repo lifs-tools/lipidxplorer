@@ -39,6 +39,9 @@ def txt(evaluable):
                 res = f'{evaluable.p_values[0]}_target'
             elif evaluable.p_values[2] == 'intensity':
                 res = f'{evaluable.p_values[0]}_i'
+        elif evaluable.p_rule == 'p_expression_attribute':
+            if evaluable.p_values[2] == 'chemsc':
+                pass
     elif isinstance(evaluable, ElementSeq):
         res = f'{ElementSeq2m(evaluable)}'
     else:
@@ -52,8 +55,13 @@ def txt(evaluable):
 def suchthat2txt(suchthat):
     return txt(suchthat)
 
-def report2column(report,df):
-    r
+def report2exec_txt(report,df= None):
+    reportItem = report[0]
+    col_name = reportItem.id
+    col_format = reportItem.p_values[0]
+    col_tuple = reportItem.p_values[-2]
+    col_tuple_txt = [txt(t) for t in col_tuple]
+    return (col_name, ' ,'.join(col_tuple_txt))
 
 if __name__ == '__main__':
     suchthat = Evaluable(operation='AND', term_1=Evaluable(operation='AND', term_1=Func(func='isOdd', on=[
@@ -84,20 +92,24 @@ if __name__ == '__main__':
     res = suchthat2txt(suchthat)
     print(res)
 
-    report = [ReportItem(id='SPECIE', p_values=['"CE %d:%d"', '%', '"((PR.chemsc)[C] - 27, (PR.chemsc)[db] - 4.5)"']),
-                ReportItem(id='CLASS', p_values=['CE']),
-                ReportItem(id='MASS', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'mass'])]),
-                ReportItem(id='IDMSLEVEL', p_values=[2]),
-                ReportItem(id='QUANTMSLEVEL', p_values=[2]),
-                ReportItem(id='ISOBARIC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'isobaric'])]),
-                ReportItem(id='CHEMSC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'chemsc'])]),
-                ReportItem(id='ERRppm', p_values=['"%2.2f"', '%', '"(PR.errppm)"']),
-                ReportItem(id='FRERRppm', p_values=['"%2.2f"', '%', '"(FR.errppm)"']),
-                ReportItem(id='INT', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FR', '.', 'intensity'])]),
-                ReportItem(id='QUALA', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])]),
-                ReportItem(id='QUALB', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])]),
-                ReportItem(id='QUALC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])])]
+    report = [ReportItem(id='SPECIE', p_values=['"CE %d:%d"', '%', '"(', [Evaluable(operation='-', term_1=Obj(p_rule='p_expression_attribute', p_values=(Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'chemsc']), 'C')), term_2=27), Evaluable(operation='-', term_1=Obj(p_rule='p_expression_attribute', p_values=(Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'chemsc']), 'db')), term_2=4.5)], ')"']),
+            ReportItem(id='CLASS', p_values=['CE']),
+            ReportItem(id='MASS', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'mass'])]),
+            ReportItem(id='IDMSLEVEL', p_values=[2]),
+            ReportItem(id='QUANTMSLEVEL', p_values=[2]),
+            ReportItem(id='ISOBARIC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'isobaric'])]),
+            ReportItem(id='CHEMSC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'chemsc'])]),
+            ReportItem(id='ERRppm', p_values=['"%2.2f"', '%', '"(', [Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'errppm'])], ')"']),
+            ReportItem(id='FRERRppm', p_values=['"%2.2f"', '%', '"(', [Obj(p_rule='p_withAttr_id', p_values=['FR', '.', 'errppm'])], ')"']),
+            ReportItem(id='INT', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FR', '.', 'intensity'])]),
+            ReportItem(id='QUALA', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])]),
+            ReportItem(id='QUALB', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])]),
+            ReportItem(id='QUALC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])])]
 
-    
+    res = report2exec_txt(report)
+    print(res)
+
+
+
 
 
