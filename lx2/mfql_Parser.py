@@ -383,7 +383,7 @@ def p_expression_struct1(p):
 
 def p_expression_attribute(p):
     '''expression : LPAREN expression RPAREN LBRACE ID RBRACE'''
-    p[0] = Evaluable('p_expression_attribute', p[2], p[5])
+    p[0] = Obj('p_expression_attribute', (p[2], p[5]))
 
 
 def p_expression_paren(p):
