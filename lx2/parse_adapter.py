@@ -52,11 +52,8 @@ def txt(evaluable):
 def suchthat2txt(suchthat):
     return txt(suchthat)
 
-def report2DF(report, df):
-    cols = [r.id for r in report]
-    vals = [txt(r.p_values) for r in report]
-    return None
-
+def report2column(report,df):
+    r
 
 if __name__ == '__main__':
     suchthat = Evaluable(operation='AND', term_1=Evaluable(operation='AND', term_1=Func(func='isOdd', on=[
@@ -101,6 +98,6 @@ if __name__ == '__main__':
                 ReportItem(id='QUALB', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])]),
                 ReportItem(id='QUALC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])])]
 
-    res = report2DF(report,None)
+    
 
 
