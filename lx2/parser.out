@@ -94,7 +94,7 @@ Rule 88    scope -> MS2 MINUS
 Rule 89    reportSection -> REPORT reportContent
 Rule 90    reportContent -> reportContent reportItem
 Rule 91    reportContent -> reportItem
-Rule 92    reportItem -> ID IS STRING PERCENT STRING SEMICOLON
+Rule 92    reportItem -> ID IS STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON
 Rule 93    reportItem -> ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
 Rule 94    reportItem -> ID IS expression SEMICOLON
 
@@ -127,6 +127,7 @@ LBRACKET             : 28
 LE                   : 60 72
 LPAREN               : 19 20 40 42 53 65 81 82 93
 LT                   : 73
+LTUPLE               : 92
 MASSRANGE            : 42
 MAXOCC               : 44
 MINOCC               : 43
@@ -146,9 +147,10 @@ RBRACKET             : 28
 REPORT               : 89
 RES                  : 49
 RPAREN               : 19 20 40 42 53 65 81 82 93
+RTUPLE               : 92
 SEMICOLON            : 1 5 9 10 11 12 92 93 94
 SFSTRING             : 37
-STRING               : 22 36 92 92 93
+STRING               : 22 36 92 93
 SUCHTHAT             : 62
 TIMES                : 78
 TOLERANCE            : 45
@@ -157,7 +159,7 @@ error                :
 
 Nonterminals, with rules where they appear
 
-arguments            : 19 20 27 93
+arguments            : 19 20 27 92 93
 booleanterm          : 62 63 63 64 64 65 66
 boolmarks            : 52 53 54 55 55 56 56 57 57 58 58 59 59 60 60
 expr                 : 67
@@ -493,7 +495,7 @@ state 19
     (89) reportSection -> REPORT . reportContent
     (90) reportContent -> . reportContent reportItem
     (91) reportContent -> . reportItem
-    (92) reportItem -> . ID IS STRING PERCENT STRING SEMICOLON
+    (92) reportItem -> . ID IS STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON
     (93) reportItem -> . ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
     (94) reportItem -> . ID IS expression SEMICOLON
 
@@ -697,6 +699,7 @@ state 26
     SEMICOLON       reduce using rule 13 (object -> withAttr .)
     AS              reduce using rule 13 (object -> withAttr .)
     RPAREN          reduce using rule 13 (object -> withAttr .)
+    RTUPLE          reduce using rule 13 (object -> withAttr .)
 
 
 state 27
@@ -724,6 +727,7 @@ state 27
     SEMICOLON       reduce using rule 14 (object -> onlyObj .)
     AS              reduce using rule 14 (object -> onlyObj .)
     RPAREN          reduce using rule 14 (object -> onlyObj .)
+    RTUPLE          reduce using rule 14 (object -> onlyObj .)
 
 
 state 28
@@ -759,6 +763,7 @@ state 28
     SEMICOLON       reduce using rule 16 (onlyObj -> ID .)
     AS              reduce using rule 16 (onlyObj -> ID .)
     RPAREN          reduce using rule 16 (onlyObj -> ID .)
+    RTUPLE          reduce using rule 16 (onlyObj -> ID .)
     LPAREN          shift and go to state 63
 
 
@@ -788,6 +793,7 @@ state 29
     SEMICOLON       reduce using rule 36 (varcontent -> STRING .)
     AS              reduce using rule 36 (varcontent -> STRING .)
     RPAREN          reduce using rule 36 (varcontent -> STRING .)
+    RTUPLE          reduce using rule 36 (varcontent -> STRING .)
 
 
 state 30
@@ -817,6 +823,7 @@ state 30
     SEMICOLON       reduce using rule 18 (onlyObj -> varcontent .)
     AS              reduce using rule 18 (onlyObj -> varcontent .)
     RPAREN          reduce using rule 18 (onlyObj -> varcontent .)
+    RTUPLE          reduce using rule 18 (onlyObj -> varcontent .)
 
 
 state 31
@@ -846,6 +853,7 @@ state 31
     SEMICOLON       reduce using rule 17 (onlyObj -> list .)
     AS              reduce using rule 17 (onlyObj -> list .)
     RPAREN          reduce using rule 17 (onlyObj -> list .)
+    RTUPLE          reduce using rule 17 (onlyObj -> list .)
 
 
 state 32
@@ -874,6 +882,7 @@ state 32
     SEMICOLON       reduce using rule 31 (varcontent -> tolerancetype .)
     AS              reduce using rule 31 (varcontent -> tolerancetype .)
     RPAREN          reduce using rule 31 (varcontent -> tolerancetype .)
+    RTUPLE          reduce using rule 31 (varcontent -> tolerancetype .)
 
 
 state 33
@@ -904,6 +913,7 @@ state 33
     SEMICOLON       reduce using rule 32 (varcontent -> FLOAT .)
     AS              reduce using rule 32 (varcontent -> FLOAT .)
     RPAREN          reduce using rule 32 (varcontent -> FLOAT .)
+    RTUPLE          reduce using rule 32 (varcontent -> FLOAT .)
     DA              shift and go to state 66
     PPM             shift and go to state 67
 
@@ -937,6 +947,7 @@ state 34
     SEMICOLON       reduce using rule 33 (varcontent -> INTEGER .)
     AS              reduce using rule 33 (varcontent -> INTEGER .)
     RPAREN          reduce using rule 33 (varcontent -> INTEGER .)
+    RTUPLE          reduce using rule 33 (varcontent -> INTEGER .)
     DA              shift and go to state 68
     RES             shift and go to state 69
     PPM             shift and go to state 70
@@ -982,6 +993,7 @@ state 37
     SEMICOLON       reduce using rule 37 (varcontent -> SFSTRING .)
     AS              reduce using rule 37 (varcontent -> SFSTRING .)
     RPAREN          reduce using rule 37 (varcontent -> SFSTRING .)
+    RTUPLE          reduce using rule 37 (varcontent -> SFSTRING .)
 
 
 state 38
@@ -1377,7 +1389,7 @@ state 49
 
     (89) reportSection -> REPORT reportContent .
     (90) reportContent -> reportContent . reportItem
-    (92) reportItem -> . ID IS STRING PERCENT STRING SEMICOLON
+    (92) reportItem -> . ID IS STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON
     (93) reportItem -> . ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
     (94) reportItem -> . ID IS expression SEMICOLON
 
@@ -1398,7 +1410,7 @@ state 50
 
 state 51
 
-    (92) reportItem -> ID . IS STRING PERCENT STRING SEMICOLON
+    (92) reportItem -> ID . IS STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON
     (93) reportItem -> ID . IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
     (94) reportItem -> ID . IS expression SEMICOLON
 
@@ -1941,6 +1953,7 @@ state 66
     SEMICOLON       reduce using rule 46 (tolerancetype -> FLOAT DA .)
     AS              reduce using rule 46 (tolerancetype -> FLOAT DA .)
     RPAREN          reduce using rule 46 (tolerancetype -> FLOAT DA .)
+    RTUPLE          reduce using rule 46 (tolerancetype -> FLOAT DA .)
 
 
 state 67
@@ -1969,6 +1982,7 @@ state 67
     SEMICOLON       reduce using rule 47 (tolerancetype -> FLOAT PPM .)
     AS              reduce using rule 47 (tolerancetype -> FLOAT PPM .)
     RPAREN          reduce using rule 47 (tolerancetype -> FLOAT PPM .)
+    RTUPLE          reduce using rule 47 (tolerancetype -> FLOAT PPM .)
 
 
 state 68
@@ -1997,6 +2011,7 @@ state 68
     SEMICOLON       reduce using rule 48 (tolerancetype -> INTEGER DA .)
     AS              reduce using rule 48 (tolerancetype -> INTEGER DA .)
     RPAREN          reduce using rule 48 (tolerancetype -> INTEGER DA .)
+    RTUPLE          reduce using rule 48 (tolerancetype -> INTEGER DA .)
 
 
 state 69
@@ -2025,6 +2040,7 @@ state 69
     SEMICOLON       reduce using rule 49 (tolerancetype -> INTEGER RES .)
     AS              reduce using rule 49 (tolerancetype -> INTEGER RES .)
     RPAREN          reduce using rule 49 (tolerancetype -> INTEGER RES .)
+    RTUPLE          reduce using rule 49 (tolerancetype -> INTEGER RES .)
 
 
 state 70
@@ -2053,6 +2069,7 @@ state 70
     SEMICOLON       reduce using rule 50 (tolerancetype -> INTEGER PPM .)
     AS              reduce using rule 50 (tolerancetype -> INTEGER PPM .)
     RPAREN          reduce using rule 50 (tolerancetype -> INTEGER PPM .)
+    RTUPLE          reduce using rule 50 (tolerancetype -> INTEGER PPM .)
 
 
 state 71
@@ -2081,6 +2098,7 @@ state 71
     SEMICOLON       reduce using rule 34 (varcontent -> PLUS INTEGER .)
     AS              reduce using rule 34 (varcontent -> PLUS INTEGER .)
     RPAREN          reduce using rule 34 (varcontent -> PLUS INTEGER .)
+    RTUPLE          reduce using rule 34 (varcontent -> PLUS INTEGER .)
 
 
 state 72
@@ -2967,6 +2985,7 @@ state 92
     OR              reduce using rule 80 (expression -> MINUS expression .)
     REPORT          reduce using rule 80 (expression -> MINUS expression .)
     SEMICOLON       reduce using rule 80 (expression -> MINUS expression .)
+    RTUPLE          reduce using rule 80 (expression -> MINUS expression .)
 
   ! PLUS            [ shift and go to state 88 ]
   ! MINUS           [ shift and go to state 89 ]
@@ -3000,6 +3019,7 @@ state 93
   ! reduce/reduce conflict for OR resolved using rule 33 (varcontent -> INTEGER .)
   ! reduce/reduce conflict for REPORT resolved using rule 33 (varcontent -> INTEGER .)
   ! reduce/reduce conflict for SEMICOLON resolved using rule 33 (varcontent -> INTEGER .)
+  ! reduce/reduce conflict for RTUPLE resolved using rule 33 (varcontent -> INTEGER .)
     DOT             reduce using rule 33 (varcontent -> INTEGER .)
     PLUS            reduce using rule 33 (varcontent -> INTEGER .)
     MINUS           reduce using rule 33 (varcontent -> INTEGER .)
@@ -3018,6 +3038,7 @@ state 93
     OR              reduce using rule 33 (varcontent -> INTEGER .)
     REPORT          reduce using rule 33 (varcontent -> INTEGER .)
     SEMICOLON       reduce using rule 33 (varcontent -> INTEGER .)
+    RTUPLE          reduce using rule 33 (varcontent -> INTEGER .)
     DA              shift and go to state 68
     RES             shift and go to state 69
     PPM             shift and go to state 70
@@ -3040,6 +3061,7 @@ state 93
   ! RPAREN          [ reduce using rule 35 (varcontent -> MINUS INTEGER .) ]
   ! COMMA           [ reduce using rule 35 (varcontent -> MINUS INTEGER .) ]
   ! SEMICOLON       [ reduce using rule 35 (varcontent -> MINUS INTEGER .) ]
+  ! RTUPLE          [ reduce using rule 35 (varcontent -> MINUS INTEGER .) ]
 
 
 state 94
@@ -3120,6 +3142,7 @@ state 95
     OR              reduce using rule 83 (expression -> object .)
     REPORT          reduce using rule 83 (expression -> object .)
     SEMICOLON       reduce using rule 83 (expression -> object .)
+    RTUPLE          reduce using rule 83 (expression -> object .)
 
 
 state 96
@@ -3133,7 +3156,7 @@ state 96
 
 state 97
 
-    (92) reportItem -> ID IS . STRING PERCENT STRING SEMICOLON
+    (92) reportItem -> ID IS . STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON
     (93) reportItem -> ID IS . STRING PERCENT LPAREN arguments RPAREN SEMICOLON
     (94) reportItem -> ID IS . expression SEMICOLON
     (76) expression -> . expression PLUS expression
@@ -3433,6 +3456,7 @@ state 108
     SEMICOLON       reduce using rule 23 (withAttr -> ID DOT ID .)
     AS              reduce using rule 23 (withAttr -> ID DOT ID .)
     RPAREN          reduce using rule 23 (withAttr -> ID DOT ID .)
+    RTUPLE          reduce using rule 23 (withAttr -> ID DOT ID .)
 
 
 state 109
@@ -3462,6 +3486,7 @@ state 111
 
     RPAREN          reduce using rule 26 (arguments -> expression .)
     COMMA           reduce using rule 26 (arguments -> expression .)
+    RTUPLE          reduce using rule 26 (arguments -> expression .)
     PLUS            shift and go to state 88
     MINUS           shift and go to state 89
     TIMES           shift and go to state 90
@@ -3493,6 +3518,7 @@ state 112
     SEMICOLON       reduce using rule 24 (withAttr -> varcontent DOT ID .)
     AS              reduce using rule 24 (withAttr -> varcontent DOT ID .)
     RPAREN          reduce using rule 24 (withAttr -> varcontent DOT ID .)
+    RTUPLE          reduce using rule 24 (withAttr -> varcontent DOT ID .)
 
 
 state 113
@@ -3520,6 +3546,7 @@ state 113
     SEMICOLON       reduce using rule 25 (withAttr -> list DOT ID .)
     AS              reduce using rule 25 (withAttr -> list DOT ID .)
     RPAREN          reduce using rule 25 (withAttr -> list DOT ID .)
+    RTUPLE          reduce using rule 25 (withAttr -> list DOT ID .)
 
 
 state 114
@@ -3548,6 +3575,7 @@ state 114
     SEMICOLON       reduce using rule 28 (list -> LBRACKET listcontent RBRACKET .)
     AS              reduce using rule 28 (list -> LBRACKET listcontent RBRACKET .)
     RPAREN          reduce using rule 28 (list -> LBRACKET listcontent RBRACKET .)
+    RTUPLE          reduce using rule 28 (list -> LBRACKET listcontent RBRACKET .)
 
 
 state 115
@@ -3697,6 +3725,7 @@ state 122
     OR              reduce using rule 82 (expression -> LPAREN expression RPAREN .)
     REPORT          reduce using rule 82 (expression -> LPAREN expression RPAREN .)
     SEMICOLON       reduce using rule 82 (expression -> LPAREN expression RPAREN .)
+    RTUPLE          reduce using rule 82 (expression -> LPAREN expression RPAREN .)
 
 
 state 123
@@ -3848,6 +3877,7 @@ state 130
     OR              reduce using rule 76 (expression -> expression PLUS expression .)
     REPORT          reduce using rule 76 (expression -> expression PLUS expression .)
     SEMICOLON       reduce using rule 76 (expression -> expression PLUS expression .)
+    RTUPLE          reduce using rule 76 (expression -> expression PLUS expression .)
     TIMES           shift and go to state 90
     DIVIDE          shift and go to state 91
 
@@ -3880,6 +3910,7 @@ state 131
     OR              reduce using rule 77 (expression -> expression MINUS expression .)
     REPORT          reduce using rule 77 (expression -> expression MINUS expression .)
     SEMICOLON       reduce using rule 77 (expression -> expression MINUS expression .)
+    RTUPLE          reduce using rule 77 (expression -> expression MINUS expression .)
     TIMES           shift and go to state 90
     DIVIDE          shift and go to state 91
 
@@ -3914,6 +3945,7 @@ state 132
     OR              reduce using rule 78 (expression -> expression TIMES expression .)
     REPORT          reduce using rule 78 (expression -> expression TIMES expression .)
     SEMICOLON       reduce using rule 78 (expression -> expression TIMES expression .)
+    RTUPLE          reduce using rule 78 (expression -> expression TIMES expression .)
 
   ! PLUS            [ shift and go to state 88 ]
   ! MINUS           [ shift and go to state 89 ]
@@ -3946,6 +3978,7 @@ state 133
     OR              reduce using rule 79 (expression -> expression DIVIDE expression .)
     REPORT          reduce using rule 79 (expression -> expression DIVIDE expression .)
     SEMICOLON       reduce using rule 79 (expression -> expression DIVIDE expression .)
+    RTUPLE          reduce using rule 79 (expression -> expression DIVIDE expression .)
 
   ! PLUS            [ shift and go to state 88 ]
   ! MINUS           [ shift and go to state 89 ]
@@ -3971,7 +4004,7 @@ state 134
 
 state 135
 
-    (92) reportItem -> ID IS STRING . PERCENT STRING SEMICOLON
+    (92) reportItem -> ID IS STRING . PERCENT LTUPLE arguments RTUPLE SEMICOLON
     (93) reportItem -> ID IS STRING . PERCENT LPAREN arguments RPAREN SEMICOLON
     (36) varcontent -> STRING .
 
@@ -4093,6 +4126,7 @@ state 142
     SEMICOLON       reduce using rule 15 (onlyObj -> ID LBRACE ID RBRACE .)
     AS              reduce using rule 15 (onlyObj -> ID LBRACE ID RBRACE .)
     RPAREN          reduce using rule 15 (onlyObj -> ID LBRACE ID RBRACE .)
+    RTUPLE          reduce using rule 15 (onlyObj -> ID LBRACE ID RBRACE .)
 
 
 state 143
@@ -4122,6 +4156,7 @@ state 143
     SEMICOLON       reduce using rule 20 (onlyObj -> ID LPAREN arguments RPAREN .)
     AS              reduce using rule 20 (onlyObj -> ID LPAREN arguments RPAREN .)
     RPAREN          reduce using rule 20 (onlyObj -> ID LPAREN arguments RPAREN .)
+    RTUPLE          reduce using rule 20 (onlyObj -> ID LPAREN arguments RPAREN .)
 
 
 state 144
@@ -4266,10 +4301,10 @@ state 155
 
 state 156
 
-    (92) reportItem -> ID IS STRING PERCENT . STRING SEMICOLON
+    (92) reportItem -> ID IS STRING PERCENT . LTUPLE arguments RTUPLE SEMICOLON
     (93) reportItem -> ID IS STRING PERCENT . LPAREN arguments RPAREN SEMICOLON
 
-    STRING          shift and go to state 173
+    LTUPLE          shift and go to state 173
     LPAREN          shift and go to state 174
 
 
@@ -4313,6 +4348,7 @@ state 161
 
     RPAREN          reduce using rule 27 (arguments -> arguments COMMA expression .)
     COMMA           reduce using rule 27 (arguments -> arguments COMMA expression .)
+    RTUPLE          reduce using rule 27 (arguments -> arguments COMMA expression .)
     PLUS            shift and go to state 88
     MINUS           shift and go to state 89
     TIMES           shift and go to state 90
@@ -4497,10 +4533,62 @@ state 172
 
 state 173
 
-    (92) reportItem -> ID IS STRING PERCENT STRING . SEMICOLON
+    (92) reportItem -> ID IS STRING PERCENT LTUPLE . arguments RTUPLE SEMICOLON
+    (26) arguments -> . expression
+    (27) arguments -> . arguments COMMA expression
+    (76) expression -> . expression PLUS expression
+    (77) expression -> . expression MINUS expression
+    (78) expression -> . expression TIMES expression
+    (79) expression -> . expression DIVIDE expression
+    (80) expression -> . MINUS expression
+    (81) expression -> . LPAREN expression RPAREN LBRACE ID RBRACE
+    (82) expression -> . LPAREN expression RPAREN
+    (83) expression -> . object
+    (13) object -> . withAttr
+    (14) object -> . onlyObj
+    (21) withAttr -> . ID DOT ID LBRACE ID RBRACE
+    (22) withAttr -> . ID DOT ID LBRACE STRING RBRACE
+    (23) withAttr -> . ID DOT ID
+    (24) withAttr -> . varcontent DOT ID
+    (25) withAttr -> . list DOT ID
+    (15) onlyObj -> . ID LBRACE ID RBRACE
+    (16) onlyObj -> . ID
+    (17) onlyObj -> . list
+    (18) onlyObj -> . varcontent
+    (19) onlyObj -> . ID LPAREN arguments RPAREN LBRACE ID RBRACE
+    (20) onlyObj -> . ID LPAREN arguments RPAREN
+    (31) varcontent -> . tolerancetype
+    (32) varcontent -> . FLOAT
+    (33) varcontent -> . INTEGER
+    (34) varcontent -> . PLUS INTEGER
+    (35) varcontent -> . MINUS INTEGER
+    (36) varcontent -> . STRING
+    (37) varcontent -> . SFSTRING
+    (28) list -> . LBRACKET listcontent RBRACKET
+    (46) tolerancetype -> . FLOAT DA
+    (47) tolerancetype -> . FLOAT PPM
+    (48) tolerancetype -> . INTEGER DA
+    (49) tolerancetype -> . INTEGER RES
+    (50) tolerancetype -> . INTEGER PPM
 
-    SEMICOLON       shift and go to state 189
+    MINUS           shift and go to state 48
+    LPAREN          shift and go to state 94
+    ID              shift and go to state 28
+    FLOAT           shift and go to state 33
+    INTEGER         shift and go to state 34
+    PLUS            shift and go to state 35
+    STRING          shift and go to state 29
+    SFSTRING        shift and go to state 37
+    LBRACKET        shift and go to state 38
 
+    arguments                      shift and go to state 189
+    expression                     shift and go to state 111
+    object                         shift and go to state 95
+    withAttr                       shift and go to state 26
+    onlyObj                        shift and go to state 27
+    varcontent                     shift and go to state 30
+    list                           shift and go to state 31
+    tolerancetype                  shift and go to state 32
 
 state 174
 
@@ -4586,6 +4674,7 @@ state 175
     SEMICOLON       reduce using rule 21 (withAttr -> ID DOT ID LBRACE ID RBRACE .)
     AS              reduce using rule 21 (withAttr -> ID DOT ID LBRACE ID RBRACE .)
     RPAREN          reduce using rule 21 (withAttr -> ID DOT ID LBRACE ID RBRACE .)
+    RTUPLE          reduce using rule 21 (withAttr -> ID DOT ID LBRACE ID RBRACE .)
 
 
 state 176
@@ -4613,6 +4702,7 @@ state 176
     SEMICOLON       reduce using rule 22 (withAttr -> ID DOT ID LBRACE STRING RBRACE .)
     AS              reduce using rule 22 (withAttr -> ID DOT ID LBRACE STRING RBRACE .)
     RPAREN          reduce using rule 22 (withAttr -> ID DOT ID LBRACE STRING RBRACE .)
+    RTUPLE          reduce using rule 22 (withAttr -> ID DOT ID LBRACE STRING RBRACE .)
 
 
 state 177
@@ -4807,15 +4897,16 @@ state 188
     OR              reduce using rule 81 (expression -> LPAREN expression RPAREN LBRACE ID RBRACE .)
     REPORT          reduce using rule 81 (expression -> LPAREN expression RPAREN LBRACE ID RBRACE .)
     SEMICOLON       reduce using rule 81 (expression -> LPAREN expression RPAREN LBRACE ID RBRACE .)
+    RTUPLE          reduce using rule 81 (expression -> LPAREN expression RPAREN LBRACE ID RBRACE .)
 
 
 state 189
 
-    (92) reportItem -> ID IS STRING PERCENT STRING SEMICOLON .
+    (92) reportItem -> ID IS STRING PERCENT LTUPLE arguments . RTUPLE SEMICOLON
+    (27) arguments -> arguments . COMMA expression
 
-    ID              reduce using rule 92 (reportItem -> ID IS STRING PERCENT STRING SEMICOLON .)
-    SEMICOLON       reduce using rule 92 (reportItem -> ID IS STRING PERCENT STRING SEMICOLON .)
-    $end            reduce using rule 92 (reportItem -> ID IS STRING PERCENT STRING SEMICOLON .)
+    RTUPLE          shift and go to state 195
+    COMMA           shift and go to state 144
 
 
 state 190
@@ -4823,7 +4914,7 @@ state 190
     (93) reportItem -> ID IS STRING PERCENT LPAREN arguments . RPAREN SEMICOLON
     (27) arguments -> arguments . COMMA expression
 
-    RPAREN          shift and go to state 195
+    RPAREN          shift and go to state 196
     COMMA           shift and go to state 144
 
 
@@ -4852,6 +4943,7 @@ state 191
     SEMICOLON       reduce using rule 19 (onlyObj -> ID LPAREN arguments RPAREN LBRACE ID RBRACE .)
     AS              reduce using rule 19 (onlyObj -> ID LPAREN arguments RPAREN LBRACE ID RBRACE .)
     RPAREN          reduce using rule 19 (onlyObj -> ID LPAREN arguments RPAREN LBRACE ID RBRACE .)
+    RTUPLE          reduce using rule 19 (onlyObj -> ID LPAREN arguments RPAREN LBRACE ID RBRACE .)
 
 
 state 192
@@ -4866,24 +4958,31 @@ state 193
 
     (40) optionentry -> DBR IS LPAREN object . COMMA object RPAREN
 
-    COMMA           shift and go to state 196
+    COMMA           shift and go to state 197
 
 
 state 194
 
     (42) optionentry -> MASSRANGE IS LPAREN object . COMMA object RPAREN
 
-    COMMA           shift and go to state 197
+    COMMA           shift and go to state 198
 
 
 state 195
 
-    (93) reportItem -> ID IS STRING PERCENT LPAREN arguments RPAREN . SEMICOLON
+    (92) reportItem -> ID IS STRING PERCENT LTUPLE arguments RTUPLE . SEMICOLON
 
-    SEMICOLON       shift and go to state 198
+    SEMICOLON       shift and go to state 199
 
 
 state 196
+
+    (93) reportItem -> ID IS STRING PERCENT LPAREN arguments RPAREN . SEMICOLON
+
+    SEMICOLON       shift and go to state 200
+
+
+state 197
 
     (40) optionentry -> DBR IS LPAREN object COMMA . object RPAREN
     (13) object -> . withAttr
@@ -4922,14 +5021,14 @@ state 196
     SFSTRING        shift and go to state 37
     LBRACKET        shift and go to state 38
 
-    object                         shift and go to state 199
+    object                         shift and go to state 201
     withAttr                       shift and go to state 26
     onlyObj                        shift and go to state 27
     varcontent                     shift and go to state 30
     list                           shift and go to state 31
     tolerancetype                  shift and go to state 32
 
-state 197
+state 198
 
     (42) optionentry -> MASSRANGE IS LPAREN object COMMA . object RPAREN
     (13) object -> . withAttr
@@ -4968,14 +5067,23 @@ state 197
     SFSTRING        shift and go to state 37
     LBRACKET        shift and go to state 38
 
-    object                         shift and go to state 200
+    object                         shift and go to state 202
     withAttr                       shift and go to state 26
     onlyObj                        shift and go to state 27
     varcontent                     shift and go to state 30
     list                           shift and go to state 31
     tolerancetype                  shift and go to state 32
 
-state 198
+state 199
+
+    (92) reportItem -> ID IS STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON .
+
+    ID              reduce using rule 92 (reportItem -> ID IS STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON .)
+    SEMICOLON       reduce using rule 92 (reportItem -> ID IS STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON .)
+    $end            reduce using rule 92 (reportItem -> ID IS STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON .)
+
+
+state 200
 
     (93) reportItem -> ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON .
 
@@ -4984,21 +5092,21 @@ state 198
     $end            reduce using rule 93 (reportItem -> ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON .)
 
 
-state 199
+state 201
 
     (40) optionentry -> DBR IS LPAREN object COMMA object . RPAREN
 
-    RPAREN          shift and go to state 201
+    RPAREN          shift and go to state 203
 
 
-state 200
+state 202
 
     (42) optionentry -> MASSRANGE IS LPAREN object COMMA object . RPAREN
 
-    RPAREN          shift and go to state 202
+    RPAREN          shift and go to state 204
 
 
-state 201
+state 203
 
     (40) optionentry -> DBR IS LPAREN object COMMA object RPAREN .
 
@@ -5007,7 +5115,7 @@ state 201
     COMMA           reduce using rule 40 (optionentry -> DBR IS LPAREN object COMMA object RPAREN .)
 
 
-state 202
+state 204
 
     (42) optionentry -> MASSRANGE IS LPAREN object COMMA object RPAREN .
 
