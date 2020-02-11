@@ -40,6 +40,13 @@ def txt(evaluable):
                 res = f'{evaluable.p_values[0]}_target'
             elif evaluable.p_values[2] == 'intensity':
                 res = f'{evaluable.p_values[0]}_i'
+            elif evaluable.p_values[2] == 'mass':
+                res = f'{evaluable.p_values[0]}_m'
+            elif evaluable.p_values[2] == 'isobaric':
+                res = f'{evaluable.p_values[0]}_target'
+                warnings.warn(f' *** how to deal with isobaric ***')
+            elif evaluable.p_values[2] == 'errppm':
+                res = f'{evaluable.p_values[0]}_ppm'
         elif evaluable.p_rule == 'p_expression_attribute':
             if type(evaluable.p_values[0]) == Obj and \
                 evaluable.p_values[0].p_rule == 'p_withAttr_id' and \
@@ -71,9 +78,9 @@ def report2exec_txt(report):
             exec_txt = ', '.join(tuple_txt)
             col = ReportCol(name, pct_format, exec_txt)
         elif type(reportItem.p_values)  == str: # just a string
-            col = ReportCol(name, None , reportItem.p_values[0])
+            col = ReportCol(name, None , reportItem.p_values)
         else:
-            col = ReportCol(name, '%', txt(reportItem.p_values[0]))
+            col = ReportCol(name, '%', txt(reportItem.p_values))
         res.append(col)
     return res
 
@@ -124,7 +131,7 @@ if __name__ == '__main__':
     mfql_dict = fromFile(filename)
 
     res = report2exec_txt(mfql_dict['report'])
-    print('\n'.join(res))
+    print('\n'.join([str(r) for r in res]))
     pass
 
 
