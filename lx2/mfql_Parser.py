@@ -430,8 +430,9 @@ def p_rContent(p):
     '''reportItem : ID IS STRING PERCENT LTUPLE arguments RTUPLE SEMICOLON
                 | ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
                 | ID IS expression SEMICOLON'''
-
-    p[0] = ReportItem(p[1], p[3:-1])
+    if len(p) > 5: isTuple = True
+    else: isTuple = False
+    p[0] = ReportItem(p[1], p[3:-1], isTuple)
 
 
 def p_error(p):

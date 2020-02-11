@@ -1,8 +1,9 @@
 import warnings
-
-from data_structs import Obj, ElementSeq, Evaluable, Func, ReportItem
+from collections import namedtuple
+from data_structs import Obj, ElementSeq, Evaluable, Func, ReportItem, ReportCol
 from chemParser import txt2dict
 from targets import Targets_util
+
 
 def ElementSeq2m(elementSeq):
     txt = elementSeq.txt
@@ -40,8 +41,12 @@ def txt(evaluable):
             elif evaluable.p_values[2] == 'intensity':
                 res = f'{evaluable.p_values[0]}_i'
         elif evaluable.p_rule == 'p_expression_attribute':
-            if evaluable.p_values[2] == 'chemsc':
-                pass
+            if type(evaluable.p_values[0]) == Obj and \
+                evaluable.p_values[0].p_rule == 'p_withAttr_id' and \
+                evaluable.p_values[0].p_values[2] == 'chemsc':
+                    item = evaluable.p_values[1]
+                    if item == 'db': item = 'dbr' # refa: rename db to dbr
+                    res = f'{evaluable.p_values[0].p_values[0]}_{item}'
     elif isinstance(evaluable, ElementSeq):
         res = f'{ElementSeq2m(evaluable)}'
     else:
@@ -55,13 +60,19 @@ def txt(evaluable):
 def suchthat2txt(suchthat):
     return txt(suchthat)
 
-def report2exec_txt(report,df= None):
-    reportItem = report[0]
-    col_name = reportItem.id
-    col_format = reportItem.p_values[0]
-    col_tuple = reportItem.p_values[-2]
-    col_tuple_txt = [txt(t) for t in col_tuple]
-    return (col_name, ' ,'.join(col_tuple_txt))
+def report2exec_txt(report):
+    res = []
+    for reportItem in report:
+        name = reportItem.id
+        formatt = reportItem.p_values[0]
+        if len(reportItem.p_values) > 1 and reportItem.p_values[1] == '%':
+            col_tuple = reportItem.p_values[3]
+            tuple_txt = [txt(t) for t in col_tuple]
+            res.append(ReportCol(name, formatt, ', '.join(tuple_txt)))
+        else:
+            res.append(ReportCol(name, formatt, txt(reportItem.p_values[0])))
+        
+    return res
 
 if __name__ == '__main__':
     suchthat = Evaluable(operation='AND', term_1=Evaluable(operation='AND', term_1=Func(func='isOdd', on=[
@@ -92,19 +103,19 @@ if __name__ == '__main__':
     res = suchthat2txt(suchthat)
     print(res)
 
-    report = [ReportItem(id='SPECIE', p_values=['"CE %d:%d"', '%', '"(', [Evaluable(operation='-', term_1=Obj(p_rule='p_expression_attribute', p_values=(Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'chemsc']), 'C')), term_2=27), Evaluable(operation='-', term_1=Obj(p_rule='p_expression_attribute', p_values=(Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'chemsc']), 'db')), term_2=4.5)], ')"']),
-            ReportItem(id='CLASS', p_values=['CE']),
-            ReportItem(id='MASS', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'mass'])]),
-            ReportItem(id='IDMSLEVEL', p_values=[2]),
-            ReportItem(id='QUANTMSLEVEL', p_values=[2]),
-            ReportItem(id='ISOBARIC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'isobaric'])]),
-            ReportItem(id='CHEMSC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'chemsc'])]),
-            ReportItem(id='ERRppm', p_values=['"%2.2f"', '%', '"(', [Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'errppm'])], ')"']),
-            ReportItem(id='FRERRppm', p_values=['"%2.2f"', '%', '"(', [Obj(p_rule='p_withAttr_id', p_values=['FR', '.', 'errppm'])], ')"']),
-            ReportItem(id='INT', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FR', '.', 'intensity'])]),
-            ReportItem(id='QUALA', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])]),
-            ReportItem(id='QUALB', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])]),
-            ReportItem(id='QUALC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])])]
+    report =[ReportItem(id='SPECIE', p_values=['"CE %d:%d"', '%', '"(', [Evaluable(operation='-', term_1=Obj(p_rule='p_expression_attribute', p_values=(Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'chemsc']), 'C')), term_2=27), Evaluable(operation='-', term_1=Obj(p_rule='p_expression_attribute', p_values=(Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'chemsc']), 'db')), term_2=4.5)], ')"'], isTuple=True),
+        ReportItem(id='CLASS', p_values=['CE'], isTuple=False),
+        ReportItem(id='MASS', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'mass'])], isTuple=False),
+        ReportItem(id='IDMSLEVEL', p_values=[2], isTuple=False),
+        ReportItem(id='QUANTMSLEVEL', p_values=[2], isTuple=False),
+        ReportItem(id='ISOBARIC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'isobaric'])], isTuple=False),
+        ReportItem(id='CHEMSC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'chemsc'])], isTuple=False),
+        ReportItem(id='ERRppm', p_values=['"%2.2f"', '%', '"(', [Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'errppm'])], ')"'], isTuple=True),
+        ReportItem(id='FRERRppm', p_values=['"%2.2f"', '%', '"(', [Obj(p_rule='p_withAttr_id', p_values=['FR', '.', 'errppm'])], ')"'], isTuple=True),
+        ReportItem(id='INT', p_values=[Obj(p_rule='p_withAttr_id', p_values=['FR', '.', 'intensity'])], isTuple=False),
+        ReportItem(id='QUALA', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])], isTuple=False),
+        ReportItem(id='QUALB', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])], isTuple=False),
+        ReportItem(id='QUALC', p_values=[Obj(p_rule='p_withAttr_id', p_values=['PR', '.', 'intensity'])], isTuple=False)]
 
     res = report2exec_txt(report)
     print(res)
