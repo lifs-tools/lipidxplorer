@@ -3,6 +3,7 @@ from collections import namedtuple
 from data_structs import Obj, ElementSeq, Evaluable, Func, ReportItem, ReportCol
 from chemParser import txt2dict
 from targets import Targets_util
+import pandas as pd
 
 
 def ElementSeq2m(elementSeq):
@@ -77,12 +78,29 @@ def report2exec_txt(report):
             tuple_txt = [txt(t) for t in col_tuple]
             exec_txt = ', '.join(tuple_txt)
             col = ReportCol(name, pct_format, exec_txt)
-        elif type(reportItem.p_values)  == str: # just a string
+        elif type(reportItem.p_values) in [int,float, str]: # just a string
             col = ReportCol(name, None , reportItem.p_values)
         else:
-            col = ReportCol(name, '%', txt(reportItem.p_values))
+            col = ReportCol(name, '%s', txt(reportItem.p_values))
         res.append(col)
     return res
+
+def reportCols2DF(reportCols, df):
+    rep_df = pd.DataFrame(index = df.index)
+    for reportCol in reportCols:
+        print(reportCol)
+        if reportCol.col_fortmat is None:
+            rep_df[reportCol.col_name] = reportCol.col_eval_txt
+            print(f'1: {reportCol.col_eval_txt}')
+        else:
+            eval_res = df.eval(reportCol.col_eval_txt)
+            col_format = reportCol.col_fortmat
+            print(f'2: {type(eval_res)} {col_format}')
+            if type(eval_res) == list:
+                eval_res = zip(*eval_res)
+            rep_df[reportCol.col_name] = [col_format % tup for tup in eval_res]
+        
+    return rep_df
 
 if __name__ == '__main__':
 
@@ -92,7 +110,7 @@ if __name__ == '__main__':
 
     res = suchthat2txt(mfql_dict['suchthat'])
     print('\n'.join([str(r) for r in res]))
-
+    print('*******************************8')
     res = report2exec_txt(mfql_dict['report'])
     print('\n'.join([str(r) for r in res]))
     
