@@ -84,6 +84,8 @@ class Targets_util():
     
     @staticmethod
     def devideAllCombo(all_df):
+        #TODO try https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.filter.html
+        #df filter
         all_df.sort_values(['PR_ppm', 'FR_ppm'], inplace = True)
         cols = all_df.columns
         pr_cols = [col for col in cols if col.startswith('PR_')]
