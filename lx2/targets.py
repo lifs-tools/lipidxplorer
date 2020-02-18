@@ -149,6 +149,10 @@ class Targets_util():
         target.set_dbr(*dbrs)
         return target
 
+    @staticmethod
+    def vars2targets(vars):
+        return [Targets_util.var2Target(var) for var in vars]
+
     
 
 
