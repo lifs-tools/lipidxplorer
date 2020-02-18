@@ -10,7 +10,7 @@ if __name__ == "__main__":
     mfql_file =  'test_resources\\small_test\\170213_CE_pos_MSMS.mfql'
 
     mfql = mfql_Parser.fromFile(mfql_file)
-    targets = [Targets_util.var2Target(var) for var in mfql['variables']]
+    targets = Targets_util.vars2targets(mfql['variables'])
 
     spectra = SpectraUtil.fromFile(mzml_file)
     MS1 = spectra
@@ -22,6 +22,7 @@ if __name__ == "__main__":
 
     PR = targets[0]
     FR = targets[1]
+
     MS1_match = MS1.get_nearest(PR._df)
     MS2_match = MS2.get_nearest(FR._df)
 
@@ -29,6 +30,7 @@ if __name__ == "__main__":
     MS2_match = Targets_util.set_max_daltons(MS2_match)
 
     all_match = Targets_util.makeAllCombo(MS1_match, MS2_match)
+    
     st = parse_adapter.suchthat2txt(mfql['suchthat'])
     ST = all_match.query(st)
 
