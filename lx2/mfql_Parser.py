@@ -446,7 +446,7 @@ def p_error(p):
         detail = "Syntax error at '%s' in file at position %s %s" % (p .value,p.lineno , p.lexpos)
         raise SyntaxError(detail)
 
-parser = yacc.yacc()#(debug=0, optimize=0)
+parser = yacc.yacc(debug=False, optimize=True)
 
 def fromFile(filename):
     with open(filename, 'r') as f:
