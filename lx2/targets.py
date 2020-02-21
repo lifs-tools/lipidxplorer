@@ -105,7 +105,8 @@ class Targets_util():
     
     @staticmethod
     def summaryDF(df, prefix='PR_', quantile=0.25):
-        groups = df.groupby([prefix+'C', prefix+'dbr'])
+        #TODO try https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.filter.html
+        groups = df.groupby([prefix+'chem'])
         columns = ['C_dbr', 'ppm_mean', 'i_mean', 'i_rsd', 'count']
         columns = [prefix+col for col in columns]
         tups = []
@@ -122,6 +123,32 @@ class Targets_util():
         df_summary.sort_values(sort_col, ascending =True, inplace = True)
         sort_smallest = df_summary[sort_col] <= df_summary[sort_col].quantile(quantile)
         return df_summary.loc[sort_smallest]
+    
+    @staticmethod
+    def lx1_DF(df):
+        """makes the result as similar as lx1 as possible, ie averaged
+        
+        Arguments:
+            df {dataframe} -- that contins all the data as from 'suchthat'
+        
+        Returns:
+            dataframe -- with the averaged values
+        """
+        columns = df.columns
+        tups = []
+        for pr_chem, pr_df in df.groupby('PR_chem'):
+            for fr_chem, fr_df in pr_df.groupby('FR_chem'):
+                tup = ()
+                fv_idx = fr_df.first_valid_index()
+                for col in columns:
+                    if col[3:] in ['m', 'i']:
+                        tup += (fr_df[col].mean(),)
+                    else:
+                        tup += (fr_df[col][fv_idx],)
+                tups.append(tup)
+        df_summary = pd.DataFrame(tups, columns=columns)
+
+        return df_summary
 
     @staticmethod
     def lollipop_plot(m, i):
