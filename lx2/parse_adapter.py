@@ -16,7 +16,7 @@ def ElementSeq2m(elementSeq):
     return target._df['m'][0]
 
 
-def txt(evaluable):
+def txt(evaluable, forReport = False):
     res = None
     if type(evaluable) in [int,float, str]:
         res = str(evaluable)
@@ -38,7 +38,7 @@ def txt(evaluable):
                 res = f'{evaluable.p_values[0]}_{item}'
         elif evaluable.p_rule == 'p_withAttr_id':
             if evaluable.p_values[2] == 'chemsc':
-                res = f'{evaluable.p_values[0]}_target'
+                res = f'{evaluable.p_values[0]}_target' if not forReport else f'{evaluable.p_values[0]}_chem'
             elif evaluable.p_values[2] == 'intensity':
                 res = f'{evaluable.p_values[0]}_i'
             elif evaluable.p_values[2] == 'mass':
@@ -81,7 +81,7 @@ def report2exec_txt(report):
         elif type(reportItem.p_values) in [int,float, str]: # just a string
             col = ReportCol(name, None , reportItem.p_values)
         else:
-            col = ReportCol(name, '%s', txt(reportItem.p_values))
+            col = ReportCol(name, '', txt(reportItem.p_values, forReport=True))
         res.append(col)
     return res
 
@@ -90,6 +90,8 @@ def reportCols2DF(reportCols, df):
     for reportCol in reportCols:
         if reportCol.col_fortmat is None:
             rep_df[reportCol.col_name] = reportCol.col_eval_txt
+        elif reportCol.col_fortmat == '':# none given dont format
+            rep_df[reportCol.col_name] = df.eval(reportCol.col_eval_txt)
         else:
             eval_res = df.eval(reportCol.col_eval_txt)
             col_format = reportCol.col_fortmat
