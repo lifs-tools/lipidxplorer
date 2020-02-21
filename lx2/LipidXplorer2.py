@@ -57,3 +57,5 @@ if __name__ == "__main__":
     res = parse_adapter.reportCols2DF(reportCols, averaged_df)
     
     print(res)
+	print('detaching from https://gitlab.isas.de/lifs-public/lipidxplorer/tree/lx128_p3')
+	print('for hsitory please see repo above')
