@@ -13,38 +13,37 @@ if __name__ == "__main__":
     mfql_file =  'test_resources\\small_test\\170213_CE_pos_MSMS.mfql'
 
     mfql = mfql_Parser.fromFile(mfql_file)
-    # targets = Targets_util.vars2targets(mfql['variables'])
+    targets = Targets_util.vars2targets(mfql['variables'])
     
-    # # spectra = SpectraUtil.fromFile(mzml_file)
+    spectra = SpectraUtil.fromFile(mzml_file)
     # mzml_file_pickle = mzml_file+'.pkl'
     # spectra = pickle.load(mzml_file_pickle)
-    # MS1 = spectra
-    # MS2 = spectra.get_reset_copy()
-    # MS1.set_mode()
-    # MS1.set_ms_level()
-    # MS2.set_mode()
-    # MS2.set_ms_level(2)
+    MS1 = spectra
+    MS2 = spectra.get_reset_copy()
+    MS1.set_mode()
+    MS1.set_ms_level()
+    MS2.set_mode()
+    MS2.set_ms_level(2)
     
-    # PR = targets[0]
-    # FR = targets[1]
+    PR = targets[0]
+    FR = targets[1]
     
-    # MS1_match = MS1.get_nearest(PR._df)
-    # MS2_match = MS2.get_nearest(FR._df)
+    MS1_match = MS1.get_nearest(PR._df)
+    MS2_match = MS2.get_nearest(FR._df)
     
-    # MS1_match = Targets_util.set_max_daltons(MS1_match)
-    # MS2_match = Targets_util.set_max_daltons(MS2_match)
+    MS1_match = Targets_util.set_max_daltons(MS1_match)
+    MS2_match = Targets_util.set_max_daltons(MS2_match)
 
-    # all_match = Targets_util.makeAllCombo(MS1_match, MS2_match)
+    all_match = Targets_util.makeAllCombo(MS1_match, MS2_match)
     
-    # st = parse_adapter.suchthat2txt(mfql['suchthat'])
-    # ST = all_match.query(st)
+    st = parse_adapter.suchthat2txt(mfql['suchthat'])
+    ST = all_match.query(st)
 
-    # pr_df, fr_df = Targets_util.devideAllCombo(ST)
+    pr_df, fr_df = Targets_util.devideAllCombo(ST)
 
-    # sum_df = Targets_util.summaryDF(pr_df, quantile=1)
-    st_file_pickle = mzml_file+'.st.pkl'
-    ST = pickle.load(open(st_file_pickle,'rb'))
-    t0= time.time()
+    sum_df = Targets_util.summaryDF(pr_df, quantile=1)
+    # st_file_pickle = mzml_file+'.st.pkl'
+    # ST = pickle.load(open(st_file_pickle,'rb'))
     averaged_df = Targets_util.lx1_DF(ST)
     
     # plt = Targets_util.lollipop_plot(pr_df.PR_m, pr_df.PR_i)
@@ -54,11 +53,7 @@ if __name__ == "__main__":
 
     # Targets_util.showAll_lollipop(pr_df, sample = True)
    
-    reportCols = parse_adapter.report2exec_txt(mfql['report']) # this part takes 5 minutes need to improve
+    reportCols = parse_adapter.report2exec_txt(mfql['report']) 
     res = parse_adapter.reportCols2DF(reportCols, averaged_df)
-    # print('goal is to make it comparable to lx1')
     
-    
-    print(res.head())
-
-    print(time.time()-t0)
+    print(res)
