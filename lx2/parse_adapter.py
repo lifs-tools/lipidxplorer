@@ -88,15 +88,12 @@ def report2exec_txt(report):
 def reportCols2DF(reportCols, df):
     rep_df = pd.DataFrame(index = df.index)
     for reportCol in reportCols:
-        print(reportCol)
         if reportCol.col_fortmat is None:
             rep_df[reportCol.col_name] = reportCol.col_eval_txt
-            print(f'1: {reportCol.col_eval_txt}')
         else:
             eval_res = df.eval(reportCol.col_eval_txt)
             col_format = reportCol.col_fortmat
-            print(f'2: {type(eval_res)} {col_format}')
-            if type(eval_res) == list:
+            if type(eval_res) == list: # more than one result
                 eval_res = zip(*eval_res)
             rep_df[reportCol.col_name] = [col_format % tup for tup in eval_res]
         
