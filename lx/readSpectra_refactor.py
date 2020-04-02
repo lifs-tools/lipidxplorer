@@ -96,13 +96,13 @@ def make_a_masterscan(mzml_file, options):
 
     #-----------------------TODO refactor linearAlignment
     fadi_denominator = count
-		fadi_percentage = options['MSfilter']
-		listClusters = linearAlignment(list(dictSpecEntry.keys()),
-							dictSpecEntry,
-							options['MSresolution'],
-							merge = mergeSumIntensity,
-							mergeTolerance = options['MSresolution'],
-							mergeDeltaRes = options['MSresolutionDelta'], fadi_denominator= fadi_denominator, fadi_percentage = fadi_percentage)
+    fadi_percentage = options['MSfilter']
+    listClusters = linearAlignment(list(dictSpecEntry.keys()),
+                        dictSpecEntry,
+                        options['MSresolution'],
+                        merge = mergeSumIntensity,
+                        mergeTolerance = options['MSresolution'],
+                        mergeDeltaRes = options['MSresolutionDelta'], fadi_denominator= fadi_denominator, fadi_percentage = fadi_percentage)
 
 
 
