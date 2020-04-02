@@ -55,12 +55,9 @@ from lx.debugger import Debug, DebugSet, DebugUnset
 
 balloontip = True
 try:
-    from agw import balloontip as BT
-except ImportError: # if it's not there locally, try the wxPython lib.
-	try:
-		import wx.lib.agw.balloontip as BT
-	except ImportError:
-		balloontip = False
+	import wx.lib.agw.balloontip as BT
+except ImportError:
+	balloontip = False
 
 
 #import lpdxSCC
