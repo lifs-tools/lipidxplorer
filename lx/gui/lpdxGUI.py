@@ -1830,7 +1830,7 @@ intensity."""))
 		configParser.add_section(sectionP)
 		configParser.add_section(sectionQ)
 		for opt in list(project.options.keys()):
-			configParser.set(sectionP, opt, project.options[opt])
+			configParser.set(sectionP, opt, str(project.options[opt]))
 		for query in list(project.mfql.keys()):
 			configParser.set(sectionQ, query + "-name", query)
 			configParser.set(sectionQ, query, project.mfql[query])
@@ -1882,7 +1882,7 @@ intensity."""))
 		configParser.add_section(sectionP)
 		configParser.add_section(sectionQ)
 		for opt in list(project.options.keys()):
-			configParser.set(sectionP, opt, project.options[opt])
+			configParser.set(sectionP, opt, str(project.options[opt]))
 		for query in list(project.mfql.keys()):
 			configParser.set(sectionQ, query + "-name", query)
 			configParser.set(sectionQ, query, project.mfql[query])
