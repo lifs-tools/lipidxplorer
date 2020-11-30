@@ -312,6 +312,21 @@ class ElementSequence:
 
 		return 0
 
+	# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
+	
+
+
 		#for i in range(len(self.seq)):
 		#	elem = elemseq[self.seq[i].sym]
 		#	#if self.seq[i]._range != [0]:

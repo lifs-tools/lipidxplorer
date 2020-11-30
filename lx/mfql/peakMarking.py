@@ -73,9 +73,26 @@ class TypeScan:
 
 	def __cmp__(self, other):
 		if isinstance(other, string):
-			return cmp(self.name, other)
+			return self.cmp(self.name, other)
 		else:
-			return cmp(self, other)
+			return self.cmp(self, other)
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 	def evaluate(self):
 		'''OUT: list of TypeMark()'''
@@ -2801,17 +2818,17 @@ class TypeMark:
 	def __cmp__(self, other):
 
 		if isinstance(other, str):
-			return cmp(self.encodedName.split(':')[0], other)
+			return self.cmp(self.encodedName.split(':')[0], other)
 
 		if self.encodedName and other.encodedName:
 			if self.encodedName == other.encodedName:
 				if self.chemsc and other.chemsc:
-					return cmp(self.chemsc, other.chemsc)
+					return self.cmp(self.chemsc, other.chemsc)
 				else:
-					return cmp(self.float, other.float)
+					return self.cmp(self.float, other.float)
 			else:
 				#return cmp(self.float, other.float)
-				return cmp(self.encodedName, other.encodedName)
+				return self.cmp(self.encodedName, other.encodedName)
 
 
 		elif self.name == other.name:
@@ -2819,11 +2836,11 @@ class TypeMark:
 				if self.se and other.se:
 					if self.se == other.se:
 						if self.msmse and other.msmse:
-							return cmp(self.msmse, other.msmse)
+							return self.cmp(self.msmse, other.msmse)
 						else:
 							return 0
 					elif self.msmse and other.msmse:
-						return cmp(self.msmse, other.msmse)
+						return self.cmp(self.msmse, other.msmse)
 					else:
 						return 0
 				else:
@@ -2838,7 +2855,24 @@ class TypeMark:
 				if self.scope == "MS2+" and other.scope == "MS1+":
 					return -1
 		else:
-			return cmp(self.name, other.name)
+			return self.cmp(self.name, other.name)
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 	def diff(self, other):
 		'''Shows the differences of two marks.'''

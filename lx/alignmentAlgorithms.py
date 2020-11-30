@@ -7,7 +7,38 @@ class specMSEntry:
 		self.listMasses = [[avgPrecurmass, {sample : listMSMS}]]
 
 	def __cmp__(self, other):
-		return cmp(self.avgPrecurmass, other.avgPrecurmass)
+		return self.cmp(self.avgPrecurmass, other.avgPrecurmass)
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 	def __repr__(self):
 		str = "%.4f -> " % (self.avgPrecurmass)
@@ -30,7 +61,25 @@ class specEntry:
 		return str
 
 	def __cmp__(self, other):
-		return cmp(self.mass, other.mass)
+		return self.cmp(self.mass, other.mass)
+	
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTolerance = None,
 		mergeDeltaRes = None, charge = None, deltaRes = None, minocc = None, msThreshold = None,
