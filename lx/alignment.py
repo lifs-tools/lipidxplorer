@@ -23,10 +23,25 @@ class peakCluster:
 		return repr(self.mass) + ' \n -> ' + repr(self.peakList)
 
 	def __cmp__(self, other):
-		return cmp(self.mass, other.mass)
-	
+		return self.cmp(self.mass, other.mass)
+
+	# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
 	def __lt__(self, other):
-		return self.mass < other.mass
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 	#def findPeak(self, mass = None, key = None):
 	def findPeak(self, key = None):
@@ -51,7 +66,24 @@ class specMSMSEntry:
 		return "%.4f -> %s" % (self.precurmass, repr(self.listMSMS))
 
 	def __cmp__(self, other):
-		return cmp(self.precurmass, other.precurmass)
+		return self.cmp(self.precurmass, other.precurmass)
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 class specMSEntry:
 
@@ -61,7 +93,24 @@ class specMSEntry:
 		self.listMasses = [[avgPrecurmass, {sample : listMSMS}]]
 
 	def __cmp__(self, other):
-		return cmp(self.avgPrecurmass, other.avgPrecurmass)
+		return self.cmp(self.avgPrecurmass, other.avgPrecurmass)
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 	def __repr__(self):
 		str = "%.4f -> " % (self.avgPrecurmass)
@@ -141,7 +190,24 @@ class specEntry:
 		return txt
 
 	def __cmp__(self, other):
-		return cmp(self.mass, other.mass)
+		return self.cmp(self.mass, other.mass)
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 	def __lt__(self, other):
 		return self.mass < other.mass

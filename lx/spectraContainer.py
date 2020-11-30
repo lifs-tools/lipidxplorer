@@ -205,9 +205,26 @@ class MSMSEntry:
 		return str
 
 	def __cmp__(self, otherself):
-		return cmp(self.mass, otherself.mass)
-	def __lt__(self, otherself):
-		return self.mass<otherself.mass
+		return self.cmp(self.mass, otherself.mass)
+	
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
+
 
 class MSMS:
 	"""Class for a DTA File"""
@@ -263,10 +280,25 @@ class MSMS:
 		return self
 
 	def __cmp__(self, otherself):
-		return cmp(self.precurmass, otherself.precurmass)
+		return self.cmp(self.precurmass, otherself.precurmass)
 		
-	def __lt__(self, otherself):
-		return self.precurmass<otherself.precurmass
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 	def __repr__(self):
 		str = "Precursor Mass      charge\n"
@@ -332,7 +364,24 @@ class MSMass:
 
 	def __cmp__(self, otherself):
 		"""For a Sample Iterator... why not?!"""
-		return cmp(self.precurmass, otherself.precurmass)
+		return self.cmp(self.precurmass, otherself.precurmass)
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 	def __repr__(self):
 		return "%.4f %.4f \n\n" % (self.precurmass, self.intensity)
@@ -1661,7 +1710,25 @@ class SurveyEntry:
 		return allLines
 
 	def __cmp__(self, otherself):
-		return cmp(self.precurmass, otherself.precurmass)
+		return self.cmp(self.precurmass, otherself.precurmass)
+	
+		# https://stackoverflow.com/questions/8276983/why-cant-i-use-the-method-cmp-in-python-3-as-for-python-2
+	@staticmethod
+	def cmp(a, b):
+		return (a > b) - (a < b)
+	  
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
 
 	def __getitem__(self, smpl):
 		return self.listMSMS[smpl]
