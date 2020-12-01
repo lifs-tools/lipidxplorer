@@ -2061,12 +2061,8 @@ class TypeTolerance:
 			return '%.2f ppm' % self.ppm
 
 	def __cmp__(self, other):
-		if self.kind == 'Da':
-			a = self.da
-			b = other.da
-		else:
-			a =  self.ppm
-			b = other.ppm
+		a = self.__repr__()
+		b = other.__repr__()
 		return (a > b) - (a < b)
 
 	def __eq__(self, other):
