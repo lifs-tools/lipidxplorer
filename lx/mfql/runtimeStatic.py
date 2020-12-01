@@ -2060,6 +2060,28 @@ class TypeTolerance:
 		else:
 			return '%.2f ppm' % self.ppm
 
+	def __cmp__(self, other):
+		if self.kind == 'Da':
+			a = self.da
+			b = other.da
+		else:
+			a =  self.ppm
+			b = other.ppm
+		return (a > b) - (a < b)
+
+	def __eq__(self, other):
+		return self.__cmp__(other) == 0
+	def __ne__(self, other):
+		return self.__cmp__(other) != 0
+	def __gt__(self, other):
+		return self.__cmp__(other) > 0
+	def __lt__(self, other):
+		return self.__cmp__(other) < 0
+	def __ge__(self, other):
+		return self.__cmp__(other) >= 0
+	def __le__(self, other):
+		return self.__cmp__(other) <= 0
+
 
 	##########################################
 	# This part is for the functions of MFQL #
