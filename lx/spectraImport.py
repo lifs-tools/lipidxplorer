@@ -378,25 +378,13 @@ def getInputFiles(importDir, options):
 	return (listFiles, isTaken, isGroup)
 
 
-def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGroup, alignmentMS, alignmentMSMS, scanAvg, importMSMS = True):
-
-	### set standard values
-
-	assert isinstance(importMSMS, type(True))
-
-	if Debug("logMemory"):
-		from guppy import hpy
-		import memory_logging
-
+def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGroup, alignmentMS, alignmentMSMS, scanAvg, importMSMS = True, saveScan = True):
 
 	# some statistics
 	nb_ms_scans = []
 	nb_ms_peaks = []
 	nb_msms_scans = []
 	nb_msms_peaks = []
-
-	# time
-	starttime = time.clock()
 
 	# go recursively through the directory
 	listPolarity = []
@@ -407,44 +395,14 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	# MSmass and MSMS classes. This means, the raw *.dta
 	# and *.csv data is loaded into scan.dictSample.
 	# After loading the cleaning algorithm is applied.
-	if options['spectraFormat'] == 'dta/csv' and isTaken:
-		if listFiles != []:
-			listFiles.sort()
-
-			for i in listFiles:
-				ret = add_DTASample(scan, i[0], i[1],
-					MSmassrange = scan.options['MSmassrange'],
-					MSMSmassrange = scan.options['MSMSmassrange'],
-					importMSMS = importMSMS,
-					thresholdType = scan.options['MSthresholdType'])
-
-				listPolarity.append(ret[0])
-				dictBasePeakIntensity[ret[2]] = ret[1]
-				nb_ms_peaks.append(ret[3])
-
-				#progressCount += 1
-				#if parent:
-				#	(cont, skip) = parent.debug.progressDialog.Update(progressCount)
-				#	if not cont:
-				#		print "Stopped by user."
-				#		parent.debug.progressDialog.Destroy()
-				#		return parent.CONST_THREAD_USER_ABORT
-
 
 	# the scan.dictSample variable is filled with
 	# MSmass and MSMS classes taken from mzXML files.
 	# After loading the cleaning algorithm is applied.
-	elif listFiles != []:
+	if listFiles != []:
 		listFiles.sort()
 
 		for i in listFiles:
-			#progressCount += 1
-			#if parent:
-			#	(cont, skip) = parent.debug.progressDialog.Update(progressCount)
-			#	if not cont:
-			#		print "Stopped by user."
-			#		parent.debug.progressDialog.Destroy()
-			#		return parent.CONST_THREAD_USER_ABORT
 
 			if options['spectraFormat'] == "mzXML": # old mzXML import. I don't wanna touch this
 				ret = add_mzXMLSample(scan, i[0], i[1],
@@ -458,17 +416,6 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 					MSMSthresholdType = scan.options['MSMSthresholdType'])
 
 			elif options['spectraFormat'] == 'mzML': # the new import routine, :-)
-				# ret_ref = add_Sample_ref(scan, i[0], i[1],
-				# 	options = scan.options,
-				# 	timerange = scan.options['timerange'],
-				# 	MSmassrange = scan.options['MSmassrange'],
-				# 	MSMSmassrange = scan.options['MSMSmassrange'],
-				# 	scanAveraging = scanAvg,
-				# 	isGroup = isGroup,
-				# 	importMSMS = importMSMS,
-				# 	MSthresholdType = scan.options['MSthresholdType'],
-				# 	MSMSthresholdType = scan.options['MSMSthresholdType'],
-				# 	fileformat = "mzML")
 				
 				ret = add_Sample(scan, i[0], i[1],
 					options = scan.options,
@@ -481,20 +428,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 					MSthresholdType = scan.options['MSthresholdType'],
 					MSMSthresholdType = scan.options['MSMSthresholdType'],
 					fileformat = "mzML")
-				print(ret[0])
 
-			#elif options['spectraFormat'] == 'raw':
-				#ret = add_Sample(scan, i[0], i[1],
-				#	options = scan.options,
-				#	timerange = scan.options['timerange'],
-				#	MSmassrange = scan.options['MSmassrange'],
-				#	MSMSmassrange = scan.options['MSMSmassrange'],
-				#	scanAveraging = scanAvg,
-				#	isGroup = isGroup,
-				#	importMSMS = importMSMS,
-				#	MSthresholdType = scan.options['MSthresholdType'],
-				#	MSMSthresholdType = scan.options['MSMSthresholdType'],
-				#	fileformat = "raw")
 
 			dictBasePeakIntensity[ret[0]] = ret[1]
 
@@ -503,46 +437,6 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 				nb_ms_peaks.append(ret[3])
 				nb_msms_scans.append(ret[4])
 				nb_msms_peaks.append(ret[5])
-			
-			from time import sleep
-			sleep(1) # dirty hack to reduce threading problem, give enough time for UI to update
-			# os if you enable memory logging it crashes in the same way
-
-
-		if not len(list(dictBasePeakIntensity.keys())) > 0:
-			raise LipidXException("Something wrong with the calculation of the base peaks")
-
-	else:
-		raise LipidXException("No valid option given.")
-
-
-	### print some information ###
-	stats_file_entry = {}
-	if not options['spectraFormat'] == 'dta/csv':
-		if options['MSfilter'] and options['MSfilter'] > 0:
-			reportout("> {0:.<30s}{1:>11.2f}".format('MS filter settings', options['MSfilter']))
-		if options['MSMSfilter'] and options['MSMSfilter'] > 0:
-			reportout("> {0:.<30s}{1:>11.2f}".format('MS/MS filter settings', options['MSMSfilter']))
-		if len(nb_ms_scans) > 0:
-			reportout("> {0:.<30s}{1:>11.0f}".format('Avg. Nb. of MS scans', sum(nb_ms_scans) / len(nb_ms_scans)))
-			stats_file_entry["nb_ms_scans"] = sum(nb_ms_scans)
-		if len(nb_ms_peaks) > 0:
-			reportout("> {0:.<30s}{1:>11.0f}".format('Avg. Nb. of MS peaks', sum(nb_ms_peaks) / len(nb_ms_peaks)))
-			stats_file_entry["nb_ms_peaks"] = sum(nb_ms_peaks)
-		if len(nb_msms_scans) > 0:
-			reportout("> {0:.<30s}{1:>11.0f}".format('Avg. Nb. of MS/MS scans', sum(nb_msms_scans) / len(nb_msms_scans)))
-			stats_file_entry["nb_msms_scans"] = sum(nb_msms_scans)
-		if len(nb_msms_peaks) > 0:
-			reportout("> {0:.<30s}{1:>11.0f}".format('Avg. Nb. of MS/MS peaks', sum(nb_msms_peaks) / len(nb_msms_peaks)))
-			stats_file_entry["nb_msms_peaks"] = sum(nb_msms_peaks)
-
-	loadingtime = time.clock() - starttime
-	reportout("%.2f sec. for reading the spectra" % loadingtime)
-	stats_file_entry["loading_time"] = loadingtime
-
-	if Debug("logMemory"):
-		print("ML> spectra loaded and averaged:", memory_logging.pythonMemory())
-	#	print "MLh> spectra loaded and averaged: ", hpy().heap()
 
 	if (not scan.options.isEmpty('precursorMassShift')) and scan.options['precursorMassShift']:
 		if scan.options['precursorMassShift'] != 0:
@@ -553,12 +447,6 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		if scan.options['precursorMassShiftOrbi'] != 0:
 			print("Applying precursor mass shift for Scanline error on Orbitrap data.")
 			scan.shiftPrecursorsInRawFilterLine(scan.options['precursorMassShiftOrbi'])
-
-	#if parent:
-	#	if not parent.isRunning:
-	#		print "Stopped by user."
-	#		parent.debug.progressDialog.Destroy()
-	#		return parent.CONST_THREAD_USER_ABORT
 
 	scan.listSamples.sort()
 
@@ -573,27 +461,8 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	if not scan.options.isEmpty('MSMScalibration') and (scan.options['MSMScalibration']):
 		recalibrateMSMS(scan, scan.options['MSMScalibration'])
 
-	calibrationtime = time.clock() - starttime - loadingtime
-	reportout("%.2f sec. for calibrating the spectra" % calibrationtime)
-	stats_file_entry["calibration_time"] = calibrationtime
-
 	# align MS spectra
 	print("Aligning MS spectra", alignmentMS)
-
-	if Debug("logMemory"):
-		print("ML> before alignment (MS):", memory_logging.pythonMemory())
-
-
-	### the PIS alignment algorithm ###
-
-	if options['pisSpectra']:
-		print("Aligning PIS spectra", alignmentMS)
-		alignPIS(scan, [-1,1],
-					numLoops = options['loopNr'],
-					deltaRes = scan.options['MSMSresolutionDelta'],
-					minocc = scan.options['MSMSminOccupation'],
-					alignmentMS = alignmentMS)
-
 
 	### align the spectra for the MasterScan ###
 
@@ -602,43 +471,6 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 					numLoops = options['loopNr'],
 					deltaRes = scan.options['MSresolutionDelta'],
 					minocc = scan.options['MSminOccupation'])
-
-	elif alignmentMS == "hierarchical":
-		# experimental
-		mkSurveyHierarchical(scan, '',
-					numLoops = options['loopNr'],
-					deltaRes = scan.options['MSresolutionDelta'],
-					minocc = scan.options['MSminOccupation'])
-
-	elif alignmentMS == "heuristic":
-		mkSurveyHeuristic(scan, '',
-					numLoops = options['loopNr'],
-					deltaRes = scan.options['MSresolutionDelta'],
-					minocc = scan.options['MSminOccupation'])
-
-	progressCount += 1
-	#if parent:
-	#	(cont, skip) = parent.debug.progressDialog.Update(progressCount)
-	#	if not cont:
-	#		print "Stopped by user."
-	#		parent.debug.progressDialog.Destroy()
-	#		return parent.CONST_THREAD_USER_ABORT
-
-
-	### some infos ###
-
-	reportout("> {0:.<30s}{1:>11d}\n".format('Nb. of MS peaks (after alg.)', len(scan.listSurveyEntry)))
-	stats_file_entry["nb_ms_peaks_after_alg"] = len(scan.listSurveyEntry)
-
-	if Debug("logMemory"):
-		print("ML> after alignment (MS):", memory_logging.pythonMemory())
-	#	print "MLh> after alignment (MS):", hpy().heap()
-
-	#if not keepGoing:
-	#	print "Stopped by user."
-	#	parent.isRunning = False
-	#	return None
-
 
 	### aling the fragment spectra ###
 
@@ -658,36 +490,12 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 			mkMSMSEntriesLinear_new(scan, listPolarity,
 								numLoops = options['loopNr'],
 								isPIS = options['pisSpectra'])
-		elif alignmentMSMS == "heuristic":
-			mkMSMSEntriesHeuristic_new(scan, listPolarity,
-								numLoops = options['loopNr'],
-								isPIS = options['pisSpectra'])
 
-	alignmenttime = time.clock() - starttime - loadingtime - calibrationtime
-	reportout("%.2f sec. for aligning the spectra\n" % alignmenttime)
-	stats_file_entry["alignment_time"] = alignmenttime
 
 	for sample in scan.listSamples:
 		if sample in scan.dictSamples:
 			del scan.dictSamples[sample]
 	del scan.dictSamples
-
-	if Debug("logMemory"):
-		print("ML> after alignment of MS/MS:", memory_logging.pythonMemory())
-	#	print "MLh> ", hpy().heap()
-
-	progressCount += 1
-	#if parent:
-	#	(cont, skip) = parent.debug.progressDialog.Update(progressCount)
-	#	if not cont:
-	#		print "Stopped by user."
-	#		parent.debug.progressDialog.Destroy()
-	#		return parent.CONST_THREAD_USER_ABORT
-
-	#if not keepGoing:
-	#	print "Stopped by user."
-	#	parent.isRunning = False
-	#	return None
 
 	scan.sortAndIndedice()
 	for se in scan.listSurveyEntry:
@@ -697,29 +505,10 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		splitext = os.path.splitext(output)
 		output = splitext[0] + "-" + scan.setting + splitext[1]
 
-	print("Save output to %s." % output)
-	saveSC(scan, output)
+	if saveScan :
+		print("Save output to %s." % output)
+		saveSC(scan, output)
 
-	total_runtime = time.clock() - starttime
-	reportout("%.2f sec. for the whole import process" % (total_runtime))
-	reportout("\n")
-	stats_file_entry["total_runtime"] = total_runtime
-
-	stats_file_keys = ["nb_ms_scans", "nb_ms_peaks", "nb_msms_scans", "nb_msms_peaks", "nb_ms_peaks_after_alg", "loading_time", "calibration_time", "alignment_time", "total_runtime"]
-	stats_file_data = [stats_file_entry]
-	stats_file = os.path.splitext(output)[0] + "-stats.csv"
-	try:
-		with open(stats_file, 'w') as csvfile:
-			writer = csv.DictWriter(csvfile, fieldnames=stats_file_keys)
-			writer.writeheader()
-			for data in stats_file_data:
-				writer.writerow(data)
-	except IOError:
-		raise LipidXException("Writing of statistics to file '%s' failed." % stats_file)
-
-	if parent:
-		#parent.debug.progressDialog.Destroy()
-		return parent.CONST_THREAD_SUCCESSFUL
 	return scan
 
 def doImport_alt(options, scan_original, importDir, output, parent, listFiles, isTaken, isGroup, alignmentMS, alignmentMSMS, scanAvg, importMSMS = True):
