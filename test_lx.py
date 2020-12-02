@@ -1,12 +1,14 @@
 import pytest
 
 @pytest.fixture
-def input_value():
-   input = 39
-   return input
+def optionsPath():
+   return False
 
-def test_divisible_by_3(input_value):
-   assert input_value % 3 == 0
+def test_options(optionsPath):
+   assert False
 
-def test_divisible_by_6(input_value):
-   assert input_value % 6 == 0
+def test_Masterscan():
+   assert False
+
+def test_MFQLs():
+   assert False
