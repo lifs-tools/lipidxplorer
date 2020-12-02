@@ -720,6 +720,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	if parent:
 		#parent.debug.progressDialog.Destroy()
 		return parent.CONST_THREAD_SUCCESSFUL
+	return scan
 
 def doImport_alt(options, scan_original, importDir, output, parent, listFiles, isTaken, isGroup, alignmentMS, alignmentMSMS, scanAvg, importMSMS = True):
 	'''Alternative import which splits the spectra into chunks
