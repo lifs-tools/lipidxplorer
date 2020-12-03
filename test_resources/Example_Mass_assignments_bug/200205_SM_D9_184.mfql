@@ -15,7 +15,7 @@ IDENTIFY
 REPORT
 	LipidSpecies = "SM-IS";  
 	LipidClass = "SM";
-	Mass = Precursor.mass;
+	Mass = Precursor.mass;	PrecursorERRppm = "%2.2f" % "(Precursor.errppm)";	FragmentAERRppm = "%2.2f" % "(FragmentA.errppm)";
 	IsobaricClass = Precursor.isobaric;
 	ChemicalFormula = Precursor.chemsc;
 	DerivatizedForm = "None";
@@ -32,8 +32,7 @@ REPORT
 	FragmentAIntensity = FragmentA.intensity;
 	FragmentBIntensity = "None";
 	FragmentCIntensity = "None";
-	PrecursorERRppm = "%2.2f" % "(Precursor.errppm)";
-	FragmentAERRppm = "%2.2f" % "(FragmentA.errppm)";
+
 	FragmentBERRppm = "";
 	FragmentCERRppm = "";
 	;

@@ -1,44 +1,90 @@
-# Screening for SM - MSMS Check for 184
-# written 2017 - 02 - 13 by Lars F. Eggers
-# modified by Daniel Krause, Dominik Schwudke 14.10.19
-# according to "Proposal for a common nomenclature for fragment ions in mass spectra of lipids" JK Pauling et al Nov 2017
-
-QUERYNAME = SphingomyelineOne;
-
-DEFINE Precursor = 'C[35..49] H[67..103] O[6..7] N[2] P[1]' WITH DBR = (0.5,3.5), CHG = +1;
-DEFINE FragmentA = 'C[5] H[15] O[4] N[1] P[1]' WITH DBR = (1.5,3.5), CHG = +1;
-
-IDENTIFY
-	Precursor IN MS1+ AND
-	FragmentA IN MS2+
-
-# SUCHTHAT
-#	(avg(Precursor.intensity)/avg(FragmentA.intensity) >=0.036 AND avg(Precursor.intensity)/avg(FragmentA.intensity) <= 0.33)
-
-REPORT
-	LipidSpecies = "SM %d:%d;%d" % "((Precursor.chemsc)[C] - 5, (Precursor.chemsc)[db] - 0.5, (Precursor.chemsc)[O] - 6)";
-	LipidClass = "SM";
-	Mass = Precursor.mass;
-	IsobaricClass = Precursor.isobaric;
-	ChemicalFormula = Precursor.chemsc;
-	DerivatizedForm = "None";
-	AdductIon = "+H+";
-	LipidCategory = "Sphingolipd";
-	ScanPolarity = "positive";
-	Intensity = FragmentA.intensity;
-
-	PrecursorIdentifier = "[SM %d:%d;%d +H]+" % "((Precursor.chemsc)[C] - 5, (Precursor.chemsc)[db] - 0.5, (Precursor.chemsc)[O] - 6)";
- 	FragmentAIdentifier = "SM(184)"; 
-	FragmentBIdentifier = "None"; 	
-	FragmentCIdentifier = "None";
-	PrecursorIntensity = Precursor.intensity;
-	FragmentAIntensity = FragmentA.intensity;
-	FragmentBIntensity = "None";
-	FragmentCIntensity = "None";
-	PrecursorERRppm = "%2.2f" % "(Precursor.errppm)";
-	FragmentAERRppm = "%2.2f" % "(FragmentA.errppm)";
-	FragmentBERRppm = "";
-	FragmentCERRppm = "";
-	;
-
-################ end script ##################
+# Screening for SM - MSMS Check for 184
+
+# written 2017 - 02 - 13 by Lars F. Eggers
+
+# modified by Daniel Krause, Dominik Schwudke 14.10.19
+
+# according to "Proposal for a common nomenclature for fragment ions in mass spectra of lipids" JK Pauling et al Nov 2017
+
+
+
+QUERYNAME = SphingomyelineOne;
+
+
+
+DEFINE Precursor = 'C[35..49] H[67..103] O[6..7] N[2] P[1]' WITH DBR = (0.5,3.5), CHG = +1;
+
+DEFINE FragmentA = 'C[5] H[15] O[4] N[1] P[1]' WITH DBR = (1.5,3.5), CHG = +1;
+
+
+
+IDENTIFY
+
+	Precursor IN MS1+ AND
+
+	FragmentA IN MS2+
+
+
+
+# SUCHTHAT
+
+#	(avg(Precursor.intensity)/avg(FragmentA.intensity) >=0.036 AND avg(Precursor.intensity)/avg(FragmentA.intensity) <= 0.33)
+
+
+
+REPORT
+
+	LipidSpecies = "SM %d:%d;%d" % "((Precursor.chemsc)[C] - 5, (Precursor.chemsc)[db] - 0.5, (Precursor.chemsc)[O] - 6)";
+
+	LipidClass = "SM";
+
+	Mass = Precursor.mass;
+
+	PrecursorERRppm = "%2.2f" % "(Precursor.errppm)";
+
+	FragmentAERRppm = "%2.2f" % "(FragmentA.errppm)";
+
+	IsobaricClass = Precursor.isobaric;
+
+	ChemicalFormula = Precursor.chemsc;
+
+	DerivatizedForm = "None";
+
+	AdductIon = "+H+";
+
+	LipidCategory = "Sphingolipd";
+
+	ScanPolarity = "positive";
+
+	Intensity = FragmentA.intensity;
+
+
+
+	PrecursorIdentifier = "[SM %d:%d;%d +H]+" % "((Precursor.chemsc)[C] - 5, (Precursor.chemsc)[db] - 0.5, (Precursor.chemsc)[O] - 6)";
+
+ 	FragmentAIdentifier = "SM(184)"; 
+
+	FragmentBIdentifier = "None"; 	
+
+	FragmentCIdentifier = "None";
+
+	PrecursorIntensity = Precursor.intensity;
+
+	FragmentAIntensity = FragmentA.intensity;
+
+	FragmentBIntensity = "None";
+
+	FragmentCIntensity = "None";
+
+
+
+	FragmentBERRppm = "";
+
+	FragmentCERRppm = "";
+
+	;
+
+
+
+################ end script ##################
+
