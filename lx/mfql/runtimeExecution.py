@@ -3446,10 +3446,10 @@ class TypeResult:
 	def removePermutations(self):
 
 		for query in self.dictQuery:
-			listVar = []
-			for i in self.dictQuery[query].listVariables:
+			listVar = []		
+			for i in sorted(self.dictQuery[query].listVariables, key = lambda variable: abs(list(variable.items())[0][1].errppm)):
 				#listVar.append(sorted(i.items(), cmp = lambda x, y: cmp(x[1].mass, y[1].mass)))
-				listVar.append(sorted(list(i.items()), key = lambda x : x[1].mass))
+				listVar.append(sorted(list(i.items()), key = lambda x : abs(x[1].errppm)))
 
 			# if there are no variables, we don't need to do anything
 			if len(listVar) > 0:
@@ -3476,7 +3476,7 @@ class TypeResult:
 						listVar_noPermutations.append(i)
 
 				self.dictQuery[query].listVariables = []
-				for i in listVar_noPermutations:
+				for i in sorted(listVar_noPermutations, key = lambda variable: variable[-1][1].mass):
 					self.dictQuery[query].listVariables.append(dict(i))
 
 class TypeQuery:
