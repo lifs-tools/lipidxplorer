@@ -1,12 +1,12 @@
 [project]
-importdir = F:\LipidXplorer-1.2.8.1\191217_Exosom_Hedemann\191217_Daten_MTBE_Extraktion\Exosomen
-masterscanrun = 191217_Exosom_Hedemann\191217_Daten_MTBE_Extraktion\Exosomen\Exosomen_LXbug_pos.sc
-masterscanimport = F:\LipidXplorer-1.2.8.1\191217_Exosom_Hedemann\191217_Daten_MTBE_Extraktion\Exosomen\Exosomen_LXbug_pos.sc
+importdir = D:\fork\isas_lipidxplorer\test_resources\Example_Mass_assignments_bug
+masterscanrun = test_resources\Example_Mass_assignments_bug\Exosomen_LXbug_pos.sc
+masterscanimport = D:\fork\isas_lipidxplorer\test_resources\Example_Mass_assignments_bug\Example_Mass_assignments_bug.sc
 importmsms = True
 pisspectra = False
 datatype = mzML
 ini = F:\LipidXplorer-1.2.8.1\lpdxImportSettings_Dom.ini
-setting = 93
+setting = -1
 selectionwindow = 0.4
 timerange = (35,300)
 mscalibration = 388.2541, 462.1466, 529.3994, 675.6779, 753.6134, 829.7985
@@ -43,7 +43,7 @@ intensitycorrectionprecursor =
 intensitycorrectionfragment = 
 masterscaninsql = False
 sumfattyacids = False
-resultfile = 191217_Exosom_Hedemann\191217_Daten_MTBE_Extraktion\Exosomen\Exosomen_LXbug_pos-out.csv
+resultfile = test_resources\Example_Mass_assignments_bug\Exosomen_LXbug_pos-out.csv
 optionalmstolerance = 0.03
 optionalmsmstolerance = 4
 optionalmstolerancetype = Da
@@ -72,7 +72,7 @@ loopnr = 3
 
 [mfql]
 200205_sm_d9_184.mfql-name = 200205_SM_D9_184.mfql
-200205_sm_d9_184.mfql = F:\LipidXplorer-1.2.8.1\MFQL_HumanLung_Standardized\positive\SPLASH\200205_SM_D9_184.mfql
+200205_sm_d9_184.mfql = D:\fork\isas_lipidxplorer\test_resources\Example_Mass_assignments_bug\200205_SM_D9_184.mfql
 200205_sm_pos_msms_184_no_ratio.mfql-name = 200205_SM_pos_MSMS_184_no_ratio.mfql
-200205_sm_pos_msms_184_no_ratio.mfql = F:\LipidXplorer-1.2.8.1\MFQL_HumanLung_Standardized\positive\200205_SM_pos_MSMS_184_no_ratio.mfql
+200205_sm_pos_msms_184_no_ratio.mfql = D:\fork\isas_lipidxplorer\test_resources\Example_Mass_assignments_bug\200205_SM_pos_MSMS_184_no_ratio.mfql
 
