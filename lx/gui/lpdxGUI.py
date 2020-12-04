@@ -5069,6 +5069,13 @@ intensity."""))
 
 	def writeOutput(self, destination, content):
 
+		if os.path.exists(destination):
+			dlgError = wx.MessageDialog(self, f"The file {destination} already exists, \n are you sure you want to overwrite?",
+					"File writing error", wx.YES_NO|wx.ICON_QUESTION)
+			answer = dlgError.ShowModal()
+			if answer == wx.ID_NO:
+				return False
+
 		tryAgain = True
 		while tryAgain:
 			try:
