@@ -439,7 +439,7 @@ def add_Sample(
 		comtypes.CoUninitialize()
 
 	### End total ion count ###
-	return (specName, lpdxSample.base_peak_ms1, nb_ms_scans, nb_ms_peaks, nb_msms_scans, nb_msms_peaks)
+	return (specName, lpdxSample.base_peak_ms1, nb_ms_scans, nb_ms_peaks, nb_msms_scans, nb_msms_peaks, numPeaks )
 
 
 def add_Sample_AVG(
@@ -1254,7 +1254,7 @@ directory>, <the resolution of the mass spec machine>
 	# to save memory... actually it does nothing because of Python GC
 	del lpdxSample
 
-	return (strName, avgBasePeakIntensity, count, nb_ms_peaks, countMSMS, nb_msms_peaks)
+	return (strName, avgBasePeakIntensity, count, nb_ms_peaks, countMSMS, nb_msms_peaks, numPeaks)
 
 def add_DTASample(sc, sampleDir, sampleName, MSmassrange = None, MSMSmassrange = None, importMSMS = True, thresholdType = None):
 	"""Add a sample to the Sample class. It reads the scans from the given *.mzXML files,
