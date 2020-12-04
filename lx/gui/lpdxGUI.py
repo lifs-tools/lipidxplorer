@@ -4141,8 +4141,8 @@ intensity."""))
 
 		strAccuracy = ''
 
-		if self.text_ctrl_mstools_InputSection_sumComposition.IsEmpty():
-			dlg = wx.MessageDialog(self, "You have to give a sum composition!", "Attention", wx.OK|wx.ICON_HAND)
+		if self.text_ctrl_mstools_InputSection_sumComposition.IsEmpty() or  self.text_ctrl_mstools_InputSection_doubleBond_1.IsEmpty() or self.text_ctrl_mstools_InputSection_doubleBond_2.IsEmpty():
+			dlg = wx.MessageDialog(self, "You have to give a sum composition and double bond values", "Attention", wx.OK|wx.ICON_HAND)
 			if dlg.ShowModal() == wx.ID_OK:
 				dlg.Destroy()
 				return None
@@ -4155,6 +4155,8 @@ intensity."""))
 			charge = ' chg(%s)' % self.text_ctrl_mstools_InputSection_charge.GetValue()
 
 		elemSeq = parseElemSeq(sf_constraint + charge)
+
+
 
 		max = 1
 
