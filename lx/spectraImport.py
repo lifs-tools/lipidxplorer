@@ -438,6 +438,9 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 				nb_msms_scans.append(ret[4])
 				nb_msms_peaks.append(ret[5])
 
+			if (ret[6] == 0):
+				raise ValueError(f' File {i[0]} contains 0 peaks after alignment')
+
 			if nb_ms_peaks[-1] == 0:
 				raise ValueError(f' File {i[0]} contains 0 MS1 peaks after alignment')
 			elif nb_msms_peaks[-1] == 0:
