@@ -1814,7 +1814,7 @@ def getResSteps(dictSamples, mstolerance):
 def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTolerance = None,
 		mergeDeltaRes = None, charge = None, deltaRes = None, minocc = None, msThreshold = None,
 		intensityWeightedAvg = False, minMass = None, fadi_denominator = None, fadi_percentage = 0.0,
-		mstolerance = None, msmstolerance= None):
+		mstolerance = None, msmstolerance= None, res_by_fullbin = False):
 	#using fadi_denominator, fadi_percentage, becayse nbofscans and msthreshold variables are already in use !!!
 	# these varuables are used to implement fadi filter
 	'''
@@ -1884,11 +1884,21 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	listResult = []
 	for i in range(numLoops + 1):
 		listResult.append([])
+	
+	if res_by_fullbin:
+		if mstolerance.kind == 'da':
+			binres = mstolerance.da * 2
+		elif mstolerance.kind == 'ppm':
+			binres = max((s.mass for s in dictSamples['0'])) /(100000 / mstolerance.ppm)
+			binres = binres * 2
+		binsize = len(dictSamples)
 
-	if mstolerance:
+
+
+	if mstolerance and not res_by_fullbin:
 		res_steps = getResSteps(dictSamples, mstolerance)
 	
-	if msmstolerance:
+	if msmstolerance and not res_by_fullbin:
 		res_steps = getResSteps(dictSamples, msmstolerance)
 
 	# join all peaks into one list
@@ -1901,7 +1911,10 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	#   [avg, [specEntry1, specEntry2, ..., specEntryN]]
 
 	# sort the list
-	listResult[0].sort()
+	if res_by_fullbin:
+		listResult[0].sort(reverse=True)
+	else:	
+		listResult[0].sort()
 	
 	for count in range(numLoops):
 
@@ -1939,9 +1952,10 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 
 			else:
 				raise LipidXException("The given tolerance is not of TypeTolerance()")
+			
 
 			# override resolution
-			if mstolerance:
+			if mstolerance and not res_by_fullbin:
 				current_m = listResult[count][current + index][0]
 				if current_m >= res_steps[0][0]:
 					res = res_steps[0][1]
@@ -1954,8 +1968,11 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 							break
 						last = rs[1]
 					# res = next((rs[1] for rs in res_steps if rs[0] < current_m)) cant do this because I need one before the one that is returned
+			
+			if res_by_fullbin:
+				res = binres
 
-			while listResult[count][current + index][0] - bin[0][0] < res:
+			while abs(listResult[count][current + index][0] - bin[0][0]) < res:
 
 				bin.append(listResult[count][current + index])
 
@@ -1965,6 +1982,11 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 					break
 
 			current += index
+
+			if len(bin) >= binsize:
+				newres = max((b[0] for b in bin)) - min((b[0] for b in bin))
+				if newres < binres:
+					binres = newres
 
 			# go for intensity weighted average and non-weighted avg
 			if not intensityWeightedAvg:
@@ -2070,6 +2092,8 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 
 		listOutput.append(cluster)
 
+	if res_by_fullbin:
+		listOutput = list(reversed(listOutput))
 	### gen output ###
 	##################
 
