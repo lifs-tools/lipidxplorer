@@ -1776,9 +1776,45 @@ def mkMSMSEntriesHeuristic(scan, listPolarity, numLoops = None, isPIS = False, r
 	for i in scan.listSamples:
 		del scan.dictSamples[i]
 
+def getResSteps(dictSamples, mstolerance):
+	mass = []
+	tols = []
+
+	mstol = None
+	if mstolerance.kind == 'da':
+		mstol = mstolerance.da * 2 # double to make it less sensitive
+
+
+	for _, samples in dictSamples.items():
+		s_samples = sorted(samples, key =lambda x: x.mass, reverse = True)
+		
+		if mstol == None and mstolerance.kind == 'ppm': 
+			mstol = s_samples[0].mass /(100000 / mstolerance.ppm)
+			mstol = mstol * 2
+
+		for idx, s_sample in enumerate(s_samples[:-1]):
+			next_sample = s_samples[idx+1]
+			if s_sample.mass - next_sample.mass < mstol:
+				mstol = s_sample.mass - next_sample.mass
+				mass.append(s_sample.mass)
+				tols.append(mstol)
+		mstol = None
+	
+	s_mass_tol = sorted(zip(mass, tols), reverse=True)
+	
+	res = []
+	for idx,(mz, tol) in enumerate(s_mass_tol[:-1]):
+		next_tol = s_mass_tol[idx +1][1]
+		if next_tol < tol:
+			res.append((mz, tol))
+
+	return res
+
+
 def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTolerance = None,
 		mergeDeltaRes = None, charge = None, deltaRes = None, minocc = None, msThreshold = None,
-		intensityWeightedAvg = False, minMass = None, fadi_denominator = None, fadi_percentage = 0.0):
+		intensityWeightedAvg = False, minMass = None, fadi_denominator = None, fadi_percentage = 0.0,
+		mstolerance = None, msmstolerance= None):
 	#using fadi_denominator, fadi_percentage, becayse nbofscans and msthreshold variables are already in use !!!
 	# these varuables are used to implement fadi filter
 	'''
@@ -1849,6 +1885,12 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	for i in range(numLoops + 1):
 		listResult.append([])
 
+	if mstolerance:
+		res_steps = getResSteps(dictSamples, mstolerance)
+	
+	if msmstolerance:
+		res_steps = getResSteps(dictSamples, msmstolerance)
+
 	# join all peaks into one list
 	for sample in listSamples:
 		for index in range(len(dictSamples[sample])):
@@ -1897,6 +1939,21 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 
 			else:
 				raise LipidXException("The given tolerance is not of TypeTolerance()")
+
+			# override resolution
+			if mstolerance:
+				current_m = listResult[count][current + index][0]
+				if current_m >= res_steps[0][0]:
+					res = res_steps[0][1]
+				elif current_m <= res_steps[-1][0]:
+					res = res_steps[-1][1]
+				else:
+					for rs in res_steps:
+						if rs[0] < current_m:
+							res = last
+							break
+						last = rs[1]
+					# res = next((rs[1] for rs in res_steps if rs[0] < current_m)) cant do this because I need one before the one that is returned
 
 			while listResult[count][current + index][0] - bin[0][0] < res:
 
@@ -1986,7 +2043,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			for sample in listSamples:
 				if sample in clusterToMerge:
 					if len(clusterToMerge[sample]) > 1: # merge only, if there is more than one entry
-						cluster[sample] = merge(sample, clusterToMerge[sample], linearAlignment, mergeTolerance, mergeDeltaRes)
+						cluster[sample] = merge(sample, clusterToMerge[sample], None, None, None)
 					else:
 						cluster[sample] = clusterToMerge[sample][0]
 
