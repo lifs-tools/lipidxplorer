@@ -260,7 +260,8 @@ def add_Sample(
 							options['MSresolution'],
 							merge = mergeSumIntensity,
 							mergeTolerance = options['MSresolution'],
-							mergeDeltaRes = options['MSresolutionDelta'], fadi_denominator= fadi_denominator, fadi_percentage = fadi_percentage)
+							mergeDeltaRes = options['MSresolutionDelta'], fadi_denominator= fadi_denominator, fadi_percentage = fadi_percentage, 
+							mstolerance = options['MStolerance'], msmstolerance = None)
 
 		# free memory
 		del dictSpecEntry
