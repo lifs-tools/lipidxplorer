@@ -152,7 +152,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 
 	# process the result
 	result = mfqlObj.result
-	make_resultDF(result, options['resultFile']+"_df.csv")
+	# make_resultDF(result, options['resultFile']+"_df.csv")
 
 	if result.mfqlOutput:
 		strHead = ''

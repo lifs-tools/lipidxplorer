@@ -478,7 +478,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		mkSurveyLinear(scan, [-1,1],
 					numLoops = options['loopNr'],
 					deltaRes = scan.options['MSresolutionDelta'],
-					minocc = scan.options['MSminOccupation'])
+					minocc = scan.options['MSminOccupation'], bin_res=True)
 
 	### aling the fragment spectra ###
 
@@ -497,7 +497,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		if alignmentMSMS == "linear":
 			mkMSMSEntriesLinear_new(scan, listPolarity,
 								numLoops = options['loopNr'],
-								isPIS = options['pisSpectra'])
+								isPIS = options['pisSpectra'], bin_res=True)
 
 
 	for sample in scan.listSamples:
