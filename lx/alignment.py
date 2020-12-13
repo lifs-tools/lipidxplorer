@@ -488,7 +488,7 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 					if len(lrsltMSMS) >= binsize:
 						newres = max((p.mass for p in lrsltMSMS)) - min((p.mass for p in lrsltMSMS))
-						newres = newres * 10 * 10 # for a very looser fit between spectra
+						newres = newres * 10 # for a looser fit between spectra
 						if newres < binres  and newres > 0.0001:
 							binres = newres
 
@@ -2014,7 +2014,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			if res_by_fullbin and len(bin) >= binsize:
 				newres = max((b[0] for b in bin)) - min((b[0] for b in bin))
 				newres = newres * 10 # to make it very loose
-				if newres < binres and newres > 0:
+				if newres < binres and newres > 0.0001:
 					binres = newres
 
 			# go for intensity weighted average and non-weighted avg
