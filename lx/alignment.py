@@ -311,7 +311,7 @@ def mkSurveyHeuristic(sc, polarity, numLoops = None, deltaRes = 0, minocc = None
 
 
 
-def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = None, checkoccupation = True):
+def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = None, checkoccupation = True, bin_res = False):
 	""" Align the MS spectra."""
 
 	# get the base peak dictionary
@@ -432,6 +432,18 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 		listMSSpec[0].sort()
 
+		if bin_res:
+			listMSSpec[0] = list(reversed(listMSSpec[0]))
+			mstolerance = sc.options['MStolerance']
+			if mstolerance.kind == 'da':
+				binres = mstolerance.da * 2
+			elif mstolerance.kind == 'ppm':
+				binres = max((s.mass for s in listMSSpec[0])) /(100000 / mstolerance.ppm)
+				binres = binres * 2
+			binsize = len(sc.dictSamples)
+			binres_og = binres
+
+
 		# sort precursor masses by intensity
 		#listMSmassIntensity = sorted(listMSmass, cmp = sortPrecursorMasses)
 		# TODO: do alignment according to sorted list by intensity
@@ -440,6 +452,7 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 			current = 0
 			lnext = []
+			binres = None
 
 			while current < (len(listMSSpec[count]) - 1):
 
@@ -452,6 +465,8 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 				partialRes = (listMSSpec[count][current].mass / res)
 
+
+
 				# routine for collecting all masses which are in partialRes
 				#index = 1
 				lrsltMSMS = [listMSSpec[count][current]]
@@ -461,9 +476,20 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 				del listMSSpec[count][current]
 
 				lastEntry = None
-				while listMSSpec[count][current].mass - lrsltMSMS[0].mass < partialRes:
+
+				if bin_res:
+					if binres == None: # for when the loop restart
+						binres = binres_og
+					partialRes = binres
+
+				while abs(listMSSpec[count][current].mass - lrsltMSMS[0].mass) < partialRes:
 					lrsltMSMS.append(listMSSpec[count][current])
 					del listMSSpec[count][current]
+
+					if len(lrsltMSMS) >= binsize:
+						newres = max((p.mass for p in lrsltMSMS)) - min((p.mass for p in lrsltMSMS))
+						if newres < binres  and newres > 0:
+							binres = newres
 
 					if listMSSpec[count] == []:
 						lastEntry = lrsltMSMS[-1]
@@ -658,7 +684,7 @@ def mkSurveyHierarchical(sc, listPolarity, numLoops = None, deltaRes = 0, minocc
 
 	cl = hclusterHeuristic(sc.listSamples, sc.dictSamples, resolution)
 
-def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, relative = None):
+def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, relative = None, bin_res= False):
 
 	################################################################
 	###	merge MS/MS experiments if there are more than one for a ###
@@ -731,7 +757,8 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 								tolerance,
 								merge = mergeListMsms,
 								mergeTolerance = scan.options['MSMSresolution'],
-								mergeDeltaRes = scan.options['MSMSresolutionDelta'])
+								mergeDeltaRes = scan.options['MSMSresolutionDelta'],
+								bintolerance=scan.options['MSMStolerance'], res_by_fullbin=bin_res)
 
 		else:
 			listClusters = False
@@ -821,8 +848,8 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 												dictSpecEntry,
 												scan.options['MSMSresolution'],
 												deltaRes = scan.options['MSMSresolutionDelta'],
-												minMass = scan.options['MSMSmassrange'][0]
-												)
+												minMass = scan.options['MSMSmassrange'][0],
+												bintolerance=scan.options['MSMStolerance'],  res_by_fullbin=True)
 
 					# check again with this debugging output!
 					#if cluster:
@@ -1814,7 +1841,7 @@ def getResSteps(dictSamples, mstolerance):
 def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTolerance = None,
 		mergeDeltaRes = None, charge = None, deltaRes = None, minocc = None, msThreshold = None,
 		intensityWeightedAvg = False, minMass = None, fadi_denominator = None, fadi_percentage = 0.0,
-		mstolerance = None, msmstolerance= None, res_by_fullbin = False):
+		bintolerance = None, res_by_fullbin = False, res_by_steps= False):
 	#using fadi_denominator, fadi_percentage, becayse nbofscans and msthreshold variables are already in use !!!
 	# these varuables are used to implement fadi filter
 	'''
@@ -1886,20 +1913,18 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 		listResult.append([])
 	
 	if res_by_fullbin:
+		mstolerance = bintolerance
 		if mstolerance.kind == 'da':
 			binres = mstolerance.da * 2
 		elif mstolerance.kind == 'ppm':
-			binres = max((s.mass for s in dictSamples['0'])) /(100000 / mstolerance.ppm)
+			key = next(iter(dictSamples))
+			binres = max((s.mass for s in dictSamples[key])) /(100000 / mstolerance.ppm)
 			binres = binres * 2
 		binsize = len(dictSamples)
 
-
-
-	if mstolerance and not res_by_fullbin:
+	if res_by_steps and not res_by_fullbin:
 		res_steps = getResSteps(dictSamples, mstolerance)
 	
-	if msmstolerance and not res_by_fullbin:
-		res_steps = getResSteps(dictSamples, msmstolerance)
 
 	# join all peaks into one list
 	for sample in listSamples:
@@ -1983,7 +2008,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 
 			current += index
 
-			if len(bin) >= binsize:
+			if res_by_fullbin and len(bin) >= binsize:
 				newres = max((b[0] for b in bin)) - min((b[0] for b in bin))
 				if newres < binres:
 					binres = newres
@@ -2065,7 +2090,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			for sample in listSamples:
 				if sample in clusterToMerge:
 					if len(clusterToMerge[sample]) > 1: # merge only, if there is more than one entry
-						cluster[sample] = merge(sample, clusterToMerge[sample], None, None, None)
+						cluster[sample] = merge(sample, clusterToMerge[sample], linearAlignment, mergeTolerance, mergeDeltaRes, bintolerance = mstolerance, res_by_fullbin=True)
 					else:
 						cluster[sample] = clusterToMerge[sample][0]
 
@@ -2673,7 +2698,7 @@ def heuristicAlignment(listSamples, dictSamples, tolerance,
 
 	return listMSSpec
 
-def mergeListMsms(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes):
+def mergeListMsms(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes, bintolerance = None, res_by_fullbin=True):
 	'''Merge several MS/MS scans. The specEntries have the precursor mass and
 	the MS/MS lists in their .content attribute.
 
@@ -2749,7 +2774,8 @@ def mergeListMsms(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes)
 
 		listClusters = align(['one'], dictSpecEntries, mergeTolerance,
 				intensityWeightedAvg = True, merge = mergeSumIntensity,
-				deltaRes = mergeDeltaRes, minMass = sorted(dictSpecEntries['one'])[0].mass, fadi_denominator = length, fadi_percentage = fadi_percentageMSMS)
+				deltaRes = mergeDeltaRes, minMass = sorted(dictSpecEntries['one'])[0].mass, fadi_denominator = length, fadi_percentage = fadi_percentageMSMS,
+				bintolerance = bintolerance, res_by_fullbin=res_by_fullbin)
 
 		#for cl in listClusters:
 		#	str = ''
@@ -2786,7 +2812,7 @@ def mergeListMsms(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes)
 
 	return listSpecEntries[0]
 
-def mergeSumIntensity(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes):
+def mergeSumIntensity(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes, bintolerance = None, res_by_fullbin=False): # bintolerance , res_by_fullbin unuse but needed for the arg signature
 	'''This function calculates the average intensity (average over the given
 	peaks and not from all scans) and the average weighted m/z for the peak mass.'''
 

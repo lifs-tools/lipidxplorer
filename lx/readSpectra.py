@@ -261,7 +261,7 @@ def add_Sample(
 							merge = mergeSumIntensity,
 							mergeTolerance = options['MSresolution'],
 							mergeDeltaRes = options['MSresolutionDelta'], fadi_denominator= fadi_denominator, fadi_percentage = fadi_percentage, 
-							mstolerance = options['MStolerance'], msmstolerance = None, res_by_fullbin = True)
+							bintolerance = options['MStolerance'], res_by_fullbin = True)
 
 		# free memory
 		del dictSpecEntry
