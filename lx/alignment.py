@@ -1998,8 +1998,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			
 			if res_by_fullbin:
 				if binres==None:
-					binres =binres_og
-				if binres > 0:
+					binres = binres_og
 					res = binres
 
 			while abs(listResult[count][current + index][0] - bin[0][0]) < res:
@@ -2015,7 +2014,8 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 
 			if res_by_fullbin and len(bin) >= binsize:
 				newres = max((b[0] for b in bin)) - min((b[0] for b in bin))
-				if newres < binres:
+				newres = newres * 10 # to make it very loose
+				if newres < binres and newres > 0:
 					binres = newres
 
 			# go for intensity weighted average and non-weighted avg
@@ -2050,7 +2050,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 				resultingSpecEntries += i[1]
 
 			#filtering starts here, default setings imply no filtering
-			fadi_ratio = 1.0
+			fadi_ratio = 1.0 
 			if fadi_denominator is not None and fadi_denominator > 0.0:
 				fadi_ratio = cnt / float(fadi_denominator) if fadi_denominator is not None and fadi_denominator is not 0.0 else 1.0
 
