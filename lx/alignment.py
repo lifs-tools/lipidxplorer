@@ -1921,6 +1921,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			binres = max((s.mass for s in dictSamples[key])) /(100000 / mstolerance.ppm)
 			binres = binres * 2
 		binsize = len(dictSamples)
+		binres_og = binres
 
 	if res_by_steps and not res_by_fullbin:
 		res_steps = getResSteps(dictSamples, mstolerance)
@@ -1944,6 +1945,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	for count in range(numLoops):
 
 		current = 0
+		binres = None
 
 		# stop if the end of the list is reached
 		if not current < (len(listResult[count]) - 1):
@@ -1995,7 +1997,10 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 					# res = next((rs[1] for rs in res_steps if rs[0] < current_m)) cant do this because I need one before the one that is returned
 			
 			if res_by_fullbin:
-				res = binres
+				if binres==None:
+					binres =binres_og
+				if binres > 0:
+					res = binres
 
 			while abs(listResult[count][current + index][0] - bin[0][0]) < res:
 
