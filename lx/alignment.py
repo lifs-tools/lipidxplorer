@@ -488,7 +488,8 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 					if len(lrsltMSMS) >= binsize:
 						newres = max((p.mass for p in lrsltMSMS)) - min((p.mass for p in lrsltMSMS))
-						if newres < binres  and newres > 0:
+						newres = newres * 10 * 10 # for a very looser fit between spectra
+						if newres < binres  and newres > 0.0001:
 							binres = newres
 
 					if listMSSpec[count] == []:
@@ -626,7 +627,7 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 
 		### check if minimum occupation is fullfilled ###
-
+		listMSSpec[-1] = reversed(listMSSpec[-1])
 		for entry in listMSSpec[-1]:
 
 			for k in sc.listSamples:
@@ -1935,12 +1936,10 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 
 	# the list (listResult[0]) is:
 	#   [avg, [specEntry1, specEntry2, ..., specEntryN]]
-
 	# sort the list
+	listResult[0].sort()
 	if res_by_fullbin:
-		listResult[0].sort(reverse=True)
-	else:	
-		listResult[0].sort()
+		listResult[0] = list(reversed(listResult[0]))
 	
 	for count in range(numLoops):
 
@@ -1999,7 +1998,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			if res_by_fullbin:
 				if binres==None:
 					binres = binres_og
-					res = binres
+				res = binres
 
 			while abs(listResult[count][current + index][0] - bin[0][0]) < res:
 
