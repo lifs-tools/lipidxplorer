@@ -463,7 +463,7 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 				else:
 					raise LipidXException("Tolerance value for averaging MS has to be resolution")
 
-				partialRes = (listMSSpec[count][current].mass / res)
+				partialRes_og = (listMSSpec[count][current].mass / res)
 
 
 
@@ -482,19 +482,23 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 						binres = binres_og
 					partialRes = binres
 
+
 				while abs(listMSSpec[count][current].mass - lrsltMSMS[0].mass) < partialRes:
+					if bin_res and len(lrsltMSMS[0].peakList) >= binsize * 0.95:
+						break
 					lrsltMSMS.append(listMSSpec[count][current])
 					del listMSSpec[count][current]
-
-					if len(lrsltMSMS) >= binsize:
-						newres = max((p.mass for p in lrsltMSMS)) - min((p.mass for p in lrsltMSMS))
-						newres = newres * 10 # for a looser fit between spectra
-						if newres < binres  and newres > 0.0001:
-							binres = newres
 
 					if listMSSpec[count] == []:
 						lastEntry = lrsltMSMS[-1]
 						break
+				
+				if bin_res and len(lrsltMSMS) >= binsize * 0.95:
+					newres = max((p.mass for p in lrsltMSMS)) - min((p.mass for p in lrsltMSMS))
+					newres = newres * 10 # for a looser fit between spectra
+					if newres < binres  and newres > 0.00001:
+						binres = newres
+						partialRes_og
 
 				### check error
 				# if there should be overlapping errors, correct them by checking for
@@ -1974,7 +1978,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 					if tmp == 0.0:
 						tmp = tolerance.tolerance
 
-					res = (listResult[count][current][0] / tmp)
+					res_og = (listResult[count][current][0] / tmp)
 
 			else:
 				raise LipidXException("The given tolerance is not of TypeTolerance()")
@@ -2001,6 +2005,8 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 				res = binres
 
 			while abs(listResult[count][current + index][0] - bin[0][0]) < res:
+				if binsize > 1 and res_by_fullbin and len(bin[0][1]) >= binsize * 0.95: # there is more than one bin (its just a merge) and the element is not already full
+					break # bin is already full
 
 				bin.append(listResult[count][current + index])
 
@@ -2011,11 +2017,12 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 
 			current += index
 
-			if res_by_fullbin and len(bin) >= binsize:
+			if res_by_fullbin and len(bin) >= binsize * 0.95:
 				newres = max((b[0] for b in bin)) - min((b[0] for b in bin))
-				newres = newres * 10 # to make it very loose
-				if newres < binres and newres > 0.0001:
+				newres = newres * 7 # to make it very loose
+				if newres < binres and newres > 0.00001:
 					binres = newres
+					res_og
 
 			# go for intensity weighted average and non-weighted avg
 			if not intensityWeightedAvg:
