@@ -34,11 +34,17 @@ def ThermoRawfile2DataFrames(file_path, head = None):
         isolationMass = rawfile.GetPrecursorInfoFromScanNum(scanNum).isolationMass if  rawfile.GetPrecursorInfoFromScanNum(scanNum) is not None else 0.0# or monoIsoMass
         row = [scanNum, filterLine, retTime, chargeState, isolationMass]
         MSrawscansDF.loc[scanNum] = row
-        peak_datasT = zip(*peak_datas)
+        # peak_datasT = list(zip(*peak_datas))
         if len(peak_datas)>2:
-            peak_datasDF = pd.DataFrame(peak_datasT, index = [scanNum]*len(peak_datasT), columns=['mass', 'intensity', 'resolution', 'baseline', 'noise', 'charge'])
+            peak_datasDF = pd.DataFrame(peak_datas).T
+            peak_datasDF.columns=['mass', 'intensity', 'resolution', 'baseline', 'noise', 'charge']
+            peak_datasDF['scanNum'] = scanNum
+            peak_datasDF.set_index('scanNum', inplace = True)
         else:
-            peak_datasDF = pd.DataFrame(peak_datasT, index = [scanNum]*len(peak_datasT), columns=['mass', 'intensity'])
+            peak_datasDF = pd.DataFrame(peak_datas).T
+            peak_datasDF.columns=['mass', 'intensity']
+            peak_datasDF['scanNum'] = scanNum
+            peak_datasDF.set_index('scanNum', inplace = True)
         peak_datasDF_list.append(peak_datasDF)
     MSPeakDatasDF=pd.concat(peak_datasDF_list) # concat is expensive so just once
     log.info('File Read time %f s', time.time()-startTime)
@@ -50,7 +56,7 @@ def ThermoRawfile2DataFrames(file_path, head = None):
 def main(filename):
     log.info('convert raw file {} to dataframe'.format(filename))
     MSrawscansDF, MSPeakDatasDF = ThermoRawfile2DataFrames(filename)
-    name = os.path.split(filename)[-1]
+    name = filename #os.path.split(filename)[-1]
     MSrawscansDF.to_pickle(name[:-4]+'_Scans.pkl')
     MSPeakDatasDF.to_pickle(name[:-4]+'_Peaks.pkl')
 
