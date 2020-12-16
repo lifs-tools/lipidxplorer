@@ -10,6 +10,7 @@ from lx.tools import odict
 from lx.spectraTools import *
 from lx.options import Options
 
+
 import time
 
 # debugging
@@ -152,7 +153,9 @@ def startMFQL(options = {}, queries = {}, parent = None):
 
 	# process the result
 	result = mfqlObj.result
-	# make_resultDF(result, options['resultFile']+"_df.csv")
+	if result.mfqlOutput:
+		df = make_resultDF(result, options['resultFile']+"_df.csv")#, options['resultFile']+"_df.csv")
+		save_as_mztab(df)
 
 	if result.mfqlOutput:
 		strHead = ''
@@ -223,7 +226,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 		#parent.debug.progressDialog.Destroy()
 		return parent.CONST_THREAD_SUCCESSFUL
 
-def make_resultDF(result, resultFile):
+def make_resultDF(result, resultFile = None):
 	import pandas as pd
 	dfs = []
 	for k in result.dictQuery:
@@ -232,7 +235,9 @@ def make_resultDF(result, resultFile):
 		df['mfql_name'] = k
 		dfs.append(df)
 	df = pd.concat(dfs)
-	df.to_csv(resultFile)
+	if resultFile:
+		df.to_csv(resultFile)
+	return df
 
 	#to write as in origianl
 	# head, body for df.groupby('class')

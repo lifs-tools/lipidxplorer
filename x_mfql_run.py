@@ -1,8 +1,11 @@
 from pathlib import Path
+import pandas as pd
+import pickle
 from x_options  import read_options
 from x_masterscan import make_masterscan
 from lx.mfql.runtimeExecution import TypeMFQL
 from lx.mfql.mfqlParser import startParsing
+from mztab.mztab_util import as_mztab
 
 def getMfqlFiles(root_mfql_dir):
     p = Path(root_mfql_dir)
@@ -52,12 +55,29 @@ def make_MFQL_result(masterscan, mfqlFiles):
 
     return mfqlObj.result
 
+def make_resultDF(result, resultFile = None):
+
+	dfs = []
+	for k in result.dictQuery:
+		dataDict = result.dictQuery[k].dataMatrix
+		df = pd.DataFrame(dataDict._data)
+		df['mfql_name'] = k
+		dfs.append(df)
+	df = pd.concat(dfs)
+	if resultFile:
+		df.to_csv(resultFile)
+	return df
+
 if __name__ == "__main__":
     proy = r'test_resources\small_test\small_test-project.lxp'
     options = read_options(proy)
-    masterscan = make_masterscan(options)
+    # masterscan = make_masterscan(options)
+    with open(options['masterScanFileRun'],'rb') as handle:
+        masterscan = pickle.load(handle)
     mfqlFiles = getMfqlFiles(r'test_resources\small_test')
     result = make_MFQL_result(masterscan, mfqlFiles)
     resultStr = makeResultsString(result, options)
+    # resultDF = make_resultDF(result)
+    mztabstr = as_mztab(result)
     reference = Path(r'test_resources\small_test\small_test-out.csv').read_text()
     print(f'are same {resultStr == reference}')
