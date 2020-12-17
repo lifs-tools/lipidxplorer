@@ -39,6 +39,7 @@ if __name__ == "__main__":
     proy = r'test_resources\small_test\small_test-project.lxp'
     options = read_options(proy)
     masterscan = make_masterscan(options)
+    masterscan.dump(options['dumpMasterScanFile'])
     reference  = loadSC(r'test_resources\small_test\small_test_LX12.sc')
     same = compareMasterScans(masterscan, reference)
     print(f'are same {same}')
