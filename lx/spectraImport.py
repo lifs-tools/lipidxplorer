@@ -468,6 +468,9 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		recalibrateMS(scan, scan.options['MScalibration'])
 	if not scan.options.isEmpty('MSMScalibration') and (scan.options['MSMScalibration']):
 		recalibrateMSMS(scan, scan.options['MSMScalibration'])
+	elif not scan.options.isEmpty('MScalibration') and scan.options.isEmpty('MSMScalibration'):
+		print('recalibrating msms with ms calibration') # as requested by KS
+		recalibrateMSMS(scan, scan.options['MScalibration'])
 
 	# align MS spectra
 	print("Aligning MS spectra", alignmentMS)
