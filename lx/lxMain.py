@@ -9,7 +9,7 @@ from lx.mfql.mfqlParser import startParsing
 from lx.tools import odict
 from lx.spectraTools import *
 from lx.options import Options
-
+from mztab.mztab_util import as_mztab
 
 import time
 
@@ -154,8 +154,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	# process the result
 	result = mfqlObj.result
 	if result.mfqlOutput:
-		df = make_resultDF(result, options['resultFile']+"_df.csv")#, options['resultFile']+"_df.csv")
-		save_as_mztab(df)
+		txt = as_mztab(result)
 
 	if result.mfqlOutput:
 		strHead = ''
@@ -225,23 +224,5 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	if parent:
 		#parent.debug.progressDialog.Destroy()
 		return parent.CONST_THREAD_SUCCESSFUL
-
-def make_resultDF(result, resultFile = None):
-	import pandas as pd
-	dfs = []
-	for k in result.dictQuery:
-		dataDict = result.dictQuery[k].dataMatrix
-		df = pd.DataFrame(dataDict._data)
-		df['mfql_name'] = k
-		dfs.append(df)
-	df = pd.concat(dfs)
-	if resultFile:
-		df.to_csv(resultFile)
-	return df
-
-	#to write as in origianl
-	# head, body for df.groupby('class')
-	# 	print(head)
-	# 	print(body)
 
 
