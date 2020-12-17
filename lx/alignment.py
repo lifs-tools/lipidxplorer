@@ -479,8 +479,9 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 				if bin_res:
 					if binres == None: # for when the loop restart
-						binres = binres_og
-					partialRes = binres
+						binres = binres_og 
+						# bin_at_mass = lrsltMSMS[0].mass  to reduce  just based on mass
+					partialRes = binres #* (lrsltMSMS[0].mass/bin_at_mass)  to reduce  just based on mass
 
 
 				while abs(listMSSpec[count][current].mass - lrsltMSMS[0].mass) < partialRes:
@@ -498,7 +499,7 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 					newres = newres * 10 # for a looser fit between spectra
 					if newres < binres  and newres > 0.00001:
 						binres = newres
-						partialRes_og
+						# bin_at_mass = lrsltMSMS[0].mass  to reduce  just based on mass
 
 				### check error
 				# if there should be overlapping errors, correct them by checking for
@@ -2001,9 +2002,10 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			
 			if res_by_fullbin:
 				if binres==None:
+					# bin_at_mass = bin[0][0] to reduce  just based on mass
 					binres = binres_og
-				res = binres
-
+				res = binres #* (bin[0][0] / bin_at_mass) to reduce  just based on mass
+ 
 			while abs(listResult[count][current + index][0] - bin[0][0]) < res:
 				if binsize > 1 and res_by_fullbin and len(bin[0][1]) >= binsize * 0.95: # there is more than one bin (its just a merge) and the element is not already full
 					break # bin is already full
@@ -2022,7 +2024,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 				newres = newres * 7 # to make it very loose
 				if newres < binres and newres > 0.00001:
 					binres = newres
-					res_og
+					# bin_at_mass = bin[0][0] to reduce  just based on mass
 
 			# go for intensity weighted average and non-weighted avg
 			if not intensityWeightedAvg:
