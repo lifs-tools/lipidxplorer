@@ -485,7 +485,7 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 
 				while abs(listMSSpec[count][current].mass - lrsltMSMS[0].mass) < partialRes:
-					if bin_res and len(lrsltMSMS[0].peakList) >= binsize * 0.95:
+					if binsize > 1 and  bin_res and len(listMSSpec[count][current].peakList) >= binsize * 0.95:
 						break
 					lrsltMSMS.append(listMSSpec[count][current])
 					del listMSSpec[count][current]
@@ -2007,7 +2007,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 				res = binres #* (bin[0][0] / bin_at_mass) to reduce  just based on mass
  
 			while abs(listResult[count][current + index][0] - bin[0][0]) < res:
-				if binsize > 1 and res_by_fullbin and len(bin[0][1]) >= binsize * 0.95: # there is more than one bin (its just a merge) and the element is not already full
+				if binsize > 1 and res_by_fullbin and len(listResult[count][current + index][1]) >= binsize * 0.95: # there is more than one bin (its just a merge) and the element is not already full
 					break # bin is already full
 
 				bin.append(listResult[count][current + index])
