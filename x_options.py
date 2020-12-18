@@ -11,4 +11,5 @@ def read_options(project_path):
 if __name__ == "__main__":
     proy = r'test_resources\small_test\small_test-project.lxp'
     options = read_options(proy)
-    print(options)
+    for k,v in options._data.items():
+        print(f'{k:>40} : {v}')
