@@ -5,6 +5,7 @@ from lx.spectraContainer import SurveyEntry, MSMS, MSMSEntry, MSMass, set_Precur
 from lx.tools import sortDictKeys
 from lx.exceptions import LipidXException
 from math import sqrt
+from statistics import mean
 
 # peakCluster for merging peaks
 class peakCluster:
@@ -434,25 +435,40 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 		if bin_res:
 			listMSSpec[0] = list(reversed(listMSSpec[0]))
-			mstolerance = sc.options['MStolerance']
-			if mstolerance.kind == 'da':
-				binres = mstolerance.da * 2
-			elif mstolerance.kind == 'ppm':
-				binres = max((s.mass for s in listMSSpec[0])) /(100000 / mstolerance.ppm)
-				binres = binres * 2
 			binsize = len(sc.dictSamples)
+			sorted_mass = sorted((s.mass for s in listMSSpec[0]), reverse=True)
+			up_to = binsize * 10 if binsize * 10 < len(sorted_mass) else -1
+			diffs = [sorted_mass[i]-sorted_mass[i+1] for i,_ in enumerate(sorted_mass[:up_to])] # hope to find at least one full bin here
+			s_diffs = sorted(diffs) # diffs are coorelated to the resolution
+			m = mean(s_diffs)
+			s_diffs = [d for d in s_diffs if d < m ] #remove outliers
+			# m1 = mean(s_diffs)
+			# s_diffs = [d for d in s_diffs if d > m1 ] #remove outliers
+			# diffs = [d for d in s_diffs if d > s_diffs[0]*2 and d < s_diffs[-1] * 0.5]
+			# binres = mean(diffs[:binsize]) * 2 if diffs else 0.002
+			binres = mean(s_diffs) if diffs else 0.0002
+			# listMSSpec[0] = list(reversed(listMSSpec[0]))
+			# mstolerance = sc.options['MStolerance']
+			# if mstolerance.kind == 'da':
+			# 	binres = mstolerance.da * 2
+			# elif mstolerance.kind == 'ppm':
+			# 	binres = max((s.mass for s in listMSSpec[0])) /(100000 / mstolerance.ppm)
+			# 	binres = binres * 2
+			# binsize = len(sc.dictSamples)
 			binres_og = binres
+			newres1 = None
 
 
 		# sort precursor masses by intensity
 		#listMSmassIntensity = sorted(listMSmass, cmp = sortPrecursorMasses)
 		# TODO: do alignment according to sorted list by intensity
-
+			
 		for count in range(numLoops):
 
 			current = 0
 			lnext = []
-			binres = None
+			binres = binres_og
+
 
 			while current < (len(listMSSpec[count]) - 1):
 
@@ -478,8 +494,8 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 				lastEntry = None
 
 				if bin_res:
-					if binres == None: # for when the loop restart
-						binres = binres_og 
+					if binres == binres_og and newres1: # for when the loop restart
+						binres = newres1 
 						# bin_at_mass = lrsltMSMS[0].mass  to reduce  just based on mass
 					partialRes = binres #* (lrsltMSMS[0].mass/bin_at_mass)  to reduce  just based on mass
 
@@ -499,6 +515,8 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 					newres = newres * 10 # for a looser fit between spectra
 					if newres < binres  and newres > 0.00001:
 						binres = newres
+						if newres1 is None:
+							newres1 = newres
 						# bin_at_mass = lrsltMSMS[0].mass  to reduce  just based on mass
 
 				### check error
@@ -1919,18 +1937,29 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 		listResult.append([])
 	
 	if res_by_fullbin:
-		mstolerance = bintolerance
-		if mstolerance.kind == 'da':
-			binres = mstolerance.da * 2
-		elif mstolerance.kind == 'ppm':
-			key = next(iter(dictSamples))
-			binres = max((s.mass for s in dictSamples[key])) /(100000 / mstolerance.ppm)
-			binres = binres * 2
 		binsize = len(dictSamples)
+		key = next(iter(dictSamples))
+		sorted_mass = sorted((s.mass for s in dictSamples[key]), reverse=True)
+		up_to = binsize * 10 if binsize * 10 < len(sorted_mass) else -1
+		diffs = [sorted_mass[i]-sorted_mass[i+1] for i,_ in enumerate(sorted_mass[:up_to])] # hope to find at least one full bin here
+		diffs = [d for d in diffs if d > 0.0001 and d < 0.1]
+		s_diffs = sorted(diffs) # diffs are coorelated to the resolution
+		if binsize > 1:
+			binres = mean(s_diffs[:binsize]) * 2 if s_diffs else 0.0002 # get average diffs to avoid outliers and times 2 to make flexible
+		else:
+			binres = mean(s_diffs) * 2 if s_diffs else 0.0002
+		# mstolerance = bintolerance
+		# if mstolerance.kind == 'da':
+		# 	binres = mstolerance.da * 2
+		# elif mstolerance.kind == 'ppm':
+		# 	binres = sorted_mass[0] /(100000 / mstolerance.ppm)
+		# 	binres = binres * 2
+		
 		binres_og = binres
+		newres1=None
 
 	if res_by_steps and not res_by_fullbin:
-		res_steps = getResSteps(dictSamples, mstolerance)
+		res_steps = getResSteps(dictSamples, bintolerance)
 	
 
 	# join all peaks into one list
@@ -1949,7 +1978,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	for count in range(numLoops):
 
 		current = 0
-		binres = None
+		binres = binres_og
 
 		# stop if the end of the list is reached
 		if not current < (len(listResult[count]) - 1):
@@ -1986,7 +2015,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			
 
 			# override resolution
-			if mstolerance and not res_by_fullbin:
+			if bintolerance and not res_by_fullbin:
 				current_m = listResult[count][current + index][0]
 				if current_m >= res_steps[0][0]:
 					res = res_steps[0][1]
@@ -2001,9 +2030,9 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 					# res = next((rs[1] for rs in res_steps if rs[0] < current_m)) cant do this because I need one before the one that is returned
 			
 			if res_by_fullbin:
-				if binres==None:
+				if binres==binres_og and newres1 is not None:
 					# bin_at_mass = bin[0][0] to reduce  just based on mass
-					binres = binres_og
+					binres = newres1
 				res = binres #* (bin[0][0] / bin_at_mass) to reduce  just based on mass
  
 			while abs(listResult[count][current + index][0] - bin[0][0]) < res:
@@ -2024,6 +2053,8 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 				newres = newres * 7 # to make it very loose
 				if newres < binres and newres > 0.00001:
 					binres = newres
+					if newres1 is None:
+						newres1 = newres
 					# bin_at_mass = bin[0][0] to reduce  just based on mass
 
 			# go for intensity weighted average and non-weighted avg
@@ -2103,7 +2134,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			for sample in listSamples:
 				if sample in clusterToMerge:
 					if len(clusterToMerge[sample]) > 1: # merge only, if there is more than one entry
-						cluster[sample] = merge(sample, clusterToMerge[sample], linearAlignment, mergeTolerance, mergeDeltaRes, bintolerance = mstolerance, res_by_fullbin=True)
+						cluster[sample] = merge(sample, clusterToMerge[sample], linearAlignment, mergeTolerance, mergeDeltaRes, bintolerance = bintolerance, res_by_fullbin=True)
 					else:
 						cluster[sample] = clusterToMerge[sample][0]
 
