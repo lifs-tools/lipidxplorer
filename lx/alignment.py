@@ -467,7 +467,7 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 			current = 0
 			lnext = []
-			binres = binres_og
+			binres = binres_og if bin_res else None
 
 
 			while current < (len(listMSSpec[count]) - 1):
@@ -479,7 +479,7 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 				else:
 					raise LipidXException("Tolerance value for averaging MS has to be resolution")
 
-				partialRes_og = (listMSSpec[count][current].mass / res)
+				partialRes = (listMSSpec[count][current].mass / res)
 
 
 
@@ -501,7 +501,7 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 
 
 				while abs(listMSSpec[count][current].mass - lrsltMSMS[0].mass) < partialRes:
-					if binsize > 1 and  bin_res and len(listMSSpec[count][current].peakList) >= binsize * 0.95:
+					if bin_res and binsize > 1 and  bin_res and len(listMSSpec[count][current].peakList) >= binsize * 0.95:
 						break
 					lrsltMSMS.append(listMSSpec[count][current])
 					del listMSSpec[count][current]
@@ -782,7 +782,7 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 								merge = mergeListMsms,
 								mergeTolerance = scan.options['MSMSresolution'],
 								mergeDeltaRes = scan.options['MSMSresolutionDelta'],
-								bintolerance=scan.options['MSMStolerance'], res_by_fullbin=bin_res)
+								bintolerance=scan.options['MSMStolerance'], res_by_fullbin=scan.options['alignmentMethodMSMS'] =='calctol' )
 
 		else:
 			listClusters = False
@@ -873,7 +873,7 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 												scan.options['MSMSresolution'],
 												deltaRes = scan.options['MSMSresolutionDelta'],
 												minMass = scan.options['MSMSmassrange'][0],
-												bintolerance=scan.options['MSMStolerance'],  res_by_fullbin=True)
+												bintolerance=scan.options['MSMStolerance'],  res_by_fullbin=scan.options['alignmentMethodMSMS'] == 'calctol')
 
 					# check again with this debugging output!
 					#if cluster:
@@ -1978,7 +1978,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	for count in range(numLoops):
 
 		current = 0
-		binres = binres_og
+		binres = binres_og if res_by_fullbin else None
 
 		# stop if the end of the list is reached
 		if not current < (len(listResult[count]) - 1):
@@ -2008,14 +2008,14 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 					if tmp == 0.0:
 						tmp = tolerance.tolerance
 
-					res_og = (listResult[count][current][0] / tmp)
+					res = (listResult[count][current][0] / tmp)
 
 			else:
 				raise LipidXException("The given tolerance is not of TypeTolerance()")
 			
 
 			# override resolution
-			if bintolerance and not res_by_fullbin:
+			if res_by_steps: #NOTE this is not used only here as reference implementation
 				current_m = listResult[count][current + index][0]
 				if current_m >= res_steps[0][0]:
 					res = res_steps[0][1]
@@ -2036,7 +2036,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 				res = binres #* (bin[0][0] / bin_at_mass) to reduce  just based on mass
  
 			while abs(listResult[count][current + index][0] - bin[0][0]) < res:
-				if binsize > 1 and res_by_fullbin and len(listResult[count][current + index][1]) >= binsize * 0.95: # there is more than one bin (its just a merge) and the element is not already full
+				if res_by_fullbin and binsize > 1 and res_by_fullbin and len(listResult[count][current + index][1]) >= binsize * 0.95: # there is more than one bin (its just a merge) and the element is not already full
 					break # bin is already full
 
 				bin.append(listResult[count][current + index])
@@ -2134,7 +2134,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 			for sample in listSamples:
 				if sample in clusterToMerge:
 					if len(clusterToMerge[sample]) > 1: # merge only, if there is more than one entry
-						cluster[sample] = merge(sample, clusterToMerge[sample], linearAlignment, mergeTolerance, mergeDeltaRes, bintolerance = bintolerance, res_by_fullbin=True)
+						cluster[sample] = merge(sample, clusterToMerge[sample], linearAlignment, mergeTolerance, mergeDeltaRes, bintolerance = bintolerance, res_by_fullbin=res_by_fullbin)
 					else:
 						cluster[sample] = clusterToMerge[sample][0]
 
@@ -2742,7 +2742,7 @@ def heuristicAlignment(listSamples, dictSamples, tolerance,
 
 	return listMSSpec
 
-def mergeListMsms(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes, bintolerance = None, res_by_fullbin=True):
+def mergeListMsms(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes, bintolerance = None, res_by_fullbin=False):
 	'''Merge several MS/MS scans. The specEntries have the precursor mass and
 	the MS/MS lists in their .content attribute.
 
@@ -2813,8 +2813,6 @@ def mergeListMsms(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes,
 	from . import readSpectra
 	fadi_percentageMSMS = readSpectra.fadi_percentageMSMS
 	if dictSpecEntries['one'] != []:
-		if align != linearAlignment:
-			raise NotImplementedError('This filtering has only been implemented for linear alignment, for heuristic please contact FAM')
 
 		listClusters = align(['one'], dictSpecEntries, mergeTolerance,
 				intensityWeightedAvg = True, merge = mergeSumIntensity,
