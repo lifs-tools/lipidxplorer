@@ -372,13 +372,13 @@ class Options:
                 raise LipidXException("Min occupation setting for MS/MS should be 0 >= 1.")
 
         if not self.isEmpty('alignmentMethodMS'):
-            if not self.options['alignmentMethodMS'] in ['linear', 'heuristic']:
+            if not self.options['alignmentMethodMS'] in ['linear', 'calctol']:
                 raise LipidXException("The alignment method for MS is not set properly")
         if not self.isEmpty('alignmentMethodMSMS'):
-            if not self.options['alignmentMethodMSMS'] in ['linear', 'heuristic']:
+            if not self.options['alignmentMethodMSMS'] in ['linear', 'calctol']:
                 raise LipidXException("The alignment method for MS/MS is not set properly")
         if not self.options['scanAveragingMethod'] is None and not self.options['scanAveragingMethod'] == '':
-            if not self.options['scanAveragingMethod'] in ['linear', 'heuristic']:
+            if not self.options['scanAveragingMethod'] in ['linear', 'calctol']:
                 raise LipidXException("The alignment method for the scan averaging is not set properly")
 
 
