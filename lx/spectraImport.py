@@ -477,11 +477,11 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 	### align the spectra for the MasterScan ###
 
-	if alignmentMS == "linear":
+	if alignmentMS in ["linear", 'calctol']:
 		mkSurveyLinear(scan, [-1,1],
 					numLoops = options['loopNr'],
 					deltaRes = scan.options['MSresolutionDelta'],
-					minocc = scan.options['MSminOccupation'], bin_res=True)
+					minocc = scan.options['MSminOccupation'], bin_res=scan.options['alignmentMethodMS']== 'calctol')
 
 	### aling the fragment spectra ###
 
@@ -497,10 +497,10 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	#	 given selectionWindow into account.
 	if importMSMS:
 		reportout("Aligning MS/MS spectra %s\n" % alignmentMSMS)
-		if alignmentMSMS == "linear":
+		if alignmentMSMS in ["linear",'calctol']:
 			mkMSMSEntriesLinear_new(scan, listPolarity,
 								numLoops = options['loopNr'],
-								isPIS = options['pisSpectra'], bin_res=True)
+								isPIS = options['pisSpectra'], bin_res=options['alignmentMethodMSMS']== 'calctol')
 
 
 	for sample in scan.listSamples:

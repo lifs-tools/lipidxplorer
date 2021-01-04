@@ -255,13 +255,15 @@ def add_Sample(
 		# as per fadi this is called on ms1
 		fadi_denominator = count
 		fadi_percentage = options['MSfilter']
+
+		assert kwargs['scanAveraging'] == options['scanAveragingMethod']
 		listClusters = linearAlignment(list(dictSpecEntry.keys()),
 							dictSpecEntry,
 							options['MSresolution'],
 							merge = mergeSumIntensity,
 							mergeTolerance = options['MSresolution'],
 							mergeDeltaRes = options['MSresolutionDelta'], fadi_denominator= fadi_denominator, fadi_percentage = fadi_percentage, 
-							bintolerance = options['MStolerance'], res_by_fullbin = True)
+							bintolerance = options['MStolerance'], res_by_fullbin = options['scanAveragingMethod'] == 'calctol')
 
 		# free memory
 		del dictSpecEntry
@@ -1027,7 +1029,7 @@ directory>, <the resolution of the mass spec machine>
 			avgBasePeakIntensity += ms1scan_entry['max_it']
 			count += 1
 
-		if scanAveraging == 'linear':
+		if scanAveraging in ['linear','calctol'] :
 			fadi_denominator = count
 			fadi_percentage = options['MSfilter']
 			listClusters = linearAlignment(list(dictSpecEntry.keys()),
@@ -1036,7 +1038,7 @@ directory>, <the resolution of the mass spec machine>
 								merge = mergeSumIntensity,
 								mergeTolerance = options['MSresolution'],
 								mergeDeltaRes = options['MSresolutionDelta'],
-								fadi_denominator = fadi_denominator, fadi_percentage=fadi_percentage)
+								fadi_denominator = fadi_denominator, fadi_percentage=fadi_percentage )
 
 		elif scanAveraging == 'heuristic':
 			listClusters = heuristicAlignment(list(dictSpecEntry.keys()),
