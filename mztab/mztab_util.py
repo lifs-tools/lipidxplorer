@@ -98,11 +98,11 @@ def as_mztab(result):
     txt = ''
     txt += make_MTD1('_'.join(result.dictQuery.keys()))
     for idx, k in enumerate(result.dictQuery, start=1):
-        txt += make_MTD2(result.dictQuery[k], idx)
-        txt += make_MTD3(result.dictQuery[k], idx)
+        txt += make_MTD2(result.dictQuery[k], idx) if result.dictQuery[k].sc else ''
+        txt += make_MTD3(result.dictQuery[k], idx) if result.dictQuery[k].sc else ''
     txt += make_MTD4()
     for idx, k in enumerate(result.dictQuery, start=1):
-        txt += make_SMH1(result.dictQuery[k], idx)
+        txt += make_SMH1(result.dictQuery[k], idx) if result.dictQuery[k].sc else ''
 
     return txt
 
