@@ -789,6 +789,8 @@ class TypeResult:
 		listKeys = scan.listSamples
 		listSE = self.mfqlObj.sc.listSurveyEntry
 
+		listSE= sorted(listSE, key = lambda x: x.peakMean)
+
 		if Debug("isotopicCorrection"):
 			dbgstr  = "\n"
 			dbgstr += "\n - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
@@ -1712,6 +1714,9 @@ class TypeResult:
 
 		scan = self.mfqlObj.sc
 		listSE = self.mfqlObj.resultSC
+
+		listSE = sorted(listSE, key = lambda x: x.peakMean)
+
 		isotopicDistance = 1.0033
 		toleranceMS = self.mfqlObj.options['selectionWindow'] #scan.options['MSresolution']
 		toleranceMSMS = self.mfqlObj.options['MSMSresolution']
