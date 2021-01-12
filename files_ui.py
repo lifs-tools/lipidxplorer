@@ -8,6 +8,7 @@ import sys, os
 import glob, configparser, re, fnmatch
 
 import lximport, lxrun
+# from https://gitlab.isas.de/lifs/lipidxplorer-web/-/tree/master/lipidxplorer-linux-128/src/main/python
 
 #https://stackoverflow.com/questions/37265888/how-to-remove-a-section-from-an-ini-file-using-python-configparser
 def insensitive_glob(baseDir, pattern):
