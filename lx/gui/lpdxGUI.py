@@ -3245,6 +3245,9 @@ intensity."""))
 				project.options[e] = '0.123456' #TODO replace this dirty fix that avoids div by zero
 
 			project.options['scanAveragingMethod'] = 'calctol' # vs 'linear'
+			project.options['alignmentMethodMS'] = 'calctol'
+			project.options['alignmentMethodMSMS'] = 'calctol'
+
 		# test if all options are correct
 		#project.testOptions()
 
