@@ -1023,6 +1023,8 @@ class LpdxFrame(wx.Frame):
 		# lx or lo?
 		self.lipidxplorer = kwds['lipidxplorer']
 
+		self.lx_ver = None
+
 		# allow import of raw files?
 		self.rawimport = kwds['rawimport']
 
@@ -2837,9 +2839,11 @@ intensity."""))
 			self.text_ctrl_SettingsSection_occupationThr_msms]
 
 		if evt.GetString() == 'LX 1':
+			self.lx_ver = 'LX 1'
 			for e in elems:
 				e.Enable()
 		elif evt.GetString() == 'LX 2':
+			self.lx_ver = 'LX 2'
 			for e in elems:
 				e.Disable()
 			
@@ -3222,6 +3226,25 @@ intensity."""))
 		# get the options from GUI settings
 		project = self.readOptions()
 
+		if self.lx_ver == 'LX 2':
+			elems = ['MSresolution', #self.text_ctrl_SettingsSection_resolution_ms,
+			'MSMSresolution',# self.text_ctrl_SettingsSection_resolution_msms,
+			'MSresolutionDelta',# self.text_ctrl_SettingsSection_resDelta_ms,
+			'MSMSresolutionDelta',# self.text_ctrl_SettingsSection_resDelta_msms,
+			'MStolerance',# self.text_ctrl_SettingsSection_tolerance_ms,
+			'MSMStolerance',# self.text_ctrl_SettingsSection_tolerance_msms,
+			'selectionWindow',# self.text_ctrl_SettingsSection_selectionWindow,
+			'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
+			'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
+			'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
+			'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
+			]
+
+
+			for e in elems:
+				project.options[e] = 0
+
+			project.options['lx_ver']='LX 2'
 		# test if all options are correct
 		#project.testOptions()
 
