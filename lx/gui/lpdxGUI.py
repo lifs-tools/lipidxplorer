@@ -1547,6 +1547,10 @@ intensity."""))
 		self.button_Delete_LoadIniSection.SetMinSize((button1_small_w * 1.3, button1_small_h * 1.3))
 		self.button_SaveAs_LoadIniSection.SetMinSize((button1_small_w * 1.3, button1_small_h * 1.3))
 
+		self.choice_SettingsSection_lx_ver = wx.Choice(self.notebook_1_pane_5, -1, choices = ["LX 1", "LX 2"])
+		self.choice_SettingsSection_lx_ver.SetStringSelection("LX 1")
+		# self.choice_SettingsSection_lx_ver.SetMinSize((button1_small_w, button1_small_h * 1.3))
+
 		# neither textCtrl nor label stuff
 		self.choice_SettingsSection_tolerance_ms = wx.Choice(self.notebook_1_pane_5, -1, choices = ["ppm", "Da"])
 		self.choice_SettingsSection_tolerance_ms.SetStringSelection("ppm")
@@ -1727,6 +1731,8 @@ intensity."""))
 		self.Bind(wx.EVT_CHOICE, self.OnChoice_Tolerance_MSMS, self.choice_SettingsSection_tolerance_msms)
 		self.Bind(wx.EVT_CHOICE, self.OnChoice_Threshold_MS, self.choice_SettingsSection_threshold_ms)
 		self.Bind(wx.EVT_CHOICE, self.OnChoice_Threshold_MSMS, self.choice_SettingsSection_threshold_msms)
+
+		self.Bind(wx.EVT_CHOICE, self.OnChoice_lx_ver, self.choice_SettingsSection_lx_ver)
 
 		# run panel buttons
 		self.Bind(wx.EVT_LISTBOX_DCLICK, self.OnOpenFile, self.list_box_1)
@@ -2815,6 +2821,28 @@ intensity."""))
 			self.store_SettingsSection_threshold_msms = 'relative'
 		elif evt.GetString() == 'absolute':
 			self.store_SettingsSection_threshold_msms = 'absolute'
+		self.OnSettingsChange()
+
+	def OnChoice_lx_ver(self, evt):
+		elems = [self.text_ctrl_SettingsSection_resolution_ms,
+			self.text_ctrl_SettingsSection_resolution_msms,
+			self.text_ctrl_SettingsSection_resDelta_ms,
+			self.text_ctrl_SettingsSection_resDelta_msms,
+			self.text_ctrl_SettingsSection_tolerance_ms,
+			self.text_ctrl_SettingsSection_tolerance_msms,
+			self.text_ctrl_SettingsSection_selectionWindow,
+			self.text_ctrl_SettingsSection_threshold_ms,
+			self.text_ctrl_SettingsSection_threshold_msms,
+			self.text_ctrl_SettingsSection_occupationThr_ms,
+			self.text_ctrl_SettingsSection_occupationThr_msms]
+
+		if evt.GetString() == 'LX 1':
+			for e in elems:
+				e.Enable()
+		elif evt.GetString() == 'LX 2':
+			for e in elems:
+				e.Disable()
+			
 		self.OnSettingsChange()
 
 
@@ -4860,6 +4888,7 @@ intensity."""))
 		box_sizer_SettingsSection_buttons.Add(self.button_Save_LoadIniSection)
 		box_sizer_SettingsSection_buttons.Add(self.button_SaveAs_LoadIniSection)
 		box_sizer_SettingsSection_buttons.Add(self.button_Delete_LoadIniSection)
+		box_sizer_SettingsSection_buttons.Add(self.choice_SettingsSection_lx_ver)
 		grid_sizer_19_SettingsSection_gridBag.Add(box_sizer_SettingsSection_buttons, (0,6), (2,3), 0, 0)
 		#grid_sizer_19_SettingsSection_gridBag.Add(self.button_SaveAs_LoadIniSection, (0,6), wx.DefaultSpan, 0, 0)
 		#grid_sizer_19_SettingsSection_gridBag.Add(self.button_Save_LoadIniSection, (0,7), wx.DefaultSpan, 0, 0)
