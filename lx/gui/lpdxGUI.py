@@ -3242,9 +3242,9 @@ intensity."""))
 
 
 			for e in elems:
-				project.options[e] = 0
+				project.options[e] = '0.123456' #TODO replace this dirty fix that avoids div by zero
 
-			project.options['lx_ver']='LX 2'
+			project.options['scanAveragingMethod'] = 'calctol' # vs 'linear'
 		# test if all options are correct
 		#project.testOptions()
 
