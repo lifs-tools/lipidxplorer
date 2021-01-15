@@ -457,7 +457,8 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 			# binsize = len(sc.dictSamples)
 			binres_og = binres
 			newres1 = None
-
+			
+			sc.options['calcSelectionWindow'] = max(sc.options.get('calcSelectionWindow',0),m * 2) # average distance between peaks
 
 		# sort precursor masses by intensity
 		#listMSmassIntensity = sorted(listMSmass, cmp = sortPrecursorMasses)
@@ -719,7 +720,11 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 	numLoops = 3
 
 	msmsThreshold = scan.options['MSMSthreshold']
-	if not isPIS:
+	if bin_res:
+		tolerance = TypeTolerance('Da', scan.options['calcSelectionWindow'])
+		window = scan.options['calcSelectionWindow'] / 2
+		deltaRes = None
+	elif not isPIS:
 		tolerance = TypeTolerance('Da', scan.options['selectionWindow'])
 		#tolerance = scan.options['MSresolution']
 		window = scan.options['selectionWindow'] / 2
@@ -728,7 +733,7 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 		tolerance = scan.options['MSMSresolution']
 		deltaRes = scan.options['MSMSresolutionDelta']
 		window = scan.options['MSMSresolution']
-
+	
 	listPolarity = []
 	for k in scan.listSamples:
 		if scan.dictSamples[k].polarity not in listPolarity:
@@ -2055,6 +2060,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 					binres = newres
 					if newres1 is None:
 						newres1 = newres
+						# dont set calcselectionwindow here because its very tight
 					# bin_at_mass = bin[0][0] to reduce  just based on mass
 
 			# go for intensity weighted average and non-weighted avg
