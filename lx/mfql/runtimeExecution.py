@@ -832,7 +832,10 @@ class TypeResult:
 			#else:
 			#	res = listSE[entry].precurmass / scan.options['MSresolution'].tolerance
 
-				res = self.mfqlObj.options['MSresolution'].getTinDA(listSE[entry].precurmass)
+				if self.mfqlObj.sc.options['alignmentMethodMS'] == 'calctol':
+					res = listSE[entry].massWindow * 20
+				else:
+					res = self.mfqlObj.options['MSresolution'].getTinDA(listSE[entry].precurmass)
 
 				isotopicDistance = 1.0033
 				chargePrecurmassSF = {}
@@ -1718,8 +1721,13 @@ class TypeResult:
 		listSE = sorted(listSE, key = lambda x: x.peakMean)
 
 		isotopicDistance = 1.0033
-		toleranceMS = self.mfqlObj.options['selectionWindow'] #scan.options['MSresolution']
-		toleranceMSMS = self.mfqlObj.options['MSMSresolution']
+
+		if self.mfqlObj.sc.options['alignmentMethodMSMS'] == 'calctol':
+					toleranceMS = self.mfqlObj.sc.options['calcSelectionWindow']
+					toleranceMSMS = None # not used
+		else:
+			toleranceMS = self.mfqlObj.options['selectionWindow'] #scan.options['MSresolution']
+			toleranceMSMS = self.mfqlObj.options['MSMSresolution']
 
 		#for key in dictPrePIS:
 		for entry in range(len(listSE) - 1):
@@ -2012,7 +2020,10 @@ class TypeResult:
 
 							while index + next < (len(listMSMS)):
 
-								res = toleranceMSMS.getTinDA(M.mass)
+								if self.mfqlObj.sc.options['alignmentMethodMSMS'] == 'calctol':
+									res = M.binsize
+								else:
+									res = toleranceMSMS.getTinDA(M.mass)
 								monoisotopicPeak = M.mass
 								isotopicPeak = listMSMS[index + next].mass
 								delta = isotopicPeak - monoisotopicPeak
@@ -2123,7 +2134,10 @@ class TypeResult:
 
 							while index + next < (len(listMSMS)):
 
-								res = toleranceMSMS.getTinDA(M.mass)
+								if self.mfqlObj.sc.options['alignmentMethodMSMS'] == 'calctol':
+									res = M.binsize
+								else:
+									res = toleranceMSMS.getTinDA(M.mass)
 								monoisotopicPeak = M.mass#listMSMS[index].mass
 								isotopicPeak = listMSMS[index + next].mass
 								delta = isotopicPeak - monoisotopicPeak
@@ -2277,7 +2291,10 @@ class TypeResult:
 
 							while index + next < (len(listMSMS)):
 
-								res = toleranceMSMS.getTinDA(M.mass)
+								if self.mfqlObj.sc.options['alignmentMethodMSMS'] == 'calctol':
+									res = M.binsize
+								else:
+									res = toleranceMSMS.getTinDA(M.mass)
 								monoisotopicPeak = M.mass
 								isotopicPeak = listMSMS[index + next].mass
 
@@ -2470,7 +2487,11 @@ class TypeResult:
 
 							while index + next < (len(listMSMS)):
 
-								res = toleranceMSMS.getTinDA(M.mass)
+								if self.mfqlObj.sc.options['alignmentMethodMSMS'] == 'calctol':
+									res = M.binsize
+								else:
+									res = toleranceMSMS.getTinDA(M.mass)
+
 								monoisotopicPeak = M.mass
 								isotopicPeak = listMSMS[index + next].mass
 
