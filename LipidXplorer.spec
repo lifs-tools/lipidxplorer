@@ -9,12 +9,6 @@ if os.path.isdir(DISTPATH+"/lx/"):
 
 shutil.copytree(assetsDir, DISTPATH+"/lx/stuff/")
 
-# copy mfql to dist
-mfqlDir = "mfql/"
-if os.path.isdir(DISTPATH+"/mfql/"):
-    shutil.rmtree(DISTPATH+"/mfql/")
-
-shutil.copytree(mfqlDir, DISTPATH+"/mfql/")
 
 shutil.copy("README.md", DISTPATH+"/")
 shutil.copy("CHANGELOG", DISTPATH+"/")

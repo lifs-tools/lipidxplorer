@@ -6,3 +6,7 @@ lx2/parser.out
 lx2/parsetab.py
 lx2/parser.out
 lx2/parsetab.py
+build
+dist
+dist.zip
+
