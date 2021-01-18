@@ -66,6 +66,10 @@ def files_UI(path, calctol= False ):
         config['project']['alignmentMethodMS'] = 'calctol'
         config['project']['alignmentMethodMSMS'] = 'calctol'
         config['project']['scanAveragingMethod'] = 'calctol'
+        config['project']['optionalMStolerance'] = '5'
+        config['project']['optionalMStoleranceType'] = 'ppm'
+        config['project']['optionalMSMStolerance'] = '5'
+        config['project']['optionalMSMStoleranceType'] = 'ppm'
 
 
     # clear mfql section if there is one
