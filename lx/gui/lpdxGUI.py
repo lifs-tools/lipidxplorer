@@ -2836,7 +2836,9 @@ intensity."""))
 			self.text_ctrl_SettingsSection_threshold_ms,
 			self.text_ctrl_SettingsSection_threshold_msms,
 			self.text_ctrl_SettingsSection_occupationThr_ms,
-			self.text_ctrl_SettingsSection_occupationThr_msms]
+			self.text_ctrl_SettingsSection_occupationThr_msms,
+			self.text_ctrl_RunOptions_MS,
+			self.text_ctrl_RunOptions_MSMS]
 
 		if evt.GetString() == 'LX 1':
 			self.lx_ver = 'LX 1'
@@ -4866,7 +4868,7 @@ intensity."""))
 		grid_sizer_2_RunCard.Add(grid_sizer_21_textBrowse_V, 0, 0, 0)
 
 		box_sizer_IniSection_V = wx.BoxSizer(wx.VERTICAL)
-		box_sizer_IniSection_V.Add(wx.Size(20,210))
+		box_sizer_IniSection_V.Add(wx.Size(20,220))
 		grid_sizer_2_RunCard.Add(box_sizer_IniSection_V, 0, wx.EXPAND, 0)
 
 		self.notebook_1_pane_2.SetSizer(grid_sizer_2_RunCard_0)
