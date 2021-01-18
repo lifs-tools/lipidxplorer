@@ -22,7 +22,14 @@ def insensitive_glob(baseDir, pattern):
 #    return glob.glob(''.join(map(either, pattern)))
 
 
-def files_UI(path):
+def files_UI(path, calctol= False ):
+    """generates the lxp project file for a given path
+
+    Args:
+        path (str): directory where to find the mfql and mzml files
+        calctol (bool, optional): Automatically calculate the tolerences based on the peak data, simulates LX 2 funcitonality. Defaults to False.
+
+    """
     # get lxp file
 
     LXP_files = insensitive_glob(path,'.lxp')
@@ -35,7 +42,7 @@ def files_UI(path):
     if len(MFQL_files) == 0:
         raise IOError(' there must at least one mfql file')
 
-    MZXML_files = insensitive_glob(path, '.mzxml')
+    # MZXML_files = insensitive_glob(path, '.mzxml')
     MZML_files = insensitive_glob(path, '.mzml')
     if len(MZXML_files) == 0 and len(MZML_files) == 0:
         raise IOError(' there must at least one mzxml or mzml file')
@@ -54,6 +61,12 @@ def files_UI(path):
     config['project']['masterscanimport'] = os.path.join(basepath, 'session.sc')
     config['project']['ini'] = os.path.join(basepath, 'ImportSettings.ini')
     config['project']['resultfile'] = os.path.join(basepath, 'session-out.csv')
+
+    if calctol:
+        config['project']['alignmentMethodMS'] = 'calctol'
+        config['project']['alignmentMethodMSMS'] = 'calctol'
+        config['project']['scanAveragingMethod'] = 'calctol'
+
 
     # clear mfql section if there is one
     config.remove_section('mfql')
