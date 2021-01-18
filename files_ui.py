@@ -66,10 +66,25 @@ def files_UI(path, calctol= False ):
         config['project']['alignmentMethodMS'] = 'calctol'
         config['project']['alignmentMethodMSMS'] = 'calctol'
         config['project']['scanAveragingMethod'] = 'calctol'
+
         config['project']['optionalMStolerance'] = '5'
         config['project']['optionalMStoleranceType'] = 'ppm'
         config['project']['optionalMSMStolerance'] = '5'
         config['project']['optionalMSMStoleranceType'] = 'ppm'
+
+        # will ignore the following settings: but still read because they are needed for validation
+        # ['MSresolution', #self.text_ctrl_SettingsSection_resolution_ms,
+		# 	'MSMSresolution',# self.text_ctrl_SettingsSection_resolution_msms,
+		# 	'MSresolutionDelta',# self.text_ctrl_SettingsSection_resDelta_ms,
+		# 	'MSMSresolutionDelta',# self.text_ctrl_SettingsSection_resDelta_msms,
+		# 	'MStolerance',# self.text_ctrl_SettingsSection_tolerance_ms,
+		# 	'MSMStolerance',# self.text_ctrl_SettingsSection_tolerance_msms,
+		# 	'selectionWindow',# self.text_ctrl_SettingsSection_selectionWindow,
+		# 	'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
+		# 	'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
+		# 	'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
+		# 	'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
+		# 	# ]
 
 
     # clear mfql section if there is one
