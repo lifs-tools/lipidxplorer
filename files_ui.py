@@ -12,10 +12,10 @@ import lximport, lxrun
 
 #https://stackoverflow.com/questions/37265888/how-to-remove-a-section-from-an-ini-file-using-python-configparser
 def insensitive_glob(baseDir, pattern):
-    print baseDir
-    print pattern
+    print(baseDir)
+    print(pattern)
     paths = [os.path.join(baseDir, f) for f in os.listdir(baseDir) if f.lower().endswith(pattern)]
-    print paths
+    print(paths)
     return paths
 #    def either(c):
 #        return '[%s%s]' % (c.lower(), c.upper()) if c.isalpha() else c
@@ -84,8 +84,7 @@ def files_UI(path, calctol= False ):
 		# 	'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
 		# 	'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
 		# 	'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
-		# 	# ]
-
+		# 	# ] update to p3 in https://gitlab.isas.de/lifs/lipidxplorer-web/-/blob/master/lipidxplorer-linux-13/src/main/python/files_ui.py
 
     # clear mfql section if there is one
     config.remove_section('mfql')
@@ -109,6 +108,6 @@ def files_UI(path, calctol= False ):
 
 if __name__ == '__main__':
     path  = ' '.join(sys.argv[1:])
-    print('path: {}'.format(path))
+    print(('path: {}'.format(path)))
 
     files_UI(path)
