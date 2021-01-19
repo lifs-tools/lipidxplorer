@@ -194,16 +194,21 @@ def lpdxImportCLI(projpath = None):
 	project.options['ini'] = "None"
 
 	# the settings come only from the command line (they overwrite existing options)
-	if cliOptions.masterScan is None:
+	if  projpath is not None:
+		project.options['masterScan'] = project.options['masterScanImport']
+	elif cliOptions.masterScan is None:
 		try:
 			project.options['masterScan'] = args[1]#cliOptions.masterScanFile
 		except IndexError:
 			print("ERROR: The masterscan file was not specified. Use the ", end=' ')
 			print("option -m")
 
-	for opt in list(cliOptions.__dict__.keys()):
-		if not cliOptions.__dict__[opt] is None:
-			project.options[opt] = cliOptions.__dict__[opt]
+	if  projpath is not None:
+		pass
+	else: #use command line options
+		for opt in list(cliOptions.__dict__.keys()):
+			if not cliOptions.__dict__[opt] is None:
+				project.options[opt] = cliOptions.__dict__[opt]
 
 	project.formatOptions()
 
@@ -217,8 +222,9 @@ def lpdxImportCLI(projpath = None):
 			print("{0:24} : {1:12}".format(k, str(options[k])))
 		except:
 			print("{0:24} : None".format(k))
-
-	if 'masterScan' in list(cliOptions.__dict__.keys()):
+	if  projpath is not None:
+		pass
+	elif 'masterScan' in list(cliOptions.__dict__.keys()):
 		options['masterScan'] = cliOptions.__dict__['masterScan']
 
 	### start import ###

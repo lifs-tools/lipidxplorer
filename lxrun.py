@@ -89,21 +89,19 @@ def lpdxImportCLI(projpath = None):
 	if cliOptions.prj is None and projpath is None:
 		if len(args) < 2:
 			raise LipidXException("Wrong number of arguments")
+	if cliOptions.prj is None and projpath is not None:
+		cliOptions.prj = projpath
 
 	options = {}
 	dictMFQL = {}
 	project = Project()
 	# the order of the following if-statements integrates prioraties
 
-
-	project.options['masterScan'] = args[0]
+	if projpath is None:
+		project.options['masterScan'] = args[0]
 		
-
 	# if the settings are comming from the project file
-	if projpath is not None:
-		project.load(projpath)
-		project.testOptions()
-	elif not cliOptions.prj is None:
+	if cliOptions.prj is not None:
 		project.load(cliOptions.prj)
 		project.testOptions()
 		#options = project.getOptions()
@@ -125,7 +123,7 @@ def lpdxImportCLI(projpath = None):
 
 
 	# optional option
-	if cliOptions.resultFile is None:
+	if cliOptions.resultFile is None and projpath is None:
 		try:
 			project.options['resultFile'] = args[1]
 		except IndexError:
@@ -144,7 +142,7 @@ def lpdxImportCLI(projpath = None):
 			project.options[opt] = opts.options[opt]
 
 	# the settings come only from the command line (they overwrite existing options)
-	if not cliOptions.dumpMasterScan is None:
+	if not cliOptions.dumpMasterScan is None and projpath is None:
 		project.options['dumpMasterScan'] = cliOptions.dumpMasterScan
 		project.options['dumpMasterScanFile'] = project.options['masterScan'].split('.')[0] + '-dump.csv'
 
@@ -174,7 +172,8 @@ def lpdxImportCLI(projpath = None):
 	options = project.getOptions()
 
 	# something is wrong with the result file, so I copy it again
-	options['resultFile'] = project.options['resultFile']
+	if project.options['resultFile']:
+		options['resultFile'] = project.options['resultFile']
 
 	# overwrite the masterScanImport if given at the CLI
 	#if 'masterScan' in cliOptions.__dict__.keys():

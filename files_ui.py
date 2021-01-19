@@ -22,7 +22,7 @@ def insensitive_glob(baseDir, pattern):
 #    return glob.glob(''.join(map(either, pattern)))
 
 
-def files_UI(path, calctol= False ):
+def files_UI(path, calctol= True ):
     """generates the lxp project file for a given path
 
     Args:
@@ -44,9 +44,8 @@ def files_UI(path, calctol= False ):
 
     # MZXML_files = insensitive_glob(path, '.mzxml')
     MZML_files = insensitive_glob(path, '.mzml')
-    if len(MZXML_files) == 0 and len(MZML_files) == 0:
+    if len(MZML_files) == 0:
         raise IOError(' there must at least one mzxml or mzml file')
-
 
     # update lxp conten
 
@@ -110,4 +109,4 @@ if __name__ == '__main__':
     path  = ' '.join(sys.argv[1:])
     print(('path: {}'.format(path)))
 
-    files_UI(path)
+    files_UI(path, True)
