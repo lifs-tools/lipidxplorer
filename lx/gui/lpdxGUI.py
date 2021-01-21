@@ -3233,22 +3233,22 @@ intensity."""))
 
 		if self.lx_ver == 'LX 2':
 			# elements below will be ignored when using calctol
-			# elems = ['MSresolution', #self.text_ctrl_SettingsSection_resolution_ms,
-			# 'MSMSresolution',# self.text_ctrl_SettingsSection_resolution_msms,
-			# 'MSresolutionDelta',# self.text_ctrl_SettingsSection_resDelta_ms,
-			# 'MSMSresolutionDelta',# self.text_ctrl_SettingsSection_resDelta_msms,
-			# 'MStolerance',# self.text_ctrl_SettingsSection_tolerance_ms,
-			# 'MSMStolerance',# self.text_ctrl_SettingsSection_tolerance_msms,
-			# 'selectionWindow',# self.text_ctrl_SettingsSection_selectionWindow,
-			# 'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
-			# 'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
-			# 'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
-			# 'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
-			# ]
+			elems = ['MSresolution', #self.text_ctrl_SettingsSection_resolution_ms,
+			'MSMSresolution',# self.text_ctrl_SettingsSection_resolution_msms,
+			'MSresolutionDelta',# self.text_ctrl_SettingsSection_resDelta_ms,
+			'MSMSresolutionDelta',# self.text_ctrl_SettingsSection_resDelta_msms,
+			'MStolerance',# self.text_ctrl_SettingsSection_tolerance_ms,
+			'MSMStolerance',# self.text_ctrl_SettingsSection_tolerance_msms,
+			'selectionWindow',# self.text_ctrl_SettingsSection_selectionWindow,
+			'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
+			'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
+			'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
+			'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
+			]
 
 
-			# for e in elems:
-			# 	project.options[e] = '0.123456' #TODO replace this dirty fix that avoids div by zero
+			for e in elems:
+				project.options[e] = '0.123456' #TODO replace this dirty fix that avoids div by zero
 
 			project.options['scanAveragingMethod'] = 'calctol' # vs 'linear'
 			project.options['alignmentMethodMS'] = 'calctol'
