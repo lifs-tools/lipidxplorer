@@ -1038,6 +1038,7 @@ class LpdxFrame(wx.Frame):
 			self.optimized = False
 
 		# remove this key, because otherwise Frame.__init__() gives TypeError
+		kwds['optimized']=None
 		try:
 			del kwds['rawimport']
 			del kwds['lipidxplorer']

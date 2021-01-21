@@ -878,9 +878,9 @@ class MasterScan:
 			self.options = options
 
 		# for backwards compatibality
-		if 'MStolerance' not in self.options:
+		if self.options._data.get('MStolerance', None):
 			self.options['MStolerance'] = options['MSaccuracy']
-		if 'MSMStolerance' not in self.options:
+		if self.options._data.get('MSMStolerance', None):
 			self.options['MSMStolerance'] = options['MSMSaccuracy']
 
 		# init the occupation threshold variable
