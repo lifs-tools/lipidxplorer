@@ -64,17 +64,23 @@ def add_Sample(
 
 	# get time range and mass range
 	if options['timerange']:
+		if options['timerange'] == '(,)':
+			options['timerange'] = [0, float('inf')]
 		t1 = options['timerange'][0] / 60
 		t2 = options['timerange'][1] / 60
 		reportout("Limiting timerange from %f to %f (sec), %f to %f (min)" % (options['timerange'][0], options['timerange'][1], t1, t2))
 
+	if options['MSmassrange'] == '(,)':
+			options['MSmassrange'] = [0, float('inf')]
 	if options['pisSpectra']:
 		msm1 = options['MSMSmassrange'][0]
 		msm2 = options['MSMSmassrange'][1]
-	else:
+	else :
 		msm1 = options['MSmassrange'][0]
 		msm2 = options['MSmassrange'][1]
 
+	if options['MSMSmassrange'] == '(,)':
+			options['MSMSmassrange'] = [0, float('inf')]
 	if options['MSMSmassrange']:
 		msmsm1 = options['MSMSmassrange'][0]
 		msmsm2 = options['MSMSmassrange'][1]
