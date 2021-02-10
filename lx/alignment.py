@@ -1940,28 +1940,6 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	listResult = []
 	for i in range(numLoops + 1):
 		listResult.append([])
-	
-	if res_by_fullbin:
-		binsize = len(dictSamples)
-		key = next(iter(dictSamples))
-		sorted_mass = sorted((s.mass for s in dictSamples[key]), reverse=True)
-		up_to = binsize * 10 if binsize * 10 < len(sorted_mass) else -1
-		diffs = [sorted_mass[i]-sorted_mass[i+1] for i,_ in enumerate(sorted_mass[:up_to])] # hope to find at least one full bin here
-		diffs = [d for d in diffs if d > 0.0001 and d < 0.1]
-		s_diffs = sorted(diffs) # diffs are coorelated to the resolution
-		if binsize > 1:
-			binres = mean(s_diffs[:binsize]) * 2 if s_diffs else 0.0002 # get average diffs to avoid outliers and times 2 to make flexible
-		else:
-			binres = mean(s_diffs) * 2 if s_diffs else 0.0002
-		# mstolerance = bintolerance
-		# if mstolerance.kind == 'da':
-		# 	binres = mstolerance.da * 2
-		# elif mstolerance.kind == 'ppm':
-		# 	binres = sorted_mass[0] /(100000 / mstolerance.ppm)
-		# 	binres = binres * 2
-		
-		binres_og = binres
-		newres1=None
 
 	if res_by_steps and not res_by_fullbin:
 		res_steps = getResSteps(dictSamples, bintolerance)
@@ -1979,6 +1957,26 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	listResult[0].sort()
 	if res_by_fullbin:
 		listResult[0] = list(reversed(listResult[0]))
+
+		sorted_mass = [v[0] for v in listResult[0]]
+		binsize = len(dictSamples)
+		up_to = binsize * 10 if binsize * 10 < len(sorted_mass) else -1
+		diffs = [sorted_mass[i]-sorted_mass[i+1] for i,_ in enumerate(sorted_mass[:up_to])] # hope to find at least one full bin here
+		diffs = [d for d in diffs if d > 0.0001 and d < 0.1]
+		s_diffs = sorted(diffs) # diffs are coorelated to the resolution
+		if binsize > 1 :
+			binres = mean(s_diffs[:binsize]) * 2 if s_diffs else 0.0002 # get average diffs to avoid outliers and times 2 to make flexible
+		else:
+			binres = s_diffs[0] * 0.5 if s_diffs[0] > 0.0002 else 0.0002
+		# mstolerance = bintolerance
+		# if mstolerance.kind == 'da':
+		# 	binres = mstolerance.da * 2
+		# elif mstolerance.kind == 'ppm':
+		# 	binres = sorted_mass[0] /(100000 / mstolerance.ppm)
+		# 	binres = binres * 2
+		
+		binres_og = binres
+		newres1=None
 	
 	for count in range(numLoops):
 
