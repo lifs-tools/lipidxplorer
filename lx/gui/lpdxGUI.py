@@ -3250,6 +3250,11 @@ intensity."""))
 			for e in elems:
 				project.options[e] = '0.123456' #TODO replace this dirty fix that avoids div by zero
 
+			project.options['optionalMStolerance'] = 20 
+			project.options['optionalMSMStolerance'] = 20
+			project.options['optionalMStoleranceType'] = 'ppm'
+			project.options['optionalMSMStoleranceType'] = 'ppm'
+
 			project.options['scanAveragingMethod'] = 'calctol' # vs 'linear'
 			project.options['alignmentMethodMS'] = 'calctol'
 			project.options['alignmentMethodMSMS'] = 'calctol'
