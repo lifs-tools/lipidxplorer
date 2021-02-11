@@ -4002,6 +4002,17 @@ intensity."""))
 		project = self.readOptions()
 		#project = Options()
 
+		if self.lx_ver == 'LX 2':
+
+			project.options['optionalMStolerance'] = '20' 
+			project.options['optionalMSMStolerance'] = '20'
+			project.options['optionalMStoleranceType'] = 'ppm'
+			project.options['optionalMSMStoleranceType'] = 'ppm'
+
+			project.options['scanAveragingMethod'] = 'calctol' # vs 'linear'
+			project.options['alignmentMethodMS'] = 'calctol'
+			project.options['alignmentMethodMSMS'] = 'calctol'
+
 		try:
 
 			## test if all options are correct
