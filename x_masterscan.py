@@ -36,10 +36,24 @@ def  compareMasterScans(created, reference):
     return same
 
 if __name__ == "__main__":
-    proy = r'test_resources\small_test\small_test-project.lxp'
-    options = read_options(proy)
-    masterscan = make_masterscan(options)
-    masterscan.dump(options['dumpMasterScanFile'])
-    reference  = loadSC(r'test_resources\small_test\small_test_LX12.sc')
-    same = compareMasterScans(masterscan, reference)
-    print(f'are same {same}')
+    # proy = r'test_resources\small_test\small_test-project.lxp'
+    # options = read_options(proy)
+    # masterscan = make_masterscan(options)
+    # masterscan.dump(options['dumpMasterScanFile'])
+
+    reference1  = loadSC(r'd:\ownCloud\LX 2.0\kai_compare_lx1_12_13\LX1-2_PC_test_MS1\LX1-2_PC_test_MS1.sc')
+    # reference1.dump(r'd:\ownCloud\LX 2.0\kai_compare_lx1_12_13\LX1-2_PC_test_MS1\LX1-2_PC_test_MS1-dump.csv')
+    interesting1 = [e for e in reference1.listSurveyEntry if e.peakMean > 508.26 and e.peakMean < 508.269]
+    del reference1
+    for e in interesting1: print(e)
+    print('****')
+    reference2  = loadSC(r'd:\ownCloud\LX 2.0\kai_compare_lx1_12_13\LX2_PC_test_MS1\LX2_PC_test_MS1.sc')
+    # reference2.dump(r'd:\ownCloud\LX 2.0\kai_compare_lx1_12_13\LX2_PC_test_MS1\LX2_PC_test_MS1-dump.csv')
+    interesting2 = [e for e in reference2.listSurveyEntry if e.peakMean > 508. and e.peakMean < 508.9]
+    del reference2
+    for e in interesting2: print(e)
+    # same = compareMasterScans(masterscan, reference)
+    print(f'are same ')
+# interesting2[3] has the two peaks , in lx1 there is only one peak
+#/-/ . 508.2625 |           0        13031            0            0            0            0            0        31119            0            0            0            0            0            0            0            0   QP: 0.0032 Mean: 508.2625 Median: 508.2625 V(X): 0.0000 E(X): 0.0016 []
+#/-/ . 508.2643 |           0            0            0            0            0            0            0        31119            0            0            0            0            0            0            0            0   QP: 0.0000 Mean: 508.2643 Median: 508.2643 V(X): 0.0000 E(X): 0.0000 []
