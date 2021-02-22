@@ -89,17 +89,32 @@ def frecal(x, listRecal, resolution):
 					if listRecal[i][0] <= x and x <= listRecal[i + 1][0]:
 						return (listRecal[i + 1][1] - listRecal[i][1]) / (listRecal[i + 1][0] - listRecal[i][0]) * (x - listRecal[i][0]) + listRecal[i][1]
 
-def recalibrateMS(sc, listRecalibration):
+def calc_tol(listPrecurmass):
+	l = sorted((s.precurmass for s in listPrecurmass))
+	d = [d1-d2 for d1,d2 in zip(l[1:],l[:-1])]
+	if not d:
+		d.append(0.0001) # in case there are no values
+	md = min(d) 
+	return l[0]/md
+
+def recalibrateMS(sc, listRecalibration, isCalctol = False):
 
 	# generate calibration
 	lRecalTable = []
 
 	if listRecalibration and len(listRecalibration) > 0:
 		for key in sc.listSamples:
+			
 			lRecalTable = getCalibrationPoints(listRecalibration, sc.dictSamples[key].listPrecurmass, sc.options['MSresolution'])
 			lRecalTable = getCalibrationPoints(listRecalibration, sc.dictSamples[key].listPrecurmass, sc.options['MStolerance'])
 
-			if lRecalTable != []:
+			MStolerance = sc.options['MStolerance']
+			if isCalctol:
+				MStolerance.tolerance = calc_tol(sc.dictSamples[key].listPrecurmass) 
+				lRecalTable = getCalibrationPoints(listRecalibration, sc.dictSamples[key].listPrecurmass, MStolerance)
+
+
+			if lRecalTable:
 				for entry in sc.dictSamples[key].listPrecurmass:
 					delta = frecal(entry.precurmass, lRecalTable, sc.options['MSresolution'])
 					delta = frecal(entry.precurmass, lRecalTable, sc.options['MStolerance'])
@@ -110,7 +125,16 @@ def recalibrateMS(sc, listRecalibration):
 	else:
 		return []
 
-def recalibrateMSMS(sc,  listRecalibrationMSMS, listRecalibrationMS = None):
+def calc_tol_ms2(entries):
+	l = sorted((s[0] for s in entries))
+	d = [d1-d2 for d1,d2 in zip(l[1:],l[:-1])]
+	if not d:
+		d.append(0.0001) # in case there are no values
+	md = min(d) 
+
+	return l[0]/md
+
+def recalibrateMSMS(sc,  listRecalibrationMSMS, isCalctol, listRecalibrationMS = None):
 
 	# generate calibration table
 	lRecalTableMS = []
@@ -122,20 +146,33 @@ def recalibrateMSMS(sc,  listRecalibrationMSMS, listRecalibrationMS = None):
 			if listRecalibrationMS and len(listRecalibrationMS) > 0:
 				lRecalTableMS = getCalibrationPoints(listRecalibrationMS, sc.dictSamples[key].listPrecurmass, sc.options['MSresolution'])
 				lRecalTableMS = getCalibrationPoints(listRecalibrationMS, sc.dictSamples[key].listPrecurmass, sc.options['MStolerance'])
+			
+			MStolerance = sc.options['MStolerance']
+			if isCalctol:
+				MStolerance.tolerance = calc_tol(sc.dictSamples[key].listPrecurmass)
+				lRecalTableMS = getCalibrationPoints(listRecalibrationMS, sc.dictSamples[key].listPrecurmass, MStolerance)
 
 			for entry in sc.dictSamples[key].listMsms:
 
 				lRecalTableMSMS = getCalibrationPointsMSMS(listRecalibrationMSMS, entry.entries, sc.options['MSMSresolution'])
 				lRecalTableMSMS = getCalibrationPointsMSMS(listRecalibrationMSMS, entry.entries, sc.options['MSMStolerance'])
-				if lRecalTableMSMS != []:
+
+				MSMStolerance = sc.options['MSMStolerance']
+				if isCalctol:
+					MSMStolerance.tolerance = calc_tol_ms2(entry.entries)
+					MSMStolerance.tolerance = min(MSMStolerance.tolerance, MStolerance.tolerance)
+					lRecalTableMSMS = getCalibrationPointsMSMS(listRecalibrationMSMS, entry.entries, MSMStolerance)
+
+
+				if lRecalTableMSMS:
 					for index in range(len(entry.entries)):
-						delta = frecal(entry.entries[index][0], lRecalTableMSMS, sc.options['MSMSresolution'])
-						delta = frecal(entry.entries[index][0], lRecalTableMSMS, sc.options['MSMStolerance'])
+						delta = frecal(entry.entries[index][0], lRecalTableMSMS, MSMStolerance)
+						delta = frecal(entry.entries[index][0], lRecalTableMSMS, MSMStolerance)
 						entry.entries[index] = [entry.entries[index][0] - delta, entry.entries[index][1]]
-				elif lRecalTableMS != []:
+				elif lRecalTableMS:
 					for index in range(len(entry.entries)):
-						delta = frecal(entry.entries[index].precurmass, lRecalTableMS, sc.options['MSresolution'])
-						delta = frecal(entry.entries[index].precurmass, lRecalTableMS, sc.options['MStolerance'])
+						delta = frecal(entry.entries[index].precurmass, lRecalTableMS, MStolerance)
+						delta = frecal(entry.entries[index].precurmass, lRecalTableMS, MStolerance)
 						entry.entries[index] = (entry.entries[index][0] - delta, entry.entries[index][1])
 
 

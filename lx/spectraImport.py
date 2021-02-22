@@ -463,14 +463,16 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	else:
 		listPolarity = unique(listPolarity)
 
+	
+
 	# recalibrate MS spectra
 	if not scan.options.isEmpty('MScalibration'):
-		recalibrateMS(scan, scan.options['MScalibration'])
+		recalibrateMS(scan, scan.options['MScalibration'], scan.options['alignmentMethodMS']== 'calctol')
 	if not scan.options.isEmpty('MSMScalibration') and (scan.options['MSMScalibration']):
-		recalibrateMSMS(scan, scan.options['MSMScalibration'])
+		recalibrateMSMS(scan, scan.options['MSMScalibration'], isCalctol = scan.options['alignmentMethodMS']== 'calctol')
 	elif not scan.options.isEmpty('MScalibration') and scan.options.isEmpty('MSMScalibration'):
 		print('recalibrating msms with ms calibration') # as requested by KS
-		recalibrateMSMS(scan, scan.options['MScalibration'])
+		recalibrateMSMS(scan, scan.options['MScalibration'], isCalctol = scan.options['alignmentMethodMS']== 'calctol')
 
 	# align MS spectra
 	print("Aligning MS spectra", alignmentMS)
