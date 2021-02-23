@@ -514,12 +514,12 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	for se in scan.listSurveyEntry:
 		se.sortAndIndedice()
 
-	ac = alignment_scores(scan.listSurveyEntry)
+	ac = alignment_ranking(scan.listSurveyEntry, 25)
+	print()
+	print('Top 25 suggested calibration masses')
 	for s in ac:
-		print()
-		print('Top 10 suggested calibration masses')
 		print(s)
-		print()
+	print()
 
 	if options['settingsPrefix']:
 		splitext = os.path.splitext(output)
@@ -531,7 +531,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 	return scan
 
-def alignment_scores(listSurveyEntry, count=10): # need a scoring function
+def alignment_ranking(listSurveyEntry, count=10): # need a scoring function
 	idx = [e.index for e in listSurveyEntry]
 	scan_ratio = [len(e.peaks) / len(e.dictScans)  for e in listSurveyEntry]
 	non0_avg_rel_i = []
