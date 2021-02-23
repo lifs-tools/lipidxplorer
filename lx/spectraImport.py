@@ -514,6 +514,13 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	for se in scan.listSurveyEntry:
 		se.sortAndIndedice()
 
+	ac = alignment_scores(scan.listSurveyEntry)
+	for s in ac:
+		print()
+		print('Top 10 suggested calibration masses')
+		print(s)
+		print()
+
 	if options['settingsPrefix']:
 		splitext = os.path.splitext(output)
 		output = splitext[0] + "-" + scan.setting + splitext[1]
@@ -523,6 +530,30 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		saveSC(scan, output)
 
 	return scan
+
+def alignment_scores(listSurveyEntry, count=10): # need a scoring function
+	idx = [e.index for e in listSurveyEntry]
+	scan_ratio = [len(e.peaks) / len(e.dictScans)  for e in listSurveyEntry]
+	non0_avg_rel_i = []
+	non0_avg_abs_i = []
+	for e in listSurveyEntry:
+		rel_i = []
+		abs_i = []
+		for k,v in e.dictBasePeakIntensity.items():
+			if e.dictIntensity[k] == 0: continue # ignore zero
+			rel_i.append(e.dictIntensity[k] /  v)
+			abs_i.append(e.dictIntensity[k])
+		non0_avg_rel_i.append(sum(rel_i)/len(rel_i))
+		non0_avg_abs_i.append(sum(abs_i)/len(rel_i))
+	vals = (idx, scan_ratio, non0_avg_rel_i, non0_avg_abs_i)
+	vals = list(zip(*vals))
+	vals = sorted(vals, key=lambda x:1/x[1] * 1/x[2])
+
+	res = []
+	for e in vals[:count]:
+		res.append(listSurveyEntry[e[0]])
+
+	return res
 
 def doImport_alt(options, scan_original, importDir, output, parent, listFiles, isTaken, isGroup, alignmentMS, alignmentMSMS, scanAvg, importMSMS = True):
 	'''Alternative import which splits the spectra into chunks
