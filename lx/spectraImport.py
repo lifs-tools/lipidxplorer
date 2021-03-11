@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import csv
 import os, sys, re
+from collections import namedtuple
 from optparse import OptionParser
 
 import time
@@ -505,6 +506,10 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 								isPIS = options['pisSpectra'], bin_res=options['alignmentMethodMSMS']== 'calctol')
 
 
+	# blanks = potential_blanks(scan.listSurveyEntry, 25) # be careguk not to confiuse blanks with internal standards
+	#blanks are singnals that are in all the samples? and low intens?
+	#istd are signals that are on all except blanks and high intens
+
 	for sample in scan.listSamples:
 		if sample in scan.dictSamples:
 			del scan.dictSamples[sample]
@@ -514,7 +519,8 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 	for se in scan.listSurveyEntry:
 		se.sortAndIndedice()
 
-	ac = alignment_ranking(scan.listSurveyEntry, 25)
+	ranking = alignment_ranking(scan.listSurveyEntry)
+	ac = ranked_entries(scan.listSurveyEntry, ranking, 25)
 	print()
 	print('Top 25 suggested calibration masses')
 	for s in ac:
@@ -531,27 +537,50 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 	return scan
 
-def alignment_ranking(listSurveyEntry, count=10): # need a scoring function
-	idx = [e.index for e in listSurveyEntry]
-	scan_ratio = [len(e.peaks) / len(e.dictScans)  for e in listSurveyEntry]
+
+def get_sum_i(listSurveyEntry):
+	sum_i = {}
+	for se in listSurveyEntry:
+		for k,i in se.dictIntensity.items():
+			sum_i[k] = sum_i.get(k, 0) + i
+	
+	# m = max(sum_i.values())
+	# print(sum_i)
+	return sum_i
+
+
+
+def alignment_ranking(listSurveyEntry, count=10):
+	sum_i = get_sum_i(listSurveyEntry)
+	suspected_blank = min(sum_i, key=lambda key: sum_i[key]) #suspected blank
+	idx = []
+	scan_ratio = []
 	non0_avg_rel_i = []
 	non0_avg_abs_i = []
 	for e in listSurveyEntry:
 		rel_i = []
 		abs_i = []
+		if e.dictIntensity[suspected_blank] > 0: continue #ignore all the signals that where in the suspected blank
 		for k,v in e.dictBasePeakIntensity.items():
 			if e.dictIntensity[k] == 0: continue # ignore zero
 			rel_i.append(e.dictIntensity[k] /  v)
 			abs_i.append(e.dictIntensity[k])
 		non0_avg_rel_i.append(sum(rel_i)/len(rel_i))
 		non0_avg_abs_i.append(sum(abs_i)/len(rel_i))
+		idx.append(e.index)
+		scan_ratio.append(len(abs_i) / len(e.dictBasePeakIntensity))
 	vals = (idx, scan_ratio, non0_avg_rel_i, non0_avg_abs_i)
 	vals = list(zip(*vals))
-	vals = sorted(vals, key=lambda x:1/x[1] * 1/x[2])
+	vals = sorted(vals, key=lambda x:x[1] + x[2], reverse=True)
+	nt = namedtuple('rank_data','idx scan_ratio non0_avg_rel_i non0_avg_abs_i')
+	vals = [nt(*v) for v in vals]
+	return vals 
 
+
+def ranked_entries(listSurveyEntry, vals, count=10):
 	res = []
 	for e in vals[:count]:
-		res.append(listSurveyEntry[e[0]])
+		res.append(listSurveyEntry[e.idx])
 
 	return res
 
