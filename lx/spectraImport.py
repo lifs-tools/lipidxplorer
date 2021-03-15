@@ -484,7 +484,8 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		mkSurveyLinear(scan, [-1,1],
 					numLoops = options['loopNr'],
 					deltaRes = scan.options['MSresolutionDelta'],
-					minocc = scan.options['MSminOccupation'], bin_res=scan.options['alignmentMethodMS']== 'calctol')
+					minocc = scan.options['MSminOccupation'], bin_res=scan.options['alignmentMethodMS']== 'calctol', collapse=scan.options['alignmentMethodMS']== 'calctol')
+
 
 	### aling the fragment spectra ###
 

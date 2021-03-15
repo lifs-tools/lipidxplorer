@@ -312,7 +312,7 @@ def mkSurveyHeuristic(sc, polarity, numLoops = None, deltaRes = 0, minocc = None
 
 
 
-def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = None, checkoccupation = True, bin_res = False):
+def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = None, checkoccupation = True, bin_res = False, collapse=False):
 	""" Align the MS spectra."""
 
 	# get the base peak dictionary
@@ -691,6 +691,8 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 					dictBasePeakIntensity = sc.dictBasePeakIntensity_MS))
 
 		del listMSSpec
+	if collapse:
+		sc.listSurveyEntry = collape_join_adjecent_clusters(sc.listSurveyEntry)
 
 def mkSurveyHierarchical(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = None, msThreshold = None):
 	""" Align the MS spectra."""
@@ -1099,6 +1101,50 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 	for i in scan.listSamples:
 		if i in scan.dictSamples: # TODO: listSamples should actually be same as scan.dictSamples.keys()
 			del scan.dictSamples[i]
+
+def collape_join_adjecent_clusters(survey_entries, max_dist = 0.1):
+	"""join adjecent clusters that may be complementary, 
+
+	Args:	
+		survey_entries (dict of spentries): all the clusters so far
+		max_dist (float, optional): how far a cluster is in daltons to try and merge them if they are complementary. Defaults to 0.1. # default is arbitrary
+
+	Returns:
+		same as cluster but collapsed, may include duplicated entries in adjacent clusters
+	"""
+	res = [] #must create new instances becase, all atributes are calulated on init not on call!!!!!
+	current  = survey_entries[0]
+	for c in survey_entries[1:]:
+		if abs(c.peakMean-current.peakMean) > max_dist:
+			res.append(current)
+			current = c
+			continue
+
+		c_spectras = {k for k,v in c.dictIntensity.items() if v > 0}
+		current_spectras = {k for k,v in current.dictIntensity.items() if v > 0}
+		overlap = c_spectras.intersection(current_spectras)
+		if c_spectras and current_spectras and not overlap:
+			# join the cluster
+			current.dictIntensity.update({k:v for k,v in c.dictIntensity.items() if v > 0})
+			current.peaks.extend(c.peaks)
+			current.dictScans.update({k:v for k,v in c.dictScans.items() if v > 1})
+
+			entry = SurveyEntry(
+			msmass = sum([x[0] for x in current.peaks]) / len(current.peaks),
+			smpl = current.dictIntensity,
+			peaks = current.peaks,
+			charge = None,
+			polarity = current.polarity,
+			dictScans = current.dictScans,
+			dictBasePeakIntensity = current.dictBasePeakIntensity)
+
+			res.append(entry)
+		else:
+			res.append(current)
+			# no continue to update "current"... maybe it matches with the next entry
+		current = c
+
+	return res
 
 def mkMSMSEntriesHeuristic_new(scan, listPolarity, numLoops = None, isPIS = False, relative = None):
 
