@@ -137,12 +137,18 @@ def add_Sample(
 			scan_processed.append((mz1, it1, it1 / max_it, res, bl, ns, cg))
 			nb_ms_peaks += 1
 
+		masses = [s[0] for s in scan]
+		s_masses = sorted(masses)
+		diffs = [s_masses[i+1] - s_masses[i] for i,_ in enumerate(s_masses[:-1])]
+		min_da_delta = min(diffs)
+
 		ms1Scans.append({
 			'time' : t,
 			'totIonCurrent' : tic,
 			'polarity' : pol,
 			'max_it' : max_it,
-			'scan' : scan_processed})
+			'scan' : scan_processed,
+			'min_da_delta' : min_da_delta})
 
 		nb_ms_scans += 1
 
@@ -181,6 +187,11 @@ def add_Sample(
 			if msmsm1 <= mz2 <= msmsm2:
 				scan_processed.append((mz2, it2, it2 / max_it, res, bl, ns, cg))
 				nb_msms_peaks += 1
+		
+		masses = [s[0] for s in scan]
+		s_masses = sorted(masses)
+		diffs = [s_masses[i+1] - s_masses[i] for i,_ in enumerate(s_masses[:-1])]
+		min_da_delta = min(diffs) if diffs else 1000
 
 		ms2Scans.append({
 			'time' : t,
@@ -188,7 +199,8 @@ def add_Sample(
 			'polarity' : pol,
 			'precursorMz' : precursor,
 			'max_it' : max_it,
-			'scan' : scan_processed})
+			'scan' : scan_processed,
+			'min_da_delta' : min_da_delta})
 
 
 	#if Debug("logMemory"):
@@ -237,7 +249,9 @@ def add_Sample(
 		# start averaging
 		count = 0
 		dictSpecEntry = {}
+		min_da_delta_all_scans = float('inf')
 		for ms1scan_entry in ms1Scans:
+			min_da_delta_all_scans = min(min_da_delta_all_scans, ms1scan_entry['min_da_delta'])
 
 			listTotIonCurrent.append(float(ms1scan_entry['totIonCurrent'])) # statistics
 
@@ -269,7 +283,7 @@ def add_Sample(
 							merge = mergeSumIntensity,
 							mergeTolerance = options['MSresolution'],
 							mergeDeltaRes = options['MSresolutionDelta'], fadi_denominator= fadi_denominator, fadi_percentage = fadi_percentage, 
-							bintolerance = options['MStolerance'], res_by_fullbin = options['scanAveragingMethod'] == 'calctol')
+							bintolerance = options['MStolerance'], res_by_fullbin = options['scanAveragingMethod'] == 'calctol', min_da_delta_all_scans = min_da_delta_all_scans)
 
 		# free memory
 		del dictSpecEntry

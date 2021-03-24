@@ -1916,7 +1916,7 @@ def getResSteps(dictSamples, mstolerance):
 def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTolerance = None,
 		mergeDeltaRes = None, charge = None, deltaRes = None, minocc = None, msThreshold = None,
 		intensityWeightedAvg = False, minMass = None, fadi_denominator = None, fadi_percentage = 0.0,
-		bintolerance = None, res_by_fullbin = False, res_by_steps= False):
+		bintolerance = None, res_by_fullbin = False, res_by_steps= False, min_da_delta_all_scans = None):
 	#using fadi_denominator, fadi_percentage, becayse nbofscans and msthreshold variables are already in use !!!
 	# these varuables are used to implement fadi filter
 	'''
@@ -2010,10 +2010,12 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 		diffs = [sorted_mass[i]-sorted_mass[i+1] for i,_ in enumerate(sorted_mass[:up_to])] # hope to find at least one full bin here
 		diffs = [d for d in diffs if d > 0.0001 and d < 0.1]
 		s_diffs = sorted(diffs) # diffs are coorelated to the resolution
+		if not min_da_delta_all_scans:
+			min_da_delta_all_scans = 0.0002
 		if binsize > 1 :
-			binres = mean(s_diffs[:binsize]) * 2 if s_diffs else 0.0002 # get average diffs to avoid outliers and times 2 to make flexible
+			binres = mean(s_diffs[:binsize]) * 2 if s_diffs else min_da_delta_all_scans * 0.99# get average diffs to avoid outliers and times 2 to make flexible
 		else:
-			binres = s_diffs[0] * 0.5 if s_diffs[0] > 0.0002 else 0.0002
+			binres =  min_da_delta_all_scans * 0.99
 		# mstolerance = bintolerance
 		# if mstolerance.kind == 'da':
 		# 	binres = mstolerance.da * 2
@@ -2029,6 +2031,9 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 		current = 0
 		binres = binres_og if res_by_fullbin else None
 
+		if count > 0 and not newres1:
+			# went trough one cicle an no res was calculated so will use the min dist intead
+			newres1 = min_da_delta_all_scans * 0.99
 		# stop if the end of the list is reached
 		if not current < (len(listResult[count]) - 1):
 			listResult[-1] = listResult[count]
