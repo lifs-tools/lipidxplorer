@@ -2001,6 +2001,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 	#   [avg, [specEntry1, specEntry2, ..., specEntryN]]
 	# sort the list
 	listResult[0].sort()
+	newres1=None
 	if res_by_fullbin:
 		listResult[0] = list(reversed(listResult[0]))
 
@@ -2024,7 +2025,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 		# 	binres = binres * 2
 		
 		binres_og = binres
-		newres1=None
+		
 	
 	for count in range(numLoops):
 
