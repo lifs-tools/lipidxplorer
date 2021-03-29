@@ -2032,7 +2032,7 @@ def linearAlignment(listSamples, dictSamples, tolerance, merge = None, mergeTole
 		current = 0
 		binres = binres_og if res_by_fullbin else None
 
-		if count > 0 and not newres1:
+		if count > 0 and not newres1 and min_da_delta_all_scans:
 			# went trough one cicle an no res was calculated so will use the min dist intead
 			newres1 = min_da_delta_all_scans * 0.99
 		# stop if the end of the list is reached
