@@ -1086,6 +1086,10 @@ def p_error(p):
 parser = yacc.yacc(debug = 0, optimize = 0)
 #bparser = yacc.yacc(method = 'LALR')
 
+
+def seethis(this):
+	pass
+
 def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrectionMSMS,
 		complementSC, parent, progressCount, generateStatistics, mode = ""):
 
@@ -1149,6 +1153,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	# note the change first
 	print("generating result MasterScan ...", end=' ')
 	mfqlObj.result.generateResultSC()
+	seethis(mfqlObj.result)
 	print("%.2f sec." % time.clock())
 
 	## debugging ###
@@ -1162,7 +1167,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	if isotopicCorrectionMSMS:
 		print("type II isotopic correction in MS/MS ...", end=' ')
 		mfqlObj.result.isotopicCorrectionMSMS()
-
+		seethis(mfqlObj.result)
 		#gprogressCount += 1
 		#if parent:
 		#	(cont, skip) = parent.debug.progressDialog.Update(gprogressCount)
@@ -1182,9 +1187,11 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 	if Debug("removeIsotopes"):# and (isotopicCorrectionMS or isotopicCorrectionMSMS):
 		mfqlObj.result.removeIsotopicCorrected()
+		seethis(mfqlObj.result)
 
 	print("generate query result MasterScans ...", end=' ')
 	mfqlObj.result.generateQueryResultSC()
+	seethis(mfqlObj.result)
 	print("%.2f sec." % time.clock())
 
 	#for q in mfqlObj.result.dictQuery.keys():
@@ -1197,6 +1204,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	# check for isobaric species
 	print("checking if there are isobaric species ...", end=' ')
 	mfqlObj.result.checkIsobaricSpeciesBeforeSUCHTHAT()
+	seethis(mfqlObj.result)
 	print("%.2f sec." % time.clock())
 
 	### do the REPORT ###
@@ -1229,6 +1237,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 	if options['noPermutations']:
 		mfqlObj.result.removePermutations()
+		seethis(mfqlObj.result)
 
 	## debugging ###
 	#for se in mfqlObj.result.mfqlObj.resultSC:
@@ -1241,10 +1250,12 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 	print("checking if there are still isobaric species ...", end=' ')
 	mfqlObj.result.checkIsobaricSpeciesAfterSUCHTHAT()
+	seethis(mfqlObj.result)
 	print("%.2f sec." % time.clock())
 
 	print("generate report ...", end=' ')
 	mfqlObj.result.generateReport(options)
+	seethis(mfqlObj.result)
 	print("%.2f sec." % time.clock())
 
 	if generateStatistics and mfqlObj.result.mfqlOutput:
