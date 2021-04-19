@@ -2836,10 +2836,10 @@ intensity."""))
 			self.text_ctrl_SettingsSection_tolerance_ms,
 			self.text_ctrl_SettingsSection_tolerance_msms,
 			self.text_ctrl_SettingsSection_selectionWindow,
-			self.text_ctrl_SettingsSection_threshold_ms,
-			self.text_ctrl_SettingsSection_threshold_msms,
-			self.text_ctrl_SettingsSection_occupationThr_ms,
-			self.text_ctrl_SettingsSection_occupationThr_msms,
+			# self.text_ctrl_SettingsSection_threshold_ms,
+			# self.text_ctrl_SettingsSection_threshold_msms,
+			# self.text_ctrl_SettingsSection_occupationThr_ms,
+			# self.text_ctrl_SettingsSection_occupationThr_msms,
 			self.text_ctrl_RunOptions_MS,
 			self.text_ctrl_RunOptions_MSMS]
 
@@ -3240,10 +3240,10 @@ intensity."""))
 			'MStolerance',# self.text_ctrl_SettingsSection_tolerance_ms,
 			'MSMStolerance',# self.text_ctrl_SettingsSection_tolerance_msms,
 			'selectionWindow',# self.text_ctrl_SettingsSection_selectionWindow,
-			'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
-			'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
-			'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
-			'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
+			# 'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
+			# 'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
+			# 'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
+			# 'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
 			]
 
 
