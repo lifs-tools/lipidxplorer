@@ -1114,35 +1114,45 @@ def collape_join_adjecent_clusters(survey_entries, max_dist = 0.1):
 	"""
 	res = [] #must create new instances becase, all atributes are calulated on init not on call!!!!!
 	current  = survey_entries[0]
+	collapsing = False
 	for c in survey_entries[1:]:
+
 		if abs(c.peakMean-current.peakMean) > max_dist:
-			res.append(current)
 			current = c
+			res.append(current)
+			collapsing = False
 			continue
 
 		c_spectras = {k for k,v in c.dictIntensity.items() if v > 0}
 		current_spectras = {k for k,v in current.dictIntensity.items() if v > 0}
 		overlap = c_spectras.intersection(current_spectras)
-		if c_spectras and current_spectras and not overlap:
-			# join the cluster
-			current.dictIntensity.update({k:v for k,v in c.dictIntensity.items() if v > 0})
-			current.peaks.extend(c.peaks)
-			current.dictScans.update({k:v for k,v in c.dictScans.items() if v > 1})
 
-			entry = SurveyEntry(
-			msmass = sum([x[0] for x in current.peaks]) / len(current.peaks),
-			smpl = current.dictIntensity,
-			peaks = current.peaks,
-			charge = None,
-			polarity = current.polarity,
-			dictScans = current.dictScans,
-			dictBasePeakIntensity = current.dictBasePeakIntensity)
-
-			res.append(entry)
-		else:
+		if overlap:
+			current = c
 			res.append(current)
-			# no continue to update "current"... maybe it matches with the next entry
-		current = c
+			collapsing = False
+			continue
+
+
+		# join the cluster
+		current.dictIntensity.update({k:v for k,v in c.dictIntensity.items() if v > 0})
+		current.peaks.extend(c.peaks)
+		current.dictScans.update({k:v for k,v in c.dictScans.items() if v > 1})
+
+		entry = SurveyEntry(
+		msmass = sum([x[0] for x in current.peaks]) / len(current.peaks),
+		smpl = current.dictIntensity,
+		peaks = current.peaks,
+		charge = None,
+		polarity = current.polarity,
+		dictScans = current.dictScans,
+		dictBasePeakIntensity = current.dictBasePeakIntensity)
+
+		if collapsing:
+			res.pop()
+		res.append(entry)
+		current = entry
+		collapsing = True
 
 	return res
 
