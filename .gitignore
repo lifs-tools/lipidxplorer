@@ -10,4 +10,5 @@ lx2/parsetab.py
 build
 dist
 dist.zip
+tmp*
 
