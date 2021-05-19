@@ -799,6 +799,7 @@ class TypeResult:
 			dbgstr += "\n"
 			dbgout(dbgstr)
 
+		last_res = 0.0001
 		for entry in range(len(listSE)):
 
 			actualKey = listSE[entry]
@@ -833,7 +834,11 @@ class TypeResult:
 			#	res = listSE[entry].precurmass / scan.options['MSresolution'].tolerance
 
 				if self.mfqlObj.sc.options['alignmentMethodMS'] == 'calctol':
-					res = listSE[entry].massWindow * 20
+					if listSE[entry].massWindow > 0:
+						res = listSE[entry].massWindow # the problem is here
+						last_res = res
+					else:
+						res = last_res
 				else:
 					res = self.mfqlObj.options['MSresolution'].getTinDA(listSE[entry].precurmass)
 
