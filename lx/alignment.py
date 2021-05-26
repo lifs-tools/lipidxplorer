@@ -1118,8 +1118,8 @@ def collape_join_adjecent_clusters(survey_entries, max_dist = 0.1):
 	for c in survey_entries[1:]:
 
 		if abs(c.peakMean-current.peakMean) > max_dist:
-			current = c
 			res.append(current)
+			current = c
 			collapsing = False
 			continue
 
@@ -1128,8 +1128,8 @@ def collape_join_adjecent_clusters(survey_entries, max_dist = 0.1):
 		overlap = c_spectras.intersection(current_spectras)
 
 		if overlap:
-			current = c
 			res.append(current)
+			current = c
 			collapsing = False
 			continue
 
@@ -1150,7 +1150,7 @@ def collape_join_adjecent_clusters(survey_entries, max_dist = 0.1):
 
 		if collapsing:
 			res.pop()
-		res.append(entry)
+		#res.append(entry)
 		current = entry
 		collapsing = True
 
