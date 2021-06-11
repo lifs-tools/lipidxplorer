@@ -504,7 +504,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		if alignmentMSMS in ["linear",'calctol']:
 			mkMSMSEntriesLinear_new(scan, listPolarity,
 								numLoops = options['loopNr'],
-								isPIS = options['pisSpectra'], bin_res=options['alignmentMethodMSMS']== 'calctol')
+								isPIS = options['pisSpectra'], bin_res=options['alignmentMethodMSMS']== 'calctol', collapse=scan.options['alignmentMethodMSMS']== 'calctol')
 
 
 	# blanks = potential_blanks(scan.listSurveyEntry, 25) # be careguk not to confiuse blanks with internal standards

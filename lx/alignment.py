@@ -711,7 +711,7 @@ def mkSurveyHierarchical(sc, listPolarity, numLoops = None, deltaRes = 0, minocc
 
 	cl = hclusterHeuristic(sc.listSamples, sc.dictSamples, resolution)
 
-def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, relative = None, bin_res= False):
+def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, relative = None, bin_res= False, collapse=False):
 
 	################################################################
 	###	merge MS/MS experiments if there are more than one for a ###
@@ -881,6 +881,8 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 												deltaRes = scan.options['MSMSresolutionDelta'],
 												minMass = scan.options['MSMSmassrange'][0],
 												bintolerance=scan.options['MSMStolerance'],  res_by_fullbin=scan.options['alignmentMethodMSMS'] == 'calctol')
+					if collapse:
+						cluster = collape_join_adjecent_clusters_msms(cluster)
 
 					# check again with this debugging output!
 					#if cluster:
@@ -965,7 +967,7 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 											se = None,
 											samples = scan.listSamples,
 											dictScanCount = dictScanCount,
-											dictBasePeakIntensity = dictBasePeakIntensity))
+											dictBasePeakIntensity = dictBasePeakIntensity))		
 
 
 			### align all the MS/MS masses for each precursor mass cluster ###
@@ -1101,6 +1103,51 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 	for i in scan.listSamples:
 		if i in scan.dictSamples: # TODO: listSamples should actually be same as scan.dictSamples.keys()
 			del scan.dictSamples[i]
+
+
+def collape_join_adjecent_clusters_msms(cluster, max_dist = 0.1):
+	res = [] #must create new instances becase, all atributes are calulated on init not on call!!!!!
+	current  = cluster[0]
+	collapsing = False
+
+	for c in cluster[1:]:
+
+		c_peakMax = max([v.mass for k,v in c.items()])
+		current_peakMax = max([v.mass for k,v in current.items()])
+
+		if abs(c_peakMax-current_peakMax) > max_dist:
+			res.append(current)
+			current = c
+			collapsing = False
+			continue
+
+		c_spectras = {k for k,v in c.items() if v.content}
+		current_spectras = {k for k,v in current.items() if v.content}
+		overlap = c_spectras.intersection(current_spectras)
+
+		if overlap:
+			res.append(current)
+			current = c
+			collapsing = False
+			continue
+
+
+		# join the cluster
+		current.update({k:v for k,v in c.items() if v.content})
+
+		newmass = sum([v.mass for k,v in current.items() if v.content]) / len([v.mass for k,v in current.items() if v.content])
+
+		for k,v in current.items():
+			if not v.content:
+				v.mass = newmass
+
+		if collapsing:
+			res.pop()
+		res.append(current)
+		collapsing = True
+
+	return res
+
 
 def collape_join_adjecent_clusters(survey_entries, max_dist = 0.1):
 	"""join adjecent clusters that may be complementary, 
