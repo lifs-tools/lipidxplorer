@@ -1108,7 +1108,7 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 def collape_join_adjecent_clusters_msms(cluster, max_dist = 0.1):
 	res = [] #must create new instances becase, all atributes are calulated on init not on call!!!!!
 	current  = cluster[0]
-	collapsing = False
+	# collapsing = False
 
 	for c in cluster[1:]:
 
@@ -1118,7 +1118,7 @@ def collape_join_adjecent_clusters_msms(cluster, max_dist = 0.1):
 		if abs(c_peakMax-current_peakMax) > max_dist:
 			res.append(current)
 			current = c
-			collapsing = False
+			# collapsing = False
 			continue
 
 		c_spectras = {k for k,v in c.items() if v.content}
@@ -1128,7 +1128,7 @@ def collape_join_adjecent_clusters_msms(cluster, max_dist = 0.1):
 		if overlap:
 			res.append(current)
 			current = c
-			collapsing = False
+			# collapsing = False
 			continue
 
 
@@ -1141,10 +1141,10 @@ def collape_join_adjecent_clusters_msms(cluster, max_dist = 0.1):
 			if not v.content:
 				v.mass = newmass
 
-		if collapsing:
-			res.pop()
-		res.append(current)
-		collapsing = True
+		# if collapsing:
+		# 	res.pop()
+		# # res.append(current)
+		# collapsing = True
 
 	return res
 
