@@ -724,7 +724,7 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 	msmsThreshold = scan.options['MSMSthreshold']
 	if bin_res:
 		tolerance = TypeTolerance('Da', scan.options['calcSelectionWindow'])
-		window = scan.options['calcSelectionWindow'] / 2
+		window = scan.options['calcSelectionWindow'] #maybe its too small maybe use * 2?
 		deltaRes = None
 	elif not isPIS:
 		tolerance = TypeTolerance('Da', scan.options['selectionWindow'])
