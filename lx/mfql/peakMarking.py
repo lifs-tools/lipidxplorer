@@ -2075,7 +2075,7 @@ class TypeScan:
 																	notIn = False
 														if notIn:
 															msmse.listMark.append(mark)
-														if not mark in scanEntry.dictMarks[m.name]:
+														if True: #not mark in scanEntry.dictMarks[m.name]:
 															scanEntry.dictMarks[m.name].append(mark)
 
 												pass
