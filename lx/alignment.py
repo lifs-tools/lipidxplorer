@@ -1149,7 +1149,7 @@ def collape_join_adjecent_clusters_msms(cluster, max_dist = 0.1):
 	return res
 
 
-def collape_join_adjecent_clusters(survey_entries, max_dist = 0.1):
+def collape_join_adjecent_clusters(survey_entries, max_dist = 0.05):
 	"""join adjecent clusters that may be complementary, 
 
 	Args:	
@@ -1172,6 +1172,13 @@ def collape_join_adjecent_clusters(survey_entries, max_dist = 0.1):
 
 		c_spectras = {k for k,v in c.dictIntensity.items() if v > 0}
 		current_spectras = {k for k,v in current.dictIntensity.items() if v > 0}
+
+		#update mac_dist
+		if len(c_spectras) > 0.7 * len(c.dictIntensity):
+			max_dist = min(abs(c.peakMean-current.peakMean),max_dist/2)
+			max_dist = max(max_dist, 0.0001)
+			max_dist = max_dist *2
+
 		overlap = c_spectras.intersection(current_spectras)
 
 		if overlap:
@@ -1195,7 +1202,7 @@ def collape_join_adjecent_clusters(survey_entries, max_dist = 0.1):
 		dictScans = current.dictScans,
 		dictBasePeakIntensity = current.dictBasePeakIntensity)
 
-		if collapsing:
+		if collapsing and res:
 			res.pop()
 		#res.append(entry)
 		current = entry
