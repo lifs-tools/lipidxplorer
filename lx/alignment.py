@@ -458,7 +458,8 @@ def mkSurveyLinear(sc, listPolarity, numLoops = None, deltaRes = 0, minocc = Non
 			binres_og = binres
 			newres1 = None
 			
-			sc.options['calcSelectionWindow'] = max(sc.options.get('calcSelectionWindow',0),m * 2) # average distance between peaks
+			sc.options['calcSelectionWindow'] = max(sc.options.get('calcSelectionWindow',0.1),m * 4) # average distance between peaks , 0.5 because thats the defult from orbitrap
+			
 
 		# sort precursor masses by intensity
 		#listMSmassIntensity = sorted(listMSmass, cmp = sortPrecursorMasses)
@@ -724,7 +725,7 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 	msmsThreshold = scan.options['MSMSthreshold']
 	if bin_res:
 		tolerance = TypeTolerance('Da', scan.options['calcSelectionWindow'])
-		window = scan.options['calcSelectionWindow'] #maybe its too small maybe use * 2?
+		window = scan.options['calcSelectionWindow'] * 2 #maybe its too small maybe use * 2?
 		deltaRes = None
 	elif not isPIS:
 		tolerance = TypeTolerance('Da', scan.options['selectionWindow'])
@@ -976,7 +977,6 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 
 			###################################
 			### Start association algorithm ###
-
 			if msmsLists != {}:
 
 				print("Associate MSMSEntry objects to the according SurveyEntry objects (precursor masses)")
