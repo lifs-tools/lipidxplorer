@@ -4,6 +4,8 @@ from math import sqrt
 import pickle as pickle
 from lx.mfql.chemParser import parseElemSeq
 from .tools import reportout
+import sys
+sys.setrecursionlimit(10000) #because the pickle needs it
 
 def getCalibrationPoints(lTable, lSpectrum, tolerance):
 
