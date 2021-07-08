@@ -105,7 +105,7 @@ def recalibrateMS(sc, listRecalibration, isCalctol = False):
 	lRecalTable = []
 
 	if listRecalibration and len(listRecalibration) > 0:
-
+		ret = {}
 		for key in sc.listSamples:
 			
 			if isCalctol:
@@ -120,14 +120,14 @@ def recalibrateMS(sc, listRecalibration, isCalctol = False):
 			# 	MStolerance.tolerance = calc_tol(sc.dictSamples[key].listPrecurmass) 
 			# 	lRecalTable = getCalibrationPoints(listRecalibration, sc.dictSamples[key].listPrecurmass, MStolerance)
 
-
+			ret[key] = lRecalTable
 			if lRecalTable:
 				for entry in sc.dictSamples[key].listPrecurmass:
 					delta = frecal(entry.precurmass, lRecalTable, sc.options['MSresolution'])
 					delta = frecal(entry.precurmass, lRecalTable, sc.options['MStolerance'])
 					entry.precurmass = entry.precurmass - delta
 
-		return lRecalTable
+		return ret
 
 	else:
 		return []
@@ -141,7 +141,7 @@ def calc_tol_ms2(entries):
 
 	return l[0]/md
 
-def recalibrateMSMS(sc,  listRecalibrationMSMS, isCalctol, listRecalibrationMS = None):
+def recalibrateMSMS(sc,  listRecalibrationMSMS, isCalctol, listRecalibrationMS = None, ms1_recal_table = None):
 
 	# generate calibration table
 	lRecalTableMS = []
@@ -170,16 +170,19 @@ def recalibrateMSMS(sc,  listRecalibrationMSMS, isCalctol, listRecalibrationMS =
 			# 	lRecalTableMS = getCalibrationPoints(listRecalibrationMS, sc.dictSamples[key].listPrecurmass, MStolerance)
 
 			for entry in sc.dictSamples[key].listMsms:
+				
+				if ms1_recal_table and ms1_recal_table.get(key):
+					lRecalTableMSMS = ms1_recal_table[key]
+				else:
+					lRecalTableMSMS = getCalibrationPointsMSMS(listRecalibrationMSMS, entry.entries, sc.options['MSMSresolution'])
+					lRecalTableMSMS = getCalibrationPointsMSMS(listRecalibrationMSMS, entry.entries, sc.options['MSMStolerance'])
 
-				lRecalTableMSMS = getCalibrationPointsMSMS(listRecalibrationMSMS, entry.entries, sc.options['MSMSresolution'])
-				lRecalTableMSMS = getCalibrationPointsMSMS(listRecalibrationMSMS, entry.entries, sc.options['MSMStolerance'])
-
-				# MSMStolerance = sc.options['MSMStolerance']
+				MSMStolerance = sc.options['MSMStolerance']
+				MStolerance = sc.options['MStolerance']
 				# if isCalctol:
 				# 	MSMStolerance.tolerance = calc_tol_ms2(entry.entries)
 				# 	MSMStolerance.tolerance = min(MSMStolerance.tolerance, MStolerance.tolerance)
 				# 	lRecalTableMSMS = getCalibrationPointsMSMS(listRecalibrationMSMS, entry.entries, MSMStolerance)
-
 
 				if lRecalTableMSMS:
 					for index in range(len(entry.entries)):
