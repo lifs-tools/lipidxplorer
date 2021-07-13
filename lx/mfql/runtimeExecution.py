@@ -3476,12 +3476,16 @@ class TypeResult:
 
 	def removePermutations(self):
 
+		def sum_lv_err(lv):
+			return sum((abs(e.errppm) for e in lv.values()))
+
 		for query in self.dictQuery:
 			enumerated = (enumerate(self.dictQuery[query].listVariables))
 			listVar = []		
-			for idx, i in sorted(enumerated, key = lambda variable: abs(list(variable[1].items())[0][1].errppm)):
+			for idx, i in sorted(enumerated, key = lambda variable: sum_lv_err(variable[1]) ):#abs(list(variable[1].items())[0][1].errppm)):
 				#listVar.append(sorted(i.items(), cmp = lambda x, y: cmp(x[1].mass, y[1].mass)))
-				listVar.append((idx,sorted(list(i.items()), key = lambda x : abs(x[1].errppm))))
+				sorted_items = sorted(list(i.items()), key = lambda x : abs(x[1].errppm))
+				listVar.append((idx,sorted_items))
 
 
 			# if there are no variables, we don't need to do anything
