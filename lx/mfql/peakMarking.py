@@ -767,7 +767,7 @@ class TypeScan:
 									positionMS = positionMS,
 									positionMSMS = None)
 
-								if not mark in se.listMark:
+								if True: #not mark in se.listMark:
 									se.listMark.append(mark)
 									if not m.name in list(scanEntry.dictMarks.keys()):
 										scanEntry.dictMarks[m.name] = []
@@ -924,7 +924,7 @@ class TypeScan:
 
 														if notIn:
 															msmse.listMark.append(mark)
-														if not mark in scanEntry.dictMarks[m.name]:
+														if True: #not mark in scanEntry.dictMarks[m.name]:
 															scanEntry.dictMarks[m.name].append(mark)
 
 
@@ -983,7 +983,7 @@ class TypeScan:
 
 													if notIn:
 														msmse.listMark.append(mark)
-													if not mark in scanEntry.dictMarks[m.name]:
+													if True: #not mark in scanEntry.dictMarks[m.name]:
 														scanEntry.dictMarks[m.name].append(mark)
 
 
@@ -1044,7 +1044,7 @@ class TypeScan:
 
 														if notIn:
 															msmse.listMark.append(mark)
-														if not mark in scanEntry.dictMarks[m.name]:
+														if True: #not mark in scanEntry.dictMarks[m.name]:
 															scanEntry.dictMarks[m.name].append(mark)
 
 												pass
@@ -1105,7 +1105,7 @@ class TypeScan:
 
 													if notIn:
 														msmse.listMark.append(mark)
-													if not mark in scanEntry.dictMarks[m.name]:
+													if True: #not mark in scanEntry.dictMarks[m.name]:
 														scanEntry.dictMarks[m.name].append(mark)
 
 
@@ -1232,7 +1232,7 @@ class TypeScan:
 
 															if notIn:
 																msmse.listMark.append(mark)
-															if not mark in scanEntry.dictMarks[m.name]:
+															if True: #not mark in scanEntry.dictMarks[m.name]:
 																scanEntry.dictMarks[m.name].append(mark)
 
 													else:
@@ -1288,7 +1288,7 @@ class TypeScan:
 
 														if notIn:
 															msmse.listMark.append(mark)
-														if not mark in scanEntry.dictMarks[m.name]:
+														if True: #not mark in scanEntry.dictMarks[m.name]:
 															scanEntry.dictMarks[m.name].append(mark)
 
 											else:
@@ -1347,7 +1347,7 @@ class TypeScan:
 
 														if notIn:
 															msmse.listMark.append(mark)
-														if not mark in scanEntry.dictMarks[m.name]:
+														if True: #not mark in scanEntry.dictMarks[m.name]:
 															scanEntry.dictMarks[m.name].append(mark)
 
 													#	else:
@@ -1544,7 +1544,7 @@ class TypeScan:
 
 																if notIn:
 																	msmse.listMark.append(mark)
-																if not mark in scanEntry.dictMarks[ml.name]:
+																if True: #not mark in scanEntry.dictMarks[ml.name]:
 																	scanEntry.dictMarks[ml.name].append(mark)
 
 														else:
@@ -1600,7 +1600,7 @@ class TypeScan:
 
 															if notIn:
 																msmse.listMark.append(mark)
-															if not mark in scanEntry.dictMarks[ml.name]:
+															if True: #not mark in scanEntry.dictMarks[ml.name]:
 																scanEntry.dictMarks[ml.name].append(mark)
 
 												else:
@@ -1659,7 +1659,7 @@ class TypeScan:
 
 															if notIn:
 																msmse.listMark.append(mark)
-															if not mark in scanEntry.dictMarks[ml.name]:
+															if True: #not mark in scanEntry.dictMarks[ml.name]:
 																scanEntry.dictMarks[ml.name].append(mark)
 														#	else:
 														#		raise MyVariableException("Variable %s already defined" % ml.name)
@@ -1720,7 +1720,7 @@ class TypeScan:
 
 														if notIn:
 															msmse.listMark.append(mark)
-														if not mark in scanEntry.dictMarks[ml.name]:
+														if True: #not mark in scanEntry.dictMarks[ml.name]:
 															scanEntry.dictMarks[ml.name].append(mark)
 
 												# if no precursor scan given
@@ -1810,7 +1810,7 @@ class TypeScan:
 													if i.mergeMSMSMarks(mark):
 														notIn = False
 
-											if not mark in scanEntry.dictMarks[m.name]:
+											if True: #not mark in scanEntry.dictMarks[m.name]:
 												scanEntry.dictMarks[m.name].append(mark)
 
 										positionMSMS += 1
@@ -1956,7 +1956,7 @@ class TypeScan:
 
 														if notIn:
 															msmse.listMark.append(mark)
-														if not mark in scanEntry.dictMarks[m.name]:
+														if True: #not mark in scanEntry.dictMarks[m.name]:
 															scanEntry.dictMarks[m.name].append(mark)
 
 
@@ -2015,7 +2015,7 @@ class TypeScan:
 
 													if notIn:
 														msmse.listMark.append(mark)
-													if not mark in scanEntry.dictMarks[m.name]:
+													if True: #not mark in scanEntry.dictMarks[m.name]:
 														scanEntry.dictMarks[m.name].append(mark)
 
 
@@ -2135,7 +2135,7 @@ class TypeScan:
 																notIn = False
 													if notIn:
 														msmse.listMark.append(mark)
-													if not mark in scanEntry.dictMarks[m.name]:
+													if True: #not mark in scanEntry.dictMarks[m.name]:
 														scanEntry.dictMarks[m.name].append(mark)
 
 
@@ -2269,7 +2269,7 @@ class TypeScan:
 															# scanEntry is used to check if the boolean constrains hold
 															# from the IDENTIFY section, it than builds the basis vor the
 															# variables for SUCHTHAT and/or REPORT
-															if not mark in scanEntry.dictMarks[m.name]:
+															if True: #not mark in scanEntry.dictMarks[m.name]:
 																scanEntry.dictMarks[m.name].append(mark)
 
 													else:
@@ -2500,7 +2500,7 @@ class TypeScan:
 
 																if notIn:
 																	msmse.listMark.append(mark)
-																if not mark in scanEntry.dictMarks[ml.name]:
+																if True: #not mark in scanEntry.dictMarks[ml.name]:
 																	scanEntry.dictMarks[ml.name].append(mark)
 
 														else:
@@ -2555,7 +2555,7 @@ class TypeScan:
 
 															if notIn:
 																msmse.listMark.append(mark)
-															if not mark in scanEntry.dictMarks[ml.name]:
+															if True: #not mark in scanEntry.dictMarks[ml.name]:
 																scanEntry.dictMarks[ml.name].append(mark)
 
 												else:
@@ -2613,7 +2613,7 @@ class TypeScan:
 
 															if notIn:
 																msmse.listMark.append(mark)
-															if not mark in scanEntry.dictMarks[ml.name]:
+															if True: #not mark in scanEntry.dictMarks[ml.name]:
 																scanEntry.dictMarks[ml.name].append(mark)
 														#	else:
 														#		raise MyVariableException("Variable %s already defined" % ml.name)
@@ -2673,7 +2673,7 @@ class TypeScan:
 
 														if notIn:
 															msmse.listMark.append(mark)
-														if not mark in scanEntry.dictMarks[ml.name]:
+														if True: #not mark in scanEntry.dictMarks[ml.name]:
 															scanEntry.dictMarks[ml.name].append(mark)
 
 													# if no precursor scan given
