@@ -1105,56 +1105,102 @@ def mkMSMSEntriesLinear_new(scan, listPolarity, numLoops = None, isPIS = False, 
 			del scan.dictSamples[i]
 
 
-def collape_join_adjecent_clusters_msms(cluster, max_dist = 0.1):
+def mass_close_enough(c,current):
+	mass_c = [v.mass for k,v in c.items() if v.content]
+	mass_curr = [v.mass for k,v in current.items() if v.content]
+	dist_mass_c = max(mass_c) - min(mass_c)
+	dist_mass_curr = max(mass_curr) - min(mass_curr)
+
+	mean_mass_c = sum(mass_c)/len(mass_c)
+	mean_mass_curr = sum(mass_curr)/len(mass_curr)
+
+	max_mass = max(mean_mass_c, mean_mass_curr)
+	min_mass = min(mean_mass_c, mean_mass_curr)
+
+	return  min_mass > max_mass - dist_mass_c - dist_mass_curr# too far away
+	
+def intensity_far_enough_on(c,current):
+	#check if intensity mismatch
+	intensities_c = [v.content['intensity'] for k,v in c.items() if v.content]
+	mid_c_i = (max(intensities_c) + min(intensities_c)) / 2
+
+	intensities_curr = [v.content['intensity'] for k,v in current.items() if v.content]
+	mid_curr_i = (max(intensities_curr) + min(intensities_curr)) / 2
+
+	mean_i = (mid_c_i + mid_curr_i) / 2
+	diff_i = abs(mid_c_i - mid_curr_i)
+
+	mid_scans_c = {k for k,v in c.items() if v.content and mean_i - diff_i <= v.content['intensity'] <= mean_i + diff_i }
+	mid_scans_curr = {k for k,v in current.items() if v.content and mean_i - diff_i <= v.content['intensity'] <= mean_i + diff_i }
+
+	if mid_scans_c or mid_scans_curr: # cant clearly distinguish high and low clusters
+		return None
+	else:
+		return mean_i
+
+def fill_cluster(cluster, keys):
+	if not cluster: return None
+	masses = [v.mass for k,v in cluster.items() ] 
+	mean_m = sum(masses) / len(masses)
+
+	tmp = {k:specEntry(mass= mean_m, content=None) for k in keys}
+	tmp.update(cluster)
+	return tmp
+
+
+def collape_join_adjecent_clusters_msms(cluster):
 	res = [] #must create new instances becase, all atributes are calulated on init not on call!!!!!
-	current  = cluster[0]
-	# collapsing = False
-
-	for c in cluster[1:]:
-
-		c_peakMax = max([v.mass for k,v in c.items()])
-		current_peakMax = max([v.mass for k,v in current.items()])
-
-		if abs(c_peakMax-current_peakMax) > max_dist:
+	cluster_iter = iter(cluster)
+	current  = next(cluster_iter,None)
+	c = next(cluster_iter,None)
+	while c:
+		if not mass_close_enough(c,current):
 			res.append(current)
 			current = c
-			# collapsing = False
+			c = next(cluster_iter,None)
 			continue
-
-		c_spectras = {k for k,v in c.items() if v.content}
-		current_spectras = {k for k,v in current.items() if v.content}
-		overlap = c_spectras.intersection(current_spectras)
-
-		if overlap:
+		
+		split_i = intensity_far_enough_on(c,current)
+		if not split_i:
 			res.append(current)
 			current = c
-			# collapsing = False
+			c = next(cluster_iter,None)
 			continue
+		
+		#rearange the clusters
+		high_cluster = {k:v for k,v in c.items() if v.content and v.content['intensity'] > split_i  }
+		high_cluster.update({k:v for k,v in current.items() if v.content and v.content['intensity'] > split_i})
 
+		low_cluster = {k:v for k,v in c.items() if v.content and v.content['intensity'] <= split_i }
+		low_cluster.update({k:v for k,v in current.items() if v.content and  v.content['intensity'] <= split_i} )
 
-		# join the cluster
-		current.update({k:v for k,v in c.items() if v.content})
+		any_high_cluster = high_cluster or False
+		any_low_cluster = low_cluster or False
 
-		newmass = sum([v.mass for k,v in current.items() if v.content]) / len([v.mass for k,v in current.items() if v.content])
+		high_cluster = fill_cluster(high_cluster, c.keys())
+		low_cluster = fill_cluster(low_cluster, c.keys())
 
-		for k,v in current.items():
-			if not v.content:
-				v.mass = newmass
-
-		# if collapsing:
-		# 	res.pop()
-		# # res.append(current)
-		# collapsing = True
-
+		if any_low_cluster and any_high_cluster:
+			current = low_cluster
+			c = high_cluster
+		elif any_low_cluster:
+			current = low_cluster
+			c=next(cluster_iter,None)
+		elif any_high_cluster:
+			current = high_cluster
+			c=next(cluster_iter,None)
+	
 	return res
 
 
-def collape_join_adjecent_clusters(survey_entries, max_dist = 0.05):
+
+def collape_join_adjecent_clusters(survey_entries, max_dist = 0.05, consider_intensity=True):
 	"""join adjecent clusters that may be complementary, 
 
 	Args:	
 		survey_entries (dict of spentries): all the clusters so far
 		max_dist (float, optional): how far a cluster is in daltons to try and merge them if they are complementary. Defaults to 0.1. # default is arbitrary
+		consider_intensity (bool, optional): try to cluster similar intensities
 
 	Returns:
 		same as cluster but collapsed, may include duplicated entries in adjacent clusters
