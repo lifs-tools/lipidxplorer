@@ -3484,8 +3484,8 @@ class TypeResult:
 			listVar = []		
 			for idx, i in sorted(enumerated, key = lambda variable: sum_lv_err(variable[1]) ):#abs(list(variable[1].items())[0][1].errppm)):
 				#listVar.append(sorted(i.items(), cmp = lambda x, y: cmp(x[1].mass, y[1].mass)))
-				sorted_items = sorted(list(i.items()), key = lambda x : abs(x[1].errppm))
-				listVar.append((idx,sorted_items))
+				# sorted_ites = sorted(list(i.items()), key = lambda x : abs(x[1].errppm)) no extra sorting needed anymore
+				listVar.append((idx,list(i.items())))
 
 
 			# if there are no variables, we don't need to do anything
