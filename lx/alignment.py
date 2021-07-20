@@ -1,4 +1,6 @@
 from copy import deepcopy
+
+from wx.core import EVT_LIST_DELETE_ALL_ITEMS
 from lx.clustering import HierarchicalClustering
 from lx.mfql.runtimeStatic import TypeTolerance
 from lx.spectraContainer import SurveyEntry, MSMS, MSMSEntry, MSMass, set_PrecurmassFromMSMS
@@ -1111,13 +1113,15 @@ def mass_close_enough(c,current):
 	dist_mass_c = max(mass_c) - min(mass_c)
 	dist_mass_curr = max(mass_curr) - min(mass_curr)
 
+	dist_mass_max = max(dist_mass_c, dist_mass_curr) #to deal with one being zero
+
 	mean_mass_c = sum(mass_c)/len(mass_c)
 	mean_mass_curr = sum(mass_curr)/len(mass_curr)
 
 	max_mass = max(mean_mass_c, mean_mass_curr)
 	min_mass = min(mean_mass_c, mean_mass_curr)
 
-	return  min_mass > max_mass - dist_mass_c - dist_mass_curr# too far away
+	return  min_mass > max_mass - (dist_mass_max *2)# too far away
 	
 def intensity_far_enough_on(c,current):
 	#check if intensity mismatch
@@ -1138,6 +1142,21 @@ def intensity_far_enough_on(c,current):
 	else:
 		return mean_i
 
+def collapseable(c,current):
+	c_scans = {k for k,v in c.items() if v.content}
+	current_scans = {k for k,v in current.items() if v.content}
+	both_scans = c_scans.intersection(current_scans)
+	return not both_scans
+
+def collapse_join(c,current):
+	current.update({k:v for k,v in c.items() if v.content})
+	masses = [v.mass for k,v in current.items() if v.content]
+	mean_m = sum(masses)/len(masses)
+	for v in (v for k,v in current.items() if not v.content):
+		v.mass = mean_m
+	return current
+
+
 def fill_cluster(cluster, keys):
 	if not cluster: return None
 	masses = [v.mass for k,v in cluster.items() ] 
@@ -1157,6 +1176,10 @@ def collape_join_adjecent_clusters_msms(cluster):
 		if not mass_close_enough(c,current):
 			res.append(current)
 			current = c
+			c = next(cluster_iter,None)
+			continue
+		elif collapseable(c,current):
+			current = collapse_join(c,current)
 			c = next(cluster_iter,None)
 			continue
 		
