@@ -3476,13 +3476,18 @@ class TypeResult:
 
 	def removePermutations(self):
 
-		def sum_lv_err(lv):
-			return sum((abs(e.errppm) for e in lv.values()))
+		def sum_lv_err_and_intens(lv):
+			def criteria(mark):
+				intensities = [v for k,v in mark.intensity.items() if v > 0]
+				mean_i = sum(intensities) / len(intensities)
+				res = mean_i/abs(mark.errppm) if abs(mark.errppm)>1 else mean_i
+				return res
+			return sum((criteria(e) for e in lv.values()))
 
 		for query in self.dictQuery:
 			enumerated = (enumerate(self.dictQuery[query].listVariables))
 			listVar = []		
-			for idx, i in sorted(enumerated, key = lambda variable: sum_lv_err(variable[1]) ):#abs(list(variable[1].items())[0][1].errppm)):
+			for idx, i in sorted(enumerated, key = lambda variable: sum_lv_err_and_intens(variable[1]) , reverse= True):#abs(list(variable[1].items())[0][1].errppm)):
 				#listVar.append(sorted(i.items(), cmp = lambda x, y: cmp(x[1].mass, y[1].mass)))
 				# sorted_ites = sorted(list(i.items()), key = lambda x : abs(x[1].errppm)) no extra sorting needed anymore
 				listVar.append((idx,list(i.items())))
@@ -3515,6 +3520,7 @@ class TypeResult:
 				self.dictQuery[query].listVariables = []
 				for _, i in sorted(listVar_noPermutations, key = lambda variable: variable[0]):
 					self.dictQuery[query].listVariables.append(dict(i))
+		pass
 
 class TypeQuery:
 
