@@ -3479,6 +3479,7 @@ class TypeResult:
 		def sum_lv_err_and_intens(lv):
 			def criteria(mark):
 				intensities = [v for k,v in mark.intensity.items() if v > 0]
+				if not intensities: return 0 #because Isocprrection makes it neg
 				mean_i = sum(intensities) / len(intensities)
 				res = mean_i/abs(mark.errppm) if abs(mark.errppm)>1 else mean_i
 				return res
