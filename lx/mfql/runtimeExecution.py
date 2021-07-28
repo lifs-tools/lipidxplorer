@@ -324,7 +324,6 @@ class TypeMFQL:
 		surveyEntry.listScanEntries = []
 		surveyEntry.listVariables += theResult
 
-
 		#self.dictEnvironment[self.queryName] = theResult
 
 class TypeResult:
@@ -783,11 +782,11 @@ class TypeResult:
 		self.mfqlObj.resultSC = listSE
 
 	def isotopicCorrectionMS(self):
-
 		import math
 		scan = self.mfqlObj.sc
 		listKeys = scan.listSamples
 		listSE = self.mfqlObj.sc.listSurveyEntry
+		lowest_res = max(e.massWindow for e in listSE if e.massWindow > 0)
 
 		listSE= sorted(listSE, key = lambda x: x.peakMean)
 
@@ -799,9 +798,8 @@ class TypeResult:
 			dbgstr += "\n"
 			dbgout(dbgstr)
 
-		last_res = 0.0001
 		for entry in range(len(listSE)):
-
+			
 			actualKey = listSE[entry]
 
 			### mark the isotopic corrected peaks ###
@@ -834,11 +832,7 @@ class TypeResult:
 			#	res = listSE[entry].precurmass / scan.options['MSresolution'].tolerance
 
 				if self.mfqlObj.sc.options['alignmentMethodMS'] == 'calctol':
-					if listSE[entry].massWindow > 0:
-						res = listSE[entry].massWindow # the problem is here
-						last_res = res
-					else:
-						res = last_res
+					res = lowest_res
 				else:
 					res = self.mfqlObj.options['MSresolution'].getTinDA(listSE[entry].precurmass)
 
