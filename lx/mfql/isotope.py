@@ -29,6 +29,12 @@ def next2pow(x):
 
 #def isotope(elemC, elemH, elemO, elemN, elemS, elemP, WINDOW_SIZE = 500, RESOLUTION = 0.5):
 def isotope(elemC, elemH, elemO, elemN, elemS, elemP, WINDOW_SIZE = 100, RESOLUTION = 0.00001):
+	elemC = int(elemC) # removes fractions, fractions make for faulty results
+	elemH = int(elemH)
+	elemO = int(elemO)
+	elemN = int(elemN)
+	elemS = int(elemS)
+	elemP = int(elemP)
 
 	#WINDOW_SIZE=input('Window size (in Da) ---> ');
 	#RESOLUTION=input('Resolution (in Da) ----> ');  % mass unit used in vectors
@@ -174,7 +180,7 @@ def isotopicValues(elemC, elemH, elemO, elemN, elemS, elemP):
 
 	(MA, ptA) = isotope(elemC, elemH, elemO, elemN, elemS, elemP, 20, 0.1)
 
-	one = ptA[0]
+	one = ptA[0] #TODO this may not be always correct
 	for index in range(len(ptA)):
 		ptA[index] = ptA[index] / one
 	return (MA, ptA, one)
