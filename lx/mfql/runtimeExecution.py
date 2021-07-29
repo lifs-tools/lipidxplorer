@@ -3470,10 +3470,14 @@ class TypeResult:
 
 	def removePermutations(self):
 
-		def sum_lv_err_and_intens(lv):#TODO  I need to only consider the intensities beofre isoptopic dcorrectoin there shulld be a dictionary with the original intensities
-			#lv.se.dictBeforeIsocoIntensity try on lpc fa
+		def sum_lv_err_and_intens(lv):
 			def criteria(mark):
-				intens_items = getattr(mark.se[0], 'dictBeforeIsocoIntensity', mark.se[0].dictIntensity) # will get 'dictBeforeIsocoIntensity' if its available
+				try: #NOTE sorry this is so dirty but im not sure if there is a dict and also if its populated???? so just guardf
+					intens_items = mark.se[0].dictBeforeIsocoIntensity #NOTE need the original intensities to get a better seletion because with isotopic correction we get very different values
+				except AttributeError:
+				 	intens_items = mark.se[0].dictIntensity # will get 'dictBeforeIsocoIntensity' if its available
+				if not intens_items:
+					intens_items = mark.intensity
 				intensities = [v for v in intens_items.values() if v > 0]
 				mean_i = sum(intensities) / len(intensities)
 				res = mean_i/abs(mark.errppm) if abs(mark.errppm)>1 else mean_i
