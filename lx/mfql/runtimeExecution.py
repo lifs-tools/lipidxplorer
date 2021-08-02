@@ -3473,13 +3473,14 @@ class TypeResult:
 		def sum_lv_err_and_intens(lv):
 			def criteria(mark):
 				try: #NOTE sorry this is so dirty but im not sure if there is a dict and also if its populated???? so just guardf
-					intens_items = mark.se[0].dictBeforeIsocoIntensity #NOTE need the original intensities to get a better seletion because with isotopic correction we get very different values
+					intens_items = {k:v for k,v in se_item.dictBeforeIsocoIntensity for se_item in mark.se if v>0} or \
+						{k:v for k,v in se_item.dictIntensity for se_item in mark.se if v>0} 
 				except AttributeError:
-				 	intens_items = mark.se[0].dictIntensity # will get 'dictBeforeIsocoIntensity' if its available
+				 	intens_items = {k:v for k,v in se_item.dictIntensity for se_item in mark.se if v>0} # will get 'dictBeforeIsocoIntensity' if its available else this
 				if not intens_items:
 					intens_items = mark.intensity
 				intensities = [v for v in intens_items.values() if v > 0]
-				mean_i = sum(intensities) / len(intensities)
+				mean_i = sum(intensities) / len(intensities) if intensities else 1
 				res = mean_i/abs(mark.errppm) if abs(mark.errppm)>1 else mean_i
 				return res
 			return sum((criteria(e) for e in lv.values()))
