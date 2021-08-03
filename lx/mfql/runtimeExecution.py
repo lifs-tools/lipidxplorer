@@ -3472,19 +3472,24 @@ class TypeResult:
 
 		def sum_lv_err_and_intens(lv):
 			def criteria(mark):
+				if mark.msmse:
+					mark_se = [mark.msmse,] #its a fragment
+				else:
+					mark_se = mark.se
+
 				try: #NOTE sorry this is so dirty but im not sure if there is a dict and also if its populated???? so just guardf
 					intens_vals = [v
-									for se_item in mark.se 
+									for se_item in mark_se 
 									for v in se_item.dictBeforeIsocoIntensity.values()
 									if v > 0] 
 					if not intens_vals: # it may just be empty
 						intens_vals = [v
-									for se_item in mark.se 
+									for se_item in mark_se 
 									for v in se_item.dictIntensity.values()
 									if v > 0]  
 				except AttributeError:
 				 	intens_vals = [v
-									for se_item in mark.se 
+									for se_item in mark_se 
 									for v in se_item.dictIntensity.values()
 									if v > 0] # will get 'dictBeforeIsocoIntensity' if its available else this
 				if not intens_vals:
