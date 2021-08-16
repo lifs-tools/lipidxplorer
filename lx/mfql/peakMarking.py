@@ -1,7 +1,7 @@
 from lx.tools import unionSF
 from lx.mfql.chemsc import calcSFbyMass
 from lx.mfql.runtimeStatic import TypeSFConstraint, TypeElementSequence,\
-	TypeFloat, TypeList
+	TypeFloat, TypeList, TypeTolerance
 from lx.exceptions import LipidXException
 from lx.spectraContainer import MSMSEntry
 
@@ -112,6 +112,11 @@ class TypeScan:
 		for mo in self.scanTerm:
 			groups.append([])
 
+		if self.mfqlObj.options['alignmentMethodMS'] == 'calctol':
+			newtol = max(((e.massWindow, e.peakMean) for e in self.mfqlObj.sc.listSurveyEntry), key=lambda item:item[0]*item[1])
+			# maybe =  self.mfqlObj.sc.options['calcSelectionWindow']
+			ppm_tol = newtol[0]/(newtol[1]/1_000_000)
+
 		for se in self.mfqlObj.sc.listSurveyEntry:
 
 			for indexM in range(len(self.scanTerm)):
@@ -158,10 +163,13 @@ class TypeScan:
 
 						if not self.mfqlObj.options.isEmpty('MSminOccupation'):
 							options['minocc'] = self.mfqlObj.options['MSminOccupation']
+						
+						if self.mfqlObj.options['alignmentMethodMS'] == 'calctol': #is LX2
+							options['tolerance'] = TypeTolerance('ppm', ppm_tol)
 
 						if not 'tolerance' in options:
 							if not self.mfqlObj.options.isEmpty('optionalMStolerance'):
-								options['tolerance'] = self.mfqlObj.options['optionalMStolerance']
+								options['tolerance'] = self.mfqlObj.options['optionalMStolerance'] #make the 2* fattest cluster
 							else:
 								options['tolerance'] = self.mfqlObj.options['MStolerance']
 
