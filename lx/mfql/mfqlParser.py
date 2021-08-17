@@ -1136,6 +1136,9 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	if isotopicCorrectionMS:
 		#mfqlObj.result.isotopicCorrectionMSMS()
 		print("type II isotopic correction in MS ...", end=' ')
+		#do https://stackoverflow.com/questions/4471993/compute-the-elbow-for-a-curve-automatically-and-mathematically
+		# secondDerivative[i] = x[i+1] + x[i-1] - 2 * x[i] 
+		#to drop high ppms and lower the influense of isotopic corrections
 		mfqlObj.result.isotopicCorrectionMS()
 
 		#gprogressCount += 1
