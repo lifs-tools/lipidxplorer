@@ -710,6 +710,16 @@ class TypeExpression:
 											dictIntensity = None,
 											chemsc = None,
 											type = TYPE_FLOAT)
+							
+							elif attribute.lower() == 'exactintensity':
+								dictBeforeIsocoIntensity_holder = {k:0 for k in vars[namespacedVariable].se[0].dictBeforeIsocoIntensity.items()}
+								dictBeforeIsocoIntensity_holder.update({k:v for se in vars[namespacedVariable].se for k,v in se.dictBeforeIsocoIntensity.items()})
+								leftSide = TypeTmpResult(
+												options = None,
+												float = None,
+												dictIntensity = dictBeforeIsocoIntensity_holder,
+												chemsc = None,
+												type = TYPE_DICT_INTENS)
 
 							elif attribute.lower() == 'intensity':
 
