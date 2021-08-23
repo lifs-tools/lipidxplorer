@@ -37,7 +37,7 @@ def makeResultsString(result, options):
 
     return strResult
 
-def make_MFQL_result(masterscan, mfqlFiles):
+def make_MFQL_result(masterscan, mfqlFiles, options):
     mfqlObj = TypeMFQL(masterScan=masterscan)
     mfqlObj.options = options
     mfqlObj.outputSeperator = ','
@@ -74,10 +74,12 @@ if __name__ == "__main__":
     # masterscan = make_masterscan(options)
     with open(options['masterScanFileRun'],'rb') as handle:
         masterscan = pickle.load(handle)
+    masterscan.listSurveyEntry = [se for se in masterscan.listSurveyEntry if 600< se.peakMean <750]
     mfqlFiles = getMfqlFiles(r'test_resources\small_test')
-    result = make_MFQL_result(masterscan, mfqlFiles)
+    result = make_MFQL_result(masterscan, mfqlFiles, options)
     resultStr = makeResultsString(result, options)
     # resultDF = make_resultDF(result)
     mztabstr = as_mztab(result)
     reference = Path(r'test_resources\small_test\small_test-out.csv').read_text()
+    print(resultStr)
     print(f'are same {resultStr == reference}')
