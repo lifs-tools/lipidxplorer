@@ -1,9 +1,9 @@
-from x_masterscan import compareMasterScans
 import pytest
 from lx.spectraImport import doImport, lpdxImportDEF_new
 from lx.spectraTools import loadSC
-from utils import read_options, proy_path, expected_ms_path, make_masterscan
-from lx.spectraTools import loadSC
+from x_masterscan import compareMasterScans
+
+from utils import expected_ms_path, make_masterscan, proy_path, read_options
 
 
 def test_make_masterscan():

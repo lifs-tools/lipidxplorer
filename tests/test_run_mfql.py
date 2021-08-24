@@ -1,14 +1,15 @@
-import pytest
-from pathlib import Path
 import pickle
+from pathlib import Path
+
+import pytest
 
 from utils import (
-    read_options,
-    proy_path,
     getMfqlFiles,
     make_MFQL_result,
     makeResultsString,
     out_reference,
+    proy_path,
+    read_options,
 )
 
 

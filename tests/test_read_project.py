@@ -1,5 +1,6 @@
 import pytest
-from utils import read_options, expected_options_str, proy_path
+
+from utils import expected_options_str, proy_path, read_options
 
 
 def test_read_project():
