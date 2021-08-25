@@ -7,6 +7,7 @@ from lx.fileReader.mzxml import PrecursorSort, MzXMLFileReader
 from lx.alignment import (
     specEntry,
     linearAlignment,
+    r_linearAlignment,
     heuristicAlignment,
     mergeSumIntensity,
     doClusterSample,
@@ -309,6 +310,20 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
         assert kwargs["scanAveraging"] == options["scanAveragingMethod"]
         listClusters = linearAlignment(
+            list(dictSpecEntry.keys()),
+            dictSpecEntry,
+            options["MSresolution"],
+            merge=mergeSumIntensity,
+            mergeTolerance=options["MSresolution"],
+            mergeDeltaRes=options["MSresolutionDelta"],
+            fadi_denominator=fadi_denominator,
+            fadi_percentage=fadi_percentage,
+            bintolerance=options["MStolerance"],
+            res_by_fullbin=options["scanAveragingMethod"] == "calctol",
+            min_da_delta_all_scans=min_da_delta_all_scans,
+        )
+
+        r_listClusters = r_linearAlignment(
             list(dictSpecEntry.keys()),
             dictSpecEntry,
             options["MSresolution"],
@@ -890,9 +905,9 @@ def add_mzXMLSample(
     MSMSthresholdType=None,
 ):
     """Adds a sample to the Survey Scan.
-	IN: <the path of the sample
+    IN: <the path of the sample
 directory>, <the resolution of the mass spec machine>
-	"""
+    """
 
     options = sc.options
     specFile = sample
@@ -1456,8 +1471,8 @@ def add_DTASample(
     thresholdType=None,
 ):
     """Add a sample to the Sample class. It reads the scans from the given *.mzXML files,
-	does the averaging and stores it in the Sample class.
-	"""
+    does the averaging and stores it in the Sample class.
+    """
 
     # sample: path to dest directory (<bla>/destDir)
     # strName: name of the dest directory (destDir)
@@ -1601,8 +1616,8 @@ def add_DTASample(
 # dta specific functions
 def loadMSMS(sample, dirmsms, resolution, options):
     """Loads all .dta files as MSMS's. Be careful: the path variable is case sensitive!
-	and of the form name.csv. Input is the filename (with or without .csv) and output
-	is filled in sample.listMsms and sample.msmsMasses."""
+    and of the form name.csv. Input is the filename (with or without .csv) and output
+    is filled in sample.listMsms and sample.msmsMasses."""
 
     import os
 
@@ -1689,7 +1704,7 @@ def loadMSMS(sample, dirmsms, resolution, options):
 
 def set_PrecurmassFromMSMS(sample, chg=None):
     """Get list of precurmasses from msms .dta files, the sample.msms must
-	be given."""
+    be given."""
     if sample.listMsms != []:
         for i in sample.listMsms:
 

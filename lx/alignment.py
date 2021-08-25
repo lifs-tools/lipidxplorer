@@ -2434,6 +2434,29 @@ def getResSteps(dictSamples, mstolerance):
     return res
 
 
+def r_linearAlignment(
+    listSamples,
+    dictSamples,
+    tolerance,
+    merge=None,
+    mergeTolerance=None,
+    mergeDeltaRes=None,
+    charge=None,
+    deltaRes=None,
+    minocc=None,
+    msThreshold=None,
+    intensityWeightedAvg=False,
+    minMass=None,
+    fadi_denominator=None,
+    fadi_percentage=0.0,
+    bintolerance=None,
+    res_by_fullbin=False,
+    res_by_steps=False,
+    min_da_delta_all_scans=None,
+):
+    pass
+
+
 def linearAlignment(
     listSamples,
     dictSamples,
