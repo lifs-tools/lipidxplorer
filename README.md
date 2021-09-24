@@ -28,9 +28,9 @@ These also cover the case of working with the source code.
 
 We recommend [PyCharm](https://www.jetbrains.com/pycharm/) for development of the LipidXplorer codebase and [Anaconda 3](https://www.anaconda.com/distribution/) to manage a stable, versioned Python environment.
 Any other Python IDE will also work just as well.
-Please see the `wx-py2.7-anaconda.yml` file in the project's source root folder for reference of an exported Anaconda environment. You can import it in your local Anaconda installation, call 
+Please see the `environment.yml` file in the project's source root folder for reference of an exported Anaconda environment. You can import it in your local Anaconda installation, call 
  
-    conda env create -f wx-py2.7-anaconda.yml 
+    conda env create -f environment.yml 
 
 ## Creating a Windows Executable
 
@@ -72,7 +72,7 @@ This project is licensed under the GNU GPL License, version 2 - see the [COPYRIG
 Please check our [Wiki](https://lifs.isas.de/wiki/index.php) on details on how to contact us to receive help and report errors.
 
 ## known issues
-to run it in a virtual environmebt in on macOS use pythonw instead pf python
+to run it in a virtual environment in on macOS use pythonw instead of python
 
 ## Citing the Software
 Herzog R, Schwudke D, Shevchenko A: ***LipidXplorer: Software for Quantitative Shotgun Lipidomics Compatible with Multiple Mass Spectrometry Platforms***. **Current Protocols in Bioinformatics 2013 Oct 15** [PUBMED](https://www.ncbi.nlm.nih.gov/pubmed/26270171)
