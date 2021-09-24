@@ -2724,7 +2724,7 @@ def linearAlignment(
             if fadi_denominator is not None and fadi_denominator > 0.0:
                 fadi_ratio = (
                     cnt / float(fadi_denominator)
-                    if fadi_denominator is not None and fadi_denominator is not 0.0
+                    if fadi_denominator is not None and fadi_denominator != 0.0
                     else 1.0
                 )
 
