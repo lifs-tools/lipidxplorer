@@ -100,7 +100,7 @@ class Options:
     ]
 
     def __init__(self, options=None):
-        """ All options are defined here. There are two dictionaries:
+        """All options are defined here. There are two dictionaries:
         options and options_formatted. The options dictionary stores the
         orginal string values while the options_formatted dictionary
         stores the values in the needed format."""

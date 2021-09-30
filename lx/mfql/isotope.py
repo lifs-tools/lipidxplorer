@@ -313,8 +313,8 @@ def isotopicValuesInterM(
     elemPNL,
 ):
     """This is the same function as isotopicValuesInter, with the
-	difference that the peaks are not modified by the first isotopic
-	peak (monoisotopic)."""
+    difference that the peaks are not modified by the first isotopic
+    peak (monoisotopic)."""
 
     elemS = 0
     elemSNL = 0

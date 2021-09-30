@@ -468,9 +468,9 @@ def add_mzXMLSample(
     MSMSthresholdType=None,
 ):
     """Adds a sample to the Survey Scan.
-	IN: <the path of the sample
-directory>, <the resolution of the mass spec machine>
-	"""
+            IN: <the path of the sample
+    directory>, <the resolution of the mass spec machine>
+    """
 
     options = sc.options
     specFile = sample
@@ -976,8 +976,8 @@ def add_DTASample(
     thresholdType=None,
 ):
     """Add a sample to the Sample class. It reads the scans from the given *.mzXML files,
-	does the averaging and stores it in the Sample class.
-	"""
+    does the averaging and stores it in the Sample class.
+    """
 
     # sample: path to dest directory (<bla>/destDir)
     # strName: name of the dest directory (destDir)
@@ -1119,8 +1119,8 @@ def add_DTASample(
 # dta specific functions
 def loadMSMS(sample, dirmsms, resolution, options):
     """Loads all .dta files as MSMS's. Be careful: the path variable is case sensitive!
-	and of the form name.csv. Input is the filename (with or without .csv) and output
-	is filled in sample.listMsms and sample.msmsMasses."""
+    and of the form name.csv. Input is the filename (with or without .csv) and output
+    is filled in sample.listMsms and sample.msmsMasses."""
 
     import os
 
@@ -1208,7 +1208,7 @@ def loadMSMS(sample, dirmsms, resolution, options):
 
 def set_PrecurmassFromMSMS(sample, chg=None):
     """Get list of precurmasses from msms .dta files, the sample.msms must
-	be given."""
+    be given."""
     if sample.listMsms != []:
         for i in sample.listMsms:
 

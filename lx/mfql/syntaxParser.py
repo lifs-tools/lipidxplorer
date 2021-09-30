@@ -199,7 +199,7 @@ def p_program_single(p):
 
 def p_script(p):
     """script  : scriptname variables identification
-			   | identification"""
+    | identification"""
 
     global numQueries
     numQueries += 1
@@ -243,7 +243,7 @@ def p_variables_endloop(p):
 
 def p_var_normal(p):
     """var : DEFINE ID IS object options SEMICOLON
-			| DEFINE ID IS object options AS NEUTRALLOSS SEMICOLON"""
+    | DEFINE ID IS object options AS NEUTRALLOSS SEMICOLON"""
 
 
 def p_var_list(p):
@@ -339,7 +339,7 @@ def p_varcontent_float(p):
 
 def p_varcontent_integer(p):
     """varcontent : INTEGER
-				  | PLUS INTEGER"""
+    | PLUS INTEGER"""
 
 
 def p_varcontent_signedInteger(p):
@@ -405,30 +405,30 @@ def p_optionentry_TOLERANCE(p):
 
 def p_tolerancetype(p):
     """tolerancetype : FLOAT DA
-					 | FLOAT PPM
-					 | INTEGER DA
-		 			 | INTEGER RES
-					 | INTEGER PPM"""
+    | FLOAT PPM
+    | INTEGER DA
+    | INTEGER RES
+    | INTEGER PPM"""
 
 
 def p_identification_normal_old(p):
     """identification : IDENTIFY tagname WHERE marks evalMarks suchthat REPORT report
-		  			  | IDENTIFY tagname WHERE marks evalMarks REPORT report"""
+    | IDENTIFY tagname WHERE marks evalMarks REPORT report"""
 
 
 def p_identification_interpretatin_old(p):
     """identification : IDENTIFY tagname WHERE marks evalMarks suchthat interpretation REPORT report
-		  			  | IDENTIFY tagname WHERE marks evalMarks interpretation REPORT report"""
+    | IDENTIFY tagname WHERE marks evalMarks interpretation REPORT report"""
 
 
 def p_identification_normal_new(p):
     """identification : IDENTIFY marks evalMarks suchthat REPORT report
-		  			  | IDENTIFY marks evalMarks REPORT report"""
+    | IDENTIFY marks evalMarks REPORT report"""
 
 
 def p_identification_interpretation_new(p):
     """identification : IDENTIFY marks evalMarks suchthat interpretation REPORT report
-		  			  | IDENTIFY marks evalMarks interpretation REPORT report"""
+    | IDENTIFY marks evalMarks interpretation REPORT report"""
 
 
 def p_tagname(p):
@@ -480,7 +480,7 @@ def p_boolmarks_toScan(p):
 
 
 def p_evalMarks(p):
-    """evalMarks : """
+    """evalMarks :"""
 
 
 def p_suchthat_single(p):
@@ -497,7 +497,7 @@ def p_bterm(p):
 
 def p_booleanterm_logic(p):
     """booleanterm : booleanterm AND booleanterm
-				   | booleanterm OR  booleanterm"""
+    | booleanterm OR  booleanterm"""
 
 
 def p_booleanterm_brackets(p):
@@ -518,18 +518,18 @@ def p_booleanterm_expression(p):
 
 def p_expr_multi(p):
     """expr : expression EQUALS expression options
-			| expression GT expression options
-			| expression GE expression options 
-			| expression LE expression options
-			| expression LT expression options
-			| expression NE expression options"""
+    | expression GT expression options
+    | expression GE expression options
+    | expression LE expression options
+    | expression LT expression options
+    | expression NE expression options"""
 
 
 def p_expression_struct(p):
     """expression : expression PLUS expression
-	  | expression MINUS expression
-	  | expression TIMES expression
-	  | expression DIVIDE expression"""
+    | expression MINUS expression
+    | expression TIMES expression
+    | expression DIVIDE expression"""
 
 
 def p_expression_attribute(p):
@@ -554,9 +554,9 @@ def p_scan_object(p):
 
 def p_scope(p):
     """scope : MS1 MINUS
-			 | MS1 PLUS
-			 | MS2 PLUS
-			 | MS2 MINUS"""
+    | MS1 PLUS
+    | MS2 PLUS
+    | MS2 MINUS"""
 
 
 def p_report(p):
@@ -573,7 +573,7 @@ def p_reportContent_single(p):
 
 def p_rContent(p):
     """rContent : ID IS STRING PERCENT STRING SEMICOLON
-				| ID IS expression SEMICOLON"""
+    | ID IS expression SEMICOLON"""
 
 
 def p_error(p):

@@ -70,7 +70,7 @@ def t_LTUPLE(t):
 
 
 def t_RTUPLE(t):
-    r"\)\""
+    r"\)\" "
     return t
 
 

@@ -59,13 +59,13 @@ from lx.fileReader.mzAPI import mzScan, mzInfoFile, mzFile as mzAPImzFile
 
 class FileRange:
     """Wraps a file-like object and present a subset of the file--
-	the idea is to allow accessing a slice of an mzML without reading
-	the whole thing into memory as a StringIO instance.
+    the idea is to allow accessing a slice of an mzML without reading
+    the whole thing into memory as a StringIO instance.
 
-	Some trepidation about not implementating the whole file-object
-	interface here. It seems to work in its intended application,
-	though. etree.iterparse only calls the read() method.
-	"""
+    Some trepidation about not implementating the whole file-object
+    interface here. It seems to work in its intended application,
+    though. etree.iterparse only calls the read() method.
+    """
 
     def __init__(self, file_ob, start, stop):
         self.fo = file_ob
@@ -76,9 +76,9 @@ class FileRange:
 
     def read(self, size=None):
         """Reads data within the given range, truncating if it
-		gets to the end, and wrapping the whole thing with a
-		'spectrumList' element because the parser wants that.
-		"""
+        gets to the end, and wrapping the whole thing with a
+        'spectrumList' element because the parser wants that.
+        """
         if self.start <= self.cur < self.stop:
             r = self.fo.read(size)
             if len(r) + self.cur > self.stop:
@@ -100,11 +100,11 @@ class FileRange:
 class InfoBuilderTarget:
     """Builds a list of spectrum offsets as it reads the file.
 
-	Takes a file-like object handle on creation, which it uses
-	to get the current location whenever it encounters the end
-	of a spectrum element. Meant to be fed a file line by line
-	using the parser.feed(data) interface.
-	"""
+    Takes a file-like object handle on creation, which it uses
+    to get the current location whenever it encounters the end
+    of a spectrum element. Meant to be fed a file line by line
+    using the parser.feed(data) interface.
+    """
 
     offsets = []
 
@@ -122,8 +122,8 @@ class InfoBuilderTarget:
 
 def make_info_file(data_file):
     """Makes an info file for an mzML file, so that we don't have
-	to iterate through the whole thing every time.
-	"""
+    to iterate through the whole thing every time.
+    """
 
     # building our own table is about as fast as reading through
     # the file and extracting theirs, so to simplify code we'll
@@ -140,16 +140,16 @@ def make_info_file(data_file):
 
 class mzFile(mzAPImzFile):
     """Class for access to mzML data files. This class doesn't load the
-	file into memory--instead, it uses lxml's 'iterparse' class to
-	create a specialized file-reader, which only loads one scan at a
-	time. This uses very little memory (an insignificant amount when
-	compared to multiplierz in general) and is not too slow.
+    file into memory--instead, it uses lxml's 'iterparse' class to
+    create a specialized file-reader, which only loads one scan at a
+    time. This uses very little memory (an insignificant amount when
+    compared to multiplierz in general) and is not too slow.
 
-	For a large number of accesses (extracting XICs, for instance), it's
-	usually worth building a cheat-sheet of scan locations--for a one-time
-	use, there's the _build_info_scans method, but in general it makes
-	more sense to create an .mzi file.
-	"""
+    For a large number of accesses (extracting XICs, for instance), it's
+    usually worth building a cheat-sheet of scan locations--for a one-time
+    use, there's the _build_info_scans method, but in general it makes
+    more sense to create an .mzi file.
+    """
 
     _xp_time = etree.XPath(
         (
@@ -607,10 +607,10 @@ class mzFile(mzAPImzFile):
 
     def _build_info_scans(self):
         """Build the info_scans object in memory--this allows the speed-up
-		of having an .mzi file. For a file that's going to be accesssed many
-		times, it makes more sense to just build the .mzi, but this might be
-		useful if a lot of data is being pulled from a file, but only once.
-		"""
+        of having an .mzi file. For a file that's going to be accesssed many
+        times, it makes more sense to just build the .mzi, but this might be
+        useful if a lot of data is being pulled from a file, but only once.
+        """
         if self._info_file:
             return  # self._info_scans is already present
 
@@ -652,9 +652,9 @@ class mzFile(mzAPImzFile):
 
     def _scan_from_spec_node(self, spec, scan_time, prefix=True):
         """Gets the mzScan data from a 'spectrum' mzML node. Does some error-checking
-		due to the ambiguous nature of mzML's spec--no guarantees about what's in the
-		tree.
-		"""
+        due to the ambiguous nature of mzML's spec--no guarantees about what's in the
+        tree.
+        """
         if prefix:
             p = NS
         else:
@@ -745,10 +745,10 @@ class mzFile(mzAPImzFile):
 
 class mzFileInMemory:
     """Class for access to mzML data files. Loads the entire tree into memory,
-	which takes a while and uses a lot of space. Access is then faster. For
-	small files and/or machines with huge amounts of RAM, this class might be
-	a better choice.
-	"""
+    which takes a while and uses a lot of space. Access is then faster. For
+    small files and/or machines with huge amounts of RAM, this class might be
+    a better choice.
+    """
 
     def __init__(self, data_file, **kwargs):
         self.file_type = "mzml"
@@ -935,9 +935,9 @@ class mzFileInMemory:
 
     def _scan_from_spec_node(self, spec, scan_time):
         """Gets the mzScan data from a 'spectrum' mzML node. Right now, does some
-		error-checking due to the ambiguous nature of mzML's spec--no guarantees
-		about what's in the tree.
-		"""
+        error-checking due to the ambiguous nature of mzML's spec--no guarantees
+        about what's in the tree.
+        """
         if spec.find('%scvParam[@name="profile spectrum"]' % NS) is not None:
             scan_mode = "p"
         else:

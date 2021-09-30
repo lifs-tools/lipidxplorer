@@ -911,7 +911,7 @@ class ThermoRawfile(object):
 
     def GetCollisionEnergyForScanNum(self, scanNumber, MSOrder):
         """This function returns the collision energy for the scan specified by scanNumber and the
-        transition specified by MSOrder from the scan event structure in the raw file. """
+        transition specified by MSOrder from the scan event structure in the raw file."""
         result = c_double()
         error = self.source.GetCollisionEnergyForScanNum(
             c_long(scanNumber), c_long(MSOrder), byref(result)

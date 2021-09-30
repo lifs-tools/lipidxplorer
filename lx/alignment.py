@@ -59,8 +59,8 @@ class peakCluster:
 
     # def findPeak(self, mass = None, key = None):
     def findPeak(self, key=None):
-        """ Find and return a the peak with the given sample
-		name (key) from the peakList."""
+        """Find and return a the peak with the given sample
+        name (key) from the peakList."""
 
         if key:
             for i in self.peakList:
@@ -147,7 +147,7 @@ class specMSEntry:
 
 def printClusters(keys, listClusters):
     """This is for debugging the alignment functions. It
-	just prints the resulting alignment."""
+    just prints the resulting alignment."""
 
     for cl in listClusters:
         str = ""
@@ -253,7 +253,7 @@ def mkSurveyHeuristic(
     msThreshold=None,
     checkoccupation=True,
 ):
-    """ Align the MS spectra."""
+    """Align the MS spectra."""
 
     listPolarity = []
     for k in sc.listSamples:
@@ -367,7 +367,7 @@ def mkSurveyLinear(
     bin_res=False,
     collapse=False,
 ):
-    """ Align the MS spectra."""
+    """Align the MS spectra."""
 
     # get the base peak dictionary
     dictBasePeakIntensity_MS = {}
@@ -813,7 +813,7 @@ def mkSurveyLinear(
 def mkSurveyHierarchical(
     sc, listPolarity, numLoops=None, deltaRes=0, minocc=None, msThreshold=None
 ):
-    """ Align the MS spectra."""
+    """Align the MS spectra."""
 
     resolution = sc.options["MSresolution"]
 
@@ -1452,16 +1452,16 @@ def collape_join_adjecent_clusters_msms(cluster):
 def collape_join_adjecent_clusters(
     survey_entries, max_dist=0.05, consider_intensity=True
 ):
-    """join adjecent clusters that may be complementary, 
+    """join adjecent clusters that may be complementary,
 
-	Args:	
-		survey_entries (dict of spentries): all the clusters so far
-		max_dist (float, optional): how far a cluster is in daltons to try and merge them if they are complementary. Defaults to 0.1. # default is arbitrary
-		consider_intensity (bool, optional): try to cluster similar intensities
+    Args:
+            survey_entries (dict of spentries): all the clusters so far
+            max_dist (float, optional): how far a cluster is in daltons to try and merge them if they are complementary. Defaults to 0.1. # default is arbitrary
+            consider_intensity (bool, optional): try to cluster similar intensities
 
-	Returns:
-		same as cluster but collapsed, may include duplicated entries in adjacent clusters
-	"""
+    Returns:
+            same as cluster but collapsed, may include duplicated entries in adjacent clusters
+    """
     res = (
         []
     )  # must create new instances becase, all atributes are calulated on init not on call!!!!!
@@ -2480,20 +2480,20 @@ def linearAlignment(
     # using fadi_denominator, fadi_percentage, becayse nbofscans and msthreshold variables are already in use !!!
     # these varuables are used to implement fadi filter
     """
-	This is the standard algorithm to align spectra. It is published
-	in [...].
+    This is the standard algorithm to align spectra. It is published
+    in [...].
 
-	It is optimized for the available data structures. Therefore the input
-	is an own format (specEntry) provided as list in listSamples. Furthermore,
-	dictSamples: is the list of all sample names (keys from dict)
-	tolerance: is a TypeTolerance type with the
-		tolerance as da, ppm or res.
-	deltaRes: if the tolerance is given as resolution, the deltaRes
-		states the resolution change over the masses.
+    It is optimized for the available data structures. Therefore the input
+    is an own format (specEntry) provided as list in listSamples. Furthermore,
+    dictSamples: is the list of all sample names (keys from dict)
+    tolerance: is a TypeTolerance type with the
+            tolerance as da, ppm or res.
+    deltaRes: if the tolerance is given as resolution, the deltaRes
+            states the resolution change over the masses.
 
-	The output is a list of specEntry
-	that can be "filtered" as per DS
-	"""
+    The output is a list of specEntry
+    that can be "filtered" as per DS
+    """
 
     # get max length of peak in the spectra
     speclen = 0
@@ -2975,19 +2975,19 @@ def heuristicAlignment(
     minMass=None,
 ):
     """
-	The algorithm is taken from "Alignment of high resolution mass spectra:
-	development of a heuristic aprroach for metabolomics" by
-	Saira Kazmi et al (2006). Metabolomics 2(2):75-83.
+    The algorithm is taken from "Alignment of high resolution mass spectra:
+    development of a heuristic aprroach for metabolomics" by
+    Saira Kazmi et al (2006). Metabolomics 2(2):75-83.
 
-	It is optimized for the available data structures. Therefore the input
-	is an own format (specEntry) provided as list in listSamples. Furthermore,
-	dictSamples: is the list of all sample names (keys from dict)
-	tolerance: is a TypeTolerance type with the
-		tolerance as da, ppm or res.
-	deltaRes: if the tolerance is given as resolution, the deltaRes
-		states the resolution change over the masses.
+    It is optimized for the available data structures. Therefore the input
+    is an own format (specEntry) provided as list in listSamples. Furthermore,
+    dictSamples: is the list of all sample names (keys from dict)
+    tolerance: is a TypeTolerance type with the
+            tolerance as da, ppm or res.
+    deltaRes: if the tolerance is given as resolution, the deltaRes
+            states the resolution change over the masses.
 
-	The output is a list of specEntry"""
+    The output is a list of specEntry"""
 
     # get max length of peak in the spectra
     speclen = 0
@@ -3403,10 +3403,10 @@ def mergeListMsms(
     res_by_fullbin=False,
 ):
     """Merge several MS/MS scans. The specEntries have the precursor mass and
-	the MS/MS lists in their .content attribute.
+    the MS/MS lists in their .content attribute.
 
-	This is the averaging algorithm for MS/MS spectra. The "mergeTolerance" is
-	misleading, because this is actually the MSMSresolution."""
+    This is the averaging algorithm for MS/MS spectra. The "mergeTolerance" is
+    misleading, because this is actually the MSMSresolution."""
 
     length = len(listSpecEntries)
 
@@ -3538,7 +3538,7 @@ def mergeSumIntensity(
     res_by_fullbin=False,
 ):  # bintolerance , res_by_fullbin unuse but needed for the arg signature
     """This function calculates the average intensity (average over the given
-	peaks and not from all scans) and the average weighted m/z for the peak mass."""
+    peaks and not from all scans) and the average weighted m/z for the peak mass."""
 
     out = listSpecEntries[0]
 
@@ -3575,7 +3575,7 @@ def mergeListMsms_noContainer(
     sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes
 ):
     """Merge several MS/MS scans. The specEntries have the precursor mass and
-	the MS/MS lists in their .content attribute."""
+    the MS/MS lists in their .content attribute."""
 
     length = len(listSpecEntries)
 
@@ -3651,7 +3651,7 @@ def mergeListMsms_noContainer(
 def alignPIS(
     sc, listPolarity, numLoops=None, deltaRes=0, minocc=None, alignmentMS="linear"
 ):
-    """ Align the MS spectra."""
+    """Align the MS spectra."""
 
     ### this stores the precursors as tab-separated file ###
     # for key in sc.listSamples:
@@ -4034,19 +4034,19 @@ def doClusterMSMS(res, msms):
 def doClusterSample(res, sample):
 
     """lpdxCluster algorithm
-	see p.1.b
-	Go through the masses, mass by mass, and look if there are masses in the
-	sample.accuracy range just calculated. More precise:
+    see p.1.b
+    Go through the masses, mass by mass, and look if there are masses in the
+    sample.accuracy range just calculated. More precise:
 
-	begin with the smallest mass in the ordered list of masses
-	while there is next mass
-		1) Get next mass and make it pivot
-		2) look sample.accuracy to the right.
-			If there is a mass take it and make mass new pivot
-		3) look 2 * sample.accuracy to the right.
-		If there is the first mass goto 2)
-			else end algorithm
-	"""
+    begin with the smallest mass in the ordered list of masses
+    while there is next mass
+            1) Get next mass and make it pivot
+            2) look sample.accuracy to the right.
+                    If there is a mass take it and make mass new pivot
+            3) look 2 * sample.accuracy to the right.
+            If there is the first mass goto 2)
+                    else end algorithm
+    """
 
     sample.listPrecurmass.sort()
 

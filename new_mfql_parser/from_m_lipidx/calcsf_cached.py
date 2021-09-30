@@ -198,56 +198,46 @@ def calcsf(args):
                                                                         ):
 
                                                                             # double bound equivalence
-                                                                            cRDB = (
-                                                                                2.0
+                                                                            cRDB = 2.0 + (
+                                                                                (jC * 2)
                                                                                 + (
-                                                                                    (
-                                                                                        jC
-                                                                                        * 2
-                                                                                    )
-                                                                                    + (
-                                                                                        jH
-                                                                                        * -1
-                                                                                    )
-                                                                                    + (
-                                                                                        jCl
-                                                                                        * -1
-                                                                                    )
-                                                                                    + jN
-                                                                                    + (
-                                                                                        jNa
-                                                                                        * -1
-                                                                                    )
-                                                                                    + (
-                                                                                        jP
-                                                                                    )
-                                                                                    + (
-                                                                                        jD
-                                                                                        * -1
-                                                                                    )
-                                                                                    + (
-                                                                                        jCi
-                                                                                        * 2
-                                                                                    )
-                                                                                    + (
-                                                                                        jNi
-                                                                                    )
-                                                                                    + (
-                                                                                        jLi
-                                                                                        * -1
-                                                                                    )
-                                                                                    + (
-                                                                                        jS
-                                                                                        * 4
-                                                                                    )
-                                                                                    + (
-                                                                                        jI
-                                                                                        * 5
-                                                                                    )
-                                                                                    + (
-                                                                                        jF
-                                                                                        * 5
-                                                                                    )
+                                                                                    jH
+                                                                                    * -1
+                                                                                )
+                                                                                + (
+                                                                                    jCl
+                                                                                    * -1
+                                                                                )
+                                                                                + jN
+                                                                                + (
+                                                                                    jNa
+                                                                                    * -1
+                                                                                )
+                                                                                + (jP)
+                                                                                + (
+                                                                                    jD
+                                                                                    * -1
+                                                                                )
+                                                                                + (
+                                                                                    jCi
+                                                                                    * 2
+                                                                                )
+                                                                                + (jNi)
+                                                                                + (
+                                                                                    jLi
+                                                                                    * -1
+                                                                                )
+                                                                                + (
+                                                                                    jS
+                                                                                    * 4
+                                                                                )
+                                                                                + (
+                                                                                    jI
+                                                                                    * 5
+                                                                                )
+                                                                                + (
+                                                                                    jF
+                                                                                    * 5
                                                                                 )
                                                                             )
                                                                             cRDB = (

@@ -284,19 +284,19 @@ def assignAllMSMS(sc):
 
 def assignMSMS(sc, smpl):
     """Go through msms experiments and assign every one to a precurmass
-	
-	in detail:
-	let window(i) be the tolerance range [i-x...i+x] for i in precurmass and
-		x in float
-	for i in msms (in sample) do
-		if window(i) overlaps with window(i+1) then
-			sort precursor masses in overlapping window such that
-			for every precursor mass j 	
-				if j is nearer i assign it to i
-				else assign it to i+1
-		else assign ever precursor mass from the survey scan to i
-			which is in window(i)
-	"""
+
+    in detail:
+    let window(i) be the tolerance range [i-x...i+x] for i in precurmass and
+            x in float
+    for i in msms (in sample) do
+            if window(i) overlaps with window(i+1) then
+                    sort precursor masses in overlapping window such that
+                    for every precursor mass j
+                            if j is nearer i assign it to i
+                            else assign it to i+1
+            else assign ever precursor mass from the survey scan to i
+                    which is in window(i)
+    """
 
     reportout("Assigning MSMS experiment data for sample %s." % smpl)
 
@@ -377,11 +377,10 @@ def formatOutputSaira(list):
 
 def calcSFbyMass(mass, sfconstraint, tolerance, nearest=False):
     """IN: mass in m/z,
-	sf-constraint,
-	tolerance in resolution type,
-	nearest in Boolean
-OUT: list of SurveyEntry
-"""
+            sf-constraint,
+            tolerance in resolution type,
+            nearest in Boolean
+    OUT: list of SurveyEntry"""
 
     if not sfconstraint:
         raise "No SF given"
@@ -409,11 +408,10 @@ OUT: list of SurveyEntry
 
 def calcSFbyMassSGR(mass, sfconstraint, tolerance, nearest=False):
     """IN: mass in m/z,
-	sf-constraint,
-	tolerance in resolution type,
-	nearest in Boolean
-OUT: list of SurveyEntry
-"""
+            sf-constraint,
+            tolerance in resolution type,
+            nearest in Boolean
+    OUT: list of SurveyEntry"""
 
     if not sfconstraint:
         raise "No SF given"
@@ -652,24 +650,24 @@ class linkedList:
 
 def chargeEstimation(scan, adduct, options):
     """The algorithm uses in particalur the idea of matched filter
-approach, decribed in the phd thesis of Parminder Kaur 2007. It uses
-the isotopic spacing of the ions. There
-a theoretical spectrum for every charge per mass is convolved with
-the (original) experimental spectrum. The charge is then estimated
-by a maximum value. While this approach is based on continous spectra
-we have to approximate it for discrete peak values. 
+    approach, decribed in the phd thesis of Parminder Kaur 2007. It uses
+    the isotopic spacing of the ions. There
+    a theoretical spectrum for every charge per mass is convolved with
+    the (original) experimental spectrum. The charge is then estimated
+    by a maximum value. While this approach is based on continous spectra
+    we have to approximate it for discrete peak values.
 
-To compare TID (theoretical isotopic distribution spectrum) and
-EID (experimantal ...) we use two scores: 
-	1) how accurate an TID mass fits to the nearest EID mass (within
-		MStolerance range). We weight this score with the relative
-		intensity of the TID mass.
-	2) intensity comparison: if the isotope intensity of a m/z of TID is
-		greater than the m/z of the EID then this will get a low
-		score. The m/z intensity of a EID peak can be smaller as 
-		of the TID, since the EID peak can overlap with another
-		ion. This could be different after isotopic correction.
-	"""
+    To compare TID (theoretical isotopic distribution spectrum) and
+    EID (experimantal ...) we use two scores:
+            1) how accurate an TID mass fits to the nearest EID mass (within
+                    MStolerance range). We weight this score with the relative
+                    intensity of the TID mass.
+            2) intensity comparison: if the isotope intensity of a m/z of TID is
+                    greater than the m/z of the EID then this will get a low
+                    score. The m/z intensity of a EID peak can be smaller as
+                    of the TID, since the EID peak can overlap with another
+                    ion. This could be different after isotopic correction.
+    """
 
     isotopeDiff = 1.0033
 
@@ -722,11 +720,11 @@ EID (experimantal ...) we use two scores:
 
 
 def sequence(scan, sfconstraint, listDiffs, options, name):
-    """ Identifies a sequence of fragments which differ sequentially
-about the masses given in listDiffs. Options is again a dictionary
-and name a string identifyer for the sequence. The return value is
-a Sequence object. Possible options are:
-	massrange, MStolerance, MSMStolerance"""
+    """Identifies a sequence of fragments which differ sequentially
+    about the masses given in listDiffs. Options is again a dictionary
+    and name a string identifyer for the sequence. The return value is
+    a Sequence object. Possible options are:
+            massrange, MStolerance, MSMStolerance"""
 
     if "MStolerance" in options:
         MStolerance = 1000000 / options["MStolerance"]
@@ -750,8 +748,7 @@ a Sequence object. Possible options are:
 
 
 def selectConnectedSurveyEntries(scan, diff, options):
-    """
-	"""
+    """ """
 
     if isinstance(diff, ElementSequence):
         diff = diff.getWeight()

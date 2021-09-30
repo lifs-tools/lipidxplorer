@@ -43,7 +43,7 @@ def getAMasterScan(options):
 
 def lpdxImportDEF_new(parent, options=None):
     """This version of importDEF does not process the options, since
-	it assumes that they are already processed by lx.options.py"""
+    it assumes that they are already processed by lx.options.py"""
 
     # generate MasterScan object
     scan = MasterScan(options)

@@ -268,7 +268,7 @@ class MSMS:
         threshold=None,
     ):
         """arguments is the head of .dta table and eventually
-		a list of their entries"""
+        a list of their entries"""
         # self.strPrecurmass = mass
         self.precurmass = float(mass)
         self.scanNumber = scanNumber
@@ -298,7 +298,7 @@ class MSMS:
     # def __add__(self, other):
     def add(self, other):
         """__add__() for putting together two MS/MS spectra, which
-		are from exactly the same precurmass"""
+        are from exactly the same precurmass"""
 
         assert self.strPrecurmass == other.strPrecurmass
         assert self.precurmass == other.precurmass
@@ -364,8 +364,8 @@ class MSMS:
 
     def get_listEntryByMark(self, mark):
         """Get all MSMS Entries which fit the mark conditions.
-		The conditions are chain of marks connected with a boolean
-		operator: and, or, xor."""
+        The conditions are chain of marks connected with a boolean
+        operator: and, or, xor."""
         l = []
         if self.entries == []:
             raise "Empty entries"
@@ -378,8 +378,8 @@ class MSMS:
 
     def fillTable(self, table, MSMSthreshold):
         """In: <list of strings>
-		The strings are the lines of a .dta file. fillTable()
-		writes it into self.entries"""
+        The strings are the lines of a .dta file. fillTable()
+        writes it into self.entries"""
 
         regDta = re.compile("(\d+\.?\d*)(\s|\t)+([-]?\d+\.?\d*)")
 
@@ -393,7 +393,7 @@ class MSMS:
 
 class MSMass:
     """Class for a precurmass containing the mass itself, the intensity and
-	relIntensity. The msms is a flag stating if there is a msms experiment."""
+    relIntensity. The msms is a flag stating if there is a msms experiment."""
 
     def __init__(
         self,
@@ -763,9 +763,9 @@ class UnSpec:
 
 
 class Sample:
-    """ Class Sample is holds the entrys of one or more .csv files. The
-	cvs has 3 colums for precurmass, intensity and relIntensity. These are
-	stored in the dictionary entry"""
+    """Class Sample is holds the entrys of one or more .csv files. The
+    cvs has 3 colums for precurmass, intensity and relIntensity. These are
+    stored in the dictionary entry"""
 
     def __init__(self, sampleName, sourceDir, sourceFile, polarity, options):
 
@@ -825,7 +825,7 @@ class Sample:
 
     def fillTable(self, f, smplName, smplDir, MSthreshold, thresholdType):
         """The argument is of type ["precurmass, intensity, relIntensity"].
-		It is the content of .csv file."""
+        It is the content of .csv file."""
 
         maximum = None
 
@@ -869,7 +869,7 @@ class Sample:
 
     def get_PrecurmassByNumber(self, n):
         """in: (<number of precursor mass in the surface scan>)
-			out: Mass object"""
+        out: Mass object"""
         if not self.listPrecurmass == []:
             return self.listPrecurmass[n]
         else:
@@ -877,7 +877,7 @@ class Sample:
 
     def get_Precurmass(self, mass):
         """in: (<number of precursor mass in the surface scan>)
-			out: Mass object"""
+        out: Mass object"""
         for i in self.listPrecurmass:
             if i.precurmass == mass:
                 return i
@@ -919,28 +919,28 @@ class Sample:
 
 class MasterScan:
     """This class holds all Sample Instanstances for a complete view over all
-	experiments
+    experiments
 
-	example:
-	# loads all files, including directories
-	scan = MasterScan(argv)
+    example:
+    # loads all files, including directories
+    scan = MasterScan(argv)
 
-	# get a Entry by index
-	scan.listSurveyEntry[i]
+    # get a Entry by index
+    scan.listSurveyEntry[i]
 
-	# get a Sample by index
-	scan[i]
+    # get a Sample by index
+    scan[i]
 
-	# this can be easiely printed:
-	#print scan[i] # output is a table with precurmass, intensity, relative intensity
+    # this can be easiely printed:
+    #print scan[i] # output is a table with precurmass, intensity, relative intensity
 
-	IN: name -> string - name for the MasterScan
-		MStolerance -> float - accuracy in ppm; is automatically converted into resolution
-		MSMStolerance -> float - accuracy in ppm; is automatically converted into resolution
-		MSresolution -> int - resolution in resolution per peak
-		MSMSresolution -> int - resolution in resolution per peak
-		selectionWindow -> float - window size in "hardcoded" float
-	"""
+    IN: name -> string - name for the MasterScan
+            MStolerance -> float - accuracy in ppm; is automatically converted into resolution
+            MSMStolerance -> float - accuracy in ppm; is automatically converted into resolution
+            MSresolution -> int - resolution in resolution per peak
+            MSMSresolution -> int - resolution in resolution per peak
+            selectionWindow -> float - window size in "hardcoded" float
+    """
 
     def __init__(self, options=None):
 
@@ -1048,8 +1048,8 @@ class MasterScan:
 
     def get_SurveyEntry(self, mass, polarity):
         """Returns the searched SurveyEntry, if its precursor mass is
-in <mass> +- machines resolution. Per options this can be changed with
-MStolerance to an arbitrary value"""
+        in <mass> +- machines resolution. Per options this can be changed with
+        MStolerance to an arbitrary value"""
 
         # list for output
         list = []
@@ -1126,8 +1126,8 @@ MStolerance to an arbitrary value"""
 
     def shiftPrecursorsInRawFilterLine(self, shift):
         """A hack for LTQ Orbitrap data where the filterLine entry
-		of the mzXML's has a shifted Precursor mass. Correction
-		by 'shift'."""
+        of the mzXML's has a shifted Precursor mass. Correction
+        by 'shift'."""
 
         s = float(shift)
         for keySample in list(self.dictSamples.keys()):
@@ -1136,7 +1136,7 @@ MStolerance to an arbitrary value"""
 
     def shiftPrecursors(self, shift):
         """A precursor shift function which makes an offset correction
-		of the value 'shift'. It just touches MS data."""
+        of the value 'shift'. It just touches MS data."""
 
         s = float(shift)
         for keySample in list(self.dictSamples.keys()):
@@ -1155,13 +1155,13 @@ MStolerance to an arbitrary value"""
         threshold_type="absolute",
     ):
         """Returns False if the occupation settings from MasterScan.sampleOccThr
-		not fit to the SurveyEntry se. This function implements grouping of
-		samples having different occupation threshold settings. If samples
-		are missing they won't count for the occupation threshold.
+        not fit to the SurveyEntry se. This function implements grouping of
+        samples having different occupation threshold settings. If samples
+        are missing they won't count for the occupation threshold.
 
-		The factor attribute is used for testing if a theoretical isotopic
-		correction would fit the threshold. The factor is the ratio of the
-		particular isotope."""
+        The factor attribute is used for testing if a theoretical isotopic
+        correction would fit the threshold. The factor is the ratio of the
+        particular isotope."""
 
         # security check for dictScans and dictIntensity
         try:
@@ -1292,7 +1292,7 @@ MStolerance to an arbitrary value"""
         self, dictIntensity, dictScans, threshold, mode="MS", relative=None
     ):
         """Returns False if the threshold settings from MasterScan.options
-		not fit to the SurveyEntry se."""
+        not fit to the SurveyEntry se."""
 
         # security check for dictScans and dictIntensity
         try:
@@ -1515,9 +1515,9 @@ MStolerance to an arbitrary value"""
 
 class SurveyEntry:
     """A class for a row of the MasterScan. To have a extra class here makes the
-	handling easier without using more memory, since we deal always with references
-	in python.
-	"""
+    handling easier without using more memory, since we deal always with references
+    in python.
+    """
 
     def __init__(
         self, msmass, smpl, peaks, charge, polarity, dictScans, msms=None, **argv
@@ -2107,8 +2107,8 @@ class SurveyEntry:
 
     def get_listFragmentsByMark(self, mark):
         """Returns all Fragments which have <mark> at position x in the
-Fragment name 'x:<mass>'.
-		"""
+        Fragment name 'x:<mass>'.
+        """
         l = []
         # they can be empty, exactly then, when there is no MSMS experiment
         # if self.listMSMS == []: raise "Empty entries"
@@ -2121,8 +2121,8 @@ Fragment name 'x:<mass>'.
 
     def get_listFragments(self, listMarks):
         """IN: list of fragment names
-			OUT: marked fragments.
-		"""
+        OUT: marked fragments.
+        """
         l = []
         # they can be empty, exactly then, when there is no MSMS experiment
         # if self.listMSMS == []: raise "Empty entries"
@@ -2136,7 +2136,7 @@ Fragment name 'x:<mass>'.
 
     def del_Sample(self, smpl):
         """IN: the specific sample.
-		OUT: if the Survey Entry is empty return False, else return True."""
+        OUT: if the Survey Entry is empty return False, else return True."""
 
         # delete the particular entries
         # if self.dictMsmass.has_key(smpl): del self.dictMsmass[smpl]
@@ -2179,7 +2179,7 @@ Fragment name 'x:<mass>'.
 
 def set_PrecurmassFromMSMS(sample, chg=None):
     """Get list of precurmasses from msms .dta files, the sample.msms must
-	be given."""
+    be given."""
     if sample.listMsms != []:
         for i in sample.listMsms:
 

@@ -54,10 +54,10 @@ def CarthesianProduct(array):
 class TypeMFQL:
     def __init__(self, masterScan):
         """This is the MFQL object. All related information about the run of
-		all given queries at run time is stored here.
+        all given queries at run time is stored here.
 
-		It contains the result, which is the resulting MasterScan object, which
-		has individually associated queries."""
+        It contains the result, which is the resulting MasterScan object, which
+        has individually associated queries."""
 
         self.sc = masterScan
         self.options = None
@@ -155,7 +155,7 @@ class TypeMFQL:
 
     def addEmptyVariable(self, name, variable):
         """Store "empty" variables in an extra dict which
-		is read later by the SUCHTHAT routine."""
+        is read later by the SUCHTHAT routine."""
 
         # options ....
 
@@ -192,18 +192,18 @@ class TypeMFQL:
 
     def genVariables_new(self, surveyEntry, plus_permutation=False, empty_vars={}):
         """This routine generates all combinations of fragments
-		for a precursor plus MS/MS. The problem are ambiguous
-		fragments. They exist if more than one variable of
-		the DEFINE section has the same sc-constraint. For example:
+        for a precursor plus MS/MS. The problem are ambiguous
+        fragments. They exist if more than one variable of
+        the DEFINE section has the same sc-constraint. For example:
 
-		DEFINE FA1 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
-		DEFINE FA2 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+        DEFINE FA1 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+        DEFINE FA2 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
 
-		To have non-repeating results the chemical sum compositions are used as
-		hashes for dictionary with the variable names as content. Such,
-		we have an injective function masses: chemsc -> variable.
-		The routine at the end choses "randomly" a variable when putting the
-		result back together which then has only variables as output."""
+        To have non-repeating results the chemical sum compositions are used as
+        hashes for dictionary with the variable names as content. Such,
+        we have an injective function masses: chemsc -> variable.
+        The routine at the end choses "randomly" a variable when putting the
+        result back together which then has only variables as output."""
 
         ### TODO: the empty variables have to be added somewhere here###
 
@@ -239,18 +239,18 @@ class TypeMFQL:
 
     def genVariables_old(self, surveyEntry, plus_permutation=False):
         """This routine generates all combinations of fragments
-		for a precursor plus MS/MS. The problem are ambiguous
-		fragments. They exist if more than one variable of
-		the DEFINE section has the same sc-constraint. For example:
+        for a precursor plus MS/MS. The problem are ambiguous
+        fragments. They exist if more than one variable of
+        the DEFINE section has the same sc-constraint. For example:
 
-		DEFINE FA1 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
-		DEFINE FA2 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+        DEFINE FA1 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
+        DEFINE FA2 ='C[12..22] H[20..50] O[2]' WITH DBR = (1.5,7.5), CHG = -1;
 
-		To have non-repeating results the chemical sum compositions are used as
-		hashes for dictionary with the variable names as content. Such,
-		we have an injective function masses: chemsc -> variable.
-		The routine at the end choses "randomly" a variable when putting the
-		result back together which then has only variables as output."""
+        To have non-repeating results the chemical sum compositions are used as
+        hashes for dictionary with the variable names as content. Such,
+        we have an injective function masses: chemsc -> variable.
+        The routine at the end choses "randomly" a variable when putting the
+        result back together which then has only variables as output."""
 
         # ??? Why did I take m/z instead of chemsc in the first place???
 
@@ -819,9 +819,9 @@ class TypeResult:
 
     def removeIsotopicCorrected(self):
         """This routine checks all SurveyEntries (together with their MS/MS entries)
-		if the occupation threshold still holds. Because some isotopic corrections
-		may reduced the intensity to a level where the occupation threshold does not
-		hold anymore."""
+        if the occupation threshold still holds. Because some isotopic corrections
+        may reduced the intensity to a level where the occupation threshold does not
+        hold anymore."""
 
         if self.mfqlObj.resultSC == []:
             return None
@@ -1513,8 +1513,8 @@ class TypeResult:
 
     def correctMonoisotopicPeaks(self):
         """This function incorporates the ratio of the precursor
-		monoisotopic peak into the fragments. If this would not
-		be done, the fragment profile and precursor profile would not fit."""
+        monoisotopic peak into the fragments. If this would not
+        be done, the fragment profile and precursor profile would not fit."""
         import math
 
         scan = self.mfqlObj.sc
@@ -2220,15 +2220,12 @@ class TypeResult:
                                 "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n"
                                 % (Mtx[0][3], Mtx[1][2], Mtx[2][1], Mtx[3][0])
                             )
-                            dbgstr += (
-                                "     F0N4: %.4f, F1N3: %.4f, F2N2: %.4f, F3N1: %.4f, F4N0: %.4f\n"
-                                % (
-                                    Mtx[0][4],
-                                    Mtx[1][3],
-                                    Mtx[2][2],
-                                    Mtx[3][1],
-                                    Mtx[4][0],
-                                )
+                            dbgstr += "     F0N4: %.4f, F1N3: %.4f, F2N2: %.4f, F3N1: %.4f, F4N0: %.4f\n" % (
+                                Mtx[0][4],
+                                Mtx[1][3],
+                                Mtx[2][2],
+                                Mtx[3][1],
+                                Mtx[4][0],
                             )
                             dbgout(dbgstr)
 
@@ -2307,13 +2304,10 @@ class TypeResult:
                                         M1.msmse.isCorrectedIsotopic["1"] = M1.listNames
 
                                     if Debug("isotopicCorrection"):
-                                        dbgstr = (
-                                            "Frag <F0N1> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                            % (
-                                                M1found[0].precurmass,
-                                                M1.msmse.mass,
-                                                M1.name,
-                                            )
+                                        dbgstr = "Frag <F0N1> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                            M1found[0].precurmass,
+                                            M1.msmse.mass,
+                                            M1.name,
                                         )
                                         for k in M1.msmse.dictIntensity:
                                             dbgstr += " %.4f (-%.4f);" % (
@@ -2409,13 +2403,10 @@ class TypeResult:
                                             ] = M1f.listNames
 
                                         if Debug("isotopicCorrection"):
-                                            dbgstr = (
-                                                "Frag <F1N0> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                                % (
-                                                    M1found[0].precurmass,
-                                                    M1f.mass,
-                                                    M1f.listNames,
-                                                )
+                                            dbgstr = "Frag <F1N0> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                                M1found[0].precurmass,
+                                                M1f.mass,
+                                                M1f.listNames,
                                             )
                                             for k in M1f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
@@ -2470,13 +2461,10 @@ class TypeResult:
                                         M2.msmse.isCorrectedIsotopic["2"] = M2.listNames
 
                                     if Debug("isotopicCorrection"):
-                                        dbgstr = (
-                                            "Frag <F0N2> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                            % (
-                                                M2found[0].precurmass,
-                                                M2.msmse.mass,
-                                                M2.name,
-                                            )
+                                        dbgstr = "Frag <F0N2> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                            M2found[0].precurmass,
+                                            M2.msmse.mass,
+                                            M2.name,
                                         )
                                         for k in M2.msmse.dictIntensity:
                                             dbgstr += " %.4f (-%.4f);" % (
@@ -2579,13 +2567,10 @@ class TypeResult:
                                             ] = M1f.listNames
 
                                         if Debug("isotopicCorrection"):
-                                            dbgstr = (
-                                                "Frag <F1N1> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                                % (
-                                                    M2found[0].precurmass,
-                                                    M1f.mass,
-                                                    M1f.listNames,
-                                                )
+                                            dbgstr = "Frag <F1N1> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                                M2found[0].precurmass,
+                                                M1f.mass,
+                                                M1f.listNames,
                                             )
                                             for k in M1f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
@@ -2634,13 +2619,10 @@ class TypeResult:
                                             ] = M2f.listNames
 
                                         if Debug("isotopicCorrection"):
-                                            dbgstr = (
-                                                "Frag <F2N0> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                                % (
-                                                    M2found[0].precurmass,
-                                                    M2f.mass,
-                                                    M2f.listNames,
-                                                )
+                                            dbgstr = "Frag <F2N0> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                                M2found[0].precurmass,
+                                                M2f.mass,
+                                                M2f.listNames,
                                             )
                                             for k in M2f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
@@ -2695,13 +2677,10 @@ class TypeResult:
                                         M3.msmse.isCorrectedIsotopic["3"] = M3.listNames
 
                                     if Debug("isotopicCorrection"):
-                                        dbgstr = (
-                                            "Frag <F0N3> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                            % (
-                                                M3found[0].precurmass,
-                                                M3.msmse.mass,
-                                                M3.name,
-                                            )
+                                        dbgstr = "Frag <F0N3> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                            M3found[0].precurmass,
+                                            M3.msmse.mass,
+                                            M3.name,
                                         )
 
                                         for k in M3.msmse.dictIntensity:
@@ -2815,13 +2794,10 @@ class TypeResult:
                                             ] = M1f.listNames
 
                                         if Debug("isotopicCorrection"):
-                                            dbgstr = (
-                                                "Frag <F1N2> found ->PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                                % (
-                                                    M3found[0].precurmass,
-                                                    M1f.mass,
-                                                    M1f.listNames,
-                                                )
+                                            dbgstr = "Frag <F1N2> found ->PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                                M3found[0].precurmass,
+                                                M1f.mass,
+                                                M1f.listNames,
                                             )
                                             for k in M1f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
@@ -2873,13 +2849,10 @@ class TypeResult:
                                             ] = M2f.listNames
 
                                         if Debug("isotopicCorrection"):
-                                            dbgstr = (
-                                                "Frag <F2N1> found -> PRC: %.f4 MSMS: %.4f '%s' corrected to"
-                                                % (
-                                                    M3found[0].precurmass,
-                                                    M2f.mass,
-                                                    M2f.listNames,
-                                                )
+                                            dbgstr = "Frag <F2N1> found -> PRC: %.f4 MSMS: %.4f '%s' corrected to" % (
+                                                M3found[0].precurmass,
+                                                M2f.mass,
+                                                M2f.listNames,
                                             )
                                             for k in M2f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
@@ -2931,13 +2904,10 @@ class TypeResult:
                                             ] = M3f.listNames
 
                                         if Debug("isotopicCorrection"):
-                                            dbgstr = (
-                                                "Frag <F3N0> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                                % (
-                                                    M3found[0].precurmass,
-                                                    M3f.mass,
-                                                    M3f.listNames,
-                                                )
+                                            dbgstr = "Frag <F3N0> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                                M3found[0].precurmass,
+                                                M3f.mass,
+                                                M3f.listNames,
                                             )
                                             for k in M3f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
@@ -2992,13 +2962,10 @@ class TypeResult:
                                         M4.msmse.isCorrectedIsotopic["4"] = M4.listNames
 
                                     if Debug("isotopicCorrection"):
-                                        dbgstr = (
-                                            "Frag <F0N4> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                            % (
-                                                M4found[0].precurmass,
-                                                M4.msmse.mass,
-                                                M4.name,
-                                            )
+                                        dbgstr = "Frag <F0N4> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                            M4found[0].precurmass,
+                                            M4.msmse.mass,
+                                            M4.name,
                                         )
                                         for k in M4.msmse.dictIntensity:
                                             dbgstr += " %.4f (-%.4f);" % (
@@ -3117,13 +3084,10 @@ class TypeResult:
                                             ] = M1f.listNames
 
                                         if Debug("isotopicCorrection"):
-                                            dbgstr = (
-                                                "Frag <F1N3> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                                % (
-                                                    M4found[0].precurmass,
-                                                    M1f.mass,
-                                                    M1f.listNames,
-                                                )
+                                            dbgstr = "Frag <F1N3> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                                M4found[0].precurmass,
+                                                M1f.mass,
+                                                M1f.listNames,
                                             )
                                             for k in M1f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
@@ -3175,13 +3139,10 @@ class TypeResult:
                                             ] = M2f.listNames
 
                                         if Debug("isotopicCorrection"):
-                                            dbgstr = (
-                                                "Frag <F2N2> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                                % (
-                                                    M4found[0].precurmass,
-                                                    M2f.mass,
-                                                    M2f.listNames,
-                                                )
+                                            dbgstr = "Frag <F2N2> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                                M4found[0].precurmass,
+                                                M2f.mass,
+                                                M2f.listNames,
                                             )
                                             for k in M2f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
@@ -3233,13 +3194,10 @@ class TypeResult:
                                             ] = M3f.listNames
 
                                         if Debug("isotopicCorrection"):
-                                            dbgstr = (
-                                                "Frag <F3N1> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                                % (
-                                                    M4found[0].precurmass,
-                                                    M3f.mass,
-                                                    M3f.listNames,
-                                                )
+                                            dbgstr = "Frag <F3N1> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                                M4found[0].precurmass,
+                                                M3f.mass,
+                                                M3f.listNames,
                                             )
                                             for k in M3f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
@@ -3291,13 +3249,10 @@ class TypeResult:
                                             ] = M4f.listNames
 
                                         if Debug("isotopicCorrection"):
-                                            dbgstr = (
-                                                "Frag <F4N0> found -> PRC: %.4f MSMS: %.4f '%s' corrected to"
-                                                % (
-                                                    M4found[0].precurmass,
-                                                    M4f.mass,
-                                                    M4f.listNames,
-                                                )
+                                            dbgstr = "Frag <F4N0> found -> PRC: %.4f MSMS: %.4f '%s' corrected to" % (
+                                                M4found[0].precurmass,
+                                                M4f.mass,
+                                                M4f.listNames,
                                             )
                                             for k in M4f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
@@ -4465,8 +4420,8 @@ class TypeDataMatrix:
 
     def getIntensity(self, intensityRow, index=None):
         """Returns a dictionary with the primary key and the
-		rows filled with just the intensity values of interest.
-		E.g.: retIntensity[pKey] = [2.1, 3.0, 2.4, 4.0]"""
+        rows filled with just the intensity values of interest.
+        E.g.: retIntensity[pKey] = [2.1, 3.0, 2.4, 4.0]"""
 
         retIntensity = {}
         r = re.compile("(%s):.*" % intensityRow)
@@ -4506,8 +4461,8 @@ class TypeDataMatrix:
 
     def sumFattyAcids(self, faRow, indicatorRow):
         """This method sums all fatty acids belonging to one
-		precursor and puts the result as rows at the end of the
-		data matrix."""
+        precursor and puts the result as rows at the end of the
+        data matrix."""
 
         if self.dataL == {}:
             return None

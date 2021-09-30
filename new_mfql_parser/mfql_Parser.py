@@ -21,7 +21,7 @@ precedence = (
 
 def p_program(p):
     """program  : script  SEMICOLON
-                | script """
+    | script"""
     # todo make mfql linter, remove  trailing semicolon
     p[0] = p[1]
 
@@ -101,7 +101,7 @@ def p_var_nl_no_opt(p):
 
 def p_object_withAttr(p):
     """object : withAttr
-            | onlyObj"""
+    | onlyObj"""
     p[0] = p[1]
 
 
@@ -115,8 +115,8 @@ def p_onlyObj_ID_itemAccess(p):
 
 def p_onlyObj_ID(p):
     """onlyObj : ID
-                | list
-                | varcontent"""
+    | list
+    | varcontent"""
     p[0] = p[1]
 
 
@@ -199,7 +199,7 @@ def p_varcontent_float(p):
 
 def p_varcontent_integer(p):
     """varcontent : INTEGER
-                  | PLUS INTEGER"""
+    | PLUS INTEGER"""
     p[0] = int("".join(p[1:]))
 
 
@@ -265,10 +265,10 @@ def p_optionentry_TOLERANCE(p):
 
 def p_tolerancetype(p):
     """tolerancetype : FLOAT DA
-                     | FLOAT PPM
-                     | INTEGER DA
-                      | INTEGER RES
-                     | INTEGER PPM"""
+    | FLOAT PPM
+    | INTEGER DA
+     | INTEGER RES
+    | INTEGER PPM"""
 
     if float(p[1]) <= 0.0:
         raise ValueError(
@@ -286,7 +286,7 @@ def p_tolerancetype(p):
 
 
 def p_identificationSection(p):
-    """identificationSection : IDENTIFY marks """
+    """identificationSection : IDENTIFY marks"""
     p[0] = p[2]
 
 
@@ -355,7 +355,7 @@ def p_suchthatSection(p):
 
 def p_booleanterm_logic(p):
     """booleanterm : booleanterm AND booleanterm
-                   | booleanterm OR  booleanterm"""
+    | booleanterm OR  booleanterm"""
 
     p[0] = Evaluable(p[2], p[1], p[3])  # and or
 
@@ -382,21 +382,21 @@ def p_booleanterm_expression(p):
 
 def p_expr_multi(p):
     """expr : expression EQUALS expression
-            | expression GT expression
-            | expression GE expression
-            | expression LE expression
-            | expression LT expression
-            | expression NE expression
-            | expression ARROWR expression  """
+    | expression GT expression
+    | expression GE expression
+    | expression LE expression
+    | expression LT expression
+    | expression NE expression
+    | expression ARROWR expression"""
 
     p[0] = Evaluable(p[2], p[1], p[3])
 
 
 def p_expression_struct(p):
     """expression : expression PLUS expression
-                  | expression MINUS expression
-                  | expression TIMES expression
-                  | expression DIVIDE expression """
+    | expression MINUS expression
+    | expression TIMES expression
+    | expression DIVIDE expression"""
     p[0] = Evaluable(p[2], p[1], p[3])  # +- */
 
 
@@ -430,9 +430,9 @@ def p_scan_object(p):
 
 def p_scope(p):
     """scope : MS1 MINUS
-             | MS1 PLUS
-             | MS2 PLUS
-             | MS2 MINUS"""
+    | MS1 PLUS
+    | MS2 PLUS
+    | MS2 MINUS"""
 
     p[0] = p[1] + p[2]
 
@@ -455,8 +455,8 @@ def p_reportContent_single(p):
 
 def p_rContent(p):
     """reportItem : ID IS STRING PERCENT STRING SEMICOLON
-                | ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
-                | ID IS expression SEMICOLON"""
+    | ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
+    | ID IS expression SEMICOLON"""
 
     p[0] = ReportItem(p[1], p[3:-1])
 

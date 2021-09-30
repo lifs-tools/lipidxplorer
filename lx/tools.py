@@ -21,9 +21,9 @@ class staticTypeDict(DictMixin):
 
     def __setitem__(self, key, value):
         """If value is a tuple with (value, type),
-		it sets the type of the element. Having it
-		singleton sets the value after checking the
-		type."""
+        it sets the type of the element. Having it
+        singleton sets the value after checking the
+        type."""
 
         if not isinstance(value, type(())):
             if key in list(self._data.keys()):
@@ -261,9 +261,9 @@ def mkCrossProduct3(*sets):
 
 def print_exc_plus():
     """
-	Print the usual traceback information, followed by a listing of all the
-	local variables in each frame.
-	"""
+    Print the usual traceback information, followed by a listing of all the
+    local variables in each frame.
+    """
     tb = sys.exc_info()[2]
     stack = []
 
@@ -309,37 +309,37 @@ def printDict(di, format="%-25s %s"):
 def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
     """Print a nicely formatted overview of an object.
 
-	The output lines will be wrapped at maxlen, with lindent of space
-	for names of attributes.  A maximum of maxspew characters will be
-	printed for each attribute value.
+    The output lines will be wrapped at maxlen, with lindent of space
+    for names of attributes.  A maximum of maxspew characters will be
+    printed for each attribute value.
 
-	You can hand dumpObj any data type -- a module, class, instance,
-	new class.
+    You can hand dumpObj any data type -- a module, class, instance,
+    new class.
 
-	Note that in reformatting for compactness the routine trashes any
-	formatting in the docstrings it prints.
+    Note that in reformatting for compactness the routine trashes any
+    formatting in the docstrings it prints.
 
-	Example:
-	>>> class Foo(object):
-	  a = 30
-	  def bar(self, b):
-	   "A silly method"
-	   return a*b
-	... ... ... ...
-	>>> foo = Foo()
-	>>> dumpObj(foo)
-	Instance of class 'Foo' as defined in module __main__ with id 136863308
-	Documentation string:   None
-	Built-in Methods:	__delattr__, __getattribute__, __hash__, __init__
-		  __new__, __reduce__, __repr__, __setattr__,
-		  __str__
-	Methods:
-		 bar	   "A silly method"
-	Attributes:
-		 __dict__	 {}
-		 __weakref__	 None
-		 a		 30
-	"""
+    Example:
+    >>> class Foo(object):
+      a = 30
+      def bar(self, b):
+       "A silly method"
+       return a*b
+    ... ... ... ...
+    >>> foo = Foo()
+    >>> dumpObj(foo)
+    Instance of class 'Foo' as defined in module __main__ with id 136863308
+    Documentation string:   None
+    Built-in Methods:	__delattr__, __getattribute__, __hash__, __init__
+              __new__, __reduce__, __repr__, __setattr__,
+              __str__
+    Methods:
+             bar	   "A silly method"
+    Attributes:
+             __dict__	 {}
+             __weakref__	 None
+             a		 30
+    """
 
     import types
 
@@ -469,8 +469,8 @@ def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
 
 def prettyPrintCols(strings, widths, split=" "):
     """Pretty prints text in colums, with each string breaking at
-	split according to prettyPrint.  margins gives the corresponding
-	right breaking point."""
+    split according to prettyPrint.  margins gives the corresponding
+    right breaking point."""
 
     assert len(strings) == len(widths)
 
@@ -493,10 +493,10 @@ def prettyPrintCols(strings, widths, split=" "):
 
 def prettyPrint(string, maxlen=75, split=" "):
     """Pretty prints the given string to break at an occurrence of
-	split where necessary to avoid lines longer than maxlen.
+    split where necessary to avoid lines longer than maxlen.
 
-	This will overflow the line if no convenient occurrence of split
-	is found"""
+    This will overflow the line if no convenient occurrence of split
+    is found"""
 
     # Tack on the splitting character to guarantee a final match
     string += split
@@ -514,10 +514,10 @@ def prettyPrint(string, maxlen=75, split=" "):
 
 def nukenewlines(string):
     """Strip newlines and any trailing/following whitespace; rejoin
-	with a single space where the newlines were.
+    with a single space where the newlines were.
 
-	Bug: This routine will completely butcher any whitespace-formatted
-	text."""
+    Bug: This routine will completely butcher any whitespace-formatted
+    text."""
 
     if not string:
         return ""
@@ -527,7 +527,7 @@ def nukenewlines(string):
 
 def delchars(str, chars):
     """Returns a string for which all occurrences of characters in
-	chars have been removed."""
+    chars have been removed."""
 
     # Translate demands a mapping string of 256 characters;
     # whip up a string that will leave all characters unmolested.
@@ -662,10 +662,10 @@ def strToBool(s):
 
 def tidy_float(s):
     """Return tidied float representation.
-	Remove superflous leading/trailing zero digits.
-	Remove '.' if value is an integer.
-	Return '****' if float(s) fails.
-	"""
+    Remove superflous leading/trailing zero digits.
+    Remove '.' if value is an integer.
+    Return '****' if float(s) fails.
+    """
     s = str(s)
 
     # float?

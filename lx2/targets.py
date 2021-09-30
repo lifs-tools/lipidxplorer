@@ -142,10 +142,10 @@ class Targets_util:
     @staticmethod
     def lx1_DF(df):
         """makes the result as similar as lx1 as possible, ie averaged
-        
+
         Arguments:
             df {dataframe} -- that contins all the data as from 'suchthat'
-        
+
         Returns:
             dataframe -- with the averaged values
         """

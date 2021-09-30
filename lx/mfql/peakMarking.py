@@ -1201,9 +1201,11 @@ class TypeScan:
                                                             errres = 1000000
 
                                                         if m.precursor:
-                                                            precursor = scanEntry.dictMarks[
-                                                                m.precursor
-                                                            ]
+                                                            precursor = (
+                                                                scanEntry.dictMarks[
+                                                                    m.precursor
+                                                                ]
+                                                            )
                                                         else:
                                                             precursor = None
 
@@ -1381,9 +1383,11 @@ class TypeScan:
                                                             errres = 1000000
 
                                                         if m.precursor:
-                                                            precursor = scanEntry.dictMarks[
-                                                                m.precursor
-                                                            ]
+                                                            precursor = (
+                                                                scanEntry.dictMarks[
+                                                                    m.precursor
+                                                                ]
+                                                            )
                                                         else:
                                                             precursor = None
 
@@ -1681,9 +1685,11 @@ class TypeScan:
                                                                 errres = 1000000
 
                                                             if m.precursor:
-                                                                precursor = scanEntry.dictMarks[
-                                                                    m.precursor
-                                                                ]
+                                                                precursor = (
+                                                                    scanEntry.dictMarks[
+                                                                        m.precursor
+                                                                    ]
+                                                                )
                                                             else:
                                                                 precursor = None
 
@@ -1773,9 +1779,11 @@ class TypeScan:
                                                             errres = 1000000
 
                                                         if m.precursor:
-                                                            precursor = scanEntry.dictMarks[
-                                                                m.precursor
-                                                            ]
+                                                            precursor = (
+                                                                scanEntry.dictMarks[
+                                                                    m.precursor
+                                                                ]
+                                                            )
                                                         else:
                                                             precursor = None
 
@@ -1869,9 +1877,11 @@ class TypeScan:
                                                             errres = 1000000
 
                                                         if m.precursor:
-                                                            precursor = scanEntry.dictMarks[
-                                                                m.precursor
-                                                            ]
+                                                            precursor = (
+                                                                scanEntry.dictMarks[
+                                                                    m.precursor
+                                                                ]
+                                                            )
                                                         else:
                                                             precursor = None
 
@@ -2279,9 +2289,11 @@ class TypeScan:
                                                                 errres = 1000000
 
                                                             if ml.precursor:
-                                                                precursor = scanEntry.dictMarks[
-                                                                    ml.precursor
-                                                                ]
+                                                                precursor = (
+                                                                    scanEntry.dictMarks[
+                                                                        ml.precursor
+                                                                    ]
+                                                                )
                                                             else:
                                                                 precursor = None
 
@@ -2376,9 +2388,11 @@ class TypeScan:
                                                                 errres = 1000000
 
                                                             if ml.precursor:
-                                                                precursor = scanEntry.dictMarks[
-                                                                    ml.precursor
-                                                                ]
+                                                                precursor = (
+                                                                    scanEntry.dictMarks[
+                                                                        ml.precursor
+                                                                    ]
+                                                                )
                                                             else:
                                                                 precursor = None
 
@@ -2471,9 +2485,11 @@ class TypeScan:
                                                             errres = 1000000
 
                                                         if ml.precursor:
-                                                            precursor = scanEntry.dictMarks[
-                                                                ml.precursor
-                                                            ]
+                                                            precursor = (
+                                                                scanEntry.dictMarks[
+                                                                    ml.precursor
+                                                                ]
+                                                            )
                                                         else:
                                                             precursor = None
 
@@ -2786,9 +2802,11 @@ class TypeScan:
                                                             errres = 1000000
 
                                                         if m.precursor:
-                                                            precursor = scanEntry.dictMarks[
-                                                                m.precursor
-                                                            ]
+                                                            precursor = (
+                                                                scanEntry.dictMarks[
+                                                                    m.precursor
+                                                                ]
+                                                            )
                                                         else:
                                                             precursor = None
 
@@ -2966,9 +2984,11 @@ class TypeScan:
                                                             errres = 1000000
 
                                                         if m.precursor:
-                                                            precursor = scanEntry.dictMarks[
-                                                                m.precursor
-                                                            ]
+                                                            precursor = (
+                                                                scanEntry.dictMarks[
+                                                                    m.precursor
+                                                                ]
+                                                            )
                                                         else:
                                                             precursor = None
 
@@ -3267,9 +3287,11 @@ class TypeScan:
                                                                 errres = 1000000
 
                                                             if m.precursor:
-                                                                precursor = scanEntry.dictMarks[
-                                                                    m.precursor
-                                                                ]
+                                                                precursor = (
+                                                                    scanEntry.dictMarks[
+                                                                        m.precursor
+                                                                    ]
+                                                                )
                                                             else:
                                                                 precursor = None
 
@@ -3363,9 +3385,11 @@ class TypeScan:
                                                             errres = 1000000
 
                                                         if m.precursor:
-                                                            precursor = scanEntry.dictMarks[
-                                                                m.precursor
-                                                            ]
+                                                            precursor = (
+                                                                scanEntry.dictMarks[
+                                                                    m.precursor
+                                                                ]
+                                                            )
                                                         else:
                                                             precursor = None
 
@@ -3450,9 +3474,11 @@ class TypeScan:
                                                             errres = 1000000
 
                                                         if m.precursor:
-                                                            precursor = scanEntry.dictMarks[
-                                                                m.precursor
-                                                            ]
+                                                            precursor = (
+                                                                scanEntry.dictMarks[
+                                                                    m.precursor
+                                                                ]
+                                                            )
                                                         else:
                                                             precursor = None
 
@@ -3742,9 +3768,11 @@ class TypeScan:
                                                                 errres = 1000000
 
                                                             if ml.precursor:
-                                                                precursor = scanEntry.dictMarks[
-                                                                    ml.precursor
-                                                                ]
+                                                                precursor = (
+                                                                    scanEntry.dictMarks[
+                                                                        ml.precursor
+                                                                    ]
+                                                                )
                                                             else:
                                                                 precursor = None
 
@@ -3836,9 +3864,11 @@ class TypeScan:
                                                                 errres = 1000000
 
                                                             if ml.precursor:
-                                                                precursor = scanEntry.dictMarks[
-                                                                    ml.precursor
-                                                                ]
+                                                                precursor = (
+                                                                    scanEntry.dictMarks[
+                                                                        ml.precursor
+                                                                    ]
+                                                                )
                                                             else:
                                                                 precursor = None
 
@@ -3928,9 +3958,11 @@ class TypeScan:
                                                             errres = 1000000
 
                                                         if ml.precursor:
-                                                            precursor = scanEntry.dictMarks[
-                                                                ml.precursor
-                                                            ]
+                                                            precursor = (
+                                                                scanEntry.dictMarks[
+                                                                    ml.precursor
+                                                                ]
+                                                            )
                                                         else:
                                                             precursor = None
 
@@ -4284,9 +4316,9 @@ class TypeMark:
 
     def mergeMSMSMarks(self, other):
         """Merge two marks. This is important for MS/MS marks, because it
-		happens nlsc or frsc are None when a precursor mass has no sum
-		composition but another precursor mass for the same mass has one.
-		The function returns False, if the marks are different."""
+        happens nlsc or frsc are None when a precursor mass has no sum
+        composition but another precursor mass for the same mass has one.
+        The function returns False, if the marks are different."""
 
         self.se += other.se
         if not self.msmse:
@@ -4547,9 +4579,9 @@ class TypeMarkTerm:
 
 class TypeScanEntry:
 
-    """ scanEntry is used to check if the boolean constrains hold
-	 from the IDENTIFY section, it than builds the basis for the
-	 variables for SUCHTHAT and/or REPORT"""
+    """scanEntry is used to check if the boolean constrains hold
+    from the IDENTIFY section, it than builds the basis for the
+    variables for SUCHTHAT and/or REPORT"""
 
     def __init__(self, se):
 

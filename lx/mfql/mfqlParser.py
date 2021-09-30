@@ -226,7 +226,7 @@ def p_program_single(p):
 
 def p_script(p):
     """script  : scriptname variables identification
-			   | identification"""
+    | identification"""
 
 
 def p_script_error(p):
@@ -285,7 +285,7 @@ def p_variables_endloop(p):
 
 def p_var_normal(p):
     """var : DEFINE ID IS object options SEMICOLON
-			| DEFINE ID IS object options AS NEUTRALLOSS SEMICOLON"""
+    | DEFINE ID IS object options AS NEUTRALLOSS SEMICOLON"""
 
     if len(p) == 7 and p[5] != None:
         p[4].addOptions(p[5])
@@ -512,8 +512,8 @@ def p_varcontent_float(p):
 
 def p_varcontent_integer(p):
     """varcontent : INTEGER
-				  | PLUS INTEGER
-				  | MINUS INTEGER"""
+    | PLUS INTEGER
+    | MINUS INTEGER"""
 
     if len(p) == 2:
         p[0] = TypeFloat(float=float(p[1]), mass=float(p[1]))
@@ -602,10 +602,10 @@ def p_optionentry_TOLERANCE(p):
 
 def p_tolerancetype(p):
     """tolerancetype : FLOAT DA
-					 | FLOAT PPM
-					 | INTEGER DA
-		 			 | INTEGER RES
-					 | INTEGER PPM"""
+    | FLOAT PPM
+    | INTEGER DA
+    | INTEGER RES
+    | INTEGER PPM"""
 
     if float(p[1]) <= 0.0:
         raise LogicErrorException(
@@ -620,7 +620,7 @@ def p_tolerancetype(p):
 # identification part
 def p_identification_normal_old(p):
     """identification : IDENTIFY tagname WHERE marks evalMarks suchthat REPORT report
-		  			  | IDENTIFY tagname WHERE marks evalMarks REPORT report"""
+    | IDENTIFY tagname WHERE marks evalMarks REPORT report"""
 
     raise LipidXException(
         "Please remove the query name after 'IDENTIFY'."
@@ -664,7 +664,7 @@ def p_identification_normal_old(p):
 
 def p_identification_normal_new(p):
     """identification : IDENTIFY marks evalMarks suchthat REPORT report
-		  			  | IDENTIFY marks evalMarks REPORT report"""
+    | IDENTIFY marks evalMarks REPORT report"""
 
     ### next the report is generated ###
 
@@ -812,7 +812,7 @@ def p_boolmarks_toScan(p):
 
 
 def p_evalMarks(p):
-    """evalMarks : """
+    """evalMarks :"""
     if mfqlObj.parsePart == "identification":
         print("IDENTIFY the masses of interest ...", end=" ")
         mfqlObj.scan.evaluate()
@@ -978,7 +978,7 @@ def p_bterm(p):
 
 def p_booleanterm_logic(p):
     """booleanterm : booleanterm AND booleanterm
-				   | booleanterm OR  booleanterm"""
+    | booleanterm OR  booleanterm"""
 
     p[0] = TypeBooleanTerm(
         sign=True,
@@ -1044,12 +1044,12 @@ def p_booleanterm_expression(p):
 
 def p_expr_multi(p):
     """expr : expression EQUALS expression options
-			| expression GT expression options
-			| expression GE expression options
-			| expression LE expression options
-			| expression LT expression options
-			| expression NE expression options
-			| expression ARROWR expression options """
+    | expression GT expression options
+    | expression GE expression options
+    | expression LE expression options
+    | expression LT expression options
+    | expression NE expression options
+    | expression ARROWR expression options"""
 
     p[0] = TypeExpr(
         leftSide=p[1],
@@ -1063,10 +1063,10 @@ def p_expr_multi(p):
 
 def p_expression_struct(p):
     """expression : expression PLUS expression
-				  | expression MINUS expression
-				  | expression TIMES expression
-				  | expression DIVIDE expression
-				  | MINUS expression %prec UMINUS"""
+    | expression MINUS expression
+    | expression TIMES expression
+    | expression DIVIDE expression
+    | MINUS expression %prec UMINUS"""
 
     p[0] = TypeExpression(
         isSingleton=False,
@@ -1200,9 +1200,9 @@ def p_scan_object(p):
 
 def p_scope(p):
     """scope : MS1 MINUS
-			 | MS1 PLUS
-			 | MS2 PLUS
-			 | MS2 MINUS"""
+    | MS1 PLUS
+    | MS2 PLUS
+    | MS2 MINUS"""
 
     p[0] = p[1] + p[2]
 
@@ -1225,8 +1225,8 @@ def p_reportContent_single(p):
 
 def p_rContent(p):
     """rContent : ID IS STRING PERCENT STRING SEMICOLON
-				| ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
-				| ID IS expression SEMICOLON"""
+    | ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON
+    | ID IS expression SEMICOLON"""
 
     if len(p) == 7:
         p[0] = (p[1], p[3], p[5])

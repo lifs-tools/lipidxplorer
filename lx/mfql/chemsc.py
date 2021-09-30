@@ -294,7 +294,7 @@ class ElementSequence:
         return len(list(self._seq.keys()))
 
     def __repr__(self):
-        """ Return sum form in a good readable string """
+        """Return sum form in a good readable string"""
         l = ""
         for i in list(self._seq.values()):
             l += "%s%d " % (i.sym, i._count)
@@ -359,7 +359,7 @@ class ElementSequence:
     def __getitem__(self, elem):
         """in: Symbol of an element
 
-		out: the Element Object or None if it is not in the sequence"""
+        out: the Element Object or None if it is not in the sequence"""
 
         if elem == "db":
             return self.get_DB()
@@ -374,7 +374,7 @@ class ElementSequence:
     def __setitem__(self, elem, input):
         """in: Symbol of an element
 
-		out: the Element Object or None if it is not in the sequence"""
+        out: the Element Object or None if it is not in the sequence"""
 
         self._seq[elem]._count = input
         return None
@@ -542,7 +542,7 @@ class SCConstraint(ElementSequence):
     def __getitem__(self, elem):
         """in: Symbol of an element
 
-		out: the Element Object or None if it is not in the sequence"""
+        out: the Element Object or None if it is not in the sequence"""
 
         if elem == "db":
             raise TypeError("Cannot retrieve the double bonds from a SC constraint")
@@ -555,7 +555,7 @@ class SCConstraint(ElementSequence):
         return 0
 
     def __repr__(self):
-        """ Return sum form in a good readable string """
+        """Return sum form in a good readable string"""
         l = ""
         for i in list(self._seq.values()):
 
@@ -582,7 +582,7 @@ class SCConstraint(ElementSequence):
 
     def get_norangeElemSeq(self):
         """returns a list of all possible ElemSeq which fitting the
-		constrains of the ranges."""
+        constrains of the ranges."""
 
         l = []
 
@@ -775,10 +775,10 @@ class SCConstraint(ElementSequence):
         return True
 
     def solveWithCalcSF(self, m, tolerance):
-        """ Check for Lipid class. Arguments and output is the same as for
-		solveEQ()
-		IN: mass by float,
-		tolerance as resolution"""
+        """Check for Lipid class. Arguments and output is the same as for
+        solveEQ()
+        IN: mass by float,
+        tolerance as resolution"""
 
         # 		if abs(self.charge) > 1:
         # 			print "solveWithCalcSF() works only for charges -1 and 1!"
@@ -1108,10 +1108,10 @@ class SCConstraint(ElementSequence):
         return res
 
     def subWoRange(self, elemseq):
-        """ This is a version of sub, which does not consider elem ranges which
-		are bigger than 1. So it is possible to substract an ElementSequence from
-		a sf-constrain.
-		"""
+        """This is a version of sub, which does not consider elem ranges which
+        are bigger than 1. So it is possible to substract an ElementSequence from
+        a sf-constrain.
+        """
         buf = deepcopy(self)
         for i in list(elemseq.keys()):
             if i.sym in self:
@@ -1135,11 +1135,10 @@ class SCConstraint(ElementSequence):
 
 def calcSFbyMass(mass, sfconstraint, tolerance, nearest=False):
     """IN: mass in m/z,
-	sf-constraint,
-	tolerance in resolution type,
-	nearest in Boolean
-OUT: list of SurveyEntry
-"""
+            sf-constraint,
+            tolerance in resolution type,
+            nearest in Boolean
+    OUT: list of SurveyEntry"""
 
     if not sfconstraint:
         raise "No SF given"

@@ -8,10 +8,41 @@ _lr_method = "LALR"
 _lr_signature = "leftORleftANDIFFIFAARROWleftEQUALSNEnonassocLTGTGELEARROWRleftPLUSMINUSleftTIMESDIVIDEleftNOTrightUMINUSAND ARROW ARROWR AS CHG COMMA DA DBR DEFINE DIVIDE DOT EQUALS FLOAT GE GT ID IDENTIFY IFA IFF IN INTEGER IS LBRACE LBRACKET LE LPAREN LT MASSRANGE MAXOCC MINOCC MINUS MS1 MS2 NE NEUTRALLOSS NOT OR PERCENT PLUS PPM QUERYNAME RBRACE RBRACKET REPORT RES RPAREN SEMICOLON SFSTRING STRING SUCHTHAT TIMES TOLERANCE WITHprogram  : script  SEMICOLON\n                | script script : scriptname variablesSection identificationSection suchthatSection reportSectionscript : scriptname variablesSection identificationSection reportSectionscriptname : QUERYNAME IS ID SEMICOLONvariablesSection : variablesvariables : variables varvariables : varvar : DEFINE ID IS object WITH optioncontent SEMICOLONvar : DEFINE ID IS object SEMICOLONvar : DEFINE ID IS object WITH  optioncontent AS NEUTRALLOSS SEMICOLONvar : DEFINE ID IS object AS NEUTRALLOSS SEMICOLONobject : withAttr\n            | onlyObjonlyObj : ID LBRACE ID RBRACEonlyObj : ID\n                | list\n                | varcontentonlyObj : ID LPAREN arguments RPAREN LBRACE ID RBRACEonlyObj : ID LPAREN arguments RPARENwithAttr : ID DOT ID LBRACE ID RBRACEwithAttr : ID DOT ID LBRACE STRING RBRACEwithAttr : ID DOT IDwithAttr : varcontent DOT IDwithAttr : list DOT IDarguments : expressionarguments : arguments COMMA expressionlist : LBRACKET listcontent RBRACKETlistcontent : listcontent COMMA objectlistcontent : objectvarcontent : tolerancetypevarcontent : FLOATvarcontent : INTEGER\n                  | PLUS INTEGERvarcontent : MINUS INTEGERvarcontent : STRINGvarcontent : SFSTRINGoptioncontent : optioncontent COMMA optionentryoptioncontent : optionentryoptionentry : DBR IS LPAREN object COMMA object RPARENoptionentry : CHG IS INTEGERoptionentry : MASSRANGE IS LPAREN object COMMA object RPARENoptionentry : MINOCC IS objectoptionentry : MAXOCC IS objectoptionentry : TOLERANCE IS tolerancetypetolerancetype : FLOAT DA\n                     | FLOAT PPM\n                     | INTEGER DA\n                      | INTEGER RES\n                     | INTEGER PPMidentificationSection : IDENTIFY marks marks : boolmarksboolmarks : LPAREN boolmarks RPARENboolmarks : NOT boolmarksboolmarks : boolmarks OR boolmarksboolmarks : boolmarks AND boolmarksboolmarks : boolmarks IFA boolmarksboolmarks : boolmarks IFF boolmarksboolmarks : boolmarks ARROW boolmarksboolmarks : boolmarks LE boolmarksboolmarks : scansuchthatSection : SUCHTHAT booleantermbooleanterm : booleanterm AND booleanterm\n                   | booleanterm OR  booleantermbooleanterm : LPAREN booleanterm RPARENbooleanterm : NOT booleantermbooleanterm : exprbooleanterm : objectexpr : expression EQUALS expression\n            | expression GT expression\n            | expression GE expression\n            | expression LE expression\n            | expression LT expression\n            | expression NE expression\n            | expression ARROWR expression  expression : expression PLUS expression\n                  | expression MINUS expression\n                  | expression TIMES expression\n                  | expression DIVIDE expression expression : MINUS expression %prec UMINUSexpression : LPAREN expression RPAREN LBRACE ID RBRACEexpression : LPAREN expression RPARENexpression : objectscan : object IN scopescope : MS1 MINUS\n             | MS1 PLUS\n             | MS2 PLUS\n             | MS2 MINUSreportSection : REPORT reportContentreportContent : reportContent reportItemreportContent : reportItemreportItem : ID IS STRING PERCENT STRING SEMICOLON\n                | ID IS STRING PERCENT LPAREN arguments RPAREN SEMICOLON\n                | ID IS expression SEMICOLON"
 
 _lr_action_items = {
-    "QUERYNAME": ([0,], [4,]),
+    "QUERYNAME": (
+        [
+            0,
+        ],
+        [
+            4,
+        ],
+    ),
     "$end": (
-        [1, 2, 5, 17, 41, 49, 50, 96, 157, 189, 198,],
-        [0, -2, -1, -4, -3, -89, -91, -90, -94, -92, -93,],
+        [
+            1,
+            2,
+            5,
+            17,
+            41,
+            49,
+            50,
+            96,
+            157,
+            189,
+            198,
+        ],
+        [
+            0,
+            -2,
+            -1,
+            -4,
+            -3,
+            -89,
+            -91,
+            -90,
+            -94,
+            -92,
+            -93,
+        ],
     ),
     "SEMICOLON": (
         [
@@ -142,16 +173,74 @@ _lr_action_items = {
         ],
     ),
     "DEFINE": (
-        [3, 7, 8, 13, 40, 117, 162, 171, 192,],
-        [9, 9, -8, -7, -5, -10, -9, -12, -11,],
+        [
+            3,
+            7,
+            8,
+            13,
+            40,
+            117,
+            162,
+            171,
+            192,
+        ],
+        [
+            9,
+            9,
+            -8,
+            -7,
+            -5,
+            -10,
+            -9,
+            -12,
+            -11,
+        ],
     ),
     "IS": (
-        [4, 14, 51, 148, 149, 150, 151, 152, 153,],
-        [10, 39, 97, 165, 166, 167, 168, 169, 170,],
+        [
+            4,
+            14,
+            51,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+        ],
+        [
+            10,
+            39,
+            97,
+            165,
+            166,
+            167,
+            168,
+            169,
+            170,
+        ],
     ),
     "IDENTIFY": (
-        [6, 7, 8, 13, 117, 162, 171, 192,],
-        [12, -6, -8, -7, -10, -9, -12, -11,],
+        [
+            6,
+            7,
+            8,
+            13,
+            117,
+            162,
+            171,
+            192,
+        ],
+        [
+            12,
+            -6,
+            -8,
+            -7,
+            -10,
+            -9,
+            -12,
+            -11,
+        ],
     ),
     "ID": (
         [
@@ -272,7 +361,25 @@ _lr_action_items = {
         ],
     ),
     "SUCHTHAT": (
-        [11, 20, 21, 24, 59, 98, 99, 100, 101, 102, 103, 104, 105, 137, 138, 139, 140,],
+        [
+            11,
+            20,
+            21,
+            24,
+            59,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            137,
+            138,
+            139,
+            140,
+        ],
         [
             18,
             -51,
@@ -508,8 +615,38 @@ _lr_action_items = {
         ],
     ),
     "NOT": (
-        [12, 18, 22, 23, 43, 44, 52, 53, 54, 55, 56, 57, 76, 77,],
-        [23, 44, 23, 23, 44, 44, 23, 23, 23, 23, 23, 23, 44, 44,],
+        [
+            12,
+            18,
+            22,
+            23,
+            43,
+            44,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            76,
+            77,
+        ],
+        [
+            23,
+            44,
+            23,
+            23,
+            44,
+            44,
+            23,
+            23,
+            23,
+            23,
+            23,
+            23,
+            44,
+            44,
+        ],
     ),
     "FLOAT": (
         [
@@ -1604,16 +1741,118 @@ _lr_action_items = {
         ],
     ),
     "IFA": (
-        [21, 24, 58, 59, 98, 99, 100, 101, 102, 103, 104, 105, 137, 138, 139, 140,],
-        [54, -61, 54, -54, 54, -56, -57, -58, -59, -60, -53, -84, -85, -86, -87, -88,],
+        [
+            21,
+            24,
+            58,
+            59,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            137,
+            138,
+            139,
+            140,
+        ],
+        [
+            54,
+            -61,
+            54,
+            -54,
+            54,
+            -56,
+            -57,
+            -58,
+            -59,
+            -60,
+            -53,
+            -84,
+            -85,
+            -86,
+            -87,
+            -88,
+        ],
     ),
     "IFF": (
-        [21, 24, 58, 59, 98, 99, 100, 101, 102, 103, 104, 105, 137, 138, 139, 140,],
-        [55, -61, 55, -54, 55, -56, -57, -58, -59, -60, -53, -84, -85, -86, -87, -88,],
+        [
+            21,
+            24,
+            58,
+            59,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            137,
+            138,
+            139,
+            140,
+        ],
+        [
+            55,
+            -61,
+            55,
+            -54,
+            55,
+            -56,
+            -57,
+            -58,
+            -59,
+            -60,
+            -53,
+            -84,
+            -85,
+            -86,
+            -87,
+            -88,
+        ],
     ),
     "ARROW": (
-        [21, 24, 58, 59, 98, 99, 100, 101, 102, 103, 104, 105, 137, 138, 139, 140,],
-        [56, -61, 56, -54, 56, -56, -57, -58, -59, -60, -53, -84, -85, -86, -87, -88,],
+        [
+            21,
+            24,
+            58,
+            59,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            137,
+            138,
+            139,
+            140,
+        ],
+        [
+            56,
+            -61,
+            56,
+            -54,
+            56,
+            -56,
+            -57,
+            -58,
+            -59,
+            -60,
+            -53,
+            -84,
+            -85,
+            -86,
+            -87,
+            -88,
+        ],
     ),
     "LE": (
         [
@@ -2940,7 +3179,26 @@ _lr_action_items = {
         ],
     ),
     "DOT": (
-        [28, 29, 30, 31, 32, 33, 34, 37, 66, 67, 68, 69, 70, 71, 72, 93, 114, 135,],
+        [
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            37,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            93,
+            114,
+            135,
+        ],
         [
             61,
             -36,
@@ -2962,21 +3220,174 @@ _lr_action_items = {
             -36,
         ],
     ),
-    "LBRACE": ([28, 108, 122, 143,], [62, 141, 155, 160,]),
-    "DA": ([33, 34, 93, 186, 187,], [66, 68, 68, 66, 68,]),
-    "PPM": ([33, 34, 93, 186, 187,], [67, 70, 70, 67, 70,]),
-    "RES": ([34, 93, 187,], [69, 69, 69,]),
-    "MS1": ([60,], [106,]),
-    "MS2": ([60,], [107,]),
-    "RBRACE": ([109, 158, 159, 172, 177,], [142, 175, 176, 188, 191,]),
-    "DBR": ([116, 164,], [148, 148,]),
-    "CHG": ([116, 164,], [149, 149,]),
-    "MASSRANGE": ([116, 164,], [150, 150,]),
-    "MINOCC": ([116, 164,], [151, 151,]),
-    "MAXOCC": ([116, 164,], [152, 152,]),
-    "TOLERANCE": ([116, 164,], [153, 153,]),
-    "NEUTRALLOSS": ([118, 163,], [154, 178,]),
-    "PERCENT": ([135,], [156,]),
+    "LBRACE": (
+        [
+            28,
+            108,
+            122,
+            143,
+        ],
+        [
+            62,
+            141,
+            155,
+            160,
+        ],
+    ),
+    "DA": (
+        [
+            33,
+            34,
+            93,
+            186,
+            187,
+        ],
+        [
+            66,
+            68,
+            68,
+            66,
+            68,
+        ],
+    ),
+    "PPM": (
+        [
+            33,
+            34,
+            93,
+            186,
+            187,
+        ],
+        [
+            67,
+            70,
+            70,
+            67,
+            70,
+        ],
+    ),
+    "RES": (
+        [
+            34,
+            93,
+            187,
+        ],
+        [
+            69,
+            69,
+            69,
+        ],
+    ),
+    "MS1": (
+        [
+            60,
+        ],
+        [
+            106,
+        ],
+    ),
+    "MS2": (
+        [
+            60,
+        ],
+        [
+            107,
+        ],
+    ),
+    "RBRACE": (
+        [
+            109,
+            158,
+            159,
+            172,
+            177,
+        ],
+        [
+            142,
+            175,
+            176,
+            188,
+            191,
+        ],
+    ),
+    "DBR": (
+        [
+            116,
+            164,
+        ],
+        [
+            148,
+            148,
+        ],
+    ),
+    "CHG": (
+        [
+            116,
+            164,
+        ],
+        [
+            149,
+            149,
+        ],
+    ),
+    "MASSRANGE": (
+        [
+            116,
+            164,
+        ],
+        [
+            150,
+            150,
+        ],
+    ),
+    "MINOCC": (
+        [
+            116,
+            164,
+        ],
+        [
+            151,
+            151,
+        ],
+    ),
+    "MAXOCC": (
+        [
+            116,
+            164,
+        ],
+        [
+            152,
+            152,
+        ],
+    ),
+    "TOLERANCE": (
+        [
+            116,
+            164,
+        ],
+        [
+            153,
+            153,
+        ],
+    ),
+    "NEUTRALLOSS": (
+        [
+            118,
+            163,
+        ],
+        [
+            154,
+            178,
+        ],
+    ),
+    "PERCENT": (
+        [
+            135,
+        ],
+        [
+            156,
+        ],
+    ),
 }
 
 _lr_action = {}
@@ -2988,23 +3399,137 @@ for _k, _v in _lr_action_items.items():
 del _lr_action_items
 
 _lr_goto_items = {
-    "program": ([0,], [1,]),
-    "script": ([0,], [2,]),
-    "scriptname": ([0,], [3,]),
-    "variablesSection": ([3,], [6,]),
-    "variables": ([3,], [7,]),
-    "var": ([3, 7,], [8, 13,]),
-    "identificationSection": ([6,], [11,]),
-    "suchthatSection": ([11,], [16,]),
-    "reportSection": ([11, 16,], [17, 41,]),
-    "marks": ([12,], [20,]),
+    "program": (
+        [
+            0,
+        ],
+        [
+            1,
+        ],
+    ),
+    "script": (
+        [
+            0,
+        ],
+        [
+            2,
+        ],
+    ),
+    "scriptname": (
+        [
+            0,
+        ],
+        [
+            3,
+        ],
+    ),
+    "variablesSection": (
+        [
+            3,
+        ],
+        [
+            6,
+        ],
+    ),
+    "variables": (
+        [
+            3,
+        ],
+        [
+            7,
+        ],
+    ),
+    "var": (
+        [
+            3,
+            7,
+        ],
+        [
+            8,
+            13,
+        ],
+    ),
+    "identificationSection": (
+        [
+            6,
+        ],
+        [
+            11,
+        ],
+    ),
+    "suchthatSection": (
+        [
+            11,
+        ],
+        [
+            16,
+        ],
+    ),
+    "reportSection": (
+        [
+            11,
+            16,
+        ],
+        [
+            17,
+            41,
+        ],
+    ),
+    "marks": (
+        [
+            12,
+        ],
+        [
+            20,
+        ],
+    ),
     "boolmarks": (
-        [12, 22, 23, 52, 53, 54, 55, 56, 57,],
-        [21, 58, 59, 98, 99, 100, 101, 102, 103,],
+        [
+            12,
+            22,
+            23,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+        ],
+        [
+            21,
+            58,
+            59,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+        ],
     ),
     "scan": (
-        [12, 22, 23, 52, 53, 54, 55, 56, 57,],
-        [24, 24, 24, 24, 24, 24, 24, 24, 24,],
+        [
+            12,
+            22,
+            23,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+        ],
+        [
+            24,
+            24,
+            24,
+            24,
+            24,
+            24,
+            24,
+            24,
+            24,
+        ],
     ),
     "object": (
         [
@@ -3524,8 +4049,38 @@ _lr_goto_items = {
             32,
         ],
     ),
-    "booleanterm": ([18, 43, 44, 76, 77,], [42, 78, 80, 119, 120,]),
-    "expr": ([18, 43, 44, 76, 77,], [45, 45, 45, 45, 45,]),
+    "booleanterm": (
+        [
+            18,
+            43,
+            44,
+            76,
+            77,
+        ],
+        [
+            42,
+            78,
+            80,
+            119,
+            120,
+        ],
+    ),
+    "expr": (
+        [
+            18,
+            43,
+            44,
+            76,
+            77,
+        ],
+        [
+            45,
+            45,
+            45,
+            45,
+            45,
+        ],
+    ),
     "expression": (
         [
             18,
@@ -3576,13 +4131,68 @@ _lr_goto_items = {
             111,
         ],
     ),
-    "reportContent": ([19,], [49,]),
-    "reportItem": ([19, 49,], [50, 96,]),
-    "listcontent": ([38,], [73,]),
-    "scope": ([60,], [105,]),
-    "arguments": ([63, 174,], [110, 190,]),
-    "optioncontent": ([116,], [146,]),
-    "optionentry": ([116, 164,], [147, 179,]),
+    "reportContent": (
+        [
+            19,
+        ],
+        [
+            49,
+        ],
+    ),
+    "reportItem": (
+        [
+            19,
+            49,
+        ],
+        [
+            50,
+            96,
+        ],
+    ),
+    "listcontent": (
+        [
+            38,
+        ],
+        [
+            73,
+        ],
+    ),
+    "scope": (
+        [
+            60,
+        ],
+        [
+            105,
+        ],
+    ),
+    "arguments": (
+        [
+            63,
+            174,
+        ],
+        [
+            110,
+            190,
+        ],
+    ),
+    "optioncontent": (
+        [
+            116,
+        ],
+        [
+            146,
+        ],
+    ),
+    "optionentry": (
+        [
+            116,
+            164,
+        ],
+        [
+            147,
+            179,
+        ],
+    ),
 }
 
 _lr_goto = {}

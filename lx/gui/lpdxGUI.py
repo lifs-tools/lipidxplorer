@@ -90,11 +90,11 @@ def formatExceptionInfo(maxTBlevel=None):
 
 # Define File Drop Target class
 class FileDropTarget(wx.FileDropTarget):
-    """ This object implements Drop Target functionality for Files """
+    """This object implements Drop Target functionality for Files"""
 
     def __init__(self, obj, callback, fileExt):
-        """ Initialize the Drop Target, passing in the Object Reference to
-			indicate what should receive the dropped files """
+        """Initialize the Drop Target, passing in the Object Reference to
+        indicate what should receive the dropped files"""
         # Initialize the wsFileDropTarget Object
         wx.FileDropTarget.__init__(self)
         # Store the Object Reference for dropped files
@@ -104,7 +104,7 @@ class FileDropTarget(wx.FileDropTarget):
         self._callback = callback
 
     def OnDropFiles(self, x, y, filenames):
-        """ Implement File Drop """
+        """Implement File Drop"""
         # append a list of the file names dropped
         if len(filenames) > 1:
             raise LipidXException("Only a single file is dropable here.")
@@ -115,11 +115,11 @@ class FileDropTarget(wx.FileDropTarget):
 
 # Define File Drop Target class
 class DrawerDropTarget(wx.FileDropTarget):
-    """ This object implements Drop Target functionality for folders """
+    """This object implements Drop Target functionality for folders"""
 
     def __init__(self, obj, callback):
-        """ Initialize the Drop Target, passing in the Object Reference to
-			indicate what should receive the dropped files """
+        """Initialize the Drop Target, passing in the Object Reference to
+        indicate what should receive the dropped files"""
         # Initialize the wsFileDropTarget Object
         wx.FileDropTarget.__init__(self)
         # Store the Object Reference for dropped files
@@ -128,7 +128,7 @@ class DrawerDropTarget(wx.FileDropTarget):
         self._callback = callback
 
     def OnDropFiles(self, x, y, filenames):
-        """ Implement File Drop """
+        """Implement File Drop"""
         # append a list of the file names dropped
         if len(filenames) > 1:
             raise LipidXException("Only a single file is dropable here.")
@@ -146,7 +146,7 @@ class DrawerDropTarget(wx.FileDropTarget):
 
 
 class FileDrawerDropTarget(wx.FileDropTarget):
-    """ This object implements Drop Target functionality for Files and Directories """
+    """This object implements Drop Target functionality for Files and Directories"""
 
     def __init__(self, obj, callback, fileExt):
 
@@ -159,7 +159,7 @@ class FileDrawerDropTarget(wx.FileDropTarget):
         self._callback = callback
 
     def OnDropFiles(self, x, y, filenames):
-        """ Implement File Drop """
+        """Implement File Drop"""
         # append a list of the file names dropped
 
         if len(filenames) > 1:
@@ -180,7 +180,7 @@ class FileDrawerDropTarget(wx.FileDropTarget):
 
 
 class GeneralFileDrawerDropTarget(FileDrawerDropTarget):
-    """ This object implements Drop Target functionality for Files and Directories """
+    """This object implements Drop Target functionality for Files and Directories"""
 
     def __init__(self, obj, callback, fileExt):
 
@@ -193,7 +193,7 @@ class GeneralFileDrawerDropTarget(FileDrawerDropTarget):
         self._callback = callback
 
     def OnDropFiles(self, x, y, filenames):
-        """ Implement File Drop """
+        """Implement File Drop"""
         # append a list of the file names dropped
 
         if len(filenames) > 1:
@@ -217,7 +217,7 @@ class GeneralFileDrawerDropTarget(FileDrawerDropTarget):
 
 # Define Text Drop Target class
 class MFQLDropTarget(wx.FileDropTarget):
-    """ This object implements Drop Target functionality for Text """
+    """This object implements Drop Target functionality for Text"""
 
     def __init__(self, obj, parent):
 
@@ -229,7 +229,7 @@ class MFQLDropTarget(wx.FileDropTarget):
         self.parent = parent
 
     def OnDropFiles(self, x, y, filenames):
-        """ Implement File Drop """
+        """Implement File Drop"""
         # append a list of the file names dropped
         for p in filenames:
 

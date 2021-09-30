@@ -905,8 +905,8 @@ def add_mzXMLSample(
     MSMSthresholdType=None,
 ):
     """Adds a sample to the Survey Scan.
-    IN: <the path of the sample
-directory>, <the resolution of the mass spec machine>
+        IN: <the path of the sample
+    directory>, <the resolution of the mass spec machine>
     """
 
     options = sc.options

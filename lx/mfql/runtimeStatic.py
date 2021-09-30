@@ -2384,7 +2384,7 @@ class TypeFloat:
 class TypeTolerance:
     def __init__(self, kind, t, smallestMass=0.0, delta=0.0):
         """IN: kind -> 'Da', 'res', 'ppm'
-		t -> tolerance"""
+        t -> tolerance"""
 
         assert isinstance(smallestMass, float)
         assert isinstance(delta, float)
@@ -2414,7 +2414,7 @@ class TypeTolerance:
 
     def fitIn(self, mass, m):
         """Does mass fit in m +- tolerance? Or else:
-			fitIn(<experimental mass>, <theoretical mass>)"""
+        fitIn(<experimental mass>, <theoretical mass>)"""
 
         if self.kind != "Da":
             t = self.getTinDA(mass)
@@ -3039,8 +3039,8 @@ class InternFunctions:
 class TypeObject:
     def __init__(self, **argv):
         """IN: (<attribute name> = <value>,)*
-			The attributes define the type of the object.
-		"""
+        The attributes define the type of the object.
+        """
 
         if "mass" in argv:
             self.mass = argv["mass"]

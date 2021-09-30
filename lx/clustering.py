@@ -24,10 +24,10 @@ class ClusteringError(Exception):
 
 def flatten(L):
     """
-   Flattens a list.
-   Example:
-   flatten([a,b,[c,d,[e,f]]]) = [a,b,c,d,e,f]
-   """
+    Flattens a list.
+    Example:
+    flatten([a,b,[c,d,[e,f]]]) = [a,b,c,d,e,f]
+    """
     if type(L) != type([]):
         return [L]
     if L == []:
@@ -38,7 +38,7 @@ def flatten(L):
 def median(numbers):
     """Return the median of the list of numbers.
 
-   found at: http://mail.python.org/pipermail/python-list/2004-December/253517.html"""
+    found at: http://mail.python.org/pipermail/python-list/2004-December/253517.html"""
     # Sort the list and take the middle element.
     n = len(numbers)
     copy = numbers[:]  # So that "numbers" keeps its original order
@@ -52,24 +52,24 @@ def median(numbers):
 def mean(numbers):
     """Returns the arithmetic mean of a numeric list.
 
-   found at: http://mail.python.org/pipermail/python-list/2004-December/253517.html"""
+    found at: http://mail.python.org/pipermail/python-list/2004-December/253517.html"""
     return float(sum(numbers)) / float(len(numbers))
 
 
 def minkowski_distance(x, y, p=2):
     """
-   Calculates the minkowski distance between two points.
+    Calculates the minkowski distance between two points.
 
-   PARAMETERS
-      x - the first point
-      y - the second point
-      p - the order of the minkowski algorithm.
-          Default = 2. This is equal to the euclidian distance.
-                       If the order is 1, it is equal to the manhatten
-                       distance.
-                       The higher the order, the closer it converges to the
-                       Chebyshev distance, which has p=infinity
-   """
+    PARAMETERS
+       x - the first point
+       y - the second point
+       p - the order of the minkowski algorithm.
+           Default = 2. This is equal to the euclidian distance.
+                        If the order is 1, it is equal to the manhatten
+                        distance.
+                        The higher the order, the closer it converges to the
+                        Chebyshev distance, which has p=infinity
+    """
     from math import pow
 
     assert len(y) == len(x)
@@ -82,25 +82,25 @@ def minkowski_distance(x, y, p=2):
 
 def genmatrix(list, combinfunc, symmetric=False, diagonal=None):
     """
-   Takes a list and generates a 2D-matrix using the supplied combination
-   function to calculate the values.
+    Takes a list and generates a 2D-matrix using the supplied combination
+    function to calculate the values.
 
-   PARAMETERS
-      list        - the list of items
-      combinfunc  - the function that is used to calculate teh value in a cell.
-                    It has to cope with two arguments.
-      symmetric   - Whether it will be a symmetric matrix along the diagonal.
-                    For example, it the list contains integers, and the
-                    combination function is abs(x-y), then the matrix will be
-                    symmetric.
-                    Default: False
-      diagonal    - The value to be put into the diagonal. For some functions,
-                    the diagonal will stay constant. An example could be the
-                    function "x-y". Then each diagonal cell will be "0".
-                    If this value is set to None, then the diagonal will be
-                    calculated.
-                    Default: None
-   """
+    PARAMETERS
+       list        - the list of items
+       combinfunc  - the function that is used to calculate teh value in a cell.
+                     It has to cope with two arguments.
+       symmetric   - Whether it will be a symmetric matrix along the diagonal.
+                     For example, it the list contains integers, and the
+                     combination function is abs(x-y), then the matrix will be
+                     symmetric.
+                     Default: False
+       diagonal    - The value to be put into the diagonal. For some functions,
+                     the diagonal will stay constant. An example could be the
+                     function "x-y". Then each diagonal cell will be "0".
+                     If this value is set to None, then the diagonal will be
+                     calculated.
+                     Default: None
+    """
     matrix = []
     row_index = 0
     for item in list:
@@ -124,12 +124,12 @@ def genmatrix(list, combinfunc, symmetric=False, diagonal=None):
 
 def printmatrix(list):
     """
-   Prints out a 2-dimensional list cleanly.
-   This is useful for debugging.
+    Prints out a 2-dimensional list cleanly.
+    This is useful for debugging.
 
-   PARAMETERS
-      list  -  the 2D-list to display
-   """
+    PARAMETERS
+       list  -  the 2D-list to display
+    """
     # determine maximum length
     maxlen = 0
     colcount = len(list[0])
@@ -172,11 +172,11 @@ def centroid(list, method=median):
 
 class Cluster:
     """
-   A collection of items. This is internally used to detect clustered items in
-   the data so we could distinguish other collection types (lists, dicts, ...)
-   from the actual clusters. This means that you could also create clusters of
-   lists with this class.
-   """
+    A collection of items. This is internally used to detect clustered items in
+    the data so we could distinguish other collection types (lists, dicts, ...)
+    from the actual clusters. This means that you could also create clusters of
+    lists with this class.
+    """
 
     def __str__(self):
         return "<Cluster@%s(%s)>" % (self.__level, self.__items)
@@ -186,18 +186,18 @@ class Cluster:
 
     def __init__(self, level, *args):
         """
-      Constructor
+        Constructor
 
-      PARAMETERS
-         level - The level of this cluster. This is used in hierarchical
-                 clustering to retrieve a specific set of clusters. The higher
-                 the level, the smaller the count of clusters returned. The
-                 level depends on the difference function used.
-         *args - every additional argument passed following the level value
-                 will get added as item to the cluster. You could also pass a
-                 list as second parameter to initialise the cluster with that
-                 list as content
-      """
+        PARAMETERS
+           level - The level of this cluster. This is used in hierarchical
+                   clustering to retrieve a specific set of clusters. The higher
+                   the level, the smaller the count of clusters returned. The
+                   level depends on the difference function used.
+           *args - every additional argument passed following the level value
+                   will get added as item to the cluster. You could also pass a
+                   list as second parameter to initialise the cluster with that
+                   list as content
+        """
         self.__level = level
         if len(args) == 0:
             self.__items = []
@@ -206,21 +206,21 @@ class Cluster:
 
     def append(self, item):
         """
-      Appends a new item to the cluster
+        Appends a new item to the cluster
 
-      PARAMETERS
-         item  -  The item that is to be appended
-      """
+        PARAMETERS
+           item  -  The item that is to be appended
+        """
         self.__items.append(item)
 
     def items(self, newItems=None):
         """
-      Sets or gets the items of the cluster
+        Sets or gets the items of the cluster
 
-      PARAMETERS
-         newItems (optional) - if set, the items of the cluster will be
-                               replaced with that argument.
-      """
+        PARAMETERS
+           newItems (optional) - if set, the items of the cluster will be
+                                 replaced with that argument.
+        """
         if newItems is None:
             return self.__items
         else:
@@ -228,14 +228,14 @@ class Cluster:
 
     def fullyflatten(self, *args):
         """
-      Completely flattens out this cluster and returns a one-dimensional list
-      containing the cluster's items. This is useful in cases where some items
-      of the cluster are clusters in their own right and you only want the
-      items.
+        Completely flattens out this cluster and returns a one-dimensional list
+        containing the cluster's items. This is useful in cases where some items
+        of the cluster are clusters in their own right and you only want the
+        items.
 
-      PARAMETERS
-         *args - only used for recursion.
-      """
+        PARAMETERS
+           *args - only used for recursion.
+        """
         flattened_items = []
         if len(args) == 0:
             collection = self.__items
@@ -252,14 +252,14 @@ class Cluster:
 
     def level(self):
         """
-      Returns the level associated with this cluster
-      """
+        Returns the level associated with this cluster
+        """
         return self.__level
 
     def display(self, depth=0):
         """
-      Pretty-prints this cluster. Useful for debuging
-      """
+        Pretty-prints this cluster. Useful for debuging
+        """
         print(depth * "   " + "[level %s]" % self.__level)
         for item in self.__items:
             if isinstance(item, Cluster):
@@ -269,22 +269,22 @@ class Cluster:
 
     def topology(self):
         """
-      Returns the structure (topology) of the cluster as tuples.
+        Returns the structure (topology) of the cluster as tuples.
 
-      Output from cl.data:
-          [<Cluster@0.833333333333(['CVS', <Cluster@0.818181818182(['34.xls',
-          <Cluster@0.789473684211([<Cluster@0.555555555556(['0.txt',
-          <Cluster@0.181818181818(['ChangeLog', 'ChangeLog.txt'])>])>,
-          <Cluster@0.684210526316(['20060730.py',
-          <Cluster@0.684210526316(['.cvsignore',
-          <Cluster@0.647058823529(['About.py',
-          <Cluster@0.625(['.idlerc', '.pylint.d'])>])>])>])>])>])>])>]
+        Output from cl.data:
+            [<Cluster@0.833333333333(['CVS', <Cluster@0.818181818182(['34.xls',
+            <Cluster@0.789473684211([<Cluster@0.555555555556(['0.txt',
+            <Cluster@0.181818181818(['ChangeLog', 'ChangeLog.txt'])>])>,
+            <Cluster@0.684210526316(['20060730.py',
+            <Cluster@0.684210526316(['.cvsignore',
+            <Cluster@0.647058823529(['About.py',
+            <Cluster@0.625(['.idlerc', '.pylint.d'])>])>])>])>])>])>])>]
 
-      Corresponding output from cl.topo():
-          ('CVS', ('34.xls', (('0.txt', ('ChangeLog', 'ChangeLog.txt')),
-          ('20060730.py', ('.cvsignore', ('About.py',
-          ('.idlerc', '.pylint.d')))))))
-      """
+        Corresponding output from cl.topo():
+            ('CVS', ('34.xls', (('0.txt', ('ChangeLog', 'ChangeLog.txt')),
+            ('20060730.py', ('.cvsignore', ('About.py',
+            ('.idlerc', '.pylint.d')))))))
+        """
 
         left = self.__items[0]
         right = self.__items[1]
@@ -300,21 +300,21 @@ class Cluster:
 
     def getlevel(self, threshold):
         """
-      Retrieve all clusters up to a specific level threshold. This
-      level-threshold represents the maximum distance between two clusters. So
-      the lower you set this threshold, the more clusters you will receive and
-      the higher you set it, you will receive less but bigger clusters.
+        Retrieve all clusters up to a specific level threshold. This
+        level-threshold represents the maximum distance between two clusters. So
+        the lower you set this threshold, the more clusters you will receive and
+        the higher you set it, you will receive less but bigger clusters.
 
-      PARAMETERS
-         threshold - The level threshold
+        PARAMETERS
+           threshold - The level threshold
 
-      NOTE
-         It is debatable whether the value passed into this method should
-         really be as strongly linked to the real cluster-levels as it is right
-         now. The end-user will not know the range of this value unless s/he
-         first inspects the top-level cluster. So instead you might argue that
-         a value ranging from 0 to 1 might be a more useful approach.
-      """
+        NOTE
+           It is debatable whether the value passed into this method should
+           really be as strongly linked to the real cluster-levels as it is right
+           now. The end-user will not know the range of this value unless s/he
+           first inspects the top-level cluster. So instead you might argue that
+           a value ranging from 0 to 1 might be a more useful approach.
+        """
 
         left = self.__items[0]
         right = self.__items[1]
@@ -352,58 +352,58 @@ class Cluster:
 
 class BaseClusterMethod:
     """
-   The base class of all clustering methods.
-   """
+    The base class of all clustering methods.
+    """
 
     def __init__(self, input, distance_function):
         """
-      Constructs the object and starts clustering
+        Constructs the object and starts clustering
 
-      PARAMETERS
-         input             - a list of objects
-         distance_function - a function returning the distance - or opposite of
-                             similarity ( distance = -similarity ) - of two
-                             items from the input. In other words, the closer
-                             the two items are related, the smaller this value
-                             needs to be. With 0 meaning they are exactly the
-                             same.
+        PARAMETERS
+           input             - a list of objects
+           distance_function - a function returning the distance - or opposite of
+                               similarity ( distance = -similarity ) - of two
+                               items from the input. In other words, the closer
+                               the two items are related, the smaller this value
+                               needs to be. With 0 meaning they are exactly the
+                               same.
 
-      NOTES
-         The distance function should always return the absolute distance
-         between two given items of the list. Say,
+        NOTES
+           The distance function should always return the absolute distance
+           between two given items of the list. Say,
 
-         distance(input[1], input[4]) = distance(input[4], input[1])
+           distance(input[1], input[4]) = distance(input[4], input[1])
 
-         This is very important for the clustering algorithm to work!
-         Naturally, the data returned by the distance function MUST be a
-         comparable datatype, so you can perform arithmetic comparisons on
-         them (< or >)! The simplest examples would be floats or ints. But as
-         long as they are comparable, it's ok.
-      """
+           This is very important for the clustering algorithm to work!
+           Naturally, the data returned by the distance function MUST be a
+           comparable datatype, so you can perform arithmetic comparisons on
+           them (< or >)! The simplest examples would be floats or ints. But as
+           long as they are comparable, it's ok.
+        """
         self.distance = distance_function
         self._input = input  # the original input
         self._data = input[:]  # clone the input so we can work with it
 
     def topo(self):
         """
-      Returns the structure (topology) of the cluster.
+        Returns the structure (topology) of the cluster.
 
-      See Cluster.topology() for information.
-      """
+        See Cluster.topology() for information.
+        """
         return self.data[0].topology()
 
     def __get_data(self):
         """
-      Returns the data that is currently in process.
-      """
+        Returns the data that is currently in process.
+        """
         return self._data
 
     data = property(__get_data)
 
     def __get_raw_data(self):
         """
-      Returns the raw data (data without being clustered).
-      """
+        Returns the raw data (data without being clustered).
+        """
         return self._input
 
     raw_data = property(__get_raw_data)
@@ -411,26 +411,26 @@ class BaseClusterMethod:
 
 class HierarchicalClustering(BaseClusterMethod):
     """
-   Implementation of the hierarchical clustering method as explained in
-   http://www.elet.polimi.it/upload/matteucc/Clustering/tutorial_html/hierarchical.html
+    Implementation of the hierarchical clustering method as explained in
+    http://www.elet.polimi.it/upload/matteucc/Clustering/tutorial_html/hierarchical.html
 
-   USAGE
-       from cluster import HierarchicalClustering
-       # or: from cluster import *
-       cl = HierarchicalClustering([123,334,345,242,234,1,3], lambda x,y: float(abs(x-y)))
-       cl.getlevel(90)
-      [[345, 334], [234, 242], [123], [3, 1]]
+    USAGE
+        from cluster import HierarchicalClustering
+        # or: from cluster import *
+        cl = HierarchicalClustering([123,334,345,242,234,1,3], lambda x,y: float(abs(x-y)))
+        cl.getlevel(90)
+       [[345, 334], [234, 242], [123], [3, 1]]
 
-      Note that all of the returned clusters are more that 90 apart
+       Note that all of the returned clusters are more that 90 apart
 
-   """
+    """
 
     def __init__(self, data, distance_function, linkage="single"):
         """
-      Constructor
+        Constructor
 
-      See BaseClusterMethod.__init__ for more details.
-      """
+        See BaseClusterMethod.__init__ for more details.
+        """
         BaseClusterMethod.__init__(self, data, distance_function)
 
         # set the linkage type to single
@@ -439,12 +439,12 @@ class HierarchicalClustering(BaseClusterMethod):
 
     def setLinkageMethod(self, method):
         """
-      Sets the method to determine the distance between two clusters.
+        Sets the method to determine the distance between two clusters.
 
-      PARAMETERS:
-         method - The name of the method to use. It must be one of 'single',
-                  'complete', 'average' or 'uclus'
-      """
+        PARAMETERS:
+           method - The name of the method to use. It must be one of 'single',
+                    'complete', 'average' or 'uclus'
+        """
         if method == "single":
             self.linkage = self.singleLinkageDistance
         elif method == "complete":
@@ -460,14 +460,14 @@ class HierarchicalClustering(BaseClusterMethod):
 
     def uclusDistance(self, x, y):
         """
-      The method to determine the distance between one cluster an another
-      item/cluster. The distance equals to the *average* (median) distance from
-      any member of one cluster to any member of the other cluster.
+        The method to determine the distance between one cluster an another
+        item/cluster. The distance equals to the *average* (median) distance from
+        any member of one cluster to any member of the other cluster.
 
-      PARAMETERS
-         x  -  first cluster/item
-         y  -  second cluster/item
-      """
+        PARAMETERS
+           x  -  first cluster/item
+           y  -  second cluster/item
+        """
         # create a flat list of all the items in <x>
         if not isinstance(x, Cluster):
             x = [x]
@@ -488,14 +488,14 @@ class HierarchicalClustering(BaseClusterMethod):
 
     def averageLinkageDistance(self, x, y):
         """
-      The method to determine the distance between one cluster an another
-      item/cluster. The distance equals to the *average* (mean) distance from
-      any member of one cluster to any member of the other cluster.
+        The method to determine the distance between one cluster an another
+        item/cluster. The distance equals to the *average* (mean) distance from
+        any member of one cluster to any member of the other cluster.
 
-      PARAMETERS
-         x  -  first cluster/item
-         y  -  second cluster/item
-      """
+        PARAMETERS
+           x  -  first cluster/item
+           y  -  second cluster/item
+        """
         # create a flat list of all the items in <x>
         if not isinstance(x, Cluster):
             x = [x]
@@ -516,14 +516,14 @@ class HierarchicalClustering(BaseClusterMethod):
 
     def completeLinkageDistance(self, x, y):
         """
-      The method to determine the distance between one cluster an another
-      item/cluster. The distance equals to the *longest* distance from any
-      member of one cluster to any member of the other cluster.
+        The method to determine the distance between one cluster an another
+        item/cluster. The distance equals to the *longest* distance from any
+        member of one cluster to any member of the other cluster.
 
-      PARAMETERS
-         x  -  first cluster/item
-         y  -  second cluster/item
-      """
+        PARAMETERS
+           x  -  first cluster/item
+           y  -  second cluster/item
+        """
 
         # create a flat list of all the items in <x>
         if not isinstance(x, Cluster):
@@ -547,14 +547,14 @@ class HierarchicalClustering(BaseClusterMethod):
 
     def singleLinkageDistance(self, x, y):
         """
-      The method to determine the distance between one cluster an another
-      item/cluster. The distance equals to the *shortest* distance from any
-      member of one cluster to any member of the other cluster.
+        The method to determine the distance between one cluster an another
+        item/cluster. The distance equals to the *shortest* distance from any
+        member of one cluster to any member of the other cluster.
 
-      PARAMETERS
-         x  -  first cluster/item
-         y  -  second cluster/item
-      """
+        PARAMETERS
+           x  -  first cluster/item
+           y  -  second cluster/item
+        """
 
         # create a flat list of all the items in <x>
         if not isinstance(x, Cluster):
@@ -578,15 +578,15 @@ class HierarchicalClustering(BaseClusterMethod):
 
     def cluster(self, matrix=None, level=None, sequence=None):
         """
-      Perform hierarchical clustering. This method is automatically called by
-      the constructor so you should not need to call it explicitly.
+        Perform hierarchical clustering. This method is automatically called by
+        the constructor so you should not need to call it explicitly.
 
-      PARAMETERS
-         matrix   -  The 2D list that is currently under processing. The matrix
-                     contains the distances of each item with each other
-         level    -  The current level of clustering
-         sequence -  The sequence number of the clustering
-      """
+        PARAMETERS
+           matrix   -  The 2D list that is currently under processing. The matrix
+                       contains the distances of each item with each other
+           level    -  The current level of clustering
+           sequence -  The sequence number of the clustering
+        """
 
         if matrix is None:
             # create level 0, first iteration (sequence)
@@ -643,15 +643,15 @@ class HierarchicalClustering(BaseClusterMethod):
 
     def getlevel(self, threshold):
         """
-      Returns all clusters with a maximum distance of <threshold> in between
-      each other
+        Returns all clusters with a maximum distance of <threshold> in between
+        each other
 
-      PARAMETERS
-         threshold - the maximum distance between clusters
+        PARAMETERS
+           threshold - the maximum distance between clusters
 
-      SEE-ALSO
-         Cluster.getlevel(threshold)
-      """
+        SEE-ALSO
+           Cluster.getlevel(threshold)
+        """
 
         # if it's not worth clustering, just return the data
         if len(self._input) <= 1:
@@ -666,28 +666,28 @@ class HierarchicalClustering(BaseClusterMethod):
 
 class KMeansClustering:
     """
-   Implementation of the kmeans clustering method as explained in
-   http://www.elet.polimi.it/upload/matteucc/Clustering/tutorial_html/kmeans.html
+    Implementation of the kmeans clustering method as explained in
+    http://www.elet.polimi.it/upload/matteucc/Clustering/tutorial_html/kmeans.html
 
-   USAGE
-   =====
+    USAGE
+    =====
 
-     from cluster import KMeansClustering
-     cl = KMeansClustering([(1,1), (2,1), (5,3), ...])
-     clusters = cl.getclusters(2)
-   """
+      from cluster import KMeansClustering
+      cl = KMeansClustering([(1,1), (2,1), (5,3), ...])
+      clusters = cl.getclusters(2)
+    """
 
     def __init__(self, data, distance=None):
         """
-      Constructor
+        Constructor
 
-      PARAMETERS
-         data     - A list of tuples or integers.
-         distance - A function determining the distance between two items.
-                    Default: It assumes the tuples contain numeric values and
-                             appiles a generalised form of the
-                             euclidian-distance algorithm on them.
-      """
+        PARAMETERS
+           data     - A list of tuples or integers.
+           distance - A function determining the distance between two items.
+                      Default: It assumes the tuples contain numeric values and
+                               appiles a generalised form of the
+                               euclidian-distance algorithm on them.
+        """
         self.__data = data
         self.distance = distance
         self.__initial_length = len(data)
@@ -713,12 +713,12 @@ class KMeansClustering:
 
     def getclusters(self, n):
         """
-      Generates <n> clusters
+        Generates <n> clusters
 
-      PARAMETERS
-         n - The amount of clusters that should be generated.
-             n must be greater than 1
-      """
+        PARAMETERS
+           n - The amount of clusters that should be generated.
+               n must be greater than 1
+        """
 
         # only proceed if we got sensible input
         if n <= 1:
@@ -755,12 +755,12 @@ available. You supplied %d items, and asked for %d clusters."""
 
     def assign_item(self, item, origin):
         """
-      Assigns an item from a given cluster to the closest located cluster
+        Assigns an item from a given cluster to the closest located cluster
 
-      PARAMETERS
-         item   - the item to be moved
-         origin - the originating cluster
-      """
+        PARAMETERS
+           item   - the item to be moved
+           origin - the originating cluster
+        """
         closest_cluster = origin
         for cluster in self.__clusters:
             if self.distance(item, centroid(cluster)) < self.distance(
@@ -776,25 +776,25 @@ available. You supplied %d items, and asked for %d clusters."""
 
     def move_item(self, item, origin, destination):
         """
-      Moves an item from one cluster to anoter cluster
+        Moves an item from one cluster to anoter cluster
 
-      PARAMETERS
+        PARAMETERS
 
-         item        - the item to be moved
-         origin      - the originating cluster
-         destination - the target cluster
-      """
+           item        - the item to be moved
+           origin      - the originating cluster
+           destination - the target cluster
+        """
         destination.append(origin.pop(origin.index(item)))
 
     def initialiseClusters(self, input, clustercount):
         """
-      Initialises the clusters by distributing the items from the data evenly
-      across n clusters
+        Initialises the clusters by distributing the items from the data evenly
+        across n clusters
 
-      PARAMETERS
-         input        - the data set (a list of tuples)
-         clustercount - the amount of clusters (n)
-      """
+        PARAMETERS
+           input        - the data set (a list of tuples)
+           clustercount - the amount of clusters (n)
+        """
         # initialise the clusters with empty lists
         self.__clusters = []
         for x in range(clustercount):

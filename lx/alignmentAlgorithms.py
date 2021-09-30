@@ -110,18 +110,18 @@ def linearAlignment(
     minMass=None,
 ):
     """
-	This is the standard algorithm to align spectra. It is published
-	in [...].
+    This is the standard algorithm to align spectra. It is published
+    in [...].
 
-	It is optimized for the available data structures. Therefore the input
-	is an own format (specEntry) provided as list in listSamples. Furthermore,
-	dictSamples: is the list of all sample names (keys from dict)
-	tolerance: is a TypeTolerance type with the
-		tolerance as da, ppm or res.
-	deltaRes: if the tolerance is given as resolution, the deltaRes
-		states the resolution change over the masses.
+    It is optimized for the available data structures. Therefore the input
+    is an own format (specEntry) provided as list in listSamples. Furthermore,
+    dictSamples: is the list of all sample names (keys from dict)
+    tolerance: is a TypeTolerance type with the
+            tolerance as da, ppm or res.
+    deltaRes: if the tolerance is given as resolution, the deltaRes
+            states the resolution change over the masses.
 
-	The output is a list of specEntry"""
+    The output is a list of specEntry"""
 
     # get max length of peak in the spectra
     speclen = 0

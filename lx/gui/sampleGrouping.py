@@ -54,7 +54,7 @@ class DragList(wx.ListCtrl):
         return l
 
     def _startDrag(self, e):
-        """ Put together a data object for drag-and-drop _from_ this list. """
+        """Put together a data object for drag-and-drop _from_ this list."""
         l = []
         idx = -1
         while True:  # find all the selected items and put them in a list
@@ -90,7 +90,7 @@ class DragList(wx.ListCtrl):
                 self.DeleteItem(pos)
 
     def _insert(self, x, y, seq):
-        """ Insert text at given x, y coordinates --- used with drag-and-drop. """
+        """Insert text at given x, y coordinates --- used with drag-and-drop."""
 
         # Find insertion point.
         index, flags = self.HitTest((x, y))
@@ -136,12 +136,12 @@ class DragList(wx.ListCtrl):
 
 
 class ListDrop(wx.PyDropTarget):
-    """ Drop target for simple lists. """
+    """Drop target for simple lists."""
 
     def __init__(self, source):
-        """ Arguments:
-		 - source: source listctrl.
-		"""
+        """Arguments:
+        - source: source listctrl.
+        """
         wx.PyDropTarget.__init__(self)
 
         self.dv = source
@@ -215,7 +215,7 @@ class DragTree(wx.TreeCtrl):
         return l
 
     def _startDrag(self, e):
-        """ Put together a data object for drag-and-drop _from_ this list. """
+        """Put together a data object for drag-and-drop _from_ this list."""
 
         selectedGroups = self.GetSelections()
         for item in selectedGroups:
@@ -309,7 +309,7 @@ class DragTree(wx.TreeCtrl):
                     self.Delete(item)
 
     def _insert(self, x, y, seq):
-        """ Insert text at given x, y coordinates --- used with drag-and-drop. """
+        """Insert text at given x, y coordinates --- used with drag-and-drop."""
 
         # Find insertion point.
         index, flags = self.HitTest((x, y))
@@ -398,12 +398,12 @@ class DragTree(wx.TreeCtrl):
 
 
 class TreeDrop(wx.PyDropTarget):
-    """ Drop target for simple lists. """
+    """Drop target for simple lists."""
 
     def __init__(self, source):
-        """ Arguments:
-		 - source: source listctrl.
-		"""
+        """Arguments:
+        - source: source listctrl.
+        """
         wx.PyDropTarget.__init__(self)
 
         self.dv = source

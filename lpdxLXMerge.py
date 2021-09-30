@@ -153,7 +153,7 @@ class TextOutFrame(wx.Frame):
 
 
 class InputFileDropTarget(wx.FileDropTarget):
-    """ This object implements Drop Target functionality for Text """
+    """This object implements Drop Target functionality for Text"""
 
     def __init__(self, obj, parent):
 
@@ -165,7 +165,7 @@ class InputFileDropTarget(wx.FileDropTarget):
         self.parent = parent
 
     def OnDropFiles(self, x, y, filenames):
-        """ Implement File Drop """
+        """Implement File Drop"""
         # append a list of the file names dropped
         for p in filenames:
 
@@ -318,18 +318,18 @@ class ChooseColFrame(wx.Frame):
 
 # Define File Drop Target class
 class FileDropTarget(wx.FileDropTarget):
-    """ This object implements Drop Target functionality for Files """
+    """This object implements Drop Target functionality for Files"""
 
     def __init__(self, obj):
-        """ Initialize the Drop Target, passing in the Object Reference to
-			indicate what should receive the dropped files """
+        """Initialize the Drop Target, passing in the Object Reference to
+        indicate what should receive the dropped files"""
         # Initialize the wsFileDropTarget Object
         wx.FileDropTarget.__init__(self)
         # Store the Object Reference for dropped files
         self.obj = obj
 
     def OnDropFiles(self, x, y, filenames):
-        """ Implement File Drop """
+        """Implement File Drop"""
         # append a list of the file names dropped
         if len(filenames) > 1:
             raise AttributeError

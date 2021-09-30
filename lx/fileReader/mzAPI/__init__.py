@@ -218,9 +218,7 @@ MZ_WILDCARD = "MS Data Files (%s)|%s" % (
 
 
 def make_info_file(data_file, **kwargs):
-    """Generates a text file with mapping for scan time to proprietary scan index
-
-	"""
+    """Generates a text file with mapping for scan time to proprietary scan index"""
 
     if data_file.lower().startswith("http://"):
         raise NotImplementedError("How do you make an info file from a URL?")
@@ -268,8 +266,8 @@ def make_info_file(data_file, **kwargs):
 class mzInfoFile(tuple):
     """Subclass of tuple object for storing mzInfo.
 
-	Each element of the tuple is a dictionary that stores information about each scan
-	"""
+    Each element of the tuple is a dictionary that stores information about each scan
+    """
 
     def __init__(self, s):
         tuple.__init__(self, s)
@@ -278,8 +276,8 @@ class mzInfoFile(tuple):
     def field_list(self):
         """Returns keys for dictionary stored in each list element.
 
-		Assumes all dictionaries have same keys.
-		"""
+        Assumes all dictionaries have same keys.
+        """
 
         return list(self[0].keys())
 
@@ -292,14 +290,14 @@ class mzInfoFile(tuple):
     def filter(self, list_key=None, value_list=None, value_range=None, sort_field=None):
         """All purpose extract data function
 
-		list_key provides the key used to exctract data
-		value_list or value_range can be used to provide the values to exctract
-		value_list = [val1, val2, val3...]
-		value_range = [start_val, stop_val]
-		if value_list is provided, range will be ignored
+        list_key provides the key used to exctract data
+        value_list or value_range can be used to provide the values to exctract
+        value_list = [val1, val2, val3...]
+        value_range = [start_val, stop_val]
+        if value_list is provided, range will be ignored
 
-		sort_field option returns the list sorted based on a specified_field
-		"""
+        sort_field option returns the list sorted based on a specified_field
+        """
 
         #  Extract
         temp_list = self.sort_by_field(field=list_key)
@@ -332,8 +330,8 @@ class mzInfoFile(tuple):
 class mzScan(list):
     """Subclass of list object for custom scan methods
 
-	The mode can be 'p' or 'c' for profile or centroid respectively
-	"""
+    The mode can be 'p' or 'c' for profile or centroid respectively
+    """
 
     def __init__(self, s, time, mode="p", mz=0.0, z=0, sn=0):
         list.__init__(self, s)
@@ -353,13 +351,13 @@ class mzFile(object):
     def __init__(self, data_file, **kwargs):
         """Initializes mzAPI and opens a new file of a specified type
 
-		file_type can be 'raw', 'wiff', 'mzml', or 'mzurl'
+        file_type can be 'raw', 'wiff', 'mzml', or 'mzurl'
 
-		Example:
-		>>> dataFile = 'C:\\Documents and Settings\\User\\Desktop\\rawFile.RAW'
-		>>> myPeakFile = mzAPI.mzFile(dataFile)
+        Example:
+        >>> dataFile = 'C:\\Documents and Settings\\User\\Desktop\\rawFile.RAW'
+        >>> myPeakFile = mzAPI.mzFile(dataFile)
 
-		"""
+        """
 
         if data_file.lower().endswith(".lnk"):
             data_file = self.follow_link(data_file)
@@ -396,91 +394,91 @@ class mzFile(object):
     def close(self):
         """Closes the open MS data file
 
-		Example:
-		>>> myPeakFile.close()
+        Example:
+        >>> myPeakFile.close()
 
-		"""
+        """
         raise NotImplementedError("Subclasses must implement this method")
 
     def scan_list(self, start_time=None, stop_time=None, start_mz=0, stop_mz=99999):
         """Gets a list of [(time,mz)] in the time and mz range provided
 
-		All full MS scans that fall within the time range are included.
-		Only MS/MS scans that fall within the mz range (optional) are included
+        All full MS scans that fall within the time range are included.
+        Only MS/MS scans that fall within the mz range (optional) are included
 
-		Example:
-		>>> scan_list = my_peakfile.scan_list(30.0, 35.0, 435.82, 436.00)
+        Example:
+        >>> scan_list = my_peakfile.scan_list(30.0, 35.0, 435.82, 436.00)
 
-		"""
+        """
 
         raise NotImplementedError("Subclasses must implement this method")
 
     def scan_info(self, start_time, stop_time=0, start_mz=0, stop_mz=99999):
-        """Gets a list of [(time, mz, scan_name, scan_type, scan_mode, polarity, total_ic)] 
-		in the time and mz range provided
+        """Gets a list of [(time, mz, scan_name, scan_type, scan_mode, polarity, total_ic)]
+        in the time and mz range provided
 
-		scan_name = number for RAW files, (cycle, experiment) for WIFF files.
+        scan_name = number for RAW files, (cycle, experiment) for WIFF files.
 
-		All full MS scans that fall within the time range are included.
-		Only MS/MS scans that fall within the mz range (optional) are included
+        All full MS scans that fall within the time range are included.
+        Only MS/MS scans that fall within the mz range (optional) are included
 
-		Example:
-		>>> scan_info = my_peakfile.scan_info(30.0, 35.0, 435.82, 436.00)
+        Example:
+        >>> scan_info = my_peakfile.scan_info(30.0, 35.0, 435.82, 436.00)
 
 
-		"""
+        """
 
         raise NotImplementedError("Subclasses must implement this method")
 
     def scan_time_from_scan_name(self, scan_name):
         """Gets scan time for wiff (cycle, experiment) tuple or raw scan number
 
-		Example:
-		>>> #raw
-		>>> scan_time = myPeakFile.scan_time_from_scan_name(2165)
-		>>> #wiff
-		>>> scan_time = myPeakFile.scan_time_from_scan_name((1252, 3))
+        Example:
+        >>> #raw
+        >>> scan_time = myPeakFile.scan_time_from_scan_name(2165)
+        >>> #wiff
+        >>> scan_time = myPeakFile.scan_time_from_scan_name((1252, 3))
 
-		"""
+        """
 
         raise NotImplementedError("Subclasses must implement this method")
 
     def scan(self, scan_id, time):
         """Gets scan based on the specified scan id (id attribute in mzML) or the time
 
-		The id will be preferred over the time, and is used as a lookup key in the scan cache.
-		The scan is a list of (mz, intensity, resolution, baseline,
-		noise, charge) tuples. Actually only recent versions of the raw
-		file format returns all of those. Normally only mz and
-		intensity are filled, the others set to zero.
+        The id will be preferred over the time, and is used as a lookup key in the scan cache.
+        The scan is a list of (mz, intensity, resolution, baseline,
+        noise, charge) tuples. Actually only recent versions of the raw
+        file format returns all of those. Normally only mz and
+        intensity are filled, the others set to zero.
 
-		Example:
-		>>> scan = myPeakFile.scan("controllerType=0 controllerNumber=1 scan=3161", 23.21)
+        Example:
+        >>> scan = myPeakFile.scan("controllerType=0 controllerNumber=1 scan=3161", 23.21)
 
-		"""
+        """
 
         raise NotImplementedError("Subclasses must implement this method")
 
     def xic(self, start_time, stop_time, start_mz, stop_mz, filter=None):
         """Generates eXtracted Ion Chromatogram (XIC) for given time and mz range
 
-		The function integrates the precursor intensities for given time and mz range.
-		The xic is a list of (time,intensity) pairs.
+        The function integrates the precursor intensities for given time and mz range.
+        The xic is a list of (time,intensity) pairs.
 
-		Example:
-		>>> xic = myPeakFile.xic(31.4, 32.4, 435.82, 436.00)
+        Example:
+        >>> xic = myPeakFile.xic(31.4, 32.4, 435.82, 436.00)
 
-		"""
+        """
 
         raise NotImplementedError("Subclasses must implement this method")
 
     def time_range(self):
         """Returns a pair of times corresponding to the first and last scan time
 
-		Example:
-		>>> time_range = myPeakFile.time_range()
+        Example:
+        >>> time_range = myPeakFile.time_range()
 
-		"""
+        """
 
         raise NotImplementedError("Subclasses must implement this method")
 

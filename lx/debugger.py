@@ -115,10 +115,10 @@ except TypeError:
 
 def Debug(name=" "):
     """
-	Checks to see if the "DEBUG" environment variable is set, if
-	an optional string is passed in, if that string is set in the
-	"DEBUG" environment variable.
-	"""
+    Checks to see if the "DEBUG" environment variable is set, if
+    an optional string is passed in, if that string is set in the
+    "DEBUG" environment variable.
+    """
 
     if confParse.has_option(setting, name):
         if confParse.get(setting, name) == "True":
@@ -134,10 +134,10 @@ def Debug(name=" "):
 
 def DebugSet(name=" "):
     """
-	If called with no argument, causes subsequent calls to Debug() to
-	return True. If called with an argument, causes subsequent calls
-	to Debug() with the same string to return True
-	"""
+    If called with no argument, causes subsequent calls to Debug() to
+    return True. If called with an argument, causes subsequent calls
+    to Debug() with the same string to return True
+    """
 
     global __debug
 
@@ -159,10 +159,10 @@ def DebugSet(name=" "):
 
 def DebugUnset(name=" "):
     """
-	If called with no argument, causes subsequent calls to Debug() to
-	return False. If called with an argument, causes subsequent calls
-	to Debug() with the same string to return False.
-	"""
+    If called with no argument, causes subsequent calls to Debug() to
+    return False. If called with an argument, causes subsequent calls
+    to Debug() with the same string to return False.
+    """
 
     global __debug
 
@@ -199,13 +199,13 @@ def DebugUnset(name=" "):
 
 def DebugMessage(msg, level="DEBUG"):
     """
-	Produces nicely formatted output to stderr.
-	If called with the wrong level, it complains, and behaves
-	as though the level was "ERROR"
-	If called with no level, it uses "DEBUG"
-	The allowed levels are
-	  "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"
-	"""
+    Produces nicely formatted output to stderr.
+    If called with the wrong level, it complains, and behaves
+    as though the level was "ERROR"
+    If called with no level, it uses "DEBUG"
+    The allowed levels are
+      "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"
+    """
 
     current = inspect.currentframe()
     outer = inspect.getouterframes(current)

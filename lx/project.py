@@ -8,14 +8,14 @@ from copy import copy, deepcopy
 
 class Project(Options):
     """The project class handels LX project values, i.e. all
-	values which are set in the GUI. They are stored in an *.ini
-	file with ConfigParser."""
+    values which are set in the GUI. They are stored in an *.ini
+    file with ConfigParser."""
 
     def __init__(self, options=None):
-        """ All options are defined here. There are two dictionaries:
-		options and options_formatted. The options dictionary stores the
-		orginal string values while the options_formatted dictionary
-		stores the values in the needed format."""
+        """All options are defined here. There are two dictionaries:
+        options and options_formatted. The options dictionary stores the
+        orginal string values while the options_formatted dictionary
+        stores the values in the needed format."""
 
         Options.__init__(self, options=options)
 
