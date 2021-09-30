@@ -4628,4 +4628,3 @@ class TypeDataMatrix:
 
                 else:
                     m[index] = 0.0
-

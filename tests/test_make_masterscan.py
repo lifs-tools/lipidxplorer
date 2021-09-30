@@ -12,4 +12,3 @@ def test_make_masterscan():
     expected = loadSC(expected_ms_path)
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
     assert compareMasterScans(masterscan, expected)
-

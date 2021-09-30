@@ -1774,4 +1774,3 @@ def set_PrecurmassFromMSMS(sample, chg=None):
     else:
         # error: no MS/MS experiments present
         return -1
-

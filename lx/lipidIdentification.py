@@ -2,8 +2,8 @@
 
 import re
 
-#sysPath = '..' + os.sep + 'lib'
-#sys.path.append(sysPath)
+# sysPath = '..' + os.sep + 'lib'
+# sys.path.append(sysPath)
 
 from lx.mfql.runtimeExecution import TypeMFQL
 from lx.mfql.mfqlParser import startParsing
@@ -12,189 +12,191 @@ from lx.tools import odict
 from lx.spectraTools import *
 from lx.options import Options
 
-def syntaxCheck(
-					queries = None,
-					masterscan = None,
-					parent = None):
 
-	opts = {}
-	opts['queries'] = queries
+def syntaxCheck(queries=None, masterscan=None, parent=None):
 
-	# collect all mfql scripts
-	mfqlFiles = odict()
-	if opts['queries'] != [None]:
-		for arg in opts['queries']:
-			if re.match('(.*\.mfql$)|(.*\.py$)', arg):
-				with open(opts['queries'][arg], 'r') as mfqlFile:
-					mfqlFiles[arg] = mfqlFile.read()
+    opts = {}
+    opts["queries"] = queries
 
-	print("\n****** Starting Syntax Check ******\n")
+    # collect all mfql scripts
+    mfqlFiles = odict()
+    if opts["queries"] != [None]:
+        for arg in opts["queries"]:
+            if re.match("(.*\.mfql$)|(.*\.py$)", arg):
+                with open(opts["queries"][arg], "r") as mfqlFile:
+                    mfqlFiles[arg] = mfqlFile.read()
 
-	return 1
+    print("\n****** Starting Syntax Check ******\n")
 
-def startFromGUI(
-					parent = None,
-					queries = None,
-					options = {}):
+    return 1
 
-	progressCount = 0
 
-	# collect all mfql scripts
-	mfqlFiles = odict()
-	if queries != [None]:
-		for arg in queries:
-			if re.match('(.*\.mfql$)|(.*\.py$)', arg):
-				#mfqlFiles[arg] = open(arg, 'r').read()
-				with open(queries[arg], 'r') as mfqlFile:
-					mfqlFiles[arg] = mfqlFile.read()
+def startFromGUI(parent=None, queries=None, options={}):
 
-	print("\n****** Starting MFQL interpretation ******\n")
+    progressCount = 0
 
-	# collect masterscan file
-	if options['masterScan']:
-		try:
-			masterscan = loadSC(options['masterScan'])
-		except IOError:
-			raise LipidXException("The MasterScan does not exist. You need to generate it by importing " + \
-					"your samples. Please have a look into the LipidXplorer tutorial to find out how to " + \
-					"import spectra and generate a MasterScan.")
-		progressCount += 1
-		if parent:
-			(cont, skip) = parent.debug.progressDialog.Update(progressCount)
-			if not cont:
-				parent.debug.progressDialog.Destroy()
-				return parent.CONST_THREAD_USER_ABORT
+    # collect all mfql scripts
+    mfqlFiles = odict()
+    if queries != [None]:
+        for arg in queries:
+            if re.match("(.*\.mfql$)|(.*\.py$)", arg):
+                # mfqlFiles[arg] = open(arg, 'r').read()
+                with open(queries[arg], "r") as mfqlFile:
+                    mfqlFiles[arg] = mfqlFile.read()
 
-	else:
-		raise ValueError("MasterScan file has to be specificated with -s")
+    print("\n****** Starting MFQL interpretation ******\n")
 
-	# execute lipidX
+    # collect masterscan file
+    if options["masterScan"]:
+        try:
+            masterscan = loadSC(options["masterScan"])
+        except IOError:
+            raise LipidXException(
+                "The MasterScan does not exist. You need to generate it by importing "
+                + "your samples. Please have a look into the LipidXplorer tutorial to find out how to "
+                + "import spectra and generate a MasterScan."
+            )
+        progressCount += 1
+        if parent:
+            (cont, skip) = parent.debug.progressDialog.Update(progressCount)
+            if not cont:
+                parent.debug.progressDialog.Destroy()
+                return parent.CONST_THREAD_USER_ABORT
 
-	mfqlObj = TypeMFQL(masterScan = masterscan)
+    else:
+        raise ValueError("MasterScan file has to be specificated with -s")
 
-	# give the options from the settings
-	mfqlObj.options = options
+    # execute lipidX
 
-	# give the options from the loaded MasterScan
-	for i in list(mfqlObj.sc.options.keys()):
-		if i in Options.importOptions and (not mfqlObj.sc.options.isEmpty(i)):
-			mfqlObj.options[i] = mfqlObj.sc.options[i]
+    mfqlObj = TypeMFQL(masterScan=masterscan)
 
-	# set the seperator
-	if options['tabLimited']:
-		mfqlObj.outputSeperator = '\t'
-	else:
-		mfqlObj.outputSeperator = ','
+    # give the options from the settings
+    mfqlObj.options = options
 
-	# parse input file k and save the result in mfqlObj.result
-	(progressCount, returnValue) = startParsing(mfqlFiles,
-				mfqlObj,
-				masterscan,
-				isotopicCorrectionMS = options['isotopicCorrectionMS'],
-				isotopicCorrectionMSMS = options['isotopicCorrectionMSMS'],
-				complementSC = options['complementMasterScan'],
-				parent = parent,
-				progressCount = progressCount,
-				generateStatistics = options['statistics'],
-				)
+    # give the options from the loaded MasterScan
+    for i in list(mfqlObj.sc.options.keys()):
+        if i in Options.importOptions and (not mfqlObj.sc.options.isEmpty(i)):
+            mfqlObj.options[i] = mfqlObj.sc.options[i]
 
-	if parent:
-		if returnValue == parent.CONST_THREAD_USER_ABORT:
-			return parent.CONST_THREAD_USER_ABORT
+    # set the seperator
+    if options["tabLimited"]:
+        mfqlObj.outputSeperator = "\t"
+    else:
+        mfqlObj.outputSeperator = ","
 
-	# process the result
-	result = mfqlObj.result
+    # parse input file k and save the result in mfqlObj.result
+    (progressCount, returnValue) = startParsing(
+        mfqlFiles,
+        mfqlObj,
+        masterscan,
+        isotopicCorrectionMS=options["isotopicCorrectionMS"],
+        isotopicCorrectionMSMS=options["isotopicCorrectionMSMS"],
+        complementSC=options["complementMasterScan"],
+        parent=parent,
+        progressCount=progressCount,
+        generateStatistics=options["statistics"],
+    )
 
-	if result.mfqlOutput:
-		strHead = ''
-		if not options['noHead']:
-			for key in result.listHead:
-				if key != result.listHead[-1]:
-					strHead += key + '%s' % mfqlObj.outputSeperator
-				else:
-					strHead += key
+    if parent:
+        if returnValue == parent.CONST_THREAD_USER_ABORT:
+            return parent.CONST_THREAD_USER_ABORT
 
-			# generate whole string
-			strResult = "%s\n" % strHead
-		else:
-			strResult = ''
+    # process the result
+    result = mfqlObj.result
 
-		for k in list(result.dictQuery.values()):
-			if not options['compress']:
-				strResult += "\n###,%s\n" % k.name
-			strResult += k.strOutput
-			if not options['compress']:
-				strResult += '\n'
+    if result.mfqlOutput:
+        strHead = ""
+        if not options["noHead"]:
+            for key in result.listHead:
+                if key != result.listHead[-1]:
+                    strHead += key + "%s" % mfqlObj.outputSeperator
+                else:
+                    strHead += key
 
-		# put out
-		if not options['resultFile']:
-			print(strResult)
-		else:
-			if parent:
-				parent.writeOutput(options['resultFile'], strResult)
-			else:
-				writeOutput(options['resultFile'], strResult)
+            # generate whole string
+            strResult = "%s\n" % strHead
+        else:
+            strResult = ""
 
-	else:
-		print("\n <Query returned no result.>\n")
+        for k in list(result.dictQuery.values()):
+            if not options["compress"]:
+                strResult += "\n###,%s\n" % k.name
+            strResult += k.strOutput
+            if not options["compress"]:
+                strResult += "\n"
 
-	# maybe dump the complementary MasterScan
-	if options['complementMasterScan']:
-		saveSC(mfqlObj.complementSC, options['complementMasterScanFile'])
-		progressCount += 1
-		if parent:
-			(cont, skip) = parent.debug.progressDialog.Update(progressCount)
-			if not cont:
-				parent.debug.progressDialog.Destroy()
-				return parent.CONST_THREAD_USER_ABORT
+        # put out
+        if not options["resultFile"]:
+            print(strResult)
+        else:
+            if parent:
+                parent.writeOutput(options["resultFile"], strResult)
+            else:
+                writeOutput(options["resultFile"], strResult)
 
-	# may dump the masterscan
-	if options['dumpMasterScan']:
+    else:
+        print("\n <Query returned no result.>\n")
 
-		if not options['masterScanInSQL']:
-			masterscan.dump(options['dumpMasterScanFile'])
-		else:
-			masterscan.dumpInSQL(options['dumpMasterScanFile'])
+    # maybe dump the complementary MasterScan
+    if options["complementMasterScan"]:
+        saveSC(mfqlObj.complementSC, options["complementMasterScanFile"])
+        progressCount += 1
+        if parent:
+            (cont, skip) = parent.debug.progressDialog.Update(progressCount)
+            if not cont:
+                parent.debug.progressDialog.Destroy()
+                return parent.CONST_THREAD_USER_ABORT
 
-	writeReport(options['masterScanFile'], options, queries)
+    # may dump the masterscan
+    if options["dumpMasterScan"]:
 
-	# return successfull for GUI
-	if parent:
-		parent.debug.progressDialog.Destroy()
-		return parent.CONST_THREAD_SUCCESSFUL
+        if not options["masterScanInSQL"]:
+            masterscan.dump(options["dumpMasterScanFile"])
+        else:
+            masterscan.dumpInSQL(options["dumpMasterScanFile"])
 
-def writeReport(file = "", options = {}, queries = {}):
-	print("Writing HTML report from lipidIdentification.py")
-	strReport = "<html><head></head><body>"
-	strReport += "<br>"
-	strReport += "%s" % genReportHTML(options, queries)
-	strReport += "</body></html>"
-	reportBaseFile = os.path.splitext(file)[0]
-	print("Saving report to file " + reportBaseFile + "-report.html")
-	with open(reportBaseFile + "-report.html", "w") as f:
-		f.write(strReport)
+    writeReport(options["masterScanFile"], options, queries)
 
-def genReportHTML(options = {}, queries = {}):
+    # return successfull for GUI
+    if parent:
+        parent.debug.progressDialog.Destroy()
+        return parent.CONST_THREAD_SUCCESSFUL
 
-	strBugReport = "<h3>Options</h3>\n"
 
-	strBugReport += "<table>\n"
-	for k in sorted(options.keys()):
-		if not options.isEmpty(k):
-			strBugReport += "<tr><td>%s:</td><td>%s</td></tr>\n" % (k, options[k])
-	strBugReport += "</table><br>\n"
+def writeReport(file="", options={}, queries={}):
+    print("Writing HTML report from lipidIdentification.py")
+    strReport = "<html><head></head><body>"
+    strReport += "<br>"
+    strReport += "%s" % genReportHTML(options, queries)
+    strReport += "</body></html>"
+    reportBaseFile = os.path.splitext(file)[0]
+    print("Saving report to file " + reportBaseFile + "-report.html")
+    with open(reportBaseFile + "-report.html", "w") as f:
+        f.write(strReport)
 
-	strBugReport += "<h3>MFQL queries</h3><tt>\n"
-	for i in queries:
-		txt = ''
-		if i != "":
-			with open(queries[i], 'r') as f:
-				txt += " \n\n>> filename: %s >>\n\n" % i
-				txt += f.read()
-				strBugReport += txt.replace('\n', '<br>')
-	strBugReport += "</tt>"
 
-	return strBugReport
+def genReportHTML(options={}, queries={}):
+
+    strBugReport = "<h3>Options</h3>\n"
+
+    strBugReport += "<table>\n"
+    for k in sorted(options.keys()):
+        if not options.isEmpty(k):
+            strBugReport += "<tr><td>%s:</td><td>%s</td></tr>\n" % (k, options[k])
+    strBugReport += "</table><br>\n"
+
+    strBugReport += "<h3>MFQL queries</h3><tt>\n"
+    for i in queries:
+        txt = ""
+        if i != "":
+            with open(queries[i], "r") as f:
+                txt += " \n\n>> filename: %s >>\n\n" % i
+                txt += f.read()
+                strBugReport += txt.replace("\n", "<br>")
+    strBugReport += "</tt>"
+
+    return strBugReport
+
 
 if __name__ == "__main__":
-	startFromCLI()
+    startFromCLI()

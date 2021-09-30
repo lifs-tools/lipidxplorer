@@ -1,5 +1,7 @@
 # Parsers
-NAME, NUM, EOS, SP, NUMPAREN, RANGE, ENUM, SLPAREN, SRPAREN, SIMI, DB, CHARGE = list(range(12))
+NAME, NUM, EOS, SP, NUMPAREN, RANGE, ENUM, SLPAREN, SRPAREN, SIMI, DB, CHARGE = list(
+    range(12)
+)
 
 import re
 from copy import deepcopy
@@ -8,7 +10,8 @@ from copy import deepcopy
 from chemsc import ElementSequence, sym2elt, RangeElement, ConstElement, SCConstraint
 
 _lexer = re.compile(
-    r"[A-Z][a-wyz]*|\d+|[\{\}]|<EOS>|\s|\[\d{1,6}\.\.\d{1,6}\]|\[\d{1,6}(,\d{1,6})*\]|;|db\([-+]?\d{1,3}(\.\d{1,4})?,[+-]?\d{1,3}(\.\d{1,4})?\)|chg\([+-]?\d\)").match
+    r"[A-Z][a-wyz]*|\d+|[\{\}]|<EOS>|\s|\[\d{1,6}\.\.\d{1,6}\]|\[\d{1,6}(,\d{1,6})*\]|;|db\([-+]?\d{1,3}(\.\d{1,4})?,[+-]?\d{1,3}(\.\d{1,4})?\)|chg\([+-]?\d\)"
+).match
 
 
 class Tokenizer:
@@ -39,7 +42,9 @@ class Tokenizer:
             tvalue = int(tvalue)
         elif tvalue == " ":
             ttype = SP
-        elif re.compile("\s?db\([-+]?\d{1,3}(\.\d{1,4})?,[+-]?\d{1,3}(\.\d{1,4})?\)").match(tvalue):
+        elif re.compile(
+            "\s?db\([-+]?\d{1,3}(\.\d{1,4})?,[+-]?\d{1,3}(\.\d{1,4})?\)"
+        ).match(tvalue):
             ttype = DB
         elif re.compile("\s?chg\([+-]?\d\)").match(tvalue):
             ttype = CHARGE
@@ -87,8 +92,12 @@ def parse_sequence():
         if ttype == RANGE:
             r = re.compile("\[(\d{1,6})\.\.(\d{1,6})\]").match(tvalue)
             if not thisguy:
-                raise SyntaxErrorException("No space is allowed between an element and its count or range", None, None,
-                                           None)
+                raise SyntaxErrorException(
+                    "No space is allowed between an element and its count or range",
+                    None,
+                    None,
+                    None,
+                )
             thisguy.__class__ = RangeElement
             thisguy.set_range(int(r.group(1)), int(r.group(2)) + 1)
             isSFConstraint = True
@@ -99,12 +108,16 @@ def parse_sequence():
             # r = re.compile("\[(\d+,\s*)+(\d+)\]").match(tvalue)
             r = re.compile("\[(\d{1,6})((,\d{1,6})*)\]").match(tvalue)
             l.append(int(r.groups()[0]))
-            for i in r.group(2).split(','):
-                if i != '':
+            for i in r.group(2).split(","):
+                if i != "":
                     l.append(int(i))
             if not thisguy:
-                raise SyntaxErrorException("No space is allowed between an element and its count or range", None, None,
-                                           None)
+                raise SyntaxErrorException(
+                    "No space is allowed between an element and its count or range",
+                    None,
+                    None,
+                    None,
+                )
             thisguy.__class__ = RangeElement
             thisguy.set_enum(l)
             isSFConstraint = True
@@ -116,8 +129,12 @@ def parse_sequence():
                 zeroFlag = True
             else:
                 if not thisguy:
-                    raise SyntaxErrorException("No space is allowed between an element and its count or range", None,
-                                               None, None)
+                    raise SyntaxErrorException(
+                        "No space is allowed between an element and its count or range",
+                        None,
+                        None,
+                        None,
+                    )
                 thisguy.__class__ = ConstElement
                 thisguy.set_count(tvalue)
             t.gettoken()
@@ -159,7 +176,9 @@ def parse_sequence():
             if match.match(tvalue):
                 r = match.match(tvalue)
                 seq.set_db(int(r.group(1)), int(r.group(2)))
-            match = re.compile("\s?db\(([-+]?\d{1,3}\.\d{1,4}),([+-]?\d{1,3}\.\d{1,4})\)")
+            match = re.compile(
+                "\s?db\(([-+]?\d{1,3}\.\d{1,4}),([+-]?\d{1,3}\.\d{1,4})\)"
+            )
             if match.match(tvalue):
                 r = match.match(tvalue)
                 seq.set_db(float(r.group(1)), float(r.group(2)))
@@ -187,6 +206,6 @@ def parse_sequence():
     return seq
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     res = parseElemSeq("C[30..80] H[40..300] O[10] N[1] P[1]")
-    print(res['H'])
+    print(res["H"])

@@ -9,35 +9,34 @@
 import ply.lex as lex
 import ply.yacc as yacc
 
-tokens = (
-    "SYMBOL",
-    "NUM",
-    "DOT",
-    'LPAREN',
-    'RPAREN'
-)
+tokens = ("SYMBOL", "NUM", "DOT", "LPAREN", "RPAREN")
 
 t_SYMBOL = (
     r"C[laroudsemf]?|Os?|N[eaibdpos]?|S[icernbmg]?|P[drmtboau]?|"
     r"H[eofgas]?|A[lrsgutcm]|B[eraik]?|Dy|E[urs]|F[erm]?|G[aed]|"
     r"I[nr]?|Kr?|L[iaur]|M[gnodt]|R[buhenaf]|T[icebmalh]|"
-    r"U|V|W|Xe|Yb?|Z[nr]")
-t_DOT  = r'\.'
-t_LPAREN  = r'\['
-t_RPAREN  = r'\]'
+    r"U|V|W|Xe|Yb?|Z[nr]"
+)
+t_DOT = r"\."
+t_LPAREN = r"\["
+t_RPAREN = r"\]"
+
 
 def t_NUM(t):
     r"\d+"
     t.value = int(t.value)
     return t
 
-t_ignore  = ' \t'
+
+t_ignore = " \t"
+
 
 def t_error(t):
     raise TypeError("Unknown text '%s'" % (t.value,))
 
 
 lexer1 = lex.lex()
+
 
 def p_chemical_equation(p):
     """
@@ -50,14 +49,17 @@ def p_chemical_equation(p):
     else:
         p[0] = p[1]
 
+
 def p_species_list(p):
     "species_list :  species_list species"
     p[1].update(p[2])
     p[0] = p[1]
 
+
 def p_species(p):
     "species_list : species"
     p[0] = p[1]
+
 
 def p_single_species(p):
     """
@@ -67,18 +69,21 @@ def p_single_species(p):
     species : SYMBOL LPAREN NUM DOT DOT NUM RPAREN
     """
     if len(p) == 2:
-        p[0] = {p[1]: (1,1)}
+        p[0] = {p[1]: (1, 1)}
     elif len(p) == 3:
-        p[0] = {p[1]: (p[2],p[2])}
+        p[0] = {p[1]: (p[2], p[2])}
     elif len(p) == 5:
-        p[0] = {p[1]: (p[3],p[3])}
+        p[0] = {p[1]: (p[3], p[3])}
     elif len(p) == 8:
-        p[0] = {p[1]: (p[3],p[6])}
+        p[0] = {p[1]: (p[3], p[6])}
+
 
 def p_error(p):
     raise TypeError("unknown text at %r" % (p.value,))
 
-parser1 = yacc.yacc()#(debug=0, optimize=0)
+
+parser1 = yacc.yacc()  # (debug=0, optimize=0)
+
 
 def txt2dict(txt):
     return parser1.parse(txt, lexer=lexer1)

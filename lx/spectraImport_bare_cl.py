@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#taken from branch bare_cl
+# taken from branch bare_cl
 
 import os, sys
 import time
@@ -7,78 +7,94 @@ import time
 # sysPath = '..' + os.sep + 'lib'
 # sys.path.append(sysPath)
 
-from lx.tools import reportout , unique
-from lx.spectraContainer import MasterScan #, SurveyEntry
+from lx.tools import reportout, unique
+from lx.spectraContainer import MasterScan  # , SurveyEntry
 from lx.spectraTools import recalibrateMS, recalibrateMSMS, saveSC
-from lx.readSpectra import add_Sample, add_mzXMLSample #, add_DTASample
-from lx.alignment import mkSurveyLinear, mkSurveyHierarchical, \
- 		mkSurveyHeuristic, mkMSMSEntriesLinear_new, \
- 		mkMSMSEntriesHeuristic_new#, specEntry, linearAlignment
-
+from lx.readSpectra import add_Sample, add_mzXMLSample  # , add_DTASample
+from lx.alignment import (
+    mkSurveyLinear,
+    mkSurveyHierarchical,
+    mkSurveyHeuristic,
+    mkMSMSEntriesLinear_new,
+    mkMSMSEntriesHeuristic_new,
+)  # , specEntry, linearAlignment
 
 
 def getAMasterScan(options):
-	# generate MasterScan object
-	scan = MasterScan(options)
+    # generate MasterScan object
+    scan = MasterScan(options)
 
-	# scan.importSettingsFile = options['ini']
-	#scan.setting = options['setting']
-	# scan.setting = options['setting']
-	scan.importDir = options['importDir']
+    # scan.importSettingsFile = options['ini']
+    # scan.setting = options['setting']
+    # scan.setting = options['setting']
+    scan.importDir = options["importDir"]
 
-	# check if last char is a '/':
-	if scan.importDir[-1] == os.sep:
-		scan.importDir = scan.importDir[:-1]
+    # check if last char is a '/':
+    if scan.importDir[-1] == os.sep:
+        scan.importDir = scan.importDir[:-1]
 
-	scan.sampleOccThr['MS'] = [(options['MSminOccupation'], [])]
-	scan.sampleOccThr['MSMS'] = [(options['MSMSminOccupation'], [])]
+    scan.sampleOccThr["MS"] = [(options["MSminOccupation"], [])]
+    scan.sampleOccThr["MSMS"] = [(options["MSMSminOccupation"], [])]
 
-	# scan.listFiles = listFiles
+    # scan.listFiles = listFiles
 
-	return  scan
+    return scan
+
 
 def lpdxImportDEF_new(parent, options=None):
-	'''This version of importDEF does not process the options, since
-	it assumes that they are already processed by lx.options.py'''
+    """This version of importDEF does not process the options, since
+	it assumes that they are already processed by lx.options.py"""
 
-	# generate MasterScan object
-	scan = MasterScan(options)
+    # generate MasterScan object
+    scan = MasterScan(options)
 
-	scan.importSettingsFile = options['ini']
-	#scan.setting = options['setting']
-	if not parent is None:
-		scan.setting = parent.currentConfiguration
-	else:
-		scan.setting = options['setting']
-	scan.importDir = options['importDir']
+    scan.importSettingsFile = options["ini"]
+    # scan.setting = options['setting']
+    if not parent is None:
+        scan.setting = parent.currentConfiguration
+    else:
+        scan.setting = options["setting"]
+    scan.importDir = options["importDir"]
 
-	# check if last char is a '/':
-	if scan.importDir[-1] == os.sep:
-		scan.importDir = scan.importDir[:-1]
+    # check if last char is a '/':
+    if scan.importDir[-1] == os.sep:
+        scan.importDir = scan.importDir[:-1]
 
+    # load occupation threshold settings
+    if os.path.exists("%s\\groups.txt" % scan.importDir):
+        f = open("%s\\groups.txt" % scan.importDir)
+        s = f.readlines()
+        if not s == []:
+            for i in s:
+                # scan.sampleOccThr['MS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
+                # scan.sampleOccThr['MSMS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
+                scan.sampleOccThr["MS"].append(
+                    (options["MSminOccupation"], [x.strip() for x in i.split(",")])
+                )
+                scan.sampleOccThr["MSMS"].append(
+                    (options["MSMSminOccupation"], [x.strip() for x in i.split(",")])
+                )
+        else:
+            scan.sampleOccThr["MS"] = [(options["MSminOccupation"], [])]
+            scan.sampleOccThr["MSMS"] = [(options["MSMSminOccupation"], [])]
+    else:
+        scan.sampleOccThr["MS"] = [(options["MSminOccupation"], [])]
+        scan.sampleOccThr["MSMS"] = [(options["MSMSminOccupation"], [])]
 
-	# load occupation threshold settings
-	if os.path.exists("%s\\groups.txt" % scan.importDir):
-		f = open("%s\\groups.txt" % scan.importDir)
-		s = f.readlines()
-		if not s == []:
-			for i in s:
-				#scan.sampleOccThr['MS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
-				#scan.sampleOccThr['MSMS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
-				scan.sampleOccThr['MS'].append((options['MSminOccupation'], [x.strip() for x in i.split(',')]))
-				scan.sampleOccThr['MSMS'].append((options['MSMSminOccupation'], [x.strip() for x in i.split(',')]))
-		else:
-			scan.sampleOccThr['MS'] = [(options['MSminOccupation'], [])]
-			scan.sampleOccThr['MSMS'] = [(options['MSMSminOccupation'], [])]
-	else:
-		scan.sampleOccThr['MS'] = [(options['MSminOccupation'], [])]
-		scan.sampleOccThr['MSMS'] = [(options['MSMSminOccupation'], [])]
+    (listFiles, isTaken) = getInputFiles(scan.importDir, options)
 
-	(listFiles, isTaken) = getInputFiles(scan.importDir, options)
+    scan.listFiles = listFiles
 
-	scan.listFiles = listFiles
+    return (
+        options,
+        scan,
+        scan.importDir,
+        options["masterScanImport"],
+        parent,
+        listFiles,
+        isTaken,
+    )
 
-	return (options, scan, scan.importDir, options['masterScanImport'], parent, listFiles, isTaken)
 
 # def lpdxImportDEF(
 # 			parent = None,
@@ -390,184 +406,221 @@ def lpdxImportDEF_new(parent, options=None):
 # 	return (listFiles, isTaken)
 #
 
-def doImport(spectraFormat, scan, listFiles, alignmentMS, alignmentMSMS, scanAvg, importMSMS = True):
 
-	# some statistics
-	nb_ms_scans = []
-	nb_ms_peaks = []
-	nb_msms_scans = []
-	nb_msms_peaks = []
+def doImport(
+    spectraFormat, scan, listFiles, alignmentMS, alignmentMSMS, scanAvg, importMSMS=True
+):
 
-	# time
-	starttime = time.clock()
+    # some statistics
+    nb_ms_scans = []
+    nb_ms_peaks = []
+    nb_msms_scans = []
+    nb_msms_peaks = []
 
-	# go recursively through the directory
-	listPolarity = []
-	dictBasePeakIntensity = {}
-	progressCount = 0
+    # time
+    starttime = time.clock()
 
-	# the scan.dictSample variable is filled with
-	# MSmass and MSMS classes taken from mzXML files.
-	# After loading the cleaning algorithm is applied.
-	if listFiles != []:
-		listFiles.sort()
+    # go recursively through the directory
+    listPolarity = []
+    dictBasePeakIntensity = {}
+    progressCount = 0
 
-		for i in listFiles:
+    # the scan.dictSample variable is filled with
+    # MSmass and MSMS classes taken from mzXML files.
+    # After loading the cleaning algorithm is applied.
+    if listFiles != []:
+        listFiles.sort()
 
-			if spectraFormat == "mzXML": # old mzXML import. I don't wanna touch this
-				ret = add_mzXMLSample(scan, i,
-					timerange = scan.options['timerange'],
-					MSmassrange = scan.options['MSmassrange'],
-					MSMSmassrange = scan.options['MSMSmassrange'],
-					scanAveraging = scanAvg,
-					isGroup = False,
-					importMSMS = importMSMS,
-					MSthresholdType = scan.options['MSthresholdType'],
-					MSMSthresholdType = scan.options['MSMSthresholdType'])
+        for i in listFiles:
 
-			elif spectraFormat == 'mzML': # the new import routine, :-)
-				ret = add_Sample(scan, i,
-					options = scan.options,
-					timerange = scan.options['timerange'],
-					MSmassrange = scan.options['MSmassrange'],
-					MSMSmassrange = scan.options['MSMSmassrange'],
-					scanAveraging = scanAvg,
-					isGroup = False,
-					importMSMS = importMSMS,
-					MSthresholdType = scan.options['MSthresholdType'],
-					MSMSthresholdType = scan.options['MSMSthresholdType'],
-					fileformat = "mzML")
+            if spectraFormat == "mzXML":  # old mzXML import. I don't wanna touch this
+                ret = add_mzXMLSample(
+                    scan,
+                    i,
+                    timerange=scan.options["timerange"],
+                    MSmassrange=scan.options["MSmassrange"],
+                    MSMSmassrange=scan.options["MSMSmassrange"],
+                    scanAveraging=scanAvg,
+                    isGroup=False,
+                    importMSMS=importMSMS,
+                    MSthresholdType=scan.options["MSthresholdType"],
+                    MSMSthresholdType=scan.options["MSMSthresholdType"],
+                )
 
-			dictBasePeakIntensity[ret[0]] = ret[1]
+            elif spectraFormat == "mzML":  # the new import routine, :-)
+                ret = add_Sample(
+                    scan,
+                    i,
+                    options=scan.options,
+                    timerange=scan.options["timerange"],
+                    MSmassrange=scan.options["MSmassrange"],
+                    MSMSmassrange=scan.options["MSMSmassrange"],
+                    scanAveraging=scanAvg,
+                    isGroup=False,
+                    importMSMS=importMSMS,
+                    MSthresholdType=scan.options["MSthresholdType"],
+                    MSMSthresholdType=scan.options["MSMSthresholdType"],
+                    fileformat="mzML",
+                )
 
-			if len(ret) > 2:
-				nb_ms_scans.append(ret[2])
-				nb_ms_peaks.append(ret[3])
-				nb_msms_scans.append(ret[4])
-				nb_msms_peaks.append(ret[5])
+            dictBasePeakIntensity[ret[0]] = ret[1]
 
-		if not len(dictBasePeakIntensity.keys()) > 0:
-			raise Exception("Something wrong with the calculation of the base peaks")
+            if len(ret) > 2:
+                nb_ms_scans.append(ret[2])
+                nb_ms_peaks.append(ret[3])
+                nb_msms_scans.append(ret[4])
+                nb_msms_peaks.append(ret[5])
 
-	else:
-		raise Exception("No valid option given.")
+        if not len(dictBasePeakIntensity.keys()) > 0:
+            raise Exception("Something wrong with the calculation of the base peaks")
 
+    else:
+        raise Exception("No valid option given.")
 
-	### print some information ###
+    ### print some information ###
 
-	if nb_ms_scans > 0:
-		reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS scans', sum(nb_ms_scans) / len(nb_ms_scans)))
-	if nb_ms_peaks > 0:
-		reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS peaks', sum(nb_ms_peaks) / len(nb_ms_peaks)))
-	if nb_msms_scans > 0:
-		reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS/MS scans', sum(nb_msms_scans) / len(nb_msms_scans)))
-	if nb_msms_peaks > 0:
-		reportout("> {0:.<30s}{1:>11d}".format('Avg. Nb. of MS/MS peaks', sum(nb_msms_peaks) / len(nb_msms_peaks)))
+    if nb_ms_scans > 0:
+        reportout(
+            "> {0:.<30s}{1:>11d}".format(
+                "Avg. Nb. of MS scans", sum(nb_ms_scans) / len(nb_ms_scans)
+            )
+        )
+    if nb_ms_peaks > 0:
+        reportout(
+            "> {0:.<30s}{1:>11d}".format(
+                "Avg. Nb. of MS peaks", sum(nb_ms_peaks) / len(nb_ms_peaks)
+            )
+        )
+    if nb_msms_scans > 0:
+        reportout(
+            "> {0:.<30s}{1:>11d}".format(
+                "Avg. Nb. of MS/MS scans", sum(nb_msms_scans) / len(nb_msms_scans)
+            )
+        )
+    if nb_msms_peaks > 0:
+        reportout(
+            "> {0:.<30s}{1:>11d}".format(
+                "Avg. Nb. of MS/MS peaks", sum(nb_msms_peaks) / len(nb_msms_peaks)
+            )
+        )
 
-	loadingtime = time.clock() - starttime
-	reportout("%.2f sec. for reading the spectra" % loadingtime)
+    loadingtime = time.clock() - starttime
+    reportout("%.2f sec. for reading the spectra" % loadingtime)
 
-	if ( scan.options['precursorMassShift'] is not None) and scan.options['precursorMassShift']:
-		if scan.options['precursorMassShift'] != 0:
-			print "Applying precursor mass shift"
-			scan.shiftPrecursors(scan.options['precursorMassShift'])
+    if (scan.options["precursorMassShift"] is not None) and scan.options[
+        "precursorMassShift"
+    ]:
+        if scan.options["precursorMassShift"] != 0:
+            print "Applying precursor mass shift"
+            scan.shiftPrecursors(scan.options["precursorMassShift"])
 
-	if (scan.options['precursorMassShiftOrbi'] is not None) and scan.options['precursorMassShiftOrbi']:
-		if scan.options['precursorMassShiftOrbi'] != 0:
-			print "Applying precursor mass shift for Scanline error on Orbitrap data."
-			scan.shiftPrecursorsInRawFilterLine(scan.options['precursorMassShiftOrbi'])
+    if (scan.options["precursorMassShiftOrbi"] is not None) and scan.options[
+        "precursorMassShiftOrbi"
+    ]:
+        if scan.options["precursorMassShiftOrbi"] != 0:
+            print "Applying precursor mass shift for Scanline error on Orbitrap data."
+            scan.shiftPrecursorsInRawFilterLine(scan.options["precursorMassShiftOrbi"])
 
-	scan.listSamples.sort()
+    scan.listSamples.sort()
 
-	if listPolarity == []:
-		listPolarity = [-1,1]
-	else:
-		listPolarity = unique(listPolarity)
+    if listPolarity == []:
+        listPolarity = [-1, 1]
+    else:
+        listPolarity = unique(listPolarity)
 
-	# recalibrate MS spectra
-	if len(scan.options['MScalibration']) > 0:
-		recalibrateMS(scan, scan.options['MScalibration'])
-	if scan.options['MSMScalibration'] is not None and len(scan.options['MSMScalibration']) > 0:
-		recalibrateMSMS(scan, scan.options['MSMScalibration'])
+    # recalibrate MS spectra
+    if len(scan.options["MScalibration"]) > 0:
+        recalibrateMS(scan, scan.options["MScalibration"])
+    if (
+        scan.options["MSMScalibration"] is not None
+        and len(scan.options["MSMScalibration"]) > 0
+    ):
+        recalibrateMSMS(scan, scan.options["MSMScalibration"])
 
-	calibrationtime = time.clock() - starttime - loadingtime
-	reportout("%.2f sec. for calibrating the spectra" % calibrationtime)
+    calibrationtime = time.clock() - starttime - loadingtime
+    reportout("%.2f sec. for calibrating the spectra" % calibrationtime)
 
-	# align MS spectra
-	print "Aligning MS spectra", alignmentMS
+    # align MS spectra
+    print "Aligning MS spectra", alignmentMS
 
+    ### align the spectra for the MasterScan ###
 
-	### align the spectra for the MasterScan ###
+    if alignmentMS == "linear":
+        mkSurveyLinear(
+            scan,
+            [-1, 1],
+            numLoops=3,
+            deltaRes=scan.options["MSresolutionDelta"],
+            minocc=scan.options["MSminOccupation"],
+        )
 
-	if alignmentMS == "linear":
-		mkSurveyLinear(scan, [-1,1],
-					numLoops = 3,
-					deltaRes = scan.options['MSresolutionDelta'],
-					minocc = scan.options['MSminOccupation'])
+    elif alignmentMS == "hierarchical":
+        # experimental
+        mkSurveyHierarchical(
+            scan,
+            "",
+            numLoops=3,
+            deltaRes=scan.options["MSresolutionDelta"],
+            minocc=scan.options["MSminOccupation"],
+        )
 
-	elif alignmentMS == "hierarchical":
-		# experimental
-		mkSurveyHierarchical(scan, '',
-					numLoops = 3,
-					deltaRes = scan.options['MSresolutionDelta'],
-					minocc = scan.options['MSminOccupation'])
+    elif alignmentMS == "heuristic":
+        mkSurveyHeuristic(
+            scan,
+            "",
+            numLoops=3,
+            deltaRes=scan.options["MSresolutionDelta"],
+            minocc=scan.options["MSminOccupation"],
+        )
 
-	elif alignmentMS == "heuristic":
-		mkSurveyHeuristic(scan, '',
-					numLoops = 3,
-					deltaRes = scan.options['MSresolutionDelta'],
-					minocc = scan.options['MSminOccupation'])
+    progressCount += 1
 
-	progressCount += 1
+    ### some infos ###
 
-	### some infos ###
+    reportout(
+        "> {0:.<30s}{1:>11d}\n".format(
+            "Nb. of MS peaks (after alg.)", len(scan.listSurveyEntry)
+        )
+    )
 
-	reportout("> {0:.<30s}{1:>11d}\n".format('Nb. of MS peaks (after alg.)', len(scan.listSurveyEntry)))
+    ### aling the fragment spectra ###
 
-	### aling the fragment spectra ###
+    # Preparation of MSMS experiments is:
+    # 1) clustering of the dta's precursor masses according
+    # 	 to MS accuracy -> every cluster contains all MSMS
+    #    experiments for precursor mass m where thier dta-precursor
+    # 	 mass p is in [m - MSaccuracy, m + MSaccuracy]
+    # 2) The MSMS experiments of one cluster c are then
+    # 	 merged with the known merging algorithm
+    # 3) Every cluster c is associated to a precursor mass M
+    # 	 from the SurveyEntry list. This takes the
+    # 	 given selectionWindow into account.
+    if importMSMS:
+        reportout("Aligning MS/MS spectra %s\n" % alignmentMSMS)
+        if alignmentMSMS == "linear":
+            mkMSMSEntriesLinear_new(scan, listPolarity, numLoops=3, isPIS=False)
+        elif alignmentMSMS == "heuristic":
+            mkMSMSEntriesHeuristic_new(scan, listPolarity, numLoops=3, isPIS=False)
 
-	# Preparation of MSMS experiments is:
-	# 1) clustering of the dta's precursor masses according
-	#	 to MS accuracy -> every cluster contains all MSMS
-	#    experiments for precursor mass m where thier dta-precursor
-	#	 mass p is in [m - MSaccuracy, m + MSaccuracy]
-	# 2) The MSMS experiments of one cluster c are then
-	#	 merged with the known merging algorithm
-	# 3) Every cluster c is associated to a precursor mass M
-	#	 from the SurveyEntry list. This takes the
-	#	 given selectionWindow into account.
-	if importMSMS:
-		reportout("Aligning MS/MS spectra %s\n" % alignmentMSMS)
-		if alignmentMSMS == "linear":
-			mkMSMSEntriesLinear_new(scan, listPolarity,
-								numLoops = 3,
-								isPIS = False)
-		elif alignmentMSMS == "heuristic":
-			mkMSMSEntriesHeuristic_new(scan, listPolarity,
-								numLoops = 3,
-								isPIS = False)
+    alignmenttime = time.clock() - starttime - loadingtime - calibrationtime
+    reportout("%.2f sec. for aligning the spectra\n" % alignmenttime)
 
-	alignmenttime = time.clock() - starttime - loadingtime - calibrationtime
-	reportout("%.2f sec. for aligning the spectra\n" % alignmenttime)
+    for sample in scan.listSamples:
+        if scan.dictSamples.has_key(sample):
+            del scan.dictSamples[sample]
+    del scan.dictSamples
 
-	for sample in scan.listSamples:
-		if scan.dictSamples.has_key(sample):
-			del scan.dictSamples[sample]
-	del scan.dictSamples
+    progressCount += 1
 
+    scan.sortAndIndedice()
+    for se in scan.listSurveyEntry:
+        se.sortAndIndedice()
 
-	progressCount += 1
+    reportout("%.2f sec. for the whole import process" % (time.clock() - starttime))
+    reportout("\n")
 
+    return scan
 
-	scan.sortAndIndedice()
-	for se in scan.listSurveyEntry:
-		se.sortAndIndedice()
-
-
-	reportout("%.2f sec. for the whole import process" % (time.clock() - starttime))
-	reportout("\n")
-
-	return scan
 
 # def doImport_alt(options, scan_original, importDir, output, parent, listFiles, isTaken, isGroup, alignmentMS, alignmentMSMS, scanAvg, importMSMS = True):
 # 	'''Alternative import which splits the spectra into chunks

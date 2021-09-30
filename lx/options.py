@@ -708,7 +708,7 @@ class Options:
         self.options_formatted = self.try2apply_calctol(o, self.options_formatted)
 
     def try2apply_calctol(self, o, options_formatted):
-        if o["MSresolution"] == "auto" or o["MSresolution"] == 0 :
+        if o["MSresolution"] == "auto" or o["MSresolution"] == 0:
             options_formatted["optionalMStolerance"] = TypeTolerance("ppm", 20.0)
             options_formatted["optionalMSMStolerance"] = TypeTolerance("ppm", 20.0)
             options_formatted["optionalMStoleranceType"] = "ppm"
@@ -802,4 +802,3 @@ class Options:
 
     def getPrintOptions(self):
         return self.options
-

@@ -6,7 +6,7 @@ import pandas as pd
 
 def specta_df_fromCSV(csv):
     df = pd.read_csv(csv)
-    df.columns = 'scanNum,filterLine,retTime,mz,i,r,n,z,charge'.split(',')
+    df.columns = "scanNum,filterLine,retTime,mz,i,r,n,z,charge".split(",")
     return df
 
 
@@ -26,19 +26,25 @@ def get_triggerScan(peaks_df, tol=0.01):
             prev2 = prev1
             continue
         target_peak = float(tup.precursor)
-        nearnes = peaks_df[peaks_df.scanNum == prev1].mz.apply(
-            lambda x: abs(x - target_peak)).min()  # TODO make this more efficient
+        nearnes = (
+            peaks_df[peaks_df.scanNum == prev1]
+            .mz.apply(lambda x: abs(x - target_peak))
+            .min()
+        )  # TODO make this more efficient
         if nearnes < tol:
             triggerScan[tup.scanNum] = prev1
             triggeredScans[prev1].append(tup.scanNum)
-        elif peaks_df[peaks_df.scanNum == prev2].mz.apply(
-                lambda x: abs(x - target_peak)).min():  # check the alternative if not found
+        elif (
+            peaks_df[peaks_df.scanNum == prev2]
+            .mz.apply(lambda x: abs(x - target_peak))
+            .min()
+        ):  # check the alternative if not found
             # triggerScan.append(prev2)
             triggerScan[tup.scanNum] = prev2
             triggeredScans[prev2].append(tup.scanNum)
         else:
             # triggerScan.append(None)  # none was found
-            warnings.warn('no ms1 trigger peak found for scan {}'.format(tup.scanNum))
+            warnings.warn("no ms1 trigger peak found for scan {}".format(tup.scanNum))
 
     # unique_scan_df['triggerScan'] = triggerScan
     # unique_scan_df.index = unique_scan_df.scanNum
@@ -47,23 +53,26 @@ def get_triggerScan(peaks_df, tol=0.01):
 
 def getScansDF_fromPeaksDF(peaks_df):
     # get only the scans not the peaks
-    unique_scan_df = peaks_df[['scanNum', 'filterLine']].drop_duplicates()
+    unique_scan_df = peaks_df[["scanNum", "filterLine"]].drop_duplicates()
     # todo make this Dry
-    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(' ms '), 'msLevel'] = 1
-    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(' ms2 '), 'msLevel'] = 2
-    unique_scan_df['msLevel'] = unique_scan_df['msLevel'].astype('category')
-    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(' - '), 'mode'] = 'neg'
-    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(' + '), 'mode'] = 'pos'
-    unique_scan_df['mode'] = unique_scan_df['mode'].astype('category')
-    unique_scan_df['precursor'] = unique_scan_df['filterLine'].str.extract('(\d*\.\d*)@', expand=True)
+    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(" ms "), "msLevel"] = 1
+    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(" ms2 "), "msLevel"] = 2
+    unique_scan_df["msLevel"] = unique_scan_df["msLevel"].astype("category")
+    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(" - "), "mode"] = "neg"
+    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(" + "), "mode"] = "pos"
+    unique_scan_df["mode"] = unique_scan_df["mode"].astype("category")
+    unique_scan_df["precursor"] = unique_scan_df["filterLine"].str.extract(
+        "(\d*\.\d*)@", expand=True
+    )
     return unique_scan_df
 
 
 def getMS1Negpeaks(peaks_df, roundto=2):
     unique_scan_df = getScansDF_fromPeaksDF(peaks_df)
-    MS1NegScans = unique_scan_df[(unique_scan_df['msLevel'] == 1) \
-                                 & (unique_scan_df['mode'] == 'neg')]
+    MS1NegScans = unique_scan_df[
+        (unique_scan_df["msLevel"] == 1) & (unique_scan_df["mode"] == "neg")
+    ]
 
-    peaks_df_merge = peaks_df.merge(MS1NegScans, on='scanNum')
+    peaks_df_merge = peaks_df.merge(MS1NegScans, on="scanNum")
     peaks_df_merge = peaks_df_merge.mz.round(roundto).unique()
     return peaks_df_merge

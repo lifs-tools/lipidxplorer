@@ -4153,4 +4153,3 @@ def doClusterSample(res, sample):
 def lpdxClusterMSMS(sample, resolution):
     for i in range(len(sample.listMsms)):
         sample.listMsms[i] = doClusterMSMS(resolution, sample.listMsms[i])
-

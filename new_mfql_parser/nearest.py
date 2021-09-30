@@ -2,7 +2,7 @@ import numpy as np
 
 
 def nearest(ser1, ser2):
-    '''find the neareest value in series 2 for each element in series1'''
+    """find the neareest value in series 2 for each element in series1"""
     # from https://stackoverflow.com/questions/2566412/find-nearest-value-in-numpy-array
     # TODO try https://stackoverflow.com/questions/9706041/finding-index-of-an-item-closest-to-the-value-in-a-list-thats-not-entirely-sort
     res = []

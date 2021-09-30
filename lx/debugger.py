@@ -59,9 +59,9 @@ DebugMessage(message, [level])
 """
 
 # ------------------------------------------------------------------------
-# 
+#
 # Copyright (c) 2006 Allan Doyle
-# 
+#
 #  Permission is hereby granted, free of charge, to any person
 #  obtaining a copy of this software and associated documentation
 #  files (the "Software"), to deal in the Software without
@@ -69,10 +69,10 @@ DebugMessage(message, [level])
 #  modify, merge, publish, distribute, sublicense, and/or sell copies
 #  of the Software, and to permit persons to whom the Software is
 #  furnished to do so, subject to the following conditions:
-# 
+#
 #  The above copyright notice and this permission notice shall be
 #  included in all copies or substantial portions of the Software.
-# 
+#
 #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 #  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 #  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -81,7 +81,7 @@ DebugMessage(message, [level])
 #  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #  DEALINGS IN THE SOFTWARE.
-# 
+#
 # ------------------------------------------------------------------------
 
 
@@ -97,105 +97,108 @@ import configparser
 __vars = {}
 global __debug
 __debug = False
-	
+
 confParse = configparser.ConfigParser()
 try:
-	confParse.read("lpdxopts.ini")
-	setting = "DEBUG"
+    confParse.read("lpdxopts.ini")
+    setting = "DEBUG"
 
-	# each separate string in DEBUG gets used as a key in a dictionary
-	# later on, this makes it easy to tell if that string was set
-	#for v in os.getenv("DEBUG").split():
-		
+    # each separate string in DEBUG gets used as a key in a dictionary
+    # later on, this makes it easy to tell if that string was set
+    # for v in os.getenv("DEBUG").split():
+
 except AttributeError:
-	pass
+    pass
 except TypeError:
-	pass
+    pass
+
 
 def Debug(name=" "):
-	"""
+    """
 	Checks to see if the "DEBUG" environment variable is set, if
 	an optional string is passed in, if that string is set in the
 	"DEBUG" environment variable.
 	"""
 
-	if confParse.has_option(setting, name):
-		if confParse.get(setting, name) == "True":
-			return True
-		else:
-			return False
-	else:
-		return __debug
-	#global __vars
-	#return __vars.has_key(name)
-	return __debug
+    if confParse.has_option(setting, name):
+        if confParse.get(setting, name) == "True":
+            return True
+        else:
+            return False
+    else:
+        return __debug
+    # global __vars
+    # return __vars.has_key(name)
+    return __debug
+
 
 def DebugSet(name=" "):
-	"""
+    """
 	If called with no argument, causes subsequent calls to Debug() to
 	return True. If called with an argument, causes subsequent calls
 	to Debug() with the same string to return True
 	"""
-	
-	global __debug 
 
-	if name == " ":
-		__debug = True
+    global __debug
 
-	elif confParse.has_section(setting):
-		confParse.set(setting, name, "True")
-		with open("lpdxopts.ini", 'w') as iniFile:
-			confParse.write(iniFile)
-	else:
-		confParse.add_section(setting)
-		confParse.set(setting, name, "True")
-		with open("lpdxopts.ini", 'w') as iniFile:
-			confParse.write(iniFile)
+    if name == " ":
+        __debug = True
 
-	return(True)
+    elif confParse.has_section(setting):
+        confParse.set(setting, name, "True")
+        with open("lpdxopts.ini", "w") as iniFile:
+            confParse.write(iniFile)
+    else:
+        confParse.add_section(setting)
+        confParse.set(setting, name, "True")
+        with open("lpdxopts.ini", "w") as iniFile:
+            confParse.write(iniFile)
+
+    return True
+
 
 def DebugUnset(name=" "):
-	"""
+    """
 	If called with no argument, causes subsequent calls to Debug() to
 	return False. If called with an argument, causes subsequent calls
 	to Debug() with the same string to return False.
 	"""
 
-	global __debug 
+    global __debug
 
-	if name == " ":
-		__debug = False
+    if name == " ":
+        __debug = False
 
-	elif confParse.has_option(setting, name):
-		confParse.set(setting, name, "False")
-		with open("lpdxopts.ini", 'w') as iniFile:
-			confParse.write(iniFile)
-		return True
-	else:
-		return False
+    elif confParse.has_option(setting, name):
+        confParse.set(setting, name, "False")
+        with open("lpdxopts.ini", "w") as iniFile:
+            confParse.write(iniFile)
+        return True
+    else:
+        return False
 
-	return True
+    return True
 
-	
+
 ## Set up the DebugMessage part of this. We use the logging module,
 ## but send everything to stderr. Someday, this could get expanded
 ## to also have a logfile, etc.
 
-#logging.basicConfig(level=logging.DEBUG,
-#					format='%(levelname)-8s %(message)s',
-#					#stream=sys.stderr)
-#					stream=sys.stdout)
+# logging.basicConfig(level=logging.DEBUG,
+# 					format='%(levelname)-8s %(message)s',
+# 					#stream=sys.stderr)
+# 					stream=sys.stdout)
 
 
-#levels = {'CRITICAL':logging.critical,
-#		  'ERROR':logging.error,
-#		  'WARNING':logging.warning,
-#		  'INFO':logging.info,
-#		  'DEBUG':logging.debug}
+# levels = {'CRITICAL':logging.critical,
+# 		  'ERROR':logging.error,
+# 		  'WARNING':logging.warning,
+# 		  'INFO':logging.info,
+# 		  'DEBUG':logging.debug}
 
 
 def DebugMessage(msg, level="DEBUG"):
-	"""
+    """
 	Produces nicely formatted output to stderr.
 	If called with the wrong level, it complains, and behaves
 	as though the level was "ERROR"
@@ -203,25 +206,24 @@ def DebugMessage(msg, level="DEBUG"):
 	The allowed levels are
 	  "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"
 	"""
-	
-	current = inspect.currentframe()
-	outer = inspect.getouterframes(current)
 
-	try:
-		levels[level]('%s - %4d: %s' %
-					  (os.path.basename(outer[1][1]),
-					   outer[1][2],
-					   msg))
+    current = inspect.currentframe()
+    outer = inspect.getouterframes(current)
 
-	except KeyError:
-		DebugMessage('DebugMessage() called with unknown level: %s' % level)
-		logging.error('%s - %4d: %s' %
-					  (os.path.basename(outer[1][1]),
-					   outer[1][2],
-					   msg))
-	del outer
-	del current
-	
-__version__ = '$Id$'
-if Debug('version'): print(__version__)
+    try:
+        levels[level](
+            "%s - %4d: %s" % (os.path.basename(outer[1][1]), outer[1][2], msg)
+        )
 
+    except KeyError:
+        DebugMessage("DebugMessage() called with unknown level: %s" % level)
+        logging.error(
+            "%s - %4d: %s" % (os.path.basename(outer[1][1]), outer[1][2], msg)
+        )
+    del outer
+    del current
+
+
+__version__ = "$Id$"
+if Debug("version"):
+    print(__version__)

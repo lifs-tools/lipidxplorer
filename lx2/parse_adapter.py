@@ -13,60 +13,70 @@ def ElementSeq2m(elementSeq):
     target._makeRanges()
     target._makeDF()
     target._cal_M()
-    return target._df['m'][0]
+    return target._df["m"][0]
 
 
-def txt(evaluable, forReport = False):
+def txt(evaluable, forReport=False):
     res = None
-    if type(evaluable) in [int,float, str]:
+    if type(evaluable) in [int, float, str]:
         res = str(evaluable)
     elif isinstance(evaluable, list):
-        if len(evaluable) == 1 :
+        if len(evaluable) == 1:
             res = txt(evaluable[0])
     elif isinstance(evaluable, Evaluable):
-        res = f'{txt(evaluable.term_1)} {evaluable.operation.lower()} {txt(evaluable.term_2)}'
+        res = f"{txt(evaluable.term_1)} {evaluable.operation.lower()} {txt(evaluable.term_2)}"
     elif isinstance(evaluable, Func):
-        if evaluable.func == 'isOdd':
-            res = f'{txt(evaluable.on)} % 2 == 0'
-        if evaluable.func == 'avg':
-            res = f'{txt(evaluable.on)}' # do nothing
+        if evaluable.func == "isOdd":
+            res = f"{txt(evaluable.on)} % 2 == 0"
+        if evaluable.func == "avg":
+            res = f"{txt(evaluable.on)}"  # do nothing
     elif isinstance(evaluable, Obj):
-        if evaluable.p_rule == 'p_withAttr_accessItem_':
-            if evaluable.p_values[2] == 'chemsc':
+        if evaluable.p_rule == "p_withAttr_accessItem_":
+            if evaluable.p_values[2] == "chemsc":
                 item = evaluable.p_values[-2]
-                if item == 'db': item = 'dbr' # refa: rename db to dbr
-                res = f'{evaluable.p_values[0]}_{item}'
-        elif evaluable.p_rule == 'p_withAttr_id':
-            if evaluable.p_values[2] == 'chemsc':
-                res = f'{evaluable.p_values[0]}_target' if not forReport else f'{evaluable.p_values[0]}_chem'
-            elif evaluable.p_values[2] == 'intensity':
-                res = f'{evaluable.p_values[0]}_i'
-            elif evaluable.p_values[2] == 'mass':
-                res = f'{evaluable.p_values[0]}_m'
-            elif evaluable.p_values[2] == 'isobaric':
-                res = f'{evaluable.p_values[0]}_target'
-                warnings.warn(f' *** how to deal with isobaric ***')
-            elif evaluable.p_values[2] == 'errppm':
-                res = f'{evaluable.p_values[0]}_ppm'
-        elif evaluable.p_rule == 'p_expression_attribute':
-            if type(evaluable.p_values[0]) == Obj and \
-                evaluable.p_values[0].p_rule == 'p_withAttr_id' and \
-                evaluable.p_values[0].p_values[2] == 'chemsc':
-                    item = evaluable.p_values[1]
-                    if item == 'db': item = 'dbr' # refa: rename db to dbr
-                    res = f'{evaluable.p_values[0].p_values[0]}_{item}'
+                if item == "db":
+                    item = "dbr"  # refa: rename db to dbr
+                res = f"{evaluable.p_values[0]}_{item}"
+        elif evaluable.p_rule == "p_withAttr_id":
+            if evaluable.p_values[2] == "chemsc":
+                res = (
+                    f"{evaluable.p_values[0]}_target"
+                    if not forReport
+                    else f"{evaluable.p_values[0]}_chem"
+                )
+            elif evaluable.p_values[2] == "intensity":
+                res = f"{evaluable.p_values[0]}_i"
+            elif evaluable.p_values[2] == "mass":
+                res = f"{evaluable.p_values[0]}_m"
+            elif evaluable.p_values[2] == "isobaric":
+                res = f"{evaluable.p_values[0]}_target"
+                warnings.warn(f" *** how to deal with isobaric ***")
+            elif evaluable.p_values[2] == "errppm":
+                res = f"{evaluable.p_values[0]}_ppm"
+        elif evaluable.p_rule == "p_expression_attribute":
+            if (
+                type(evaluable.p_values[0]) == Obj
+                and evaluable.p_values[0].p_rule == "p_withAttr_id"
+                and evaluable.p_values[0].p_values[2] == "chemsc"
+            ):
+                item = evaluable.p_values[1]
+                if item == "db":
+                    item = "dbr"  # refa: rename db to dbr
+                res = f"{evaluable.p_values[0].p_values[0]}_{item}"
     elif isinstance(evaluable, ElementSeq):
-        res = f'{ElementSeq2m(evaluable)}'
+        res = f"{ElementSeq2m(evaluable)}"
     else:
-        warnings.warn(f'could not evaluate {evaluable}')
+        warnings.warn(f"could not evaluate {evaluable}")
         res = str(evaluable)
-    
+
     if res == None:
-         warnings.warn(f'did not evaluate {evaluable}')
+        warnings.warn(f"did not evaluate {evaluable}")
     return res
+
 
 def suchthat2txt(suchthat):
     return txt(suchthat)
+
 
 def report2exec_txt(report):
     res = []
@@ -76,45 +86,42 @@ def report2exec_txt(report):
             pct_format = reportItem.p_values[0]
             col_tuple = reportItem.p_values[3]
             tuple_txt = [txt(t) for t in col_tuple]
-            exec_txt = ', '.join(tuple_txt)
+            exec_txt = ", ".join(tuple_txt)
             col = ReportCol(name, pct_format, exec_txt)
-        elif type(reportItem.p_values) in [int,float, str]: # just a string
-            col = ReportCol(name, None , reportItem.p_values)
+        elif type(reportItem.p_values) in [int, float, str]:  # just a string
+            col = ReportCol(name, None, reportItem.p_values)
         else:
-            col = ReportCol(name, '', txt(reportItem.p_values, forReport=True))
+            col = ReportCol(name, "", txt(reportItem.p_values, forReport=True))
         res.append(col)
     return res
 
+
 def reportCols2DF(reportCols, df):
-    rep_df = pd.DataFrame(index = df.index)
+    rep_df = pd.DataFrame(index=df.index)
     for reportCol in reportCols:
         if reportCol.col_fortmat is None:
             rep_df[reportCol.col_name] = reportCol.col_eval_txt
-        elif reportCol.col_fortmat == '':# none given dont format
+        elif reportCol.col_fortmat == "":  # none given dont format
             rep_df[reportCol.col_name] = df.eval(reportCol.col_eval_txt)
         else:
             eval_res = df.eval(reportCol.col_eval_txt)
             col_format = reportCol.col_fortmat
-            if type(eval_res) == list: # more than one result
+            if type(eval_res) == list:  # more than one result
                 eval_res = zip(*eval_res)
             rep_df[reportCol.col_name] = [col_format % tup for tup in eval_res]
-        
+
     return rep_df
 
-if __name__ == '__main__':
 
-    filename = 'test_resources\\small_test\\170213_CE_pos_MSMS.mfql'
-    from mfql_Parser import fromFile 
+if __name__ == "__main__":
+
+    filename = "test_resources\\small_test\\170213_CE_pos_MSMS.mfql"
+    from mfql_Parser import fromFile
+
     mfql_dict = fromFile(filename)
 
-    res = suchthat2txt(mfql_dict['suchthat'])
-    print('\n'.join([str(r) for r in res]))
-    print('*******************************8')
-    res = report2exec_txt(mfql_dict['report'])
-    print('\n'.join([str(r) for r in res]))
-    
-
-
-
-
-
+    res = suchthat2txt(mfql_dict["suchthat"])
+    print("\n".join([str(r) for r in res]))
+    print("*******************************8")
+    res = report2exec_txt(mfql_dict["report"])
+    print("\n".join([str(r) for r in res]))

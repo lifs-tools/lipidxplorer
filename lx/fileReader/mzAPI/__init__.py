@@ -488,4 +488,3 @@ class mzFile(object):
         """Old name for the xic method"""
 
         return self.xic(*args, **kwargs)
-

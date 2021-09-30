@@ -4,7 +4,8 @@ from lx_wizard import MyWizard1
 import wx.propgrid as wxpg
 from data import default_props
 
-class LX_model():
+
+class LX_model:
     input_dir = None
     input_files = []
     mfql_dir = None
@@ -15,8 +16,8 @@ class LX_model():
         if not self.props:
             self.props = default_props
 
-class Controller():
 
+class Controller:
     def __init__(self, LX_model, LX_wizard):
         self.lx_model = LX_model
         self.lx_wizard = LX_wizard
@@ -40,13 +41,14 @@ class Controller():
         self.update_props()
 
     def update_props(self):
-        #https://github.com/wxWidgets/Phoenix/blob/master/demo/PropertyGrid.py
+        # https://github.com/wxWidgets/Phoenix/blob/master/demo/PropertyGrid.py
         pg = self.lx_wizard.m_propertyGridManager_props
         props = self.lx_model.props
-        if pg.GetFirst(): return # already filled
+        if pg.GetFirst():
+            return  # already filled
         for k in props:
             v = str(props[k])
-            pg.Append(wxpg.StringProperty(k,value=v))
+            pg.Append(wxpg.StringProperty(k, value=v))
 
     def getInput(self):
         return self.lx_model.input_dir
@@ -57,7 +59,11 @@ class Controller():
         for (dirpath, dirnames, filenames) in os.walk(path):
             filenames = filenames
             break
-        f = [fn for fn in filenames if fn[-4:] == '.raw' or fn[-5:] == '.mzML' or fn[-6:] == '.mzXML']
+        f = [
+            fn
+            for fn in filenames
+            if fn[-4:] == ".raw" or fn[-5:] == ".mzML" or fn[-6:] == ".mzXML"
+        ]
         return f
 
     def getMFQLroot(self):
@@ -66,20 +72,19 @@ class Controller():
     def getMFQLFiles(self, path):
         f = []
         for (dirpath, dirnames, filenames) in os.walk(path):
-            f.extend([fn for fn in filenames if fn[-5:] == '.mfql'])
+            f.extend([fn for fn in filenames if fn[-5:] == ".mfql"])
         return f
 
 
 class LX_wizard(MyWizard1):
-
     def __init__(self):
-        super(LX_wizard,self).__init__(None)
-        self.lx_controller = Controller(LX_model(),self)
+        super(LX_wizard, self).__init__(None)
+        self.lx_controller = Controller(LX_model(), self)
 
     def wiz_finished(self, event):
-        print('finised')
+        print("finised")
 
-    def page_changed( self, event ):
+    def page_changed(self, event):
         self.lx_controller.update()
 
 
@@ -91,5 +96,5 @@ def run_lx_wizard():
     app.MainLoop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_lx_wizard()

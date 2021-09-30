@@ -3,13 +3,13 @@ try:
 except ImportError:
     from backports.functools_lru_cache import lru_cache
 
-'''
+"""
 https://www.ibm.com/developerworks/community/blogs/jfp/entry/Python_Meets_Julia_Micro_Performance?lang=en
 from functools import lru_cache as cache
 
 @cache(maxsize=None)
 def fib_cache(n):
-'''
+"""
 
 C = 12
 H = 1.0078250321
@@ -33,25 +33,49 @@ TI = 47.947947
 
 @lru_cache(maxsize=None)
 def calcsf(args):
-    (lwBndC, upBndC,
-     lwBndH, upBndH,
-     lwBndO, upBndO,
-     lwBndN, upBndN,
-     lwBndP, upBndP,
-     lwBndS, upBndS,
-     lwBndNa, upBndNa,
-     lwBndD, upBndD,
-     lwBndCi, upBndCi,
-     lwBndCl, upBndCl,
-     lwBndLi, upBndLi,
-     lwBndNi, upBndNi,
-     lwBndF, upBndF,
-     lwBndI, upBndI,
-     lwBndAg, upBndAg,
-     lwBndAl, upBndAl,
-     lwBndW, upBndW,
-     lwBndTi, upBndTi,
-     mass, tolerance, dbLowerBound, dbUpperBound, charge) = args
+    (
+        lwBndC,
+        upBndC,
+        lwBndH,
+        upBndH,
+        lwBndO,
+        upBndO,
+        lwBndN,
+        upBndN,
+        lwBndP,
+        upBndP,
+        lwBndS,
+        upBndS,
+        lwBndNa,
+        upBndNa,
+        lwBndD,
+        upBndD,
+        lwBndCi,
+        upBndCi,
+        lwBndCl,
+        upBndCl,
+        lwBndLi,
+        upBndLi,
+        lwBndNi,
+        upBndNi,
+        lwBndF,
+        upBndF,
+        lwBndI,
+        upBndI,
+        lwBndAg,
+        upBndAg,
+        lwBndAl,
+        upBndAl,
+        lwBndW,
+        upBndW,
+        lwBndTi,
+        upBndTi,
+        mass,
+        tolerance,
+        dbLowerBound,
+        dbUpperBound,
+        charge,
+    ) = args
 
     #      charge can only be between 0 and 1
     summand_charge = -0.00055 * charge
@@ -167,27 +191,106 @@ def calcsf(args):
                                                                         jH = lwBndH
                                                                         HBuf = jH * H
 
-                                                                        while jH <= upBndH:
+                                                                        while (
+                                                                            jH <= upBndH
+                                                                        ):
 
                                                                             # double bound equivalence
-                                                                            cRDB = 2.0 + ((jC * 2) + (jH * -1) + (
-                                                                                        jCl * -1) + jN + (jNa * -1) + (
-                                                                                              jP) + (jD * -1) + (
-                                                                                                      jCi * 2) + (
-                                                                                              jNi) + (jLi * -1) + (
-                                                                                                      jS * 4) + (
-                                                                                                      jI * 5) + (
-                                                                                                      jF * 5))
-                                                                            cRDB = cRDB / 2.0
+                                                                            cRDB = (
+                                                                                2.0
+                                                                                + (
+                                                                                    (
+                                                                                        jC
+                                                                                        * 2
+                                                                                    )
+                                                                                    + (
+                                                                                        jH
+                                                                                        * -1
+                                                                                    )
+                                                                                    + (
+                                                                                        jCl
+                                                                                        * -1
+                                                                                    )
+                                                                                    + jN
+                                                                                    + (
+                                                                                        jNa
+                                                                                        * -1
+                                                                                    )
+                                                                                    + (
+                                                                                        jP
+                                                                                    )
+                                                                                    + (
+                                                                                        jD
+                                                                                        * -1
+                                                                                    )
+                                                                                    + (
+                                                                                        jCi
+                                                                                        * 2
+                                                                                    )
+                                                                                    + (
+                                                                                        jNi
+                                                                                    )
+                                                                                    + (
+                                                                                        jLi
+                                                                                        * -1
+                                                                                    )
+                                                                                    + (
+                                                                                        jS
+                                                                                        * 4
+                                                                                    )
+                                                                                    + (
+                                                                                        jI
+                                                                                        * 5
+                                                                                    )
+                                                                                    + (
+                                                                                        jF
+                                                                                        * 5
+                                                                                    )
+                                                                                )
+                                                                            )
+                                                                            cRDB = (
+                                                                                cRDB
+                                                                                / 2.0
+                                                                            )
 
-                                                                            if (dbLowerBound <= cRDB) and (
-                                                                                    cRDB <= dbUpperBound):
+                                                                            if (
+                                                                                dbLowerBound
+                                                                                <= cRDB
+                                                                            ) and (
+                                                                                cRDB
+                                                                                <= dbUpperBound
+                                                                            ):
 
                                                                                 # check if it is the right mass
                                                                                 massSum = (
-                                                                                            CBuf + HBuf + OBuf + NBuf + PBuf + SBuf + NaBuf + DBuf + CiBuf + ClBuf + LiBuf + NiBuf + FBuf + IBuf + summand_charge)
-                                                                                if (charge != 0):
-                                                                                    m = (abs(charge)) * mass
+                                                                                    CBuf
+                                                                                    + HBuf
+                                                                                    + OBuf
+                                                                                    + NBuf
+                                                                                    + PBuf
+                                                                                    + SBuf
+                                                                                    + NaBuf
+                                                                                    + DBuf
+                                                                                    + CiBuf
+                                                                                    + ClBuf
+                                                                                    + LiBuf
+                                                                                    + NiBuf
+                                                                                    + FBuf
+                                                                                    + IBuf
+                                                                                    + summand_charge
+                                                                                )
+                                                                                if (
+                                                                                    charge
+                                                                                    != 0
+                                                                                ):
+                                                                                    m = (
+                                                                                        (
+                                                                                            abs(
+                                                                                                charge
+                                                                                            )
+                                                                                        )
+                                                                                        * mass
+                                                                                    )
                                                                                     # tolerance = (abs(charge)) * (tolerance)
                                                                                 else:
                                                                                     m = mass
@@ -196,22 +299,76 @@ def calcsf(args):
                                                                                 # printf("jC: %d, jH: %d, jO: %d, jN: %d, jP: %d \n", jC, jH, jO, jN, jP)
                                                                                 # printf("massSum: %4.4f m: %4.4f tolerance: %4.4f\n", massSum, m, tolerance)
 
-                                                                                if massSum >= m - tolerance:
-                                                                                    if massSum <= (m + tolerance):
+                                                                                if (
+                                                                                    massSum
+                                                                                    >= m
+                                                                                    - tolerance
+                                                                                ):
+                                                                                    if (
+                                                                                        massSum
+                                                                                        <= (
+                                                                                            m
+                                                                                            + tolerance
+                                                                                        )
+                                                                                    ):
 
                                                                                         #                                                                                         print(">>> m/z: {} theor.: {}".format( m, massSum))
 
                                                                                         # is only valid for charge == [-1, 0, 1]
                                                                                         # printf("massSum: %d, abs(charge) % 2: %d, jN % 2: %d\n", ((int)(abs(massSum)) % 2), (abs(charge) % 2), (jN % 2))
-                                                                                        if ((((((int)(
-                                                                                                abs(massSum)) % 2) == ((
-                                                                                                                               abs(
-                                                                                                                                       charge) % 2) + (
-                                                                                                                               jN % 2)) % 2)) and (
-                                                                                                     (jH + jD) < 128))
-                                                                                                or ((jH + jD) > 127)
-                                                                                                or ((
-                                                                                                            jD + jCi + jNi) > 0)):  # /* || (jN == 0))*/{
+                                                                                        if (
+                                                                                            (
+                                                                                                (
+                                                                                                    (
+                                                                                                        (
+                                                                                                            (
+                                                                                                                int
+                                                                                                            )(
+                                                                                                                abs(
+                                                                                                                    massSum
+                                                                                                                )
+                                                                                                            )
+                                                                                                            % 2
+                                                                                                        )
+                                                                                                        == (
+                                                                                                            (
+                                                                                                                abs(
+                                                                                                                    charge
+                                                                                                                )
+                                                                                                                % 2
+                                                                                                            )
+                                                                                                            + (
+                                                                                                                jN
+                                                                                                                % 2
+                                                                                                            )
+                                                                                                        )
+                                                                                                        % 2
+                                                                                                    )
+                                                                                                )
+                                                                                                and (
+                                                                                                    (
+                                                                                                        jH
+                                                                                                        + jD
+                                                                                                    )
+                                                                                                    < 128
+                                                                                                )
+                                                                                            )
+                                                                                            or (
+                                                                                                (
+                                                                                                    jH
+                                                                                                    + jD
+                                                                                                )
+                                                                                                > 127
+                                                                                            )
+                                                                                            or (
+                                                                                                (
+                                                                                                    jD
+                                                                                                    + jCi
+                                                                                                    + jNi
+                                                                                                )
+                                                                                                > 0
+                                                                                            )
+                                                                                        ):  # /* || (jN == 0))*/{
 
                                                                                             # printf("\nreturn: %d count:%d", i, count)
 
@@ -222,28 +379,67 @@ def calcsf(args):
                                                                                             #
                                                                                             #                                                                                             print("HIT")
 
-                                                                                            listOutSeq_inner = []
-                                                                                            listOutSeq_inner.append(jC)
-                                                                                            listOutSeq_inner.append(jH)
-                                                                                            listOutSeq_inner.append(jO)
-                                                                                            listOutSeq_inner.append(jN)
-                                                                                            listOutSeq_inner.append(jP)
-                                                                                            listOutSeq_inner.append(jS)
-                                                                                            listOutSeq_inner.append(jNa)
-                                                                                            listOutSeq_inner.append(jD)
-                                                                                            listOutSeq_inner.append(jCi)
-                                                                                            listOutSeq_inner.append(jCl)
-                                                                                            listOutSeq_inner.append(jLi)
-                                                                                            listOutSeq_inner.append(jNi)
-                                                                                            listOutSeq_inner.append(jF)
-                                                                                            listOutSeq_inner.append(jI)
-                                                                                            listOutSeq_inner.append(jAg)
-                                                                                            listOutSeq_inner.append(jAl)
-                                                                                            listOutSeq_inner.append(jW)
-                                                                                            listOutSeq_inner.append(jTi)
+                                                                                            listOutSeq_inner = (
+                                                                                                []
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jC
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jH
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jO
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jN
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jP
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jS
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jNa
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jD
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jCi
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jCl
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jLi
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jNi
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jF
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jI
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jAg
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jAl
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jW
+                                                                                            )
+                                                                                            listOutSeq_inner.append(
+                                                                                                jTi
+                                                                                            )
 
                                                                                             listOutSeq.append(
-                                                                                                listOutSeq_inner)
+                                                                                                listOutSeq_inner
+                                                                                            )
 
                                                                                             # printf("\nmass: %4.4f, cRDB %.1f, lowDB: %.1f, upDB: %.1f\n", massSum, cRDB, dbLowerBound, dbUpperBound)
                                                                             jH += 1

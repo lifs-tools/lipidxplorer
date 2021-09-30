@@ -1456,4 +1456,3 @@ def startParsing(
         return (gprogressCount, parent.CONST_THREAD_SUCCESSFUL)
     else:
         return (gprogressCount, None)
-

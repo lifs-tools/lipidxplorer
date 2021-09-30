@@ -10,38 +10,38 @@ from copy import deepcopy, copy
 # from lx.mfql.runtimeStatic import TypeTolerance
 
 if platform.machine() == "i686":
-    if platform.python_version_tuple()[1] == '6':  # Python 2.6
+    if platform.python_version_tuple()[1] == "6":  # Python 2.6
         # import lx.mfql.calcsf26_32.calcsf26 as calcsf
         import lx.mfql.calcsf26_32.calcsf as calcsf
-    if platform.python_version_tuple()[1] == '7':  # Python 2.7
+    if platform.python_version_tuple()[1] == "7":  # Python 2.7
         import lx.mfql.calcsf27_32.calcsf as calcsf
 elif platform.machine() == "x86":
-    if platform.python_version_tuple()[1] == '6':  # Python 2.6
+    if platform.python_version_tuple()[1] == "6":  # Python 2.6
         # import lx.mfql.calcsf26_32.calcsf26 as calcsf
         import lx.mfql.calcsf26_32.calcsf as calcsf
-    if platform.python_version_tuple()[1] == '7':  # Python 2.7
+    if platform.python_version_tuple()[1] == "7":  # Python 2.7
         import lx.mfql.calcsf27_32.calcsf as calcsf
 elif platform.machine() == "AMD64":
-    if platform.python_version_tuple()[1] == '6':  # Python 2.6
+    if platform.python_version_tuple()[1] == "6":  # Python 2.6
         import lx.mfql.calcsf26_64.calcsf as calcsf
-    if platform.python_version_tuple()[1] == '7':  # Python 2.7
+    if platform.python_version_tuple()[1] == "7":  # Python 2.7
         import lx.mfql.calcsf27_64.calcsf as calcsf
 else:
     import lx.mfql.calcsf_cached as calcsf
 # elif platform.machine() == 'x86_64':# python 3.6 linux:
 import calcsf_cached as calcsf_cython
 
-sys.path.append('..' + os.sep + 'lib' + os.sep)
+sys.path.append(".." + os.sep + "lib" + os.sep)
 
 # if sys.platform == 'win32' or sys.platform == 'cygwin':
-#	if sys.version[0] == '2' and sys.version[2] == '6':
-#		import calcsf26 as calcsf
-#	elif sys.version[0] == '2' and sys.version[2] == '5':
-#		import calcsf25 as calcsf
-#	else:
-#		import calcsf25 as calcsf
+# 	if sys.version[0] == '2' and sys.version[2] == '6':
+# 		import calcsf26 as calcsf
+# 	elif sys.version[0] == '2' and sys.version[2] == '5':
+# 		import calcsf25 as calcsf
+# 	else:
+# 		import calcsf25 as calcsf
 # else:
-#	import calcsf
+# 	import calcsf
 
 # define C 12.0
 # define H 1.0078250321
@@ -78,58 +78,60 @@ _data = r"""'C', 'Carbon', 12.0
 'W', 'Tungsten', 183.950952
 'Ti', 'Titanium', 47.947947"""
 
-elems = {'C': 12,
-         'H': 1.0078250321,
-         'N': 14.0030740052,
-         'P': 30.97376151,
-         'O': 15.9949146221,
-         'Na': 22.98976967,
-         'S': 31.97207069,
-         'I': 126.904477,
-         'D': 2.014101778,
-         'Ci': 13.0033548378,
-         'Cl': 34.968852,
-         'Li': 7.016003,
-         'Ni': 15.0001088984,
-         'F': 18.9984032,
-         'K': 38.963708,
-         'Cs': 132.905433,
-         'Br': 78.918336,
-         'Ag': 106.905095,
-         'Al': 26.981541,
-         'W': 183.950952,
-         'Ti': 47.947947,
-         'electron': -0.00055}
+elems = {
+    "C": 12,
+    "H": 1.0078250321,
+    "N": 14.0030740052,
+    "P": 30.97376151,
+    "O": 15.9949146221,
+    "Na": 22.98976967,
+    "S": 31.97207069,
+    "I": 126.904477,
+    "D": 2.014101778,
+    "Ci": 13.0033548378,
+    "Cl": 34.968852,
+    "Li": 7.016003,
+    "Ni": 15.0001088984,
+    "F": 18.9984032,
+    "K": 38.963708,
+    "Cs": 132.905433,
+    "Br": 78.918336,
+    "Ag": 106.905095,
+    "Al": 26.981541,
+    "W": 183.950952,
+    "Ti": 47.947947,
+    "electron": -0.00055,
+}
 
 
 # class Element:
-#	def __init__(self, symbol, name, molweight, count = 0):
-#		"""An element. If count == 0 then range == []"""
-#		self.sym = symbol
-#		self.name = name
-#		self.mw = molweight
-#		if count != 0:
-#			self._range = [count]
-#		else:
-#			self._range = []
+# 	def __init__(self, symbol, name, molweight, count = 0):
+# 		"""An element. If count == 0 then range == []"""
+# 		self.sym = symbol
+# 		self.name = name
+# 		self.mw = molweight
+# 		if count != 0:
+# 			self._range = [count]
+# 		else:
+# 			self._range = []
 
-#	def set_count(self, n):
-#		self._range = [n]
+# 	def set_count(self, n):
+# 		self._range = [n]
 
-#	def set_range(self, l, r, s = 1):
-#		self._range = range(l,r,s)
+# 	def set_range(self, l, r, s = 1):
+# 		self._range = range(l,r,s)
 
-#	def set_enum(self, enum):
-#		self._range = sorted(enum)
+# 	def set_enum(self, enum):
+# 		self._range = sorted(enum)
 
-#	def getweight(self):
-#		return self.mw * self._range[0]
+# 	def getweight(self):
+# 		return self.mw * self._range[0]
 
-#	def addsyms(self, weight, result):
-#		result[self.sym] = result.get(self.sym, 0) + weight
+# 	def addsyms(self, weight, result):
+# 		result[self.sym] = result.get(self.sym, 0) + weight
+
 
 class Element:
-
     def __init__(self, symbol, name, molweight):
         self.sym = symbol
         self.name = name
@@ -188,7 +190,6 @@ sym2elt = build_dict(_data)
 
 
 class ConstElement(Element):
-
     def __init__(self, symbol, name, molweight, count=0):
         Element.__init__(self, symbol, name, molweight)
 
@@ -283,13 +284,12 @@ class RangeElement(Element):
 
 def diff(n1, n2):
     if n1 - n2 >= 0:
-        return (n1 - n2)
+        return n1 - n2
     else:
         return 0
 
 
 class ElementSequence:
-
     def __init__(self):
 
         # from lpdxTools import permute2
@@ -306,7 +306,7 @@ class ElementSequence:
 
     # print ">>>", seq
     # for line in traceback.format_stack()[:-1]:
-    #	print line.strip()
+    # 	print line.strip()
     # exit(0)
 
     def append(self, t):
@@ -362,8 +362,10 @@ class ElementSequence:
             else:
                 return -1
         else:
-            raise TypeError("Comparison between chemical sum" + \
-                            " compositions and sc-constraints is not possible")
+            raise TypeError(
+                "Comparison between chemical sum"
+                + " compositions and sc-constraints is not possible"
+            )
 
         return 0
 
@@ -374,18 +376,18 @@ class ElementSequence:
         return not self.__eq__(other)
 
     # for i in range(len(self.seq)):
-    #	elem = elemseq[self.seq[i].sym]
-    #	#if self.seq[i]._range != [0]:
-    #	if elem:
-    #		#if elem._range != [0] and elem._range != []:
-    #		if self.seq[i]._range != elem._range:
-    #			return -1
-    #		#else:
-    #		#	pass # do nothing, because the element is not there
-    #	else:
-    #		return -1
-    #	#elif self.seq[-1] == self.seq[i]:
-    #	#	return 0
+    # 	elem = elemseq[self.seq[i].sym]
+    # 	#if self.seq[i]._range != [0]:
+    # 	if elem:
+    # 		#if elem._range != [0] and elem._range != []:
+    # 		if self.seq[i]._range != elem._range:
+    # 			return -1
+    # 		#else:
+    # 		#	pass # do nothing, because the element is not there
+    # 	else:
+    # 		return -1
+    # 	#elif self.seq[-1] == self.seq[i]:
+    # 	#	return 0
     # return 0
 
     def sorted(self):
@@ -399,7 +401,7 @@ class ElementSequence:
 
 		out: the Element Object or None if it is not in the sequence"""
 
-        if elem == 'db':
+        if elem == "db":
             return self.get_DB()
         else:
             try:
@@ -420,12 +422,12 @@ class ElementSequence:
     def __add__(self, elemseq):
 
         # for i in set(self._seq.keys()).union(set(elemseq._seq.keys())):
-        #	if self._seq.has_key(i) and elemseq._seq.has_key(i):
-        #		self._seq[i]._count += elemseq._seq[i]._count
-        #	elif self._seq.has_key(i) and not elemseq._seq.has_key(i):
-        #		pass
-        #	elif not self._seq.has_key(i) and elemseq._seq.has_key(i):
-        #		self._seq[i] = elemseq.get_element(i)
+        # 	if self._seq.has_key(i) and elemseq._seq.has_key(i):
+        # 		self._seq[i]._count += elemseq._seq[i]._count
+        # 	elif self._seq.has_key(i) and not elemseq._seq.has_key(i):
+        # 		pass
+        # 	elif not self._seq.has_key(i) and elemseq._seq.has_key(i):
+        # 		self._seq[i] = elemseq.get_element(i)
 
         ## reset weight and db
         # self._weight = 0.0
@@ -486,11 +488,23 @@ class ElementSequence:
 
         if self._db == 0.0:
             cRDB = 2
-            cRDB += (self['C'] * 2) + (self['H'] * -1) + (self['Cl'] * -1) + \
-                    self['N'] + (self['Na'] * -1) + self['P'] - \
-                    self['D'] + (self['Ci'] * 2) + self['Ni'] - self['F'] + \
-                    (self['I'] * 5) - self['K'] - self['Cs'] - \
-                    self['Br'] + (self['Li'] * -1)
+            cRDB += (
+                (self["C"] * 2)
+                + (self["H"] * -1)
+                + (self["Cl"] * -1)
+                + self["N"]
+                + (self["Na"] * -1)
+                + self["P"]
+                - self["D"]
+                + (self["Ci"] * 2)
+                + self["Ni"]
+                - self["F"]
+                + (self["I"] * 5)
+                - self["K"]
+                - self["Cs"]
+                - self["Br"]
+                + (self["Li"] * -1)
+            )
             cRDB /= 2.0
             self._db = cRDB
 
@@ -505,9 +519,11 @@ class ElementSequence:
 
             if self.charge != 0:
                 if truemz:
-                    self._weight = (self._weight + self.charge * -0.00055)
+                    self._weight = self._weight + self.charge * -0.00055
                 else:
-                    self._weight = (self._weight + self.charge * -0.00055) / abs(self.charge)
+                    self._weight = (self._weight + self.charge * -0.00055) / abs(
+                        self.charge
+                    )
 
         return self._weight
 
@@ -522,19 +538,18 @@ class ElementSequence:
 
 
 # def putweights(self, s, l):
-#	""" l is a sequence in the same order as the values in s """
-#	# generate l
-#	ret = []
-#	i = 0
-#	for j in s:
-#		ret.append(float(s[i]) * sym2elt[l[i]].mw)
-#		#ret.append(s[i] * l[i])
-#		i = i + 1
-#	return ret
+# 	""" l is a sequence in the same order as the values in s """
+# 	# generate l
+# 	ret = []
+# 	i = 0
+# 	for j in s:
+# 		ret.append(float(s[i]) * sym2elt[l[i]].mw)
+# 		#ret.append(s[i] * l[i])
+# 		i = i + 1
+# 	return ret
 
 
 class SCConstraint(ElementSequence):
-
     def __init__(self):
 
         ElementSequence.__init__(self)
@@ -569,7 +584,7 @@ class SCConstraint(ElementSequence):
 
 		out: the Element Object or None if it is not in the sequence"""
 
-        if elem == 'db':
+        if elem == "db":
             raise TypeError("Cannot retrieve the double bonds from a SC constraint")
         else:
             try:
@@ -593,7 +608,15 @@ class SCConstraint(ElementSequence):
             elif i.isConst():
                 l = l + i.sym + "[" + repr(i._range[0]) + "] "
             else:
-                l = l + i.sym + "[" + repr(i._range[0]) + ".." + repr(i._range[-1]) + "] "
+                l = (
+                    l
+                    + i.sym
+                    + "["
+                    + repr(i._range[0])
+                    + ".."
+                    + repr(i._range[-1])
+                    + "] "
+                )
 
         return l
 
@@ -653,40 +676,40 @@ class SCConstraint(ElementSequence):
             rangeNi = [0]
 
         for iD in rangeD:
-            elemD = (sym2elt_const['D'])
+            elemD = sym2elt_const["D"]
             elemD.set_count(iD)
             for iCl in rangeCl:
-                elemCl = (sym2elt_const['Cl'])
+                elemCl = sym2elt_const["Cl"]
                 elemCl.set_count(iCl)
                 for iLi in rangeLi:
-                    elemLi = (sym2elt_const['Li'])
+                    elemLi = sym2elt_const["Li"]
                     elemLi.set_count(iLi)
                     for iCi in rangeCi:
-                        elemCi = (sym2elt_const['Ci'])
+                        elemCi = sym2elt_const["Ci"]
                         elemCi.set_count(iCi)
                         for iNi in rangeNi:
-                            elemNi = (sym2elt_const['Ni'])
+                            elemNi = sym2elt_const["Ni"]
                             elemNi.set_count(iNi)
                             for iNa in rangeNa:
-                                elemNa = (sym2elt_const['Na'])
+                                elemNa = sym2elt_const["Na"]
                                 elemNa.set_count(iNa)
                                 for iS in rangeS:
-                                    elemS = (sym2elt_const['S'])
+                                    elemS = sym2elt_const["S"]
                                     elemS.set_count(iS)
                                     for iN in rangeN:
-                                        elemN = (sym2elt_const['N'])
+                                        elemN = sym2elt_const["N"]
                                         elemN.set_count(iN)
                                         for iP in rangeP:
-                                            elemP = (sym2elt_const['P'])
+                                            elemP = sym2elt_const["P"]
                                             elemP.set_count(iP)
                                             for iO in rangeO:
-                                                elemO = (sym2elt_const['O'])
+                                                elemO = sym2elt_const["O"]
                                                 elemO.set_count(iO)
                                                 for iC in rangeC:
-                                                    elemC = (sym2elt_const['C'])
+                                                    elemC = sym2elt_const["C"]
                                                     elemC.set_count(iC)
                                                     for iH in rangeH:
-                                                        elemH = (sym2elt_const['H'])
+                                                        elemH = sym2elt_const["H"]
                                                         elemH.set_count(iH)
 
                                                         # cRDB = 2.0;
@@ -695,29 +718,47 @@ class SCConstraint(ElementSequence):
                                                         # print 2*iC + 2 + iN - 2 * self.lwBoundDbEq, 2*iC + 2 + iN - 2 * self.upBoundDbEq
 
                                                         cRDB = 2.0
-                                                        cRDB += ((iC * 2) + (iH * -1) + iN + (iCl * -1) + (iNa * -1) + (
-                                                            iP) - (iD) + (iCi * 2) + (iNi)) / 2.0 + (iLi * -1)
+                                                        cRDB += (
+                                                            (iC * 2)
+                                                            + (iH * -1)
+                                                            + iN
+                                                            + (iCl * -1)
+                                                            + (iNa * -1)
+                                                            + (iP)
+                                                            - (iD)
+                                                            + (iCi * 2)
+                                                            + (iNi)
+                                                        ) / 2.0 + (iLi * -1)
 
                                                         # old version
                                                         # cRDB = iC - (iH + iNa)/2 + 1 + iN/2
-                                                        if self.lwBoundDbEq <= cRDB and cRDB <= self.upBoundDbEq:
-                                                            mass = sym2elt['C'].mw * iC + \
-                                                                   sym2elt['H'].mw * iH + \
-                                                                   sym2elt['O'].mw * iO + \
-                                                                   sym2elt['P'].mw * iP + \
-                                                                   sym2elt['N'].mw * iN + \
-                                                                   sym2elt['S'].mw * iS + \
-                                                                   sym2elt['Na'].mw * iNa + \
-                                                                   sym2elt['D'].mw * iD + \
-                                                                   sym2elt['Ci'].mw * iCi + \
-                                                                   sym2elt['Cl'].mw * iCl + \
-                                                                   sym2elt['Li'].mw * iLi + \
-                                                                   sym2elt['Ni'].mw * iNi + \
-                                                                   sym2elt['F'].mw * iF
+                                                        if (
+                                                            self.lwBoundDbEq <= cRDB
+                                                            and cRDB <= self.upBoundDbEq
+                                                        ):
+                                                            mass = (
+                                                                sym2elt["C"].mw * iC
+                                                                + sym2elt["H"].mw * iH
+                                                                + sym2elt["O"].mw * iO
+                                                                + sym2elt["P"].mw * iP
+                                                                + sym2elt["N"].mw * iN
+                                                                + sym2elt["S"].mw * iS
+                                                                + sym2elt["Na"].mw * iNa
+                                                                + sym2elt["D"].mw * iD
+                                                                + sym2elt["Ci"].mw * iCi
+                                                                + sym2elt["Cl"].mw * iCl
+                                                                + sym2elt["Li"].mw * iLi
+                                                                + sym2elt["Ni"].mw * iNi
+                                                                + sym2elt["F"].mw * iF
+                                                            )
                                                             # if (((iN != 0) and (int(mass) % 2) == ((abs(self.charge) % 2) + (iN % 2)) % 2) or (iN == 0)):
-                                                            if ((int(mass) % 2) == (
-                                                                    (abs(self.charge) % 2) + (iN % 2)) % 2):
-                                                                elemseq = ElementSequence()
+                                                            if (int(mass) % 2) == (
+                                                                (abs(self.charge) % 2)
+                                                                + (iN % 2)
+                                                            ) % 2:
+                                                                elemseq = (
+                                                                    ElementSequence()
+                                                                )
                                                                 elemseq.append(elemC)
                                                                 elemseq.append(elemH)
                                                                 elemseq.append(elemP)
@@ -732,10 +773,17 @@ class SCConstraint(ElementSequence):
                                                                 elemseq.append(elemNi)
                                                                 elemseq.append(elemF)
 
-                                                                elemseq.set_charge(self.charge)
-                                                                elemseq.set_db(self.lwBoundDbEq, self.upBoundDbEq)
+                                                                elemseq.set_charge(
+                                                                    self.charge
+                                                                )
+                                                                elemseq.set_db(
+                                                                    self.lwBoundDbEq,
+                                                                    self.upBoundDbEq,
+                                                                )
 
-                                                                l.append(deepcopy(elemseq))
+                                                                l.append(
+                                                                    deepcopy(elemseq)
+                                                                )
 
         return l
 
@@ -770,9 +818,9 @@ class SCConstraint(ElementSequence):
 		IN: mass by float,
 		tolerance as resolution"""
 
-        #		if abs(self.charge) > 1:
-        #			print "solveWithCalcSF() works only for charges -1 and 1!"
-        #			exit(0)
+        # 		if abs(self.charge) > 1:
+        # 			print "solveWithCalcSF() works only for charges -1 and 1!"
+        # 			exit(0)
 
         res = []
 
@@ -789,27 +837,27 @@ class SCConstraint(ElementSequence):
         else:
             t = m / tolerance
 
-        elemC = self.get_element('C')
-        elemH = self.get_element('H')
-        elemO = self.get_element('O')
-        elemN = self.get_element('N')
-        elemP = self.get_element('P')
-        elemS = self.get_element('S')
-        elemI = self.get_element('I')
-        elemNa = self.get_element('Na')
-        elemD = self.get_element('D')
-        elemCi = self.get_element('Ci')
-        elemCl = self.get_element('Cl')
-        elemLi = self.get_element('Li')
-        elemNi = self.get_element('Ni')
-        elemF = self.get_element('F')
-        elemK = self.get_element('K')
-        elemCs = self.get_element('Cs')
-        elemBr = self.get_element('Br')
-        elemAg = self.get_element('Ag')
-        elemAl = self.get_element('Al')
-        elemW = self.get_element('W')
-        elemTi = self.get_element('Ti')
+        elemC = self.get_element("C")
+        elemH = self.get_element("H")
+        elemO = self.get_element("O")
+        elemN = self.get_element("N")
+        elemP = self.get_element("P")
+        elemS = self.get_element("S")
+        elemI = self.get_element("I")
+        elemNa = self.get_element("Na")
+        elemD = self.get_element("D")
+        elemCi = self.get_element("Ci")
+        elemCl = self.get_element("Cl")
+        elemLi = self.get_element("Li")
+        elemNi = self.get_element("Ni")
+        elemF = self.get_element("F")
+        elemK = self.get_element("K")
+        elemCs = self.get_element("Cs")
+        elemBr = self.get_element("Br")
+        elemAg = self.get_element("Ag")
+        elemAl = self.get_element("Al")
+        elemW = self.get_element("W")
+        elemTi = self.get_element("Ti")
 
         if elemC:
             lwBndC = elemC._range[0]
@@ -967,51 +1015,103 @@ class SCConstraint(ElementSequence):
         # erg = calcsf.totalcalcsf(lwBndC, upBndC,
 
         if avoid_Dlls:
-            erg = calcsf_cython.calcsf((lwBndC, upBndC,
-                                        lwBndH, upBndH,
-                                        lwBndO, upBndO,
-                                        lwBndN, upBndN,
-                                        lwBndP, upBndP,
-                                        lwBndS, upBndS,
-                                        lwBndNa, upBndNa,
-                                        lwBndD, upBndD,
-                                        lwBndCi, upBndCi,
-                                        lwBndCl, upBndCl,
-                                        lwBndLi, upBndLi,
-                                        lwBndNi, upBndNi,
-                                        lwBndF, upBndF,
-                                        lwBndI, upBndI,
-                                        lwBndAg, lwBndAg,
-                                        lwBndAl, lwBndAl,
-                                        lwBndW, lwBndW,
-                                        lwBndTi, lwBndTi,
-                                        # lwBndK, upBndK,
-                                        # lwBndCs, upBndCs,
-                                        # lwBndBr, upBndBr,
-                                        m, t, self.lwBoundDbEq, self.upBoundDbEq, int(self.charge)))
+            erg = calcsf_cython.calcsf(
+                (
+                    lwBndC,
+                    upBndC,
+                    lwBndH,
+                    upBndH,
+                    lwBndO,
+                    upBndO,
+                    lwBndN,
+                    upBndN,
+                    lwBndP,
+                    upBndP,
+                    lwBndS,
+                    upBndS,
+                    lwBndNa,
+                    upBndNa,
+                    lwBndD,
+                    upBndD,
+                    lwBndCi,
+                    upBndCi,
+                    lwBndCl,
+                    upBndCl,
+                    lwBndLi,
+                    upBndLi,
+                    lwBndNi,
+                    upBndNi,
+                    lwBndF,
+                    upBndF,
+                    lwBndI,
+                    upBndI,
+                    lwBndAg,
+                    lwBndAg,
+                    lwBndAl,
+                    lwBndAl,
+                    lwBndW,
+                    lwBndW,
+                    lwBndTi,
+                    lwBndTi,
+                    # lwBndK, upBndK,
+                    # lwBndCs, upBndCs,
+                    # lwBndBr, upBndBr,
+                    m,
+                    t,
+                    self.lwBoundDbEq,
+                    self.upBoundDbEq,
+                    int(self.charge),
+                )
+            )
         else:
-            erg = calcsf.calcsf((lwBndC, upBndC,
-                                 lwBndH, upBndH,
-                                 lwBndO, upBndO,
-                                 lwBndN, upBndN,
-                                 lwBndP, upBndP,
-                                 lwBndS, upBndS,
-                                 lwBndNa, upBndNa,
-                                 lwBndD, upBndD,
-                                 lwBndCi, upBndCi,
-                                 lwBndCl, upBndCl,
-                                 lwBndLi, upBndLi,
-                                 lwBndNi, upBndNi,
-                                 lwBndF, upBndF,
-                                 lwBndI, upBndI,
-                                 lwBndAg, lwBndAg,
-                                 lwBndAl, lwBndAl,
-                                 lwBndW, lwBndW,
-                                 lwBndTi, lwBndTi,
-                                 # lwBndK, upBndK,
-                                 # lwBndCs, upBndCs,
-                                 # lwBndBr, upBndBr,
-                                 m, t, self.lwBoundDbEq, self.upBoundDbEq, int(self.charge)))
+            erg = calcsf.calcsf(
+                (
+                    lwBndC,
+                    upBndC,
+                    lwBndH,
+                    upBndH,
+                    lwBndO,
+                    upBndO,
+                    lwBndN,
+                    upBndN,
+                    lwBndP,
+                    upBndP,
+                    lwBndS,
+                    upBndS,
+                    lwBndNa,
+                    upBndNa,
+                    lwBndD,
+                    upBndD,
+                    lwBndCi,
+                    upBndCi,
+                    lwBndCl,
+                    upBndCl,
+                    lwBndLi,
+                    upBndLi,
+                    lwBndNi,
+                    upBndNi,
+                    lwBndF,
+                    upBndF,
+                    lwBndI,
+                    upBndI,
+                    lwBndAg,
+                    lwBndAg,
+                    lwBndAl,
+                    lwBndAl,
+                    lwBndW,
+                    lwBndW,
+                    lwBndTi,
+                    lwBndTi,
+                    # lwBndK, upBndK,
+                    # lwBndCs, upBndCs,
+                    # lwBndBr, upBndBr,
+                    m,
+                    t,
+                    self.lwBoundDbEq,
+                    self.upBoundDbEq,
+                    int(self.charge),
+                )
+            )
 
         for i in erg:
 
@@ -1019,68 +1119,68 @@ class SCConstraint(ElementSequence):
             elemseq = ElementSequence()
 
             if i[0] > 0:
-                elemseq.append(copy(sym2elt_const['C']))
-                elemseq._seq['C']._count = i[0]
+                elemseq.append(copy(sym2elt_const["C"]))
+                elemseq._seq["C"]._count = i[0]
             if i[1] > 0:
-                elemseq.append(copy(sym2elt_const['H']))
-                elemseq._seq['H']._count = i[1]
+                elemseq.append(copy(sym2elt_const["H"]))
+                elemseq._seq["H"]._count = i[1]
             if i[2] > 0:
-                elemseq.append(copy(sym2elt_const['O']))
-                elemseq._seq['O']._count = i[2]
+                elemseq.append(copy(sym2elt_const["O"]))
+                elemseq._seq["O"]._count = i[2]
             if i[3] > 0:
-                elemseq.append(copy(sym2elt_const['N']))
-                elemseq._seq['N']._count = i[3]
+                elemseq.append(copy(sym2elt_const["N"]))
+                elemseq._seq["N"]._count = i[3]
             if i[4] > 0:
-                elemseq.append(copy(sym2elt_const['P']))
-                elemseq._seq['P']._count = i[4]
+                elemseq.append(copy(sym2elt_const["P"]))
+                elemseq._seq["P"]._count = i[4]
             if i[5] > 0:
-                elemseq.append(copy(sym2elt_const['S']))
-                elemseq._seq['S']._count = i[5]
+                elemseq.append(copy(sym2elt_const["S"]))
+                elemseq._seq["S"]._count = i[5]
             if i[6] > 0:
-                elemseq.append(copy(sym2elt_const['Na']))
-                elemseq._seq['Na']._count = i[6]
+                elemseq.append(copy(sym2elt_const["Na"]))
+                elemseq._seq["Na"]._count = i[6]
             if i[7] > 0:
-                elemseq.append(copy(sym2elt_const['D']))
-                elemseq._seq['D']._count = i[7]
+                elemseq.append(copy(sym2elt_const["D"]))
+                elemseq._seq["D"]._count = i[7]
             if i[8] > 0:
-                elemseq.append(copy(sym2elt_const['Ci']))
-                elemseq._seq['Ci']._count = i[8]
+                elemseq.append(copy(sym2elt_const["Ci"]))
+                elemseq._seq["Ci"]._count = i[8]
             if i[9] > 0:
-                elemseq.append(copy(sym2elt_const['Cl']))
-                elemseq._seq['Cl']._count = i[9]
+                elemseq.append(copy(sym2elt_const["Cl"]))
+                elemseq._seq["Cl"]._count = i[9]
             if i[10] > 0:
-                elemseq.append(copy(sym2elt_const['Li']))
-                elemseq._seq['Li']._count = i[10]
+                elemseq.append(copy(sym2elt_const["Li"]))
+                elemseq._seq["Li"]._count = i[10]
             if i[11] > 0:
-                elemseq.append(copy(sym2elt_const['Ni']))
-                elemseq._seq['Ni']._count = i[11]
+                elemseq.append(copy(sym2elt_const["Ni"]))
+                elemseq._seq["Ni"]._count = i[11]
             if i[12] > 0:
-                elemseq.append(copy(sym2elt_const['F']))
-                elemseq._seq['F']._count = i[12]
+                elemseq.append(copy(sym2elt_const["F"]))
+                elemseq._seq["F"]._count = i[12]
             if i[13] > 0:
-                elemseq.append(copy(sym2elt_const['I']))
-                elemseq._seq['I']._count = i[13]
+                elemseq.append(copy(sym2elt_const["I"]))
+                elemseq._seq["I"]._count = i[13]
             if i[14] > 0:
-                elemseq.append(copy(sym2elt_const['Ag']))
-                elemseq._seq['Ag']._count = i[14]
+                elemseq.append(copy(sym2elt_const["Ag"]))
+                elemseq._seq["Ag"]._count = i[14]
             if i[15] > 0:
-                elemseq.append(copy(sym2elt_const['Al']))
-                elemseq._seq['Al']._count = i[15]
+                elemseq.append(copy(sym2elt_const["Al"]))
+                elemseq._seq["Al"]._count = i[15]
             if i[16] > 0:
-                elemseq.append(copy(sym2elt_const['W']))
-                elemseq._seq['W']._count = i[16]
+                elemseq.append(copy(sym2elt_const["W"]))
+                elemseq._seq["W"]._count = i[16]
             if i[17] > 0:
-                elemseq.append(copy(sym2elt_const['Ti']))
-                elemseq._seq['Ti']._count = i[17]
+                elemseq.append(copy(sym2elt_const["Ti"]))
+                elemseq._seq["Ti"]._count = i[17]
             # if i[14] > 0:
-            #	elemseq.append(copy(sym2elt_const['K']))
-            #	elemseq._seq['K']._count = i[14]
+            # 	elemseq.append(copy(sym2elt_const['K']))
+            # 	elemseq._seq['K']._count = i[14]
             # if i[15] > 0:
-            #	elemseq.append(copy(sym2elt_const['Cs']))
-            #	elemseq._seq['Cs']._count = i[15]
+            # 	elemseq.append(copy(sym2elt_const['Cs']))
+            # 	elemseq._seq['Cs']._count = i[15]
             # if i[16] > 0:
-            #	elemseq.append(copy(sym2elt_const['Br']))
-            #	elemseq._seq['Br']._count = i[16]
+            # 	elemseq.append(copy(sym2elt_const['Br']))
+            # 	elemseq._seq['Br']._count = i[16]
 
             elemseq.charge = self.charge
 
@@ -1115,7 +1215,9 @@ class SCConstraint(ElementSequence):
                 elif len(elem._range) > 1 or len(i._range) > 1:
                     pass
                 else:
-                    raise TypeError("Substraction not possible because of element values")
+                    raise TypeError(
+                        "Substraction not possible because of element values"
+                    )
         return buf
 
 
