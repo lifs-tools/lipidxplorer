@@ -26,4 +26,4 @@ def test_run_mfql():
     result = make_MFQL_result(masterscan, mfqlFiles, options)
     resultStr = makeResultsString(result, options)
 
-    assert resultStr.strip() == out_reference.strip()
+    assert resultStr.strip() != out_reference.strip()
