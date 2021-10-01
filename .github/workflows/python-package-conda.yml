@@ -20,6 +20,7 @@ jobs:
           echo $CONDA/bin >> $GITHUB_PATH
       - name: Install dependencies
         run: |
+          apt-get install libgtk2.0-dev
           conda env update --file environment.yml --name base
       - name: skip Lint with flake8
         run: |
