@@ -1,10 +1,7 @@
-import re, os, sys
-import numpy
-from math import sqrt
+import sys
 import pickle as pickle
 from lx.mfql.chemParser import parseElemSeq
 from .tools import reportout
-import sys
 
 sys.setrecursionlimit(10000)  # because the pickle needs it
 
@@ -49,7 +46,7 @@ def getCalibrationPointsMSMS(lTable, lSpectrum, tolerance):
 
     lResultTable = []
 
-    if not lTable is None:
+    if lTable is not None:
         for entry in sorted(lTable):
             lPeaks = []
             for m in range(len(lSpectrum) - 1):
@@ -99,12 +96,12 @@ def frecal(x, listRecal, resolution):
 
 
 def calc_tol(listPrecurmass):
-    l = sorted((s.precurmass for s in listPrecurmass))
-    d = [d1 - d2 for d1, d2 in zip(l[1:], l[:-1])]
+    s_listPrecurmass = sorted((s.precurmass for s in listPrecurmass))
+    d = [d1 - d2 for d1, d2 in zip(s_listPrecurmass[1:], s_listPrecurmass[:-1])]
     if not d:
         d.append(0.0001)  # in case there are no values
     md = min(d)
-    return l[0] / md
+    return s_listPrecurmass[0] / md
 
 
 def recalibrateMS(sc, listRecalibration, isCalctol=False):
@@ -156,13 +153,13 @@ def recalibrateMS(sc, listRecalibration, isCalctol=False):
 
 
 def calc_tol_ms2(entries):
-    l = sorted((s[0] for s in entries))
-    d = [d1 - d2 for d1, d2 in zip(l[1:], l[:-1])]
+    s_entries = sorted((s[0] for s in entries))
+    d = [d1 - d2 for d1, d2 in zip(s_entries[1:], s_entries[:-1])]
     if not d:
         d.append(0.0001)  # in case there are no values
     md = min(d)
 
-    return l[0] / md
+    return s_entries[0] / md
 
 
 def recalibrateMSMS(
@@ -315,8 +312,6 @@ def assignMSMS(sc, smpl):
                 sc.dictSamples[smpl].listMsms[i].precurmass + window
                 > sc.dictSamples[smpl].listMsms[i + 1].precurmass - window
             ):
-
-                flat = True
 
                 # test for the two precursor masses which one fits more to one of these windows
                 precurmasses = sc.dictSamples[smpl].bestFitWindow(

@@ -1,7 +1,4 @@
 import pickle
-from pathlib import Path
-
-import pytest
 
 from utils import (
     getMfqlFiles,
