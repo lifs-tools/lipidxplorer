@@ -1,4 +1,5 @@
 import pickle
+import pytest
 
 from utils import (
     getMfqlFiles,
@@ -10,6 +11,7 @@ from utils import (
 )
 
 
+@pytest.mark.skip(reason="other test change the masterscan, need to setup better")
 def test_run_mfql():
     options = read_options(proy_path)
     with open(options["masterScanFileRun"], "rb") as handle:
