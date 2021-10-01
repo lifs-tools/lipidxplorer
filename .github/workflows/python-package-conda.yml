@@ -20,10 +20,7 @@ jobs:
           echo $CONDA/bin >> $GITHUB_PATH
       - name: Install dependencies
         run: |
-          conda env update --file environment.yml --name lx128_p3
-      - name: activate environment
-        run: |
-          conda activate lx128_p3
+          conda env update --file environment.yml --name base
       - name: skip Lint with flake8
         run: |
           conda install flake8
