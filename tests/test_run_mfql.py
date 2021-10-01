@@ -11,7 +11,9 @@ from utils import (
 )
 
 
-@pytest.mark.skip(reason="other test change the masterscan, need to setup better")
+@pytest.mark.skip(
+    reason="other test change the masterscan, need to setup better, see conftest.py"
+)
 def test_run_mfql():
     options = read_options(proy_path)
     with open(options["masterScanFileRun"], "rb") as handle:
