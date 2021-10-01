@@ -1,6 +1,5 @@
 from copy import deepcopy
 
-from wx.core import EVT_LIST_DELETE_ALL_ITEMS
 from lx.clustering import HierarchicalClustering
 from lx.mfql.runtimeStatic import TypeTolerance
 from lx.spectraContainer import (
