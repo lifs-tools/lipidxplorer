@@ -32,8 +32,4 @@ jobs:
       - name: Test with pytest
         run: |
           conda install pytest
-<<<<<<< HEAD
           pytest -c pytest.ini
-=======
-          pytest -c
->>>>>>> 754520f779ee68c11d4689fea49d0f43ce4af3cc
