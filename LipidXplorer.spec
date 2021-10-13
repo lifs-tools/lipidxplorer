@@ -1,6 +1,11 @@
 # -*- mode: python -*-
 import os, sys, shutil
 from zipfile import ZipFile
+import subprocess
+
+label = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
+with open("CHANGELOG", "a") as myfile:
+    myfile.write("git hash of this build: "+label)
 
 # copy assets to dist
 assetsDir = "lx/stuff/"
@@ -8,7 +13,6 @@ if os.path.isdir(DISTPATH+"/lx/"):
     shutil.rmtree(DISTPATH+"/lx/")
 
 shutil.copytree(assetsDir, DISTPATH+"/lx/stuff/")
-
 
 shutil.copy("README.md", DISTPATH+"/")
 shutil.copy("CHANGELOG", DISTPATH+"/")
