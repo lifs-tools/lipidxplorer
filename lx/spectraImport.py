@@ -528,12 +528,12 @@ def doImport(
                 nb_msms_peaks.append(ret[5])
 
             if ret[6] == 0:
-                raise ValueError(f" File {i[0]} contains 0 peaks after alignment")
+                print(f" File {i[0]} contains 0 peaks after alignment")
 
             if nb_ms_peaks[-1] == 0:
                 raise ValueError(f" File {i[0]} contains 0 MS1 peaks after alignment")
             elif nb_msms_peaks[-1] == 0:
-                raise ValueError(f" File {i[0]} contains 0 MS2 peaks after alignment")
+                print(f" File {i[0]} contains 0 MS2 peaks after alignment")
 
     if (not scan.options.isEmpty("precursorMassShift")) and scan.options[
         "precursorMassShift"
