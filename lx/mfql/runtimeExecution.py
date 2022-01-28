@@ -926,7 +926,8 @@ class TypeResult:
                 # 	res = listSE[entry].precurmass / scan.options['MSresolution'].tolerance
 
                 if self.mfqlObj.sc.options["alignmentMethodMS"] == "calctol":
-                    res = lowest_res
+                    listSE = self.mfqlObj.sc.listSurveyEntry
+                    res = max(e.massWindow for e in listSE if e.massWindow > 0)
                 else:
                     res = self.mfqlObj.options["MSresolution"].getTinDA(
                         listSE[entry].precurmass
