@@ -28,13 +28,11 @@ def make_lx2_masterscan(options) -> MasterScan:
 
     # generate ms2 data and add to ms1
     ms2_df = pd.concat((agg_ms2_spectra_df(df) for df in spectra_dfs))
+
+    precurs, msmslists = precur_msmslists_from(ms2_df, samples)
+
     for se in listSurveyEntry:
-        se.listMSMS = [
-            ms2entry_factory(mass, dictIntensity, samples)
-            for mass, dictIntensity in mass_inty_generator_ms2(
-                ms2_df, round(se.precurmass, 2)
-            )
-        ]
+        se.listMSMS = find_msmslist(se.precurmass, precurs, msmslists)
 
     # add data to masterscan
     scan = MasterScan(options)
@@ -45,6 +43,25 @@ def make_lx2_masterscan(options) -> MasterScan:
     scan.listSamples = samples
 
     return scan
+
+
+def find_msmslist(precurmass, precurs, msmslists, tol=0.5):  # tol in daltons
+    dist, closest = min((abs(e - precurmass), idx) for idx, e in enumerate(precurs))
+    if dist > tol:
+        return []
+    return msmslists[closest]
+
+
+def precur_msmslists_from(ms2_df, samples):
+    precurs = []
+    msmslists = []
+    for idx, g_df in ms2_df.groupby(level=0):
+        precurs.append(idx)
+        msms_list = [
+            ms2entry_factory(*e, samples) for e in mass_inty_generator_prec_ms2(g_df)
+        ]
+        msmslists.append(msms_list)
+    return precurs, msmslists
 
 
 def path2df(
@@ -131,11 +148,8 @@ def agg_ms2_spectra_df(df):
 
 def mass_inty_generator_ms1(ms1_df):
     for idx, df in ms1_df.groupby(ms1_df.index):
-        msmass = df.mz_mean.mean()
+        msmass = df.mz_mean.mean().item()
         dictIntensity = df.set_index("stem_first")["inty_mean"].to_dict()
-        dictIntensity = defaultdict(
-            int, dictIntensity
-        )  # to fill with zeroes, int defaults to 0
         yield msmass, dictIntensity
 
 
@@ -156,10 +170,19 @@ def se_factory(msmass, dictIntensity, samples):
     )
 
 
-def mass_inty_generator_ms2(ms2_df, target):
-    ms2_slice = ms2_df.loc[ms2_df.index.get_level_values(0) == target]
-    for inner_idx, inner_gdf in ms2_slice.groupby(level="mz"):
-        mass = inner_gdf.mz_mean.mean()
+def msmslist_dict_generator(ms2_df, samples):
+    for idx, g_df in ms2_df.groupby(level=0):
+        k = idx
+        v = [
+            ms2entry_factory(mass, dictIntensity, samples)
+            for mass, dictIntensity in mass_inty_generator_prec_ms2(g_df)
+        ]
+        yield (k, v)
+
+
+def mass_inty_generator_prec_ms2(g_df):
+    for inner_idx, inner_gdf in g_df.groupby(level="mz"):
+        mass = inner_gdf.mz_mean.mean().item()
         dictIntensity = inner_gdf.set_index("stem_first")["inty_mean"].to_dict()
         yield mass, dictIntensity
 
@@ -186,7 +209,13 @@ def main():
         "MSmassrange": (360.0, 1000.0),
         "MSMSmassrange": (150.0, 1000.0),
     }
-    return make_lx2_masterscan(options)
+    scan = make_lx2_masterscan(options)
+    if False:
+        import pickle
+
+        with open(options["importDir"] + r"\for_paper_from_df.sc", "wb") as fh:
+            pickle.dum(scan, fh)
+    return scan
 
 
 if __name__ == "__main__":
