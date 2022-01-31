@@ -479,6 +479,7 @@ def doImport(
     # the scan.dictSample variable is filled with
     # MSmass and MSMS classes taken from mzXML files.
     # After loading the cleaning algorithm is applied.
+    peaks_df_list = []
     if listFiles != []:
         listFiles.sort()
 
@@ -517,6 +518,7 @@ def doImport(
                     MSthresholdType=scan.options["MSthresholdType"],
                     MSMSthresholdType=scan.options["MSMSthresholdType"],
                     fileformat="mzML",
+                    peaks_df_list=peaks_df_list,
                 )
 
             dictBasePeakIntensity[ret[0]] = ret[1]
@@ -534,6 +536,21 @@ def doImport(
                 raise ValueError(f" File {i[0]} contains 0 MS1 peaks after alignment")
             elif nb_msms_peaks[-1] == 0:
                 print(f" File {i[0]} contains 0 MS2 peaks after alignment")
+
+    import pandas as pd
+
+    df = pd.concat(peaks_df_list)
+
+    df.to_pickle("lx1_bins_v1.pkl")
+
+    lpm = (
+        (scan_name, pm.precurmass, pm.intensity)
+        for scan_name, item in scan.dictSamples.items()
+        for pm in item.listPrecurmass
+    )
+
+    lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
+    lpm_df.to_pickle("lx1_before_shift_or_recalibrate.pkl")
 
     if (not scan.options.isEmpty("precursorMassShift")) and scan.options[
         "precursorMassShift"
