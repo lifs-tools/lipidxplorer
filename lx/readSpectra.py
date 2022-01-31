@@ -178,6 +178,7 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
         for t, mz, sn, st, sm, pol, tic, np, bp in mz_file.scan_info(t1, t2, msm1, msm2)
         if st == "MS2"
     ]  # TODO this is  bug, scan_info(t1, t2, msmsm1, msmsm2)
+    # NOTE for-paper this is where the wrong amount of ms2 scans are read
 
     ms2Scans = []
     for t, precursor, sn, sm, pol, tic, np, bp in get_ms2Scans:
@@ -397,7 +398,9 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                 out.content["intensity"] = sumIntensity / len(
                     keys
                 )  # divide by the total number of scan
-                out.content["intensity_rel"] = sumIntensity_relative / len(keys)
+                out.content["intensity_rel"] = sumIntensity_relative / len(
+                    keys
+                )  # NOTE for-paper bad intensity averaging
 
             ### store the averaged spectra in lpdxSample ###
 
@@ -431,9 +434,26 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
         except ValueError:
             pass
 
+        if kwargs.get("peaks_df_list", None) is not None:  # because it starts falsy
+            peaks_df_list = kwargs.get("peaks_df_list", None)
+            import pandas as pd
+
+            peaks = (
+                (
+                    specName,
+                    idx,
+                    val.content["sample"],
+                    val.mass,
+                    val.content["intensity"],
+                )
+                for idx, cl in enumerate(listClusters)
+                for val in cl.values()
+                if val.content
+            )
+            df = pd.DataFrame(peaks)
+            peaks_df_list.append(df)
         # free memory
         del listClusters
-
         ### store the MS1 spectra in lpdxSample ###
         ###########################################
 
