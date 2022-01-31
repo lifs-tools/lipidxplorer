@@ -8,9 +8,7 @@ from LX2_masterscan import make_lx2_masterscan
 
 
 def test_make_masterscan():
-    options = read_options(
-        r"d:\fork\lipidxplorer-evaluation\190731_benchmark_data_files_infos\190731_mzML_no_zlib\for_paper_lipidxplorer128.lxp"
-    )
+    options = read_options(proy_path)
     masterscan = make_masterscan(options)
     expected = loadSC(expected_ms_path)
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
