@@ -1,4 +1,5 @@
 # for import
+import re
 from lx.lipidIdentification import writeReport
 from lx.spectraImport import lpdxImportDEF_new
 
