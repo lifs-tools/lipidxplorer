@@ -53,6 +53,7 @@ def find_msmslist(precurmass, precurs, msmslists, tol=0.5):  # tol in daltons
 
 
 def precur_msmslists_from(ms2_df, samples):
+    # TODO Wes McKinney (pandas' author) in Python for Data Analysis, https://stackoverflow.com/questions/14734533/how-to-access-pandas-groupby-dataframe-by-key
     precurs = []
     msmslists = []
     for idx, g_df in ms2_df.groupby(level=0):
@@ -169,15 +170,6 @@ def se_factory(msmass, dictIntensity, samples):
         dictBasePeakIntensity={s: 1 for s in samples},
     )
 
-
-def msmslist_dict_generator(ms2_df, samples):
-    for idx, g_df in ms2_df.groupby(level=0):
-        k = idx
-        v = [
-            ms2entry_factory(mass, dictIntensity, samples)
-            for mass, dictIntensity in mass_inty_generator_prec_ms2(g_df)
-        ]
-        yield (k, v)
 
 
 def mass_inty_generator_prec_ms2(g_df):
