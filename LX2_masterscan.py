@@ -126,7 +126,7 @@ def path2df(
 def agg_ms1_spectra_df(df):
     ms1_peaks = df.loc[df.precursor_id.isna()]
     ms1_agg_peaks = ms1_peaks.groupby(ms1_peaks.mz.round(2)).agg(
-        {"mz": ["count", "mean"], "inty": ["mean"], "stem": ["first"]}
+        {"mz": ["count", "mean"], "inty": ["mean"], "stem": ["first"], }
     )
     ms1_agg_peaks = ms1_agg_peaks.loc[ms1_agg_peaks.mz["count"] > 1]
     ms1_agg_peaks.columns = [
@@ -139,11 +139,17 @@ def agg_ms2_spectra_df(df):
     ms2_peaks = df.loc[~df.precursor_id.isna()]
     ms2_agg_peaks = ms2_peaks.groupby(
         [ms2_peaks.precursor_mz.round(2), ms2_peaks.mz.round(2)]
-    ).agg({"mz": ["count", "mean"], "inty": ["mean"], "stem": ["first"]})
-    ms2_agg_peaks = ms2_agg_peaks.loc[ms2_agg_peaks.mz["count"] > 1]
+    ).agg({"mz": ["count", "mean"], "inty": ["mean"], "stem": ["first"], 'scan_id':'nunique'})
     ms2_agg_peaks.columns = [
         "_".join(col).strip() for col in ms2_agg_peaks.columns.values
     ]
+
+    ms2_agg_peaks = process_agg_ms2_spectra(ms2_agg_peaks)
+    return ms2_agg_peaks
+
+def process_agg_ms2_spectra(ms2_agg_peaks):
+    ms2_agg_peaks = ms2_agg_peaks.loc[ms1_agg_peaks.mz_count > 1] #TODO does this always make sence
+    split ms2_agg_peaks.loc[ ms2_agg_peaks.mz_count - ms2_agg_peaks.scan_id_nunique > 0] # there are more peaks than scans 
     return ms2_agg_peaks
 
 
