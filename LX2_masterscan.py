@@ -149,13 +149,59 @@ def add_group_no(ms1_peaks, occupancy=1):
         ~ms1_peaks.with_next & ms1_peaks.with_next.shift(), "group_no"
     ] = ms1_peaks.group_no.shift()  # add the last item in the group_no
     # apply occupancy
-    ms1_peaks = ms1_peaks[  # this trows a warning its ok
-        ms1_peaks.groupby("group_no")["group_no"].transform("count")
-        >= window_size * occupancy
-    ]
+    ms1_peaks.drop(
+        ms1_peaks[
+            ms1_peaks.groupby("group_no")["group_no"].transform("count")
+            < window_size * occupancy
+        ].index,
+        inplace=True,
+    )
     # cleanup
     ms1_peaks.drop("mz_diff cummin with_next".split(), axis=1, inplace=True)
     ms1_peaks.reset_index(level=1, inplace=True)
+    return None
+
+
+def add_group_no_ms1_df(ms1_df, occupancy=1):
+    # TODO make generic with add_group_no
+    window_size = int(ms1_df.stem_first.nunique())
+    ms1_df.index.rename("scan_group_no", inplace=True)
+    ms1_df.set_index(
+        "stem_first", append=True, inplace=True
+    )  # avoid duplicdate index error
+    ms1_df.sort_values(
+        "mz_mean", ascending=False, inplace=True
+    )  # decending because interpeak distance is going to zero
+    ms1_df["mz_diff"] = ms1_df.sort_values("mz_mean", ascending=False)["mz_mean"].diff(
+        -1
+    )
+    ms1_df["cummin"] = (
+        ms1_df[ms1_df["mz_diff"] > 0]["mz_diff"]
+        .rolling(window_size)
+        .mean()
+        .cummin()
+        .shift(-window_size)
+    )  # make the distance monotinoc and with the average and not zero to avoid outliers
+    ms1_df["cummin"].ffill(inplace=True)  # fill the blanks from the shift
+    ms1_df["mz_diff"].ffill(inplace=True)
+    ms1_df["with_next"] = ms1_df["mz_diff"] <= ms1_df["cummin"]
+    ms1_df["group_no"] = (
+        ms1_df.with_next != ms1_df.with_next.shift()
+    ).cumsum()  # add a group for the consecutive close peaks
+    ms1_df.loc[
+        ~ms1_df.with_next & ms1_df.with_next.shift(), "group_no"
+    ] = ms1_df.group_no.shift()  # add the last item in the group_no
+    # apply occupancy
+    ms1_df.drop(
+        ms1_df[
+            ms1_df.groupby("group_no")["group_no"].transform("count")
+            < window_size * occupancy
+        ].index,
+        inplace=True,
+    )
+    # cleanup
+    ms1_df.drop("mz_diff cummin with_next".split(), axis=1, inplace=True)
+    ms1_df.reset_index(level=1, inplace=True)
     return None
 
 
@@ -173,12 +219,8 @@ def agg_ms1_spectra_df(df, occupancy=1):
     ms1_agg_peaks.columns = [
         "_".join(col).strip() for col in ms1_agg_peaks.columns.values
     ]
-    process_agg_ms1_spectra(ms1_agg_peaks)
+
     return ms1_agg_peaks
-
-
-def process_agg_ms1_spectra(ms1_agg_peaks):
-    return ms1_agg_peaks.loc[ms1_agg_peaks.mz_count > 1]
 
 
 def agg_ms2_spectra_df(df):
@@ -212,7 +254,8 @@ def process_agg_ms2_spectra(ms2_agg_peaks):
 
 
 def mass_inty_generator_ms1(ms1_df):
-    for idx, df in ms1_df.groupby(ms1_df.index):
+    add_group_no_ms1_df(ms1_df, occupancy=0.5)
+    for _, df in ms1_df.groupby(ms1_df.group_no):
         msmass = df.mz_mean.mean().item()
         dictIntensity = df.set_index("stem_first")["inty_mean"].to_dict()
         yield msmass, dictIntensity
