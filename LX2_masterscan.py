@@ -1,4 +1,3 @@
-from collections import defaultdict
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -20,7 +19,7 @@ def make_lx2_masterscan(options) -> MasterScan:
         path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range) for mzml in mzmls
     ]
 
-    ms1_df = pd.concat((agg_ms1_spectra_df(df) for df in spectra_dfs))
+    ms1_df = pd.concat((agg_ms1_spectra_df(df, occupancy=0.5) for df in spectra_dfs))
     listSurveyEntry = [
         se_factory(msmass, dictIntensity, samples)
         for msmass, dictIntensity in mass_inty_generator_ms1(ms1_df)
@@ -123,7 +122,7 @@ def path2df(
     return df
 
 
-def add_group_no(ms1_peaks):
+def add_group_no(ms1_peaks, occupancy=1):
     # TODO do it in memory with pipes?
     window_size = int(ms1_peaks.scan_id.nunique())
     ms1_peaks.set_index(
@@ -142,22 +141,27 @@ def add_group_no(ms1_peaks):
     )  # make the distance monotinoc and with the average and not zero to avoid outliers
     ms1_peaks["cummin"].ffill(inplace=True)  # fill the blanks from the shift
     ms1_peaks["mz_diff"].ffill(inplace=True)
-    ms1_peaks["with_next"] = ms1_peaks["mz_diff"] < ms1_peaks["cummin"]
+    ms1_peaks["with_next"] = ms1_peaks["mz_diff"] <= ms1_peaks["cummin"]
     ms1_peaks["group_no"] = (
         ms1_peaks.with_next != ms1_peaks.with_next.shift()
     ).cumsum()  # add a group for the consecutive close peaks
     ms1_peaks.loc[
         ~ms1_peaks.with_next & ms1_peaks.with_next.shift(), "group_no"
     ] = ms1_peaks.group_no.shift()  # add the last item in the group_no
+    # apply occupancy
+    ms1_peaks = ms1_peaks[  # this trows a warning its ok
+        ms1_peaks.groupby("group_no")["group_no"].transform("count")
+        >= window_size * occupancy
+    ]
     # cleanup
     ms1_peaks.drop("mz_diff cummin with_next".split(), axis=1, inplace=True)
     ms1_peaks.reset_index(level=1, inplace=True)
     return None
 
 
-def agg_ms1_spectra_df(df):
+def agg_ms1_spectra_df(df, occupancy=1):
     ms1_peaks = df.loc[df.precursor_id.isna()]
-    add_group_no(ms1_peaks)
+    add_group_no(ms1_peaks, occupancy)
     ms1_agg_peaks = ms1_peaks.groupby("group_no").agg(
         {
             "mz": ["count", "mean"],
@@ -166,7 +170,6 @@ def agg_ms1_spectra_df(df):
             "scan_id": "nunique",
         }
     )
-    ms1_agg_peaks = ms1_agg_peaks.loc[ms1_agg_peaks.mz["count"] > 1]
     ms1_agg_peaks.columns = [
         "_".join(col).strip() for col in ms1_agg_peaks.columns.values
     ]
