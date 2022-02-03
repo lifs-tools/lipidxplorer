@@ -123,23 +123,75 @@ def path2df(
     return df
 
 
+def add_group_no(ms1_peaks):
+    # TODO do it in memory with pipes?
+    window_size = int(ms1_peaks.scan_id.nunique())
+    ms1_peaks.set_index(
+        "scan_id", append=True, inplace=True
+    )  # avoid duplicdate index error
+    ms1_peaks.sort_values(
+        "mz", ascending=False, inplace=True
+    )  # decending because interpeak distance is going to zero
+    ms1_peaks["mz_diff"] = ms1_peaks.sort_values("mz", ascending=False)["mz"].diff(-1)
+    ms1_peaks["cummin"] = (
+        ms1_peaks[ms1_peaks["mz_diff"] > 0]["mz_diff"]
+        .rolling(window_size)
+        .mean()
+        .cummin()
+        .shift(-window_size)
+    )  # make the distance monotinoc and with the average and not zero to avoid outliers
+    ms1_peaks["cummin"].ffill(inplace=True)  # fill the blanks from the shift
+    ms1_peaks["mz_diff"].ffill(inplace=True)
+    ms1_peaks["with_next"] = ms1_peaks["mz_diff"] < ms1_peaks["cummin"]
+    ms1_peaks["group_no"] = (
+        ms1_peaks.with_next != ms1_peaks.with_next.shift()
+    ).cumsum()  # add a group for the consecutive close peaks
+    ms1_peaks.loc[
+        ~ms1_peaks.with_next & ms1_peaks.with_next.shift(), "group_no"
+    ] = ms1_peaks.group_no.shift()  # add the last item in the group_no
+    # cleanup
+    ms1_peaks.drop("mz_diff cummin with_next".split(), axis=1, inplace=True)
+    ms1_peaks.reset_index(level=1, inplace=True)
+    return None
+
+
 def agg_ms1_spectra_df(df):
     ms1_peaks = df.loc[df.precursor_id.isna()]
-    ms1_agg_peaks = ms1_peaks.groupby(ms1_peaks.mz.round(2)).agg(
-        {"mz": ["count", "mean"], "inty": ["mean"], "stem": ["first"], }
+    add_group_no(ms1_peaks)
+    ms1_agg_peaks = ms1_peaks.groupby("group_no").agg(
+        {
+            "mz": ["count", "mean"],
+            "inty": ["mean"],
+            "stem": ["first"],
+            "scan_id": "nunique",
+        }
     )
     ms1_agg_peaks = ms1_agg_peaks.loc[ms1_agg_peaks.mz["count"] > 1]
     ms1_agg_peaks.columns = [
         "_".join(col).strip() for col in ms1_agg_peaks.columns.values
     ]
+    process_agg_ms1_spectra(ms1_agg_peaks)
     return ms1_agg_peaks
 
 
+def process_agg_ms1_spectra(ms1_agg_peaks):
+    return ms1_agg_peaks.loc[ms1_agg_peaks.mz_count > 1]
+
+
 def agg_ms2_spectra_df(df):
+    # TODO try this https://stackoverflow.com/questions/49799731/how-to-get-the-first-group-in-a-groupby-of-multiple-columns
     ms2_peaks = df.loc[~df.precursor_id.isna()]
+    add_group_no(ms2_peaks)
     ms2_agg_peaks = ms2_peaks.groupby(
-        [ms2_peaks.precursor_mz.round(2), ms2_peaks.mz.round(2)]
-    ).agg({"mz": ["count", "mean"], "inty": ["mean"], "stem": ["first"], 'scan_id':'nunique'})
+        [ms2_peaks.precursor_mz.round(2), ms2_peaks.group_no]
+    ).agg(  # TODO , as_index=False to removethe group as an index, see https://realpython.com/pandas-groupby/
+        {
+            "mz": ["count", "mean"],
+            "inty": ["mean"],
+            "stem": ["first"],
+            "scan_id": "nunique",
+        }
+    )
     ms2_agg_peaks.columns = [
         "_".join(col).strip() for col in ms2_agg_peaks.columns.values
     ]
@@ -147,9 +199,12 @@ def agg_ms2_spectra_df(df):
     ms2_agg_peaks = process_agg_ms2_spectra(ms2_agg_peaks)
     return ms2_agg_peaks
 
+
 def process_agg_ms2_spectra(ms2_agg_peaks):
-    ms2_agg_peaks = ms2_agg_peaks.loc[ms1_agg_peaks.mz_count > 1] #TODO does this always make sence
-    split ms2_agg_peaks.loc[ ms2_agg_peaks.mz_count - ms2_agg_peaks.scan_id_nunique > 0] # there are more peaks than scans 
+    ms2_agg_peaks = ms2_agg_peaks.loc[
+        ms2_agg_peaks.mz_count > 1
+    ]  # TODO does this always make sence
+    # split ms2_agg_peaks.loc[ ms2_agg_peaks.mz_count - ms2_agg_peaks.scan_id_nunique > 0] # there are more peaks than scans
     return ms2_agg_peaks
 
 
@@ -177,9 +232,8 @@ def se_factory(msmass, dictIntensity, samples):
     )
 
 
-
 def mass_inty_generator_prec_ms2(g_df):
-    for inner_idx, inner_gdf in g_df.groupby(level="mz"):
+    for inner_idx, inner_gdf in g_df.groupby(level="group_no"):
         mass = inner_gdf.mz_mean.mean().item()
         dictIntensity = inner_gdf.set_index("stem_first")["inty_mean"].to_dict()
         yield mass, dictIntensity
