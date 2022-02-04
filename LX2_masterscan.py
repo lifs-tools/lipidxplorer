@@ -10,14 +10,18 @@ def make_lx2_masterscan(options) -> MasterScan:
     mzmls = list(p.glob("*.mzml"))
     samples = [p.stem for p in mzmls]
 
-    time_range = options["timerange"]
-    ms1_mass_range = options["MSmassrange"]
-    ms2_mass_range = options["MSMSmassrange"]
+    # time_range = options["timerange"]
+    # ms1_mass_range = options["MSmassrange"]
+    # ms2_mass_range = options["MSMSmassrange"]
 
-    # generaste ms1 data
-    spectra_dfs = [
-        path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range) for mzml in mzmls
-    ]
+    # # generaste ms1 data
+    # spectra_dfs = [
+    #     path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range) for mzml in mzmls
+    # ]
+    import pickle
+
+    with open("spectra_dfs.pkl", "rb") as fh:
+        spectra_dfs = pickle.load(fh)
 
     ms1_df = pd.concat((agg_ms1_spectra_df(df, occupancy=0.5) for df in spectra_dfs))
     listSurveyEntry = [
@@ -55,6 +59,8 @@ def precur_msmslists_from(ms2_df, samples):
     # TODO Wes McKinney (pandas' author) in Python for Data Analysis, https://stackoverflow.com/questions/14734533/how-to-access-pandas-groupby-dataframe-by-key
     precurs = []
     msmslists = []
+
+    add_group_no_ms2_df(ms2_df, occupancy=0.5)
     for idx, g_df in ms2_df.groupby(level=0):
         precurs.append(idx)
         msms_list = [
@@ -62,6 +68,47 @@ def precur_msmslists_from(ms2_df, samples):
         ]
         msmslists.append(msms_list)
     return precurs, msmslists
+
+
+def add_group_no_ms2_df(ms2_df, occupancy=1):
+    # TODO try add group **after** groupby precursor
+    # TODO make generic with add_group_no
+    window_size = int(ms2_df.stem_first.nunique())
+    ms2_df.set_index(pd.RangeIndex(0, ms2_df.shape[0]), append=True, inplace=True)
+    ms2_df.reset_index(level=1, drop=True, inplace=True)
+    ms2_df.sort_values(
+        "mz_mean", ascending=False, inplace=True
+    )  # decending because interpeak distance is going to zero
+    ms2_df["mz_diff"] = ms2_df.sort_values("mz_mean", ascending=False)["mz_mean"].diff(
+        -1
+    )
+    ms2_df["cummin"] = (
+        ms2_df[ms2_df["mz_diff"] > 0]["mz_diff"]
+        .rolling(window_size)
+        .mean()
+        .cummin()
+        .shift(-window_size)
+    )  # make the distance monotinoc and with the average and not zero to avoid outliers
+    ms2_df["cummin"].ffill(inplace=True)  # fill the blanks from the shift
+    ms2_df["mz_diff"].ffill(inplace=True)
+    ms2_df["with_next"] = ms2_df["mz_diff"] <= ms2_df["cummin"]
+    ms2_df["group_no"] = (
+        ms2_df.with_next != ms2_df.with_next.shift()
+    ).cumsum()  # add a group for the consecutive close peaks
+    ms2_df.loc[
+        ~ms2_df.with_next & ms2_df.with_next.shift(), "group_no"
+    ] = ms2_df.group_no.shift()  # add the last item in the group_no
+    # apply occupancy
+    ms2_df.drop(
+        ms2_df[
+            ms2_df.groupby("group_no")["group_no"].transform("count")
+            < window_size * occupancy
+        ].index,
+        inplace=True,
+    )
+    # cleanup
+    ms2_df.drop("mz_diff cummin with_next".split(), axis=1, inplace=True)
+    return None
 
 
 def path2df(
@@ -226,7 +273,11 @@ def agg_ms1_spectra_df(df, occupancy=1):
 def agg_ms2_spectra_df(df):
     # TODO try this https://stackoverflow.com/questions/49799731/how-to-get-the-first-group-in-a-groupby-of-multiple-columns
     ms2_peaks = df.loc[~df.precursor_id.isna()]
-    add_group_no(ms2_peaks)
+    add_group_no(ms2_peaks, occupancy=0)  # no occipancy because its done below
+    occupancy = 0.5
+    ms2_peaks["scan_id_nunique"] = ms2_peaks.groupby(ms2_peaks.precursor_mz)[
+        "scan_id"
+    ].transform("nunique")
     ms2_agg_peaks = ms2_peaks.groupby(
         [ms2_peaks.precursor_mz.round(2), ms2_peaks.group_no]
     ).agg(  # TODO , as_index=False to removethe group as an index, see https://realpython.com/pandas-groupby/
@@ -234,22 +285,19 @@ def agg_ms2_spectra_df(df):
             "mz": ["count", "mean"],
             "inty": ["mean"],
             "stem": ["first"],
-            "scan_id": "nunique",
+            "scan_id_nunique": "first",
         }
     )
     ms2_agg_peaks.columns = [
         "_".join(col).strip() for col in ms2_agg_peaks.columns.values
     ]
+    ms2_agg_peaks.drop(
+        ms2_agg_peaks[
+            ms2_agg_peaks.mz_count < ms2_agg_peaks.scan_id_nunique_first * occupancy
+        ].index,
+        inplace=True,
+    )
 
-    ms2_agg_peaks = process_agg_ms2_spectra(ms2_agg_peaks)
-    return ms2_agg_peaks
-
-
-def process_agg_ms2_spectra(ms2_agg_peaks):
-    ms2_agg_peaks = ms2_agg_peaks.loc[
-        ms2_agg_peaks.mz_count > 1
-    ]  # TODO does this always make sence
-    # split ms2_agg_peaks.loc[ ms2_agg_peaks.mz_count - ms2_agg_peaks.scan_id_nunique > 0] # there are more peaks than scans
     return ms2_agg_peaks
 
 
@@ -279,7 +327,7 @@ def se_factory(msmass, dictIntensity, samples):
 
 
 def mass_inty_generator_prec_ms2(g_df):
-    for inner_idx, inner_gdf in g_df.groupby(level="group_no"):
+    for _, inner_gdf in g_df.groupby("group_no"):
         mass = inner_gdf.mz_mean.mean().item()
         dictIntensity = inner_gdf.set_index("stem_first")["inty_mean"].to_dict()
         yield mass, dictIntensity
