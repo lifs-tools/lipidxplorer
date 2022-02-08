@@ -10,24 +10,22 @@ def make_lx2_masterscan(options) -> MasterScan:
     mzmls = list(p.glob("*.mzml"))
     samples = [p.stem for p in mzmls]
 
-    # time_range = options["timerange"]
-    # ms1_mass_range = options["MSmassrange"]
-    # ms2_mass_range = options["MSMSmassrange"]
+    time_range = options["timerange"]
+    ms1_mass_range = options["MSmassrange"]
+    ms2_mass_range = options["MSMSmassrange"]
 
-    # # generaste ms1 data
-    # spectra_dfs = [
-    #     path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range) for mzml in mzmls
-    # ]
-    import pickle
-
-    with open("spectra_dfs.pkl", "rb") as fh:
-        spectra_dfs = pickle.load(fh)
+    # generaste ms1 data
+    spectra_dfs = [
+        path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range) for mzml in mzmls
+    ]
 
     ms1_df = pd.concat((agg_ms1_spectra_df(df, occupancy=0.5) for df in spectra_dfs))
     listSurveyEntry = [
         se_factory(msmass, dictIntensity, samples)
         for msmass, dictIntensity in mass_inty_generator_ms1(ms1_df)
     ]
+
+    # TODO add calibration masses
 
     # generate ms2 data and add to ms1
     ms2_df = pd.concat((agg_ms2_spectra_df(df) for df in spectra_dfs))
