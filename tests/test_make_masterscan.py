@@ -18,15 +18,6 @@ def test_make_masterscan():
     assert compareMasterScans(masterscan, expected)
 
 
-# @profile
-# def prof_lx1_masterescan():
-#     options = read_options(
-#         r"d:\fork\lipidxplorer-evaluation\190731_benchmark_data_files_infos\190731_mzML_no_zlib\for_paper_lipidxplorer128.lxp"
-#     )
-#     masterscan = make_lx2_masterscan(options)
-#     return None
-
-
 def test_make_lx2_masterscan():
     options = read_options(
         r"d:\fork\lipidxplorer-evaluation\190731_benchmark_data_files_infos\190731_mzML_no_zlib\for_paper_lipidxplorer128.lxp"
@@ -41,12 +32,5 @@ def test_make_lx2_masterscan():
     with open(sc_path, "wb") as fh:
         pickle.dump(masterscan, fh)
 
-    # expected = loadSC(expected_ms_path)
-    # expected.listSurveyEntry = expected.listSurveyEntry[:100]
-    # masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]
-    # assert compareMasterScans(masterscan, expected)
     assert True
 
-
-# if __name__ == "__main__":
-#     prof_lx1_masterescan()
