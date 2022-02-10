@@ -167,7 +167,7 @@ def path2df(
     return df
 
 
-def add_group_no(ms1_peaks, occupancy=1):
+def add_group_no(ms1_peaks, occupancy=1, cleanup_cols=True):
     # TODO do it in memory with pipes?
     window_size = int(ms1_peaks.scan_id.nunique())
     ms1_peaks.set_index(
@@ -201,8 +201,8 @@ def add_group_no(ms1_peaks, occupancy=1):
         ].index,
         inplace=True,
     )
-    # cleanup
-    ms1_peaks.drop("mz_diff cummin with_next".split(), axis=1, inplace=True)
+    if cleanup_cols:
+        ms1_peaks.drop("mz_diff cummin with_next".split(), axis=1, inplace=True)
     ms1_peaks.reset_index(level=1, inplace=True)
     return None
 
