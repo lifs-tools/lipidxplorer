@@ -5,7 +5,7 @@ from x_masterscan import compareMasterScans
 
 from utils import (
     expected_ms_path,
-    expected__lx2ms_path,
+    expected_lx2ms_path,
     make_masterscan,
     proy_path,
     read_options,
