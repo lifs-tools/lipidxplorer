@@ -19,18 +19,8 @@ def test_make_masterscan():
 
 
 def test_make_lx2_masterscan():
-    options = read_options(
-        r"d:\fork\lipidxplorer-evaluation\190731_benchmark_data_files_infos\190731_mzML_no_zlib\for_paper_lipidxplorer128.lxp"
-    )
-    import pickle
-    import time
-
-    st = time.perf_counter()
+    options = read_options(proy_path)
     masterscan = make_lx2_masterscan(options)
-    print(time.perf_counter() - st)
-    sc_path = r"d:\fork\lipidxplorer-evaluation\190731_benchmark_data_files_infos\190731_mzML_no_zlib\for_paper_from_df.sc"
-    with open(sc_path, "wb") as fh:
-        pickle.dump(masterscan, fh)
 
     assert True
 
