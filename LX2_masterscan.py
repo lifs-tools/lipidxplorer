@@ -13,22 +13,34 @@ def make_lx2_masterscan(options) -> MasterScan:
     time_range = options["timerange"]
     ms1_mass_range = options["MSmassrange"]
     ms2_mass_range = options["MSMSmassrange"]
+    ms1_calibration = options._data.get(
+        "MScalibration"
+    )  # from _data otherwise missing value error
+    ms2_calibration = options._data.get("MSMScalibration")
 
     # generaste ms1 data
     spectra_dfs = [
         path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range) for mzml in mzmls
     ]
 
-    ms1_df = pd.concat((agg_ms1_spectra_df(df, occupancy=0.5) for df in spectra_dfs))
+    ms1_df = pd.concat(
+        (
+            agg_ms1_spectra_df(df, occupancy=0.5, calibration=ms1_calibration)
+            for df in spectra_dfs
+        )
+    )
     listSurveyEntry = [
         se_factory(msmass, dictIntensity, samples)
         for msmass, dictIntensity in mass_inty_generator_ms1(ms1_df)
     ]
 
-    # TODO add calibration masses
-
     # generate ms2 data and add to ms1
-    ms2_df = pd.concat((agg_ms2_spectra_df(df) for df in spectra_dfs))
+    ms2_df = pd.concat(
+        (
+            agg_ms2_spectra_df(df, occupancy=0.5, calibration=ms2_calibration)
+            for df in spectra_dfs
+        )
+    )
 
     precurs, msmslists = precur_msmslists_from(ms2_df, samples)
 
@@ -46,12 +58,12 @@ def make_lx2_masterscan(options) -> MasterScan:
     return scan
 
 
-def recalibration_values(mzs, cals):
+def recalibrate_mzs(mzs, cals):
     if not cals:
         return mzs
     cal_matchs = [mzs.loc[mzs.sub(cal).abs().idxmin()] for cal in cals]
     cal_vals = [cal - cal_match for cal, cal_match in zip(cals, cal_matchs)]
-    cal_matchs, cal_vals = recalibration_values(mzs, cals)
+    # TODO drop calibrations that are too far
     return mzs + np.interp(mzs, cal_matchs, cal_vals)
 
 
@@ -259,7 +271,7 @@ def add_group_no_ms1_df(ms1_df, occupancy=1):
     return None
 
 
-def agg_ms1_spectra_df(df, occupancy=1):
+def agg_ms1_spectra_df(df, occupancy=1, calibration=None):
     ms1_peaks = df.loc[df.precursor_id.isna()]
     add_group_no(ms1_peaks, occupancy)
     ms1_agg_peaks = ms1_peaks.groupby("group_no").agg(
@@ -274,14 +286,17 @@ def agg_ms1_spectra_df(df, occupancy=1):
         "_".join(col).strip() for col in ms1_agg_peaks.columns.values
     ]
 
+    if calibration:
+        ms1_agg_peaks["mz_mean"] = recalibrate_mzs(
+            ms1_agg_peaks["mz_mean"], calibration
+        )
     return ms1_agg_peaks
 
 
-def agg_ms2_spectra_df(df):
+def agg_ms2_spectra_df(df, occupancy=0, calibration=None):
     # TODO try this https://stackoverflow.com/questions/49799731/how-to-get-the-first-group-in-a-groupby-of-multiple-columns
     ms2_peaks = df.loc[~df.precursor_id.isna()]
     add_group_no(ms2_peaks, occupancy=0)  # no occipancy because its done below
-    occupancy = 0.5
     ms2_peaks["scan_id_nunique"] = ms2_peaks.groupby(ms2_peaks.precursor_mz)[
         "scan_id"
     ].transform("nunique")
@@ -304,6 +319,10 @@ def agg_ms2_spectra_df(df):
         ].index,
         inplace=True,
     )
+    if calibration:
+        ms2_agg_peaks["mz_mean"] = recalibrate_mzs(
+            ms2_agg_peaks["mz_mean"], calibration
+        )
 
     return ms2_agg_peaks
 
@@ -361,6 +380,8 @@ def main():
         "timerange": (33.0, 1080.0),
         "MSmassrange": (360.0, 1000.0),
         "MSMSmassrange": (150.0, 1000.0),
+        "MScalibration": [680.4802],
+        "MSMScalibration": None,
     }
     scan = make_lx2_masterscan(options)
     if False:
