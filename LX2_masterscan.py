@@ -46,6 +46,15 @@ def make_lx2_masterscan(options) -> MasterScan:
     return scan
 
 
+def recalibration_values(mzs, cals):
+    if not cals:
+        return mzs
+    cal_matchs = [mzs.loc[mzs.sub(cal).abs().idxmin()] for cal in cals]
+    cal_vals = [cal - cal_match for cal, cal_match in zip(cals, cal_matchs)]
+    cal_matchs, cal_vals = recalibration_values(mzs, cals)
+    return mzs + np.interp(mzs, cal_matchs, cal_vals)
+
+
 def find_msmslist(precurmass, precurs, msmslists, tol=0.5):  # tol in daltons
     dist, closest = min((abs(e - precurmass), idx) for idx, e in enumerate(precurs))
     if dist > tol:
@@ -360,11 +369,3 @@ def main():
         with open(options["importDir"] + r"\for_paper_from_df.sc", "wb") as fh:
             pickle.dum(scan, fh)
     return scan
-
-
-if __name__ == "__main__":
-    from time import perf_counter
-
-    st = perf_counter()
-    main()
-    print(perf_counter - st)
