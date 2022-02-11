@@ -22,5 +22,5 @@ def test_make_lx2_masterscan():
     options = read_options(proy_path)
     masterscan = make_lx2_masterscan(options)
 
-    assert True
+    assert False
 
