@@ -1,6 +1,11 @@
 from pathlib import Path
 import pandas as pd
 import numpy as np
+import logging, sys
+logging.basicConfig(level=logging.INFO, stream=sys.stdout, 
+        format= '[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s - %(message)s',
+        datefmt='%H:%M:%S')
+log = logging.getLogger(Path(__file__).stem)
 from lx.spectraContainer import MasterScan, SurveyEntry, MSMSEntry
 from ms_deisotope import MSFileLoader
 
