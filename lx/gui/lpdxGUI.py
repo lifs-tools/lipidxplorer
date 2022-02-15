@@ -4793,24 +4793,26 @@ intensity."""
             import LX2_masterscan
             import pickle
             from pathlib import Path
+            import logging
 
-            masterscan = LX2_masterscan.make_lx2_masterscan(options)
+            LX2_masterscan.log.addHandler(logging.StreamHandler(SysOutListener()))
 
-            idp = Path(options["importDir"])
-            filename = str(idp / Path("".join([idp.stem, "-lx2out.cs"])))
-            with open(filename, "wb") as scFile:
-                pickle.dump(masterscan, scFile, pickle.HIGHEST_PROTOCOL)
+            def make_save_mastersscan(options):
 
-            dlg = wx.MessageDialog(
-                wx.GetApp().frame,
-                "Finished generatinv Lx2 masterscan, run Lx1 with settings?",
-                "Done..",
-                wx.YES | wx.NO | wx.ICON_HAND,
-            )
-            if dlg.ShowModal() == wx.ID_NO:
-                self.button_StartImport.Enable()
-                self.isRunning = False
+                masterscan = LX2_masterscan.make_lx2_masterscan(options)
+                idp = Path(options["importDir"])
+                filename = str(idp / Path("".join([idp.stem, "-lx2.cs"])))
+                LX2_masterscan.log.info(f'saving file to: {filename}')
+                with open(filename, "wb") as scFile:
+                    pickle.dump(masterscan, scFile, pickle.HIGHEST_PROTOCOL)
                 return None
+
+            requestQ = queue.Queue()
+            resultQ = queue.Queue()
+            worker = Worker(self, requestQ, resultQ)
+            worker.beginThread(make_save_mastersscan, options)
+
+            return None
 
         try:  # generate a new MasterScan and set the import settings
 
