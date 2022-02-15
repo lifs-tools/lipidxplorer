@@ -4800,19 +4800,17 @@ intensity."""
             filename = str(idp / Path("".join([idp.stem, "-lx2out.cs"])))
             with open(filename, "wb") as scFile:
                 pickle.dump(masterscan, scFile, pickle.HIGHEST_PROTOCOL)
-            
+
             dlg = wx.MessageDialog(
                 wx.GetApp().frame,
-                "Finished generatinv Lx2 masterscan, run Lx1 with settings?"
-                % self.currentConfiguration,
-                "Ups..",
+                "Finished generatinv Lx2 masterscan, run Lx1 with settings?",
+                "Done..",
                 wx.YES | wx.NO | wx.ICON_HAND,
             )
             if dlg.ShowModal() == wx.ID_NO:
                 self.button_StartImport.Enable()
                 self.isRunning = False
                 return None
-
 
         try:  # generate a new MasterScan and set the import settings
 
