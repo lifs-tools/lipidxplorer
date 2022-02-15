@@ -15,6 +15,7 @@ from ms_deisotope import MSFileLoader
 
 
 def make_lx2_masterscan(options) -> MasterScan:
+    mzmls = mzml_paths(options)
     samples = [p.stem for p in mzmls]
     spectra_dfs = spectra_2_df(options)
 
@@ -23,27 +24,36 @@ def make_lx2_masterscan(options) -> MasterScan:
     )  # from _data otherwise missing value error
     ms2_calibration = options._data.get("MSMScalibration")
 
+    occup_between_scans = options["MSfilter"]
     ms1_df = pd.concat(
         (
-            agg_ms1_spectra_df(df, occupancy=0.5, calibration=ms1_calibration)
+            agg_ms1_spectra_df(
+                df, occupancy=occup_between_scans, calibration=ms1_calibration
+            )
             for df in spectra_dfs
         )
     )
-
+    occup_between_spectra = options["MSminOccupation"]
     listSurveyEntry = [
         se_factory(msmass, dictIntensity, samples)
-        for msmass, dictIntensity in mass_inty_generator_ms1(ms1_df)
+        for msmass, dictIntensity in mass_inty_generator_ms1(
+            ms1_df, occupancy=occup_between_spectra
+        )
     ]
 
-    # generate ms2 data and add to ms1
+    occup_between_ms2_scans = options["MSMSfilter"]
     ms2_df = pd.concat(
         (
-            agg_ms2_spectra_df(df, occupancy=0.5, calibration=ms2_calibration)
+            agg_ms2_spectra_df(
+                df, occupancy=occup_between_ms2_scans, calibration=ms2_calibration
+            )
             for df in spectra_dfs
         )
     )
-
-    precurs, msmslists = precur_msmslists_from(ms2_df, samples)
+    occup_between_ms2_spectra = options["MSMSminOccupation"]
+    precurs, msmslists = precur_msmslists_from(
+        ms2_df, samples, occup_between_ms2_spectra
+    )
 
     for se in listSurveyEntry:
         se.listMSMS = find_msmslist(se.precurmass, precurs, msmslists)
@@ -96,12 +106,12 @@ def find_msmslist(precurmass, precurs, msmslists, tol=0.5):  # tol in daltons
     return msmslists[closest]
 
 
-def precur_msmslists_from(ms2_df, samples):
+def precur_msmslists_from(ms2_df, samples, occupancy=1):
     # TODO Wes McKinney (pandas' author) in Python for Data Analysis, https://stackoverflow.com/questions/14734533/how-to-access-pandas-groupby-dataframe-by-key
     precurs = []
     msmslists = []
 
-    add_group_no_ms2_df(ms2_df, occupancy=0.5)
+    add_group_no_ms2_df(ms2_df, occupancy=occupancy)
     for idx, g_df in ms2_df.groupby(level=0):
         precurs.append(idx)
         msms_list = [
@@ -295,7 +305,7 @@ def add_group_no_ms1_df(ms1_df, occupancy=1):
 
 def agg_ms1_spectra_df(df, occupancy=1, calibration=None):
     ms1_peaks = df.loc[df.precursor_id.isna()]
-    add_group_no(ms1_peaks, occupancy)
+    add_group_no(ms1_peaks, occupancy=occupancy)
     ms1_agg_peaks = ms1_peaks.groupby("group_no").agg(
         {
             "mz": ["count", "mean"],
@@ -352,8 +362,8 @@ def agg_ms2_spectra_df(df, occupancy=0, calibration=None):
     return ms2_agg_peaks
 
 
-def mass_inty_generator_ms1(ms1_df):
-    add_group_no_ms1_df(ms1_df, occupancy=0.5)
+def mass_inty_generator_ms1(ms1_df, occupancy=1):
+    add_group_no_ms1_df(ms1_df, occupancy=occupancy)
     for _, df in ms1_df.groupby(ms1_df.group_no):
         msmass = df.mz_mean.mean().item()
         dictIntensity = df.set_index("stem_first")["inty_mean"].to_dict()
