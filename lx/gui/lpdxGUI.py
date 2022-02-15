@@ -4744,35 +4744,35 @@ intensity."""
         # get the options from GUI settings
         project = self.readOptions()
 
-        if self.lx_ver == "LX 2":
-            # elements below will be ignored when using calctol
-            elems = [
-                "MSresolution",  # self.text_ctrl_SettingsSection_resolution_ms,
-                "MSMSresolution",  # self.text_ctrl_SettingsSection_resolution_msms,
-                "MSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_ms,
-                "MSMSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_msms,
-                "MStolerance",  # self.text_ctrl_SettingsSection_tolerance_ms,
-                "MSMStolerance",  # self.text_ctrl_SettingsSection_tolerance_msms,
-                "selectionWindow",  # self.text_ctrl_SettingsSection_selectionWindow,
-                # 'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
-                # 'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
-                # 'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
-                # 'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
-            ]
+        # if self.lx_ver == "LX 2":
+        #     # elements below will be ignored when using calctol
+        #     elems = [
+        #         "MSresolution",  # self.text_ctrl_SettingsSection_resolution_ms,
+        #         "MSMSresolution",  # self.text_ctrl_SettingsSection_resolution_msms,
+        #         "MSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_ms,
+        #         "MSMSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_msms,
+        #         "MStolerance",  # self.text_ctrl_SettingsSection_tolerance_ms,
+        #         "MSMStolerance",  # self.text_ctrl_SettingsSection_tolerance_msms,
+        #         "selectionWindow",  # self.text_ctrl_SettingsSection_selectionWindow,
+        #         # 'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
+        #         # 'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
+        #         # 'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
+        #         # 'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
+        #     ]
 
-            for e in elems:
-                project.options[
-                    e
-                ] = "0.123456"  # TODO replace this dirty fix that avoids div by zero
+        #     for e in elems:
+        #         project.options[
+        #             e
+        #         ] = "0.123456"  # TODO replace this dirty fix that avoids div by zero
 
-            project.options["optionalMStolerance"] = "20"
-            project.options["optionalMSMStolerance"] = "20"
-            project.options["optionalMStoleranceType"] = "ppm"
-            project.options["optionalMSMStoleranceType"] = "ppm"
+        #     project.options["optionalMStolerance"] = "20"
+        #     project.options["optionalMSMStolerance"] = "20"
+        #     project.options["optionalMStoleranceType"] = "ppm"
+        #     project.options["optionalMSMStoleranceType"] = "ppm"
 
-            project.options["scanAveragingMethod"] = "calctol"  # vs 'linear'
-            project.options["alignmentMethodMS"] = "calctol"
-            project.options["alignmentMethodMSMS"] = "calctol"
+        #     project.options["scanAveragingMethod"] = "calctol"  # vs 'linear'
+        #     project.options["alignmentMethodMS"] = "calctol"
+        #     project.options["alignmentMethodMSMS"] = "calctol"
 
         # test if all options are correct
         # project.testOptions()
@@ -4788,6 +4788,22 @@ intensity."""
 
         # start import
         # startImportGUI(self, options)
+
+        if self.lx_ver == "LX 2":
+            import LX2_masterscan
+            import pickle
+            from pathlib import Path
+
+            masterscan = LX2_masterscan.make_lx2_masterscan(options)
+
+            idp = Path(options["importDir"])
+            filename = str(idp / Path("".join([idp.stem, "-lx2out.cs"])))
+            with open(filename, "wb") as scFile:
+                pickle.dump(masterscan, scFile, pickle.HIGHEST_PROTOCOL)
+
+            self.button_StartImport.Enable()
+            self.isRunning = False
+            return None
 
         try:  # generate a new MasterScan and set the import settings
 

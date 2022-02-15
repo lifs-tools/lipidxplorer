@@ -6,7 +6,7 @@ import wx
 class MyApp(wx.App):
     def OnInit(self):
         self.frame = lpdxGUI.LpdxFrame(
-            None, -1, "", rawimport=False, lipidxplorer=True, version="1.3.2"
+            None, -1, "", rawimport=False, lipidxplorer=True, version="1.3.2_lx2"
         )
         self.frame.SetIcon(wx.Icon("lx/stuff/lipidx_ico2.ico", wx.BITMAP_TYPE_ICO))
         self.frame.Show(True)
