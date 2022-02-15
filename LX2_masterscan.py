@@ -95,7 +95,18 @@ def recalibrate_mzs(mzs, cals):
         return mzs
     cal_matchs = [mzs.loc[mzs.sub(cal).abs().idxmin()] for cal in cals]
     cal_vals = [cal - cal_match for cal, cal_match in zip(cals, cal_matchs)]
-    # TODO drop calibrations that are too far
+    #prefilter
+    if not any((v < 0.1 for v in cal_vals)):
+        return mzs
+    # find near tolerance
+    cutoff = mzs.diff(-1).quantile(.1)
+    is_near = [v < cutoff for v in cal_vals]
+    if not any(is_near):
+        return mzs
+    
+    cal_matchs = [e for e,v in zip(cal_matchs,is_near) if v]
+    cal_vals = [e for e,v in zip(cal_vals,is_near) if v]
+
     return mzs + np.interp(mzs, cal_matchs, cal_vals)
 
 
