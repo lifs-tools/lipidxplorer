@@ -16,9 +16,11 @@ from ms_deisotope import MSFileLoader
 
 def make_lx2_masterscan(options) -> MasterScan:
     log.info("Generating Masterscan from LX2 data")
+
     mzmls = mzml_paths(options)
     samples = [p.stem for p in mzmls]
-    log.info(f'for the files {",".join(samples)}')
+    log.info(f'for the files... \n{"\n".join(samples)}')
+    
     spectra_dfs = spectra_2_df(options)
 
     ms1_calibration = options._data.get(
@@ -103,10 +105,12 @@ def recalibrate_mzs(mzs, cals):
     cutoff = mzs.diff(-1).quantile(0.1)
     is_near = [v < cutoff for v in cal_vals]
     if not any(is_near):
+        log.info('no valid calibration masses found')
         return mzs
 
     cal_matchs = [e for e, v in zip(cal_matchs, is_near) if v]
     cal_vals = [e for e, v in zip(cal_vals, is_near) if v]
+    log.debug("recalibration info: {'\n'.join(zip(cal_matchs,cal_vals ))}")
 
     return mzs + np.interp(mzs, cal_matchs, cal_vals)
 
