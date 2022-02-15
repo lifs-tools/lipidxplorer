@@ -15,9 +15,10 @@ from ms_deisotope import MSFileLoader
 
 
 def make_lx2_masterscan(options) -> MasterScan:
-    log.info('Generating Maasterscan from LX2 data')
+    log.info("Generating Masterscan from LX2 data")
     mzmls = mzml_paths(options)
     samples = [p.stem for p in mzmls]
+    log.info(f'for the files {",".join(samples)}')
     spectra_dfs = spectra_2_df(options)
 
     ms1_calibration = options._data.get(
@@ -66,7 +67,6 @@ def make_lx2_masterscan(options) -> MasterScan:
 
     # for printing we need
     scan.listSamples = samples
-
     return scan
 
 
@@ -96,17 +96,17 @@ def recalibrate_mzs(mzs, cals):
         return mzs
     cal_matchs = [mzs.loc[mzs.sub(cal).abs().idxmin()] for cal in cals]
     cal_vals = [cal - cal_match for cal, cal_match in zip(cals, cal_matchs)]
-    #prefilter
+    # prefilter
     if not any((v < 0.1 for v in cal_vals)):
         return mzs
     # find near tolerance
-    cutoff = mzs.diff(-1).quantile(.1)
+    cutoff = mzs.diff(-1).quantile(0.1)
     is_near = [v < cutoff for v in cal_vals]
     if not any(is_near):
         return mzs
-    
-    cal_matchs = [e for e,v in zip(cal_matchs,is_near) if v]
-    cal_vals = [e for e,v in zip(cal_vals,is_near) if v]
+
+    cal_matchs = [e for e, v in zip(cal_matchs, is_near) if v]
+    cal_vals = [e for e, v in zip(cal_vals, is_near) if v]
 
     return mzs + np.interp(mzs, cal_matchs, cal_vals)
 
@@ -228,7 +228,7 @@ def path2df(
                 # df["precursor_id"] = b.precursor.scan_id
                 dfs.append(df)
     df = pd.concat(dfs)
-
+    log.info(f"spectra {path.stem}, size: {df.shape}")
     return df
 
 
