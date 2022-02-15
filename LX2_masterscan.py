@@ -28,6 +28,10 @@ def make_lx2_masterscan(options) -> MasterScan:
     )  # from _data otherwise missing value error
     ms2_calibration = options._data.get("MSMScalibration")
 
+    if ms1_calibration and not ms2_calibration:
+        log.warn('Using MS1 calibration on MS2 also')
+        ms2_calibration = ms1_calibration
+
     occup_between_scans = options["MSfilter"]
     ms1_df = pd.concat(
         (
