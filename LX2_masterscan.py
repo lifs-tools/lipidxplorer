@@ -2,31 +2,26 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import logging, sys
-logging.basicConfig(level=logging.INFO, stream=sys.stdout, 
-        format= '[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s - %(message)s',
-        datefmt='%H:%M:%S')
+
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format="[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s - %(message)s",
+    datefmt="%H:%M:%S",
+)
 log = logging.getLogger(Path(__file__).stem)
 from lx.spectraContainer import MasterScan, SurveyEntry, MSMSEntry
 from ms_deisotope import MSFileLoader
 
 
 def make_lx2_masterscan(options) -> MasterScan:
-    p = Path(options["importDir"])
-    mzmls = list(p.glob("*.mzml"))
     samples = [p.stem for p in mzmls]
+    spectra_dfs = spectra_2_df(options)
 
-    time_range = options["timerange"]
-    ms1_mass_range = options["MSmassrange"]
-    ms2_mass_range = options["MSMSmassrange"]
     ms1_calibration = options._data.get(
         "MScalibration"
     )  # from _data otherwise missing value error
     ms2_calibration = options._data.get("MSMScalibration")
-
-    # generaste ms1 data
-    spectra_dfs = [
-        path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range) for mzml in mzmls
-    ]
 
     ms1_df = pd.concat(
         (
@@ -34,6 +29,7 @@ def make_lx2_masterscan(options) -> MasterScan:
             for df in spectra_dfs
         )
     )
+
     listSurveyEntry = [
         se_factory(msmass, dictIntensity, samples)
         for msmass, dictIntensity in mass_inty_generator_ms1(ms1_df)
@@ -61,6 +57,27 @@ def make_lx2_masterscan(options) -> MasterScan:
     scan.listSamples = samples
 
     return scan
+
+
+def spectra_2_df(options):
+    mzmls = mzml_paths(options)
+
+    time_range = options["timerange"]
+    ms1_mass_range = options["MSmassrange"]
+    ms2_mass_range = options["MSMSmassrange"]
+
+    # generaste ms1 data
+    spectra_dfs = [
+        path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range) for mzml in mzmls
+    ]
+
+    return spectra_dfs
+
+
+def mzml_paths(options):
+    p = Path(options["importDir"])
+    mzmls = list(p.glob("*.mzml"))
+    return mzmls
 
 
 def recalibrate_mzs(mzs, cals):
@@ -302,6 +319,9 @@ def agg_ms2_spectra_df(df, occupancy=0, calibration=None):
     # TODO try this https://stackoverflow.com/questions/49799731/how-to-get-the-first-group-in-a-groupby-of-multiple-columns
     ms2_peaks = df.loc[~df.precursor_id.isna()]
     add_group_no(ms2_peaks, occupancy=0)  # no occipancy because its done below
+    # TODO use https://github.com/mthh/jenkspy instead of rounding or https://github.com/perrygeo/jenks
+    # NOTE in peakstrainer ms2 are gruuped by rounded(6 decimal places) precursor
+    # NOTE in lx1 the ms2 grouping is base on a rolling avererage, if mean(group) - new_item < window_da, add to group
     ms2_peaks["scan_id_nunique"] = ms2_peaks.groupby(ms2_peaks.precursor_mz)[
         "scan_id"
     ].transform("nunique")
