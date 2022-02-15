@@ -15,6 +15,7 @@ from ms_deisotope import MSFileLoader
 
 
 def make_lx2_masterscan(options) -> MasterScan:
+    log.info('Generating Maasterscan from LX2 data')
     mzmls = mzml_paths(options)
     samples = [p.stem for p in mzmls]
     spectra_dfs = spectra_2_df(options)
