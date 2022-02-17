@@ -19,8 +19,8 @@ def make_lx2_masterscan(options) -> MasterScan:
 
     mzmls = mzml_paths(options)
     samples = [p.stem for p in mzmls]
-    log.info(f'for the files... \n{"\n".join(samples)}')
-    
+    log.info("for the files... \n{}".format("\n".join(samples)))
+
     spectra_dfs = spectra_2_df(options)
 
     ms1_calibration = options._data.get(
@@ -29,7 +29,7 @@ def make_lx2_masterscan(options) -> MasterScan:
     ms2_calibration = options._data.get("MSMScalibration")
 
     if ms1_calibration and not ms2_calibration:
-        log.warn('Using MS1 calibration on MS2 also')
+        log.warn("Using MS1 calibration on MS2 also")
         ms2_calibration = ms1_calibration
 
     occup_between_scans = options["MSfilter"]
@@ -109,7 +109,7 @@ def recalibrate_mzs(mzs, cals):
     cutoff = mzs.diff(-1).quantile(0.1)
     is_near = [v < cutoff for v in cal_vals]
     if not any(is_near):
-        log.info('no valid calibration masses found')
+        log.info("no valid calibration masses found")
         return mzs
 
     cal_matchs = [e for e, v in zip(cal_matchs, is_near) if v]
