@@ -10,8 +10,8 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger(Path(__file__).stem)
-from lx.spectraContainer import MasterScan, SurveyEntry, MSMSEntry
 from ms_deisotope import MSFileLoader
+from lx.spectraContainer import MasterScan, SurveyEntry, MSMSEntry
 
 
 def make_lx2_masterscan(options) -> MasterScan:
