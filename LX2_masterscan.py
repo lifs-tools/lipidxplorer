@@ -29,7 +29,7 @@ def make_lx2_masterscan(options) -> MasterScan:
     ms2_calibration = options._data.get("MSMScalibration")
 
     if ms1_calibration and not ms2_calibration:
-        log.warn("Using MS1 calibration on MS2 also")
+        log.warning("Using MS1 calibration on MS2 also")
         ms2_calibration = ms1_calibration
 
     occup_between_scans = options["MSfilter"]
@@ -206,8 +206,8 @@ def path2df(
                     "stem": path.stem,
                     "scan_id": b.precursor.scan_id,
                     "filter_string": b.precursor.annotations["filter string"],
-                    "precursor_id": np.nan,
-                    "precursor_mz": np.nan,
+                    "precursor_id": None,
+                    "precursor_mz": 0,
                 }
             )
             df = df[(df.mz.between(ms1_start, ms1_end)) & (df.inty > 0)]
@@ -240,7 +240,33 @@ def path2df(
     return df
 
 
-def add_group_no(ms1_peaks, occupancy=1, cleanup_cols=True):
+# this code runs slower than add_group_no
+# def add_group_no_hdbscan(ms1_peaks, occupancy=0.75, cleanup_cols=True, factor=100):
+#     window_size = test_df.scan_id.unique().shape[0]
+
+#     ms1_peaks['n_mz'] = (ms1_peaks['mz'] - ms1_peaks['mz'].min()) / (ms1_peaks['mz'].max() - ms1_peaks['mz'].min())
+#     x_unit = ms1_peaks.sort_values('n_mz')['n_mz'].diff().replace(0,np.NAN).quantile(0.5)
+#     l_inty = np.log(ms1_peaks['inty'])
+#     y_unit = l_inty.sort_values().diff().replace(0,np.NAN).quantile(0.5)
+#     ms1_peaks['n_inty'] = l_inty*x_unit/y_unit
+#     ms1_peaks['n_mz'] = ms1_peaks['n_mz'] * factor
+
+#     occup = max(int(window_size * occupancy), 2) # min samples to make a clusterer
+#     X = ms1_peaks[['n_mz', 'n_inty']].to_numpy()
+
+#     clusterer = hdbscan.hdbscan(X,occup)
+
+#     ms1_peaks['group_no'] = clusterer[0]
+#     ms1_peaks['group_prob'] = clusterer[1]
+#     # cleanup
+#     ms1_peaks.loc[ms1_peaks['group_prob'] < 0.85, 'group_no'] = -1 # these are the cluster outliers we prefer not to have them
+#     # test_df['hdbs'].replace(-1, np.NAN).value_counts().max()
+#     if cleanup_cols:
+#         ms1_peaks.drop("n_mz n_inty group_prob".split(), axis=1, inplace=True)
+#     return None
+
+
+def add_group_no(ms1_peaks, occupancy=0, cleanup_cols=True):
     # TODO do it in memory with pipes?
     window_size = int(ms1_peaks.scan_id.nunique())
     ms1_peaks.set_index(
@@ -277,6 +303,7 @@ def add_group_no(ms1_peaks, occupancy=1, cleanup_cols=True):
     if cleanup_cols:
         ms1_peaks.drop("mz_diff cummin with_next".split(), axis=1, inplace=True)
     ms1_peaks.reset_index(level=1, inplace=True)
+
     return None
 
 
