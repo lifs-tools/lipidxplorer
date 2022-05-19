@@ -1,6 +1,7 @@
 import streamlit as st
 from lx.project import Project
 from enum import Enum
+from lx.spectraImport import doImport, lpdxImportDEF_new
 
 
 class ToleranceEnum(Enum):
@@ -11,6 +12,26 @@ class ToleranceEnum(Enum):
 class ThresholdEnum(Enum):
     relative = 0
     absolute = 1
+
+
+def make_masterscan(options):
+    listIntermission = lpdxImportDEF_new(options=options, parent=None)
+
+    scan = doImport(
+        listIntermission[0],
+        listIntermission[1],
+        listIntermission[2],
+        listIntermission[3],
+        listIntermission[4],
+        listIntermission[5],
+        listIntermission[6],
+        listIntermission[7],
+        options["alignmentMethodMS"],
+        options["alignmentMethodMSMS"],
+        options["scanAveragingMethod"],
+        options["importMSMS"],
+    )
+    return scan
 
 
 model_keys = {
@@ -284,6 +305,8 @@ if cont.button("Save project"):
     proj = st.session_state["project"]
     st.session_state["project options formatted"] = proj.options_formatted
     save_project(proj)
+
 if cont.button("import project"):
-    st.balloons()
+    make_masterscan(st.session_state["project"].getOptions())
+    st.balloons()  # TODO check in tests how to run the project
 
