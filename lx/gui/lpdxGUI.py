@@ -4801,8 +4801,8 @@ intensity."""
 
                 masterscan = LX2_masterscan.make_lx2_masterscan(options)
                 idp = Path(options["importDir"])
-                filename = str(idp / Path("".join([idp.stem, "-lx2.cs"])))
-                LX2_masterscan.log.info(f'saving file to: {filename}')
+                filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
+                LX2_masterscan.log.info(f"saving file to: {filename}")
                 with open(filename, "wb") as scFile:
                     pickle.dump(masterscan, scFile, pickle.HIGHEST_PROTOCOL)
                 return None
