@@ -629,6 +629,7 @@ def doImport(
     # 	 given selectionWindow into account.
     if importMSMS:
         reportout("Aligning MS/MS spectra %s\n" % alignmentMSMS)
+        scan.listSurveyEntry.sort(key=lambda x: x.precurmass)
         if alignmentMSMS in ["linear", "calctol"]:
             mkMSMSEntriesLinear_new(
                 scan,
