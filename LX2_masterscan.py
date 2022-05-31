@@ -17,7 +17,7 @@ from lx.spectraContainer import MasterScan, SurveyEntry, MSMSEntry
 def make_lx2_masterscan(options) -> MasterScan:
     log.info("Generating Masterscan from LX2 data")
 
-    mzmls = mzml_paths(options)
+    mzmls = mz_ml_paths(options)
     samples = [p.stem for p in mzmls]
     log.info("for the files... \n{}".format("\n".join(samples)))
 
@@ -77,7 +77,7 @@ def make_lx2_masterscan(options) -> MasterScan:
 
 
 def spectra_2_df(options):
-    mzmls = mzml_paths(options)
+    mzmls = mz_ml_paths(options)
 
     time_range = options["timerange"]
     ms1_mass_range = options["MSmassrange"]
@@ -91,9 +91,15 @@ def spectra_2_df(options):
     return spectra_dfs
 
 
-def mzml_paths(options):
+def mz_ml_paths(options):
     p = Path(options["importDir"])
     mzmls = list(p.glob("*.mzml"))
+    if not mzmls:
+        log.warning("no mzml files found in {}".format(p))
+        log.warning("using all mzXML files in {}".format(p))
+    p = Path(options["importDir"])
+    mzmls = list(p.glob("*.mzxml"))
+
     return mzmls
 
 
@@ -201,16 +207,18 @@ def path2df(
             a = b.precursor.arrays
             df = pd.DataFrame(
                 {
-                    "mz": a.mz,
-                    "inty": a.intensity,
+                    "mz": a.mz.astype("float32"),
+                    "inty": a.intensity.astype("float32"),
                     "stem": path.stem,
                     "scan_id": b.precursor.scan_id,
-                    "filter_string": b.precursor.annotations["filter string"],
+                    "filter_string": b.precursor.annotations["filter string"]
+                    if b.precursor.annotations
+                    else b.precursor._data["filterLine"],
                     "precursor_id": None,
                     "precursor_mz": 0,
                 }
             )
-            df = df[(df.mz.between(ms1_start, ms1_end)) & (df.inty > 0)]
+            df = df[df.mz.between(ms1_start, ms1_end) & df.inty > 0]
             # df["scan_id"] = b.precursor.scan_id
             # df["filter_string"] = b.precursor.annotations["filter string"]
             # df["precursor_id"] = np.nan
@@ -225,7 +233,9 @@ def path2df(
                         "inty": a.intensity,
                         "stem": path.stem,
                         "scan_id": p.scan_id,
-                        "filter_string": p.annotations["filter string"],
+                        "filter_string": p.annotations["filter string"]
+                        if p.annotations
+                        else p._data["filterLine"],
                         "precursor_id": b.precursor.scan_id,
                         "precursor_mz": p.precursor_information.mz,
                     }
