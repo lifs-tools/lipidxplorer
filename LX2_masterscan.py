@@ -58,13 +58,16 @@ def make_lx2_masterscan(options) -> MasterScan:
             for df in spectra_dfs
         )
     )
-    occup_between_ms2_spectra = options["MSMSminOccupation"]
-    precurs, msmslists = precur_msmslists_from(
-        ms2_df, samples, occup_between_ms2_spectra
-    )
 
-    for se in listSurveyEntry:
-        se.listMSMS = find_msmslist(se.precurmass, precurs, msmslists)
+    
+    if not ms2_df.empty: # only if there are any ms2s
+        occup_between_ms2_spectra = options["MSMSminOccupation"]
+        precurs, msmslists = precur_msmslists_from(
+            ms2_df, samples, occup_between_ms2_spectra
+        )
+
+        for se in listSurveyEntry:
+            se.listMSMS = find_msmslist(se.precurmass, precurs, msmslists)
 
     # add data to masterscan
     scan = MasterScan(options)
@@ -73,6 +76,7 @@ def make_lx2_masterscan(options) -> MasterScan:
 
     # for printing we need
     scan.listSamples = samples
+
     return scan
 
 
