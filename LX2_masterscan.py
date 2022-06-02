@@ -59,8 +59,7 @@ def make_lx2_masterscan(options) -> MasterScan:
         )
     )
 
-    
-    if not ms2_df.empty: # only if there are any ms2s
+    if not ms2_df.empty:  # only if there are any ms2s
         occup_between_ms2_spectra = options["MSMSminOccupation"]
         precurs, msmslists = precur_msmslists_from(
             ms2_df, samples, occup_between_ms2_spectra
@@ -283,6 +282,11 @@ def path2df(
 def add_group_no(ms1_peaks, occupancy=0, cleanup_cols=True):
     # TODO do it in memory with pipes?
     window_size = int(ms1_peaks.scan_id.nunique())
+    if window_size == 1:
+        log.warn("only one scan, no need to group, maybe its Peakstrainer")
+        ms1_peaks["group_no"] = ms1_peaks.reset_index().index
+        return None
+
     ms1_peaks.set_index(
         "scan_id", append=True, inplace=True
     )  # avoid duplicdate index error
