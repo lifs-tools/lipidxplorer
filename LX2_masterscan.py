@@ -107,7 +107,7 @@ def mz_ml_paths(options):
 
 
 def recalibrate_mzs(mzs, cals):
-    if not cals:
+    if not cals or mzs.empty:
         return mzs
     cal_matchs = [mzs.loc[mzs.sub(cal).abs().idxmin()] for cal in cals]
     cal_vals = [cal - cal_match for cal, cal_match in zip(cals, cal_matchs)]
