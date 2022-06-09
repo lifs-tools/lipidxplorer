@@ -1,5 +1,15 @@
 from lx.spectraTools import loadSC
 import pandas as pd
+import logging, sys
+from pathlib import Path
+
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format="[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s - %(message)s",
+    datefmt="%H:%M:%S",
+)
+log = logging.getLogger(Path(__file__).stem)
 
 
 def find_common_elements(lx1_df, lx2_df, tolerance=0.05):
@@ -70,6 +80,7 @@ def compare_masterscan(lx1_masterscan_path, lx2_masterscan_path, xls_output_path
     lx1_masterscan = loadSC(lx1_masterscan_path)
     lx2_masterscan = loadSC(lx2_masterscan_path)
 
+    log.info("Getting MS1")
     lx1_ms1 = (
         (idx, se.precurmass) for idx, se in enumerate(lx1_masterscan.listSurveyEntry)
     )
@@ -77,20 +88,24 @@ def compare_masterscan(lx1_masterscan_path, lx2_masterscan_path, xls_output_path
         (idx, se.precurmass) for idx, se in enumerate(lx2_masterscan.listSurveyEntry)
     )
 
+    log.info("Making dataframe")
     lx1_df = pd.DataFrame(lx1_ms1, columns=["idx_lx1", "precurmass_lx1"])
     lx2_df = pd.DataFrame(lx2_ms1, columns=["idx_lx2", "precurmass_lx2"])
 
+    log.info("find_common_elements")
     common = find_common_elements(lx1_df, lx2_df)
     in_both = common[~common.isna().any(axis=1)]
     not_in_lx2 = common[common.idx_lx2.isna()]
     not_in_lx1 = common[common.idx_lx1.isna()]
 
+    log.info("ExcelWriter( output.xlsx )")
     with pd.ExcelWriter("output.xlsx") as writer:
         in_both.to_excel(writer, sheet_name="in_both")
         not_in_lx2.to_excel(writer, sheet_name="not_in_lx2")
         not_in_lx1.to_excel(writer, sheet_name="not_in_lx1")
 
     # compare the ms2s
+    log.info("compare the ms2s")
     matching_ms1s = common.dropna().drop_duplicates(
         subset=["precurmass_lx1", "precurmass_lx2"]
     )
@@ -98,6 +113,7 @@ def compare_masterscan(lx1_masterscan_path, lx2_masterscan_path, xls_output_path
         ms2_uncommon(matching_ms1s, lx1_masterscan, lx2_masterscan)
     )
 
+    log.info("output ms2_mismatch")
     with pd.ExcelWriter("output.xlsx") as writer:
         ms2_mismatch.to_excel(writer, sheet_name="ms2_mismatch")
         ms2_mismatch.common_idx.value_counts().to_excel(
@@ -106,13 +122,17 @@ def compare_masterscan(lx1_masterscan_path, lx2_masterscan_path, xls_output_path
         common.loc[ms2_mismatch.common_idx.value_counts().index].to_excel(
             writer, sheet_name="ms2_mismatch_precursors"
         )
+    
+    log.info("done")
 
     # TODO  handrolled find nearest closest, but with tolerance instead of merge_asof
     # https://stackoverflow.com/questions/57361453/matching-two-lists-containing-slightly-differing-float-values-by-allowing-a-tole?
 
 
 if __name__ == "__main__":
-    lx1_masterscan_path = r"test_resources\small_test\small_test.sc"
-    lx2_masterscan_path = r"test_resources\small_test\small_test-lx2.sc"
+    lx1_masterscan_path = r"c:\Users\mirandaa\Downloads\stitched\stitched\stitched.sc"
+    lx2_masterscan_path = (
+        r"c:\Users\mirandaa\Downloads\stitched\stitched\stitched-lx2.sc"
+    )
     xls_output_path = None
     compare_masterscan(lx1_masterscan_path, lx2_masterscan_path, xls_output_path)
