@@ -4794,6 +4794,7 @@ intensity."""
             import pickle
             from pathlib import Path
             import logging
+            import compare_masterscan
 
             LX2_masterscan.log.addHandler(logging.StreamHandler(SysOutListener()))
 
@@ -4811,6 +4812,24 @@ intensity."""
             resultQ = queue.Queue()
             worker = Worker(self, requestQ, resultQ)
             worker.beginThread(make_save_mastersscan, options)
+
+            dlg = wx.MessageDialog(
+                self,
+                "shall we compare mastescans?",
+                "compare",
+                wx.NO | wx.YES | wx.ICON_HAND,
+            )
+            if dlg.ShowModal() == wx.ID_YES:
+                lx1_mscan = options["masterScanRun"]
+                idp = Path(options["importDir"])
+                filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
+                lx2_mscan = filename
+                xls_output_path = str(idp / Path("".join([idp.stem, "-compare.xlsx"])))
+                compare_masterscan.compare_masterscan(lx1_mscan, lx2_mscan, xls_output_path)
+                dlg.Destroy()
+
+            self.button_StartImport.Enable()
+            self.isRunning = False
 
             return None
 
