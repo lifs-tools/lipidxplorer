@@ -520,7 +520,7 @@ class Options:
         for option in list(o.keys()):
             if not option in ["MScalibration", "MSMScalibration"]:
                 try:
-                    if floating_point_m.match(o[option]):
+                    if floating_point_m.match(str(o[option])):
                         self.options_formatted[option] = float(o[option])
                 except:
                     pass
