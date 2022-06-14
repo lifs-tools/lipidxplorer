@@ -25,10 +25,7 @@ def test_make_masterscan():
 
 
 def test_make_lx2_masterscan():
-    left_sc_path = (
-        r"D:\fork\lipidxplorer_128\test_resources\small_test\small_test-project.lxp"
-    )
-    options = read_options(left_sc_path)
+    options = read_options(proy_path)
     masterscan = make_lx2_masterscan(options)
     expected = loadSC(expected_lx2ms_path)
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
