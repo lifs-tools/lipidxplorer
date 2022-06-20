@@ -43,8 +43,8 @@ def make_lx2_masterscan(options) -> MasterScan:
     )
     occup_between_spectra = options["MSminOccupation"]
     listSurveyEntry = [
-        se_factory(msmass, dictIntensity, samples)
-        for msmass, dictIntensity in mass_inty_generator_ms1(
+        se_factory(msmass, dictIntensity, samples, polarity)
+        for msmass, dictIntensity, polarity in mass_inty_generator_ms1(
             ms1_df, occupancy=occup_between_spectra
         )
     ]
@@ -72,6 +72,8 @@ def make_lx2_masterscan(options) -> MasterScan:
     scan = MasterScan(options)
     scan.listSurveyEntry = listSurveyEntry
     scan.listSurveyEntry[0].massWindow = 0.01  # to avoid bug
+    scan.sampleOccThr["MS"] = [(0.0, [])]  # to avoid bug at def checkOccupation
+    scan.sampleOccThr["MSMS"] = [(0.0, [])]
 
     # for printing we need
     scan.listSamples = samples
@@ -100,8 +102,7 @@ def mz_ml_paths(options):
     if not mzmls:
         log.warning("no mzml files found in {}".format(p))
         log.warning("using all mzXML files in {}".format(p))
-    p = Path(options["importDir"])
-    mzmls = list(p.glob("*.mzxml"))
+        mzmls = list(p.glob("*.mzxml"))
 
     return mzmls
 
@@ -219,6 +220,7 @@ def path2df(
                     else b.precursor._data["filterLine"],
                     "precursor_id": None,
                     "precursor_mz": 0,
+                    "polarity": b.precursor.polarity,
                 }
             )
             df = df[df.mz.between(ms1_start, ms1_end) & df.inty > 0]
@@ -241,6 +243,7 @@ def path2df(
                         else p._data["filterLine"],
                         "precursor_id": b.precursor.scan_id,
                         "precursor_mz": p.precursor_information.mz,
+                        "polarity": p.polarity,
                     }
                 )
                 df = df[(df.mz.between(ms2_start, ms2_end)) & df.inty > 0]
@@ -377,6 +380,7 @@ def agg_ms1_spectra_df(df, occupancy=1, calibration=None):
             "inty": ["mean"],
             "stem": ["first"],
             "scan_id": "nunique",
+            "polarity": ["first"],
         }
     )
     ms1_agg_peaks.columns = [
@@ -408,6 +412,7 @@ def agg_ms2_spectra_df(df, occupancy=0, calibration=None):
             "inty": ["mean"],
             "stem": ["first"],
             "scan_id_nunique": "first",
+            "polarity": ["first"],
         }
     )
     ms2_agg_peaks.columns = [
@@ -430,12 +435,13 @@ def agg_ms2_spectra_df(df, occupancy=0, calibration=None):
 def mass_inty_generator_ms1(ms1_df, occupancy=1):
     add_group_no_ms1_df(ms1_df, occupancy=occupancy)
     for _, df in ms1_df.groupby(ms1_df.group_no):
-        msmass = df.mz_mean.mean().item()
+        msmass = float(df.mz_mean.mean())
         dictIntensity = df.set_index("stem_first")["inty_mean"].to_dict()
-        yield msmass, dictIntensity
+        polarity = df.polarity_first.to_list()[0]
+        yield msmass, dictIntensity, polarity
 
 
-def se_factory(msmass, dictIntensity, samples):
+def se_factory(msmass, dictIntensity, samples, polarity):
     holder = {s: 0 for s in samples}
     holder.update(dictIntensity)
     return SurveyEntry(
@@ -443,7 +449,7 @@ def se_factory(msmass, dictIntensity, samples):
         smpl=holder,
         peaks=[],
         charge=None,
-        polarity=1,
+        polarity=polarity,
         dictScans={
             s: 1 for s in samples
         },  # needed for the intensity threshold (thrshl / sqrt(nb. of scans))
@@ -454,19 +460,20 @@ def se_factory(msmass, dictIntensity, samples):
 
 def mass_inty_generator_prec_ms2(g_df):
     for _, inner_gdf in g_df.groupby("group_no"):
-        mass = inner_gdf.mz_mean.mean().item()
+        mass = float(inner_gdf.mz_mean.mean())
         dictIntensity = inner_gdf.set_index("stem_first")["inty_mean"].to_dict()
-        yield mass, dictIntensity
+        polarity = inner_gdf.polarity_first.to_list()[0]
+        yield mass, dictIntensity, polarity
 
 
-def ms2entry_factory(mass, dictIntensity, samples):
+def ms2entry_factory(mass, dictIntensity, samples, polarity):
     holder = {s: 0 for s in samples}
     holder.update(dictIntensity)
     return MSMSEntry(
         mass=mass,
         dictIntensity=holder,
         peaks=[],
-        polarity=1,
+        polarity=polarity,
         charge=None,
         se=None,
         dictScanCount={s: 1 for s in samples},
