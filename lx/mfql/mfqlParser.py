@@ -1266,6 +1266,7 @@ def startParsing(
     progressCount,
     generateStatistics,
     mode="",
+    log_steps=False,
 ):
 
     time.clock()
@@ -1305,8 +1306,16 @@ def startParsing(
         mfqlObj.parsePart = "identification"
         lexer.lineno = 1
         parser.parse(dictData[k], lexer=lexer, debug=0)
+        # update is at [se for se in mfqlObj.result.resultSC.listSurveyEntry if se.listMark] and se.listPrecurmassSF
 
         mfqlObj.reset()
+    if log_steps:
+        print("all entries are... mfqlObj.result.resultSC")
+        print(
+            "added id to ... [se for se in mfqlObj.result.resultSC.listSurveyEntry if se.listMark]"
+        )
+        for se in (se for se in mfqlObj.result.resultSC.listSurveyEntry if se.listMark):
+            print(se)
 
     if isotopicCorrectionMS:
         # mfqlObj.result.isotopicCorrectionMSMS()
@@ -1315,7 +1324,14 @@ def startParsing(
         # secondDerivative[i] = x[i+1] + x[i-1] - 2 * x[i]
         # to drop high ppms and lower the influense of isotopic corrections
         mfqlObj.result.isotopicCorrectionMS()
-
+        if log_steps:
+            print("changed intensities base on isotopicCorrectionMS")
+            for se in (
+                se
+                for se in mfqlObj.result.resultSC.listSurveyEntry
+                if se.dictBeforeIsocoIntensity
+            ):
+                print(se)
         # gprogressCount += 1
         # if parent:
         # 	(cont, skip) = parent.debug.progressDialog.Update(gprogressCount)
@@ -1333,6 +1349,9 @@ def startParsing(
     mfqlObj.result.generateResultSC()
     seethis(mfqlObj.result)
     print("%.2f sec." % time.clock())
+
+    print("only some surveys are of interest")
+    print("\n".join(map(str, mfqlObj.resultSC)))
 
     ## debugging ###
     # for se in mfqlObj.result.mfqlObj.resultSC:
@@ -1362,6 +1381,12 @@ def startParsing(
         if isotopicCorrectionMS or isotopicCorrectionMSMS:
             mfqlObj.result.correctMonoisotopicPeaks()
         print("%.2f sec." % time.clock())
+        if log_steps:
+            print(
+                "changed the intentity again, now I dont know who changed the intensity"
+            )
+            for se in (se for se in mfqlObj.resultSC if se.monoisotopicRatio != 1):
+                print(f"{se} {se.monoisotopicRatio}")
 
     if Debug("removeIsotopes"):  # and (isotopicCorrectionMS or isotopicCorrectionMSMS):
         mfqlObj.result.removeIsotopicCorrected()
@@ -1371,6 +1396,13 @@ def startParsing(
     mfqlObj.result.generateQueryResultSC()
     seethis(mfqlObj.result)
     print("%.2f sec." % time.clock())
+
+    if log_steps:
+        print("put the stuff in a differentplace")
+        for k, v in mfqlObj.result.dictQuery.items():
+            print(k)
+            for e in v.sc:
+                print(e)
 
     # for q in mfqlObj.result.dictQuery.keys():
     # 	print ">>>", q
@@ -1397,6 +1429,13 @@ def startParsing(
 
         lexer.lineno = 1
         parser.parse(dictData[k], lexer=lexer, tracking=True)
+    if log_steps:
+        print("this applies the suchthat")
+        for k, Queryitems in mfqlObj.result.dictQuery.items():
+            for variabs in Queryitems.listVariables:
+                for k, variab in variabs.items():
+                    for s in variab.se:
+                        print(s)
 
     if complementSC:
 
@@ -1415,6 +1454,14 @@ def startParsing(
 
     if options["noPermutations"]:
         mfqlObj.result.removePermutations()
+
+        if log_steps:
+            print("removes duplicate results with duplicate sum composition")
+            for k, Queryitems in mfqlObj.result.dictQuery.items():
+                for variabs in Queryitems.listVariables:
+                    for k, variab in variabs.items():
+                        for s in variab.se:
+                            print(s)
         seethis(mfqlObj.result)
 
     ## debugging ###
@@ -1428,11 +1475,27 @@ def startParsing(
 
     print("checking if there are still isobaric species ...", end=" ")
     mfqlObj.result.checkIsobaricSpeciesAfterSUCHTHAT()
+
+    if log_steps:
+        print("adds items to the isobaric atribute")
+        for k, Queryitems in mfqlObj.result.dictQuery.items():
+            for variabs in Queryitems.listVariables:
+                for k, variab in variabs.items():
+                    for s in variab.isobaric:
+                        print(s)
     seethis(mfqlObj.result)
     print("%.2f sec." % time.clock())
 
     print("generate report ...", end=" ")
     mfqlObj.result.generateReport(options)
+    if log_steps:
+        print(
+            " evaluates the vars and puts everything into a datamatrix, that is output as string"
+        )
+        for k, Queryitems in mfqlObj.result.dictQuery.items():
+            print(Queryitems.strOutput)
+            print(Queryitems.dataMatrix)
+
     seethis(mfqlObj.result)
     print("%.2f sec." % time.clock())
 

@@ -28,7 +28,7 @@ def test_run_mfql():
 
     mfqlFiles = getMfqlFiles(r"test_resources\small_test")
 
-    result = make_MFQL_result(masterscan, mfqlFiles, options)
+    result = make_MFQL_result(masterscan, mfqlFiles, options, log_steps=True)
     resultStr = makeResultsString(result, options)
 
     assert resultStr.strip() == out_reference.strip()

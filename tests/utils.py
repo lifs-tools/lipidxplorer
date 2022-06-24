@@ -121,7 +121,7 @@ def makeResultsString(result, options):
     return strResult
 
 
-def make_MFQL_result(masterscan, mfqlFiles, options):
+def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = True):
     mfqlObj = TypeMFQL(masterScan=masterscan)
     mfqlObj.options = options
     mfqlObj.outputSeperator = ","
@@ -136,6 +136,7 @@ def make_MFQL_result(masterscan, mfqlFiles, options):
         parent=None,
         progressCount=0,
         generateStatistics=options["statistics"],
+        log_steps=log_steps,
     )
 
     return mfqlObj.result
