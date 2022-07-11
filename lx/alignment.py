@@ -829,6 +829,21 @@ def mkSurveyHierarchical(
     cl = hclusterHeuristic(sc.listSamples, sc.dictSamples, resolution)
 
 
+def r_mkMSMSEntriesLinear_new(
+    scan,
+    listPolarity,
+    numLoops=None,
+    isPIS=False,
+    relative=None,
+    bin_res=False,
+    collapse=False,
+):
+    # do for each polarity
+    # scan.options["MSMSresolution"]
+    # scan.options["selectionWindow"]
+    pass
+
+
 def mkMSMSEntriesLinear_new(
     scan,
     listPolarity,
@@ -924,6 +939,17 @@ def mkMSMSEntriesLinear_new(
                 bintolerance=scan.options["MSMStolerance"],
                 res_by_fullbin=scan.options["alignmentMethodMSMS"] == "calctol",
             )
+
+            # listClusters = r_linearAlignment(
+            #     list(dictSpecEntry.keys()),
+            #     dictSpecEntry,
+            #     tolerance,
+            #     merge=mergeListMsms,
+            #     mergeTolerance=scan.options["MSMSresolution"],
+            #     mergeDeltaRes=scan.options["MSMSresolutionDelta"],
+            #     bintolerance=scan.options["MSMStolerance"],
+            #     res_by_fullbin=scan.options["alignmentMethodMSMS"] == "calctol",
+            # )
 
         else:
             listClusters = False
@@ -2453,7 +2479,67 @@ def r_linearAlignment(
     res_by_steps=False,
     min_da_delta_all_scans=None,
 ):
-    pass
+    import pandas as pd
+    import numpy as np
+
+    def bin_generator(masses):
+        # TODO assert masses are ordered
+        up_to = None
+        for _, mass in masses.iteritems():
+            if up_to is None:
+                up_to = mass + tolerance.getTinDA(mass)
+
+            if mass <= up_to:
+                yield up_to
+            else:
+                up_to = mass + tolerance.getTinDA(mass)
+                yield up_to
+
+    df = pd.DataFrame(
+        ({"mass": e.mass, **e.content} for s in dictSamples.values() for e in s)
+    )
+    df.sort_values("mass", inplace=True)
+    # NOTE do it 3 times as per lx1...
+    df["bins1"] = list(bin_generator(df.mass))
+    df["bins2"] = list(bin_generator(df.groupby("bins1")["mass"].transform("mean")))
+    df["bins3"] = list(bin_generator(df.groupby("bins2")["mass"].transform("mean")))
+    # cluster to merge, if multiple peaks from same sample
+    g = df.groupby(["bins3", "sample"])
+    df["sample_count"] = g.cumcount()
+    df["merged_mass"] = g["mass"].transform("mean")
+    # drop the peaks that are alredy averaged  into one
+    df = df.loc[df.sample_count == 0]
+
+    agg_df = (
+        df.assign(
+            mass_intensity=lambda x: x.mass * x.intensity
+        )  # for the weighted average intensity
+        .groupby("bins3")
+        .agg(
+            {
+                "mass": ["mean", "count", "min", "max"],
+                "intensity": ["mean", "sum"],
+                "mass_intensity": "sum",
+            }
+        )
+        .dropna()
+    )
+    agg_df.columns = ["_".join(col).strip() for col in agg_df.columns.values]
+
+    # NOTE frequency filtered is applied after all 3 not on each iteration
+    mask_ff = agg_df.mass_count / fadi_denominator >= fadi_percentage
+    agg_df = agg_df[mask_ff]
+
+    # NOTE intensity threshold is do in add_Sample... but lets do it here
+    # NOTE  is uses options["MSthreshold"] that is missing here
+    MSthreshold = 0.0001
+    mask_inty = agg_df.intensity_mean > MSthreshold
+    agg_df = agg_df[mask_inty]
+
+    # weigted average is do in def add_Sample... but lets do it here
+    agg_df["mass"] = agg_df.mass_intensity_sum / agg_df.intensity_sum
+
+    return agg_df
 
 
 def linearAlignment(
@@ -2493,7 +2579,6 @@ def linearAlignment(
     The output is a list of specEntry
     that can be "filtered" as per DS
     """
-
     # get max length of peak in the spectra
     speclen = 0
     for k in listSamples:
