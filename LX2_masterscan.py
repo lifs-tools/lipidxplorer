@@ -231,6 +231,8 @@ def path2df(
             for p in b.products:
                 if not (time_start / 60 < p.scan_time < time_end / 60):
                     continue
+                if not(ms1_start < p.precursor_information.mz < ms1_end):
+                    continue
                 a = p.arrays
                 df = pd.DataFrame(
                     {
