@@ -4790,20 +4790,21 @@ intensity."""
         # startImportGUI(self, options)
 
         if self.lx_ver == "LX 2":
-            import LX2_masterscan
+            import LX1_masterscan
             import pickle
             from pathlib import Path
             import logging
             import compare_masterscan
 
-            LX2_masterscan.log.addHandler(logging.StreamHandler(SysOutListener()))
+            LX1_masterscan.log.addHandler(logging.StreamHandler(SysOutListener()))
 
             def make_save_mastersscan(options):
 
-                masterscan = LX2_masterscan.make_lx2_masterscan(options)
+                masterscan = LX1_masterscan.make_lx1_masterscan(options)
                 idp = Path(options["importDir"])
-                filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
-                LX2_masterscan.log.info(f"saving file to: {filename}")
+                # filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
+                filename = options["masterScanRun"]
+                LX1_masterscan.log.info(f"saving file to: {filename}")
                 with open(filename, "wb") as scFile:
                     pickle.dump(masterscan, scFile, pickle.HIGHEST_PROTOCOL)
                 return None
@@ -4813,20 +4814,22 @@ intensity."""
             worker = Worker(self, requestQ, resultQ)
             worker.beginThread(make_save_mastersscan, options)
 
-            dlg = wx.MessageDialog(
-                self,
-                "shall we compare mastescans?",
-                "compare",
-                wx.NO | wx.YES | wx.ICON_HAND,
-            )
-            if dlg.ShowModal() == wx.ID_YES:
-                lx1_mscan = options["masterScanRun"]
-                idp = Path(options["importDir"])
-                filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
-                lx2_mscan = filename
-                xls_output_path = str(idp / Path("".join([idp.stem, "-compare.xlsx"])))
-                compare_masterscan.compare_masterscan(lx1_mscan, lx2_mscan, xls_output_path)
-                dlg.Destroy()
+            # dlg = wx.MessageDialog(
+            #     self,
+            #     "shall we compare mastescans?",
+            #     "compare",
+            #     wx.NO | wx.YES | wx.ICON_HAND,
+            # )
+            # if dlg.ShowModal() == wx.ID_YES:
+            #     lx1_mscan = options["masterScanRun"]
+            #     idp = Path(options["importDir"])
+            #     filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
+            #     lx2_mscan = filename
+            #     xls_output_path = str(idp / Path("".join([idp.stem, "-compare.xlsx"])))
+            #     compare_masterscan.compare_masterscan(
+            #         lx1_mscan, lx2_mscan, xls_output_path
+            #     )
+            #     dlg.Destroy()
 
             self.button_StartImport.Enable()
             self.isRunning = False
