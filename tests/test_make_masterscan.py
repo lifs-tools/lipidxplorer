@@ -11,6 +11,7 @@ from utils import (
     read_options,
 )
 from LX2_masterscan import make_lx2_masterscan
+from LX1_masterscan import make_lx1_masterscan
 
 # from memory_profiler import profile
 
@@ -27,6 +28,15 @@ def test_make_masterscan():
 def test_make_lx2_masterscan():
     options = read_options(proy_path)
     masterscan = make_lx2_masterscan(options)
+    expected = loadSC(expected_lx2ms_path)
+    expected.listSurveyEntry = expected.listSurveyEntry[:100]
+    masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]
+    assert compareMasterScans(masterscan, expected)
+
+
+def test_make_lx1_masterscan():
+    options = read_options(proy_path)
+    masterscan = make_lx1_masterscan(options)
     expected = loadSC(expected_lx2ms_path)
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
     masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]
