@@ -19,6 +19,7 @@ from LX2_masterscan import se_factory, ms2entry_factory
 def make_lx1_masterscan(options) -> MasterScan:
     # get spectra
     spectra_dfs = spectra_2_df(options)  # already teim range and mass range filtered
+    polarity = spectra_dfs[0].polarity.iat[0]
 
     # agg ms1 per spectra
     ms1_dfs = {}
@@ -28,18 +29,16 @@ def make_lx1_masterscan(options) -> MasterScan:
         agg_df["stem"] = df.stem.iloc[0]
         ms1_dfs[df.stem.iloc[0]] = agg_df
 
-    ms1_agg_peaks = pd.concat(ms1_dfs.values())
-    for k, ms1_df in ms1_dfs:
+    for ms1_df in ms1_dfs.values():
         cal_matchs, cal_vals = recalibration_values(ms1_df, options)
         ms1_df.mz = ms1_df.mz + np.interp(ms1_df.mz, cal_matchs, cal_vals)
 
-
+    ms1_agg_peaks = pd.concat(ms1_dfs.values())
     # agg ms1 acrosss spectra
     ms1_agg_peaks = ms1_scans_agg(ms1_agg_peaks, options)
     # ms1_agg_peaks.pivot(index='mass', columns='stem', values=['inty','lx1_bad_inty'])
 
     ##### agg ms2
-    spectra_dfs[0].loc[~df.precursor_id.isna()]
     try:
         ms2_peaks = pd.concat((df.loc[~df.precursor_id.isna()] for df in spectra_dfs))
     except ValueError:
@@ -52,6 +51,7 @@ def make_lx1_masterscan(options) -> MasterScan:
         ms2_peaks["prec_bin"] = ms2_peaks.precursor_mz.map(precursors_bins)
         grouped_prec = ms2_peaks.groupby(["stem", "prec_bin"])
         ms2_agg_peaks = pd.concat(ms2_peaks_group_generator(grouped_prec, options))
+        # also recalibrate
         # TODO # collape_join_adjecent_clusters_msms(cluster)
 
     # make listSurveyEntry
@@ -60,7 +60,7 @@ def make_lx1_masterscan(options) -> MasterScan:
     samples.extend([f"{k}_lx2" for k in samples])  # because we add both results
     polarity = spectra_dfs[0].polarity.iat[0]
     # TODO assert there is only one polarity
-    
+
     listSurveyEntry = [
         se_factory(msmass, dictIntensity, samples, polarity)
         for msmass, dictIntensity, polarity in mass_inty_generator_ms1_agg(
@@ -370,10 +370,14 @@ def ms2_peaks_group_generator(grouped_prec, options):
 # #recalibrate
 def recalibration_values(ms1_df, options):
     res = []
-    for cal_mass in options['MScalibration']:
+    for cal_mass in options["MScalibration"]:
         tol = cal_mass / options["MSresolution"].tolerance
-        #find close enough most intense
-        reference_mass = ms1_df[ms1_df.mz.between(cal_mass-tol , cal_mass+tol)].sort_values('inty', ascending=False).mz.iat[0]
+        # find close enough most intense
+        reference_mass = (
+            ms1_df[ms1_df.mz.between(cal_mass - tol, cal_mass + tol)]
+            .sort_values("inty", ascending=False)
+            .mz.iat[0]
+        )
         change_val = cal_mass - reference_mass
         res.append((reference_mass, change_val))
 
