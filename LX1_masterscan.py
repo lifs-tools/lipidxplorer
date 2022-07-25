@@ -34,19 +34,23 @@ def make_lx1_masterscan(options) -> MasterScan:
     # ms1_agg_peaks.pivot(index='mass', columns='stem', values=['inty','lx1_bad_inty'])
 
     ##### agg ms2
-    ms2_peaks = pd.concat((df.loc[~df.precursor_id.isna()] for df in spectra_dfs))
+    try:
+        ms2_peaks = pd.concat((df.loc[~df.precursor_id.isna()] for df in spectra_dfs))
+    except ValueError:
+        log.info("no ms2 found")
 
-    precursors_df = grouped_precursors_df(ms2_peaks, options)
-    precursors_bins = precursors_df.set_index("precursor_mz")["prec_bin"].to_dict()
+    if not ms2_peaks.empty:
+        precursors_df = grouped_precursors_df(ms2_peaks, options)
+        precursors_bins = precursors_df.set_index("precursor_mz")["prec_bin"].to_dict()
 
-    ms2_peaks["prec_bin"] = ms2_peaks.precursor_mz.map(precursors_bins)
-    grouped_prec = ms2_peaks.groupby(["stem", "prec_bin"])
-    ms2_agg_peaks = pd.concat(ms2_peaks_group_generator(grouped_prec, options))
-    # TODO # collape_join_adjecent_clusters_msms(cluster)
+        ms2_peaks["prec_bin"] = ms2_peaks.precursor_mz.map(precursors_bins)
+        grouped_prec = ms2_peaks.groupby(["stem", "prec_bin"])
+        ms2_agg_peaks = pd.concat(ms2_peaks_group_generator(grouped_prec, options))
+        # TODO # collape_join_adjecent_clusters_msms(cluster)
 
     # make listSurveyEntry
 
-    samples = [ms1_dfs.keys()]
+    samples = [k for k in ms1_dfs.keys()]
     samples.extend([f"{k}_lx2" for k in samples])  # because we add both results
     polarity = spectra_dfs[0].polarity.iat[0]
     # TODO assert there is only one polarity
@@ -56,33 +60,34 @@ def make_lx1_masterscan(options) -> MasterScan:
             ms1_agg_peaks, polarity
         )
     ]
-    MS1_precurmass = pd.Series(
-        [se.precurmass for se in listSurveyEntry], name="MS1_precurmass"
-    )
-    MS1_precurmass.sort_values(inplace=True)
+    if not ms2_peaks.empty:
+        MS1_precurmass = pd.Series(
+            [se.precurmass for se in listSurveyEntry], name="MS1_precurmass"
+        )
+        MS1_precurmass.sort_values(inplace=True)
 
-    MS2_dict = dict(MS2_dict_generator(ms2_agg_peaks, samples, polarity))
-    MS2_dict_keys = pd.Series(list(MS2_dict.keys()), name="MS2_precurs")
-    MS2_dict_keys.sort_values(inplace=True)
+        if ms2_peaks:
+            MS2_dict = dict(MS2_dict_generator(ms2_agg_peaks, samples, polarity))
+            MS2_dict_keys = pd.Series(list(MS2_dict.keys()), name="MS2_precurs")
+            MS2_dict_keys.sort_values(inplace=True)
 
-    # map ms2 to ms1
-    tol = options["selectionWindow"] / 2
-    precur_map_df = pd.merge_asof(
-        MS1_precurmass,
-        MS2_dict_keys,
-        left_on="MS1_precurmass",
-        right_on="MS2_precurs",
-        direction="nearest",
-        tolerance=tol,
-    )
-    precur_dict = precur_map_df.set_index(MS1_precurmass)["MS2_precurs"].to_dict()
+        # map ms2 to ms1
+        tol = options["selectionWindow"] / 2
+        precur_map_df = pd.merge_asof(
+            MS1_precurmass,
+            MS2_dict_keys,
+            left_on="MS1_precurmass",
+            right_on="MS2_precurs",
+            direction="nearest",
+            tolerance=tol,
+        )
+        precur_dict = precur_map_df.set_index("MS1_precurmass")["MS2_precurs"].to_dict()
 
-    ms1_prec_dict = ms1_agg_peaks.set_index("mass")["precursor_mz"].to_dict()
-    for se in listSurveyEntry:
-        precursor = precur_dict[se.precurmass]
-        se.listMSMS = MS2_dict.get(precursor, [])
+        for se in listSurveyEntry:
+            precursor = precur_dict[se.precurmass]
+            se.listMSMS = MS2_dict.get(precursor, [])
 
-    return build_masterscan(options, listSurveyEntry, samples, polarity)
+    return build_masterscan(options, listSurveyEntry, samples)
 
 
 ############################################ ms1 agg
@@ -297,9 +302,9 @@ def bin_mkSurveyLinear_for_ms2(masses, options):  # copied from above
 
 
 def ms2_peaks_group_generator(grouped_prec, options):
-
     for idx, prec_ms2_peaks in grouped_prec:
         # intensityWeightedAvg
+        log.info(f"processing ms2 {idx}")
         prec_ms2_peaks.sort_values("mz", inplace=True)
         bins1 = list(bin_mkSurveyLinear_for_ms2(prec_ms2_peaks.mz, options))
         bins1_weighted_average = (prec_ms2_peaks.mz * prec_ms2_peaks.inty).groupby(
@@ -402,6 +407,7 @@ def MSMSEntry_list_generator(gdf, samples, polarity):
 
 def MS2_dict_generator(ms2_agg_peaks, samples, polarity):
     for precursor_mz, gdf in ms2_agg_peaks.groupby("precursor_mz"):
+        log.info(f"collecting ms2 {precursor_mz}")
         MSMSEntry_list = [
             ms2entry_factory(*args)
             for args in MSMSEntry_list_generator(gdf, samples, polarity)
