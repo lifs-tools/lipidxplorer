@@ -73,10 +73,9 @@ def make_lx1_masterscan(options) -> MasterScan:
         )
         MS1_precurmass.sort_values(inplace=True)
 
-        if ms2_peaks:
-            MS2_dict = dict(MS2_dict_generator(ms2_agg_peaks, samples, polarity))
-            MS2_dict_keys = pd.Series(list(MS2_dict.keys()), name="MS2_precurs")
-            MS2_dict_keys.sort_values(inplace=True)
+        MS2_dict = dict(MS2_dict_generator(ms2_agg_peaks, samples, polarity))
+        MS2_dict_keys = pd.Series(list(MS2_dict.keys()), name="MS2_precurs")
+        MS2_dict_keys.sort_values(inplace=True)
 
         # map ms2 to ms1
         tol = options["selectionWindow"] / 2
