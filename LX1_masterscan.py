@@ -2,6 +2,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import logging, sys
+from collections import OrderedDict
 
 logging.basicConfig(
     level=logging.INFO,
@@ -49,8 +50,9 @@ def make_lx1_masterscan(options) -> MasterScan:
         precursors_bins = precursors_df.set_index("precursor_mz")["prec_bin"].to_dict()
 
         ms2_peaks["prec_bin"] = ms2_peaks.precursor_mz.map(precursors_bins)
-        grouped_prec = ms2_peaks.groupby(["stem", "prec_bin"])
+        grouped_prec = ms2_peaks.groupby("prec_bin")
         ms2_agg_peaks = pd.concat(ms2_peaks_group_generator(grouped_prec, options))
+
         # also recalibrate
         # TODO # collape_join_adjecent_clusters_msms(cluster)
 
@@ -58,7 +60,8 @@ def make_lx1_masterscan(options) -> MasterScan:
 
     samples = [k for k in ms1_dfs.keys()]
     samples.extend([f"{k}_lx2" for k in samples])  # because we add both results
-    polarity = spectra_dfs[0].polarity.iat[0]
+    samples = sorted(samples)
+    polarity = int(spectra_dfs[0].polarity.iat[0])
     # TODO assert there is only one polarity
 
     listSurveyEntry = [
@@ -328,40 +331,47 @@ def ms2_peaks_group_generator(grouped_prec, options):
         prec_ms2_peaks["bins"] = bins3
         prec_ms2_peaks["weighted_mass"] = weighted_mass
 
-        fadi_denominator = prec_ms2_peaks.scan_id.unique().shape[0]
-        ff_mask = (
-            prec_ms2_peaks.groupby("bins")["bins"].transform("count") / fadi_denominator
-            >= options["MSMSfilter"]
-        )
-        mof_mask = (
-            prec_ms2_peaks.groupby("bins")["bins"].transform("count") / fadi_denominator
-            >= options["MSMSminOccupation"]
-        )
-
         tf_mask = prec_ms2_peaks.inty > options["MSMSthreshold"]
 
         # it uses merge sum intensity for getting the averrage intensity...
         agg_prec_ms2_peaks = (
-            prec_ms2_peaks[ff_mask & tf_mask & mof_mask]
-            .groupby("bins")
-            .agg({"weighted_mass": ["mean", "count"], "inty": "mean"})
+            prec_ms2_peaks[tf_mask]
+            .groupby(
+                ["weighted_mass", "stem"]
+            )  # weighted_mass is as indicateive as the bin
+            .agg({"inty": "mean", "mz": "count"})
         )
-        agg_prec_ms2_peaks["precursor_mz"] = prec_ms2_peaks.precursor_mz.mean().round(6)
-        # there is minor differrence in mean between different files, and the same precursor bin, to avoid it we round
+        agg_prec_ms2_peaks.rename(columns={"mz": "count"}, inplace=True)
+        agg_prec_ms2_peaks.reset_index(inplace=True)
+        agg_prec_ms2_peaks.rename(columns={"weighted_mass": "mz"}, inplace=True)
 
-        agg_prec_ms2_peaks["stem"] = idx[0]
+        fadi_denominators = (
+            prec_ms2_peaks.groupby("stem")["scan_id"].nunique().to_dict()
+        )
 
-        agg_prec_ms2_peaks.columns = [
-            "_".join(col).strip() for col in agg_prec_ms2_peaks.columns.values
-        ]
-        names = {
-            "weighted_mass_mean": "mz",
-            "weighted_mass_count": "count",
-            "inty_mean": "inty",
-            "precursor_mz_": "precursor_mz",
-            "stem_": "stem",
-        }
-        agg_prec_ms2_peaks.rename(columns=names, inplace=True)
+        ff_mask = (
+            agg_prec_ms2_peaks["count"] / agg_prec_ms2_peaks.stem.map(fadi_denominators)
+            >= options["MSMSfilter"]
+        )
+        mof_mask = (
+            agg_prec_ms2_peaks["count"] / agg_prec_ms2_peaks.stem.map(fadi_denominators)
+            >= options["MSMSminOccupation"]
+        )
+
+        agg_prec_ms2_peaks["precursor_mz"] = prec_ms2_peaks.precursor_mz.mean()
+        agg_prec_ms2_peaks = agg_prec_ms2_peaks[ff_mask & mof_mask]
+
+        # agg_prec_ms2_peaks.columns = [
+        #     "_".join(col).strip() for col in agg_prec_ms2_peaks.columns.values
+        # ]
+        # names = {
+        #     "weighted_mass_mean": "mz",
+        #     "weighted_mass_count": "count",
+        #     "inty_mean": "inty",
+        #     "precursor_mz_": "precursor_mz",
+        #     "stem_": "stem",
+        # }
+        # agg_prec_ms2_peaks.rename(columns=names, inplace=True)
 
         yield agg_prec_ms2_peaks
 
@@ -392,6 +402,7 @@ def mass_inty_generator_ms1_agg(ms1_agg_peaks, polarity):
         dictIntensity = gdf.set_index("stem")["lx1_bad_inty"].to_dict()
         dictIntensity_lx2 = gdf.set_index("stem")["inty"].to_dict()
         dictIntensity.update({f"{k}_lx2": v for k, v in dictIntensity_lx2.items()})
+        dictIntensity = OrderedDict(sorted(dictIntensity.items()))
         yield (mass, dictIntensity, polarity)
 
 
@@ -402,6 +413,7 @@ def MSMSEntry_list_generator(gdf, samples, polarity):
             {f"{k}_lx2": v for k, v in dictIntensity.items()}
         )  # TODO actually get other values
         # TODO samples should be dictIntensity.keys()?
+        dictIntensity = OrderedDict(sorted(dictIntensity.items()))
         yield (mz, dictIntensity, samples, polarity)
 
 
