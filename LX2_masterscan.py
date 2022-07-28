@@ -88,12 +88,54 @@ def spectra_2_df(options):
     ms1_mass_range = options["MSmassrange"]
     ms2_mass_range = options["MSMSmassrange"]
 
+    polarity = options.get("lx2_polarity", None)
+    drop_fuzzy = options.get("lx2_drop_fuzzy", None)
+
+    include_text = options.get("lx2_include_text", None)
+    exclude_text = options.get("lx2_exclude_text", None)
+
     # generaste ms1 data
     spectra_dfs = [
-        path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range) for mzml in mzmls
+        path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range, polarity)
+        for mzml in mzmls
     ]
 
+    if drop_fuzzy:
+        spectra_dfs = [drop_fuzzy(spectra_df) for spectra_df in spectra_dfs]
+
+    if include_text:
+        spectra_dfs = [
+            spectra_df.loc[spectra_df.filter_string.str.contains(exclude_text)]
+            for spectra_df in spectra_dfs
+        ]
+
+    if include_text:
+        spectra_dfs = [
+            spectra_df.loc[~spectra_df.filter_string.str.contains(exclude_text)]
+            for spectra_df in spectra_dfs
+        ]
+
     return spectra_dfs
+
+
+def drop_fuzzy(spectra_df):
+    fraction_of_average_intensity = 0.1
+    spectras_sum_inty = (
+        spectra_df.loc[spectra_df.precursor_id.isna()].groupby("scan_id")["inty"].sum()
+    )
+    sum_inty_mean = spectras_sum_inty.mean()
+    spectras_sum_inty = spectras_sum_inty.to_dict()
+
+    to_drop = []
+    for scan_id in spectra_df.scan_id.drop_duplicates():  # this maintains order
+        if (
+            spectras_sum_inty[scan_id] < sum_inty_mean * fraction_of_average_intensity
+        ):  # one order
+            to_drop.append(scan_id)
+        else:
+            break
+
+    return spectra_df.loc[~spectra_df.scan_id.isin(to_drop)]
 
 
 def mz_ml_paths(options):
@@ -200,6 +242,7 @@ def path2df(
     ms1_end=float("inf"),
     ms2_start=0,
     ms2_end=float("inf"),
+    polarity=None,
 ):
     dfs = []
     with MSFileLoader(str(path)) as r:
@@ -207,6 +250,8 @@ def path2df(
         r.start_from_scan(r.get_scan_by_time(time_start / 60).id)
         for b in r:
             if not (time_start / 60 < b.precursor.scan_time < time_end / 60):
+                continue
+            if polarity and b.precursor.polarity != polarity:
                 continue
             a = b.precursor.arrays
             df = pd.DataFrame(
@@ -231,7 +276,7 @@ def path2df(
             for p in b.products:
                 if not (time_start / 60 < p.scan_time < time_end / 60):
                     continue
-                if not(ms1_start < p.precursor_information.mz < ms1_end):
+                if not (ms1_start < p.precursor_information.mz < ms1_end):
                     continue
                 a = p.arrays
                 df = pd.DataFrame(

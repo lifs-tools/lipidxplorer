@@ -19,6 +19,13 @@ from LX2_masterscan import se_factory, ms2entry_factory
 
 def make_lx1_masterscan(options) -> MasterScan:
     # get spectra
+    options["lx2_polarity"] = None  # to select scans by polaority
+    options[
+        "lx2_drop_fuzzy"
+    ] = None  # to drop the first few MS1 scans that dont have at least 10% of the average intensity
+    options["lx2_include_text"] = None  # all scans should include this text
+    options["lx2_exclude_text"] = None  # all scans should exlude this text
+
     spectra_dfs = spectra_2_df(options)  # already teim range and mass range filtered
     polarity = spectra_dfs[0].polarity.iat[0]
 
