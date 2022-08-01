@@ -3,6 +3,8 @@ try:
 except ImportError:
     from backports.functools_lru_cache import lru_cache
 
+from numba import njit
+
 """
 https://www.ibm.com/developerworks/community/blogs/jfp/entry/Python_Meets_Julia_Micro_Performance?lang=en
 from functools import lru_cache as cache
@@ -32,6 +34,7 @@ TI = 47.947947
 
 
 @lru_cache(maxsize=None)
+@njit
 def calcsf(args):
     (
         lwBndC,
