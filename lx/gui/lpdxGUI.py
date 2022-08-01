@@ -2087,9 +2087,9 @@ intensity."""
         )
 
         self.choice_SettingsSection_lx_ver = wx.Choice(
-            self.notebook_1_pane_5, -1, choices=["LX 1", "LX 2"]
+            self.notebook_1_pane_5, -1, choices=["LX 2"]  # "LX 1",
         )
-        self.choice_SettingsSection_lx_ver.SetStringSelection("LX 1")
+        self.choice_SettingsSection_lx_ver.SetStringSelection("LX 2")
         # self.choice_SettingsSection_lx_ver.SetMinSize((button1_small_w, button1_small_h * 1.3))
 
         # neither textCtrl nor label stuff
@@ -4282,14 +4282,15 @@ intensity."""
             self.text_ctrl_RunOptions_MSMS,
         ]
 
-        if evt.GetString() == "LX 1":
-            self.lx_ver = "LX 1"
-            for e in elems:
-                e.Enable()
-        elif evt.GetString() == "LX 2":
-            self.lx_ver = "LX 2"
-            for e in elems:
-                e.Disable()
+        self.lx_ver = "LX 2"
+        # if evt.GetString() == "LX 1":
+        #     self.lx_ver = "LX 1"
+        #     for e in elems:
+        #         e.Enable()
+        # elif evt.GetString() == "LX 2":
+        #     self.lx_ver = "LX 2"
+        #     for e in elems:
+        #         e.Disable()
 
         self.OnSettingsChange()
 
@@ -4789,7 +4790,7 @@ intensity."""
         # start import
         # startImportGUI(self, options)
 
-        if self.lx_ver == "LX 2":
+        if True:  # self.lx_ver == "LX 2":
             import LX1_masterscan
             import pickle
             from pathlib import Path

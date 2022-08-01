@@ -99,7 +99,7 @@ class MzXMLFileReader:
         self.ns = ""
 
     def __iter__(self):
-        return self.next()
+        return self.__next__()
 
     def extract_scan(self, ele):
 
@@ -181,11 +181,11 @@ class MzXMLFileReader:
     # from .elementtree.SimpleXMLWriter import XMLWriter
 
     # class MzXMLFileWriter:
-    def __init__(self, s, f):
-        self.h = charCounter(open(f, "w"))
-        self.w = XMLWriter(self.h)
-        self.s = s
-        self.scanOffset = {}
+    # def __init__(self, s, f):
+    #     self.h = charCounter(open(f, "w"))
+    #     self.w = XMLWriter(self.h)
+    #     self.s = s
+    #     self.scanOffset = {}
 
     def write(self, **kw):
         mzxmlid = self.w.start(

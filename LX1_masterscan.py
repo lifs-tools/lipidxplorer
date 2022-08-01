@@ -29,6 +29,8 @@ def make_lx1_masterscan(options) -> MasterScan:
     spectra_dfs = spectra_2_df(options)  # already teim range and mass range filtered
     polarity = spectra_dfs[0].polarity.iat[0]
 
+    suggested_selection_window = suggest_selection_window(spectra_dfs[0])
+
     # agg ms1 per spectra
     ms1_dfs = {}
     for df in spectra_dfs:  # first file, already teim range and mass range filtered
@@ -39,7 +41,8 @@ def make_lx1_masterscan(options) -> MasterScan:
 
     for ms1_df in ms1_dfs.values():
         cal_matchs, cal_vals = recalibration_values(ms1_df, options)
-        ms1_df.mz = ms1_df.mz + np.interp(ms1_df.mz, cal_matchs, cal_vals)
+        if cal_matchs and cal_vals:
+            ms1_df.mz = ms1_df.mz + np.interp(ms1_df.mz, cal_matchs, cal_vals)
 
     ms1_agg_peaks = pd.concat(ms1_dfs.values())
     # agg ms1 acrosss spectra
@@ -60,7 +63,7 @@ def make_lx1_masterscan(options) -> MasterScan:
         grouped_prec = ms2_peaks.groupby("prec_bin")
         ms2_agg_peaks = pd.concat(ms2_peaks_group_generator(grouped_prec, options))
 
-        # also recalibrate
+        # TODO recalibrate
         # TODO # collape_join_adjecent_clusters_msms(cluster)
 
     # make listSurveyEntry
@@ -389,11 +392,15 @@ def recalibration_values(ms1_df, options):
     for cal_mass in options["MScalibration"]:
         tol = cal_mass / options["MSresolution"].tolerance
         # find close enough most intense
+
         reference_mass = (
             ms1_df[ms1_df.mz.between(cal_mass - tol, cal_mass + tol)]
             .sort_values("inty", ascending=False)
-            .mz.iat[0]
+            .mz
         )
+        if not reference_mass.any():
+            return None, None
+        reference_mass = reference_mass.iat[0]
         change_val = cal_mass - reference_mass
         res.append((reference_mass, change_val))
 
@@ -445,6 +452,51 @@ def build_masterscan(options, listSurveyEntry, samples):
     # samples.extend([f'{k}_lx2' for k in samples])
     scan.listSamples = samples
     return scan
+
+
+#######LX2 functionsloity
+def suggest_selection_window(spectra_df):
+    precursor_mzs = spectra_df.loc[
+        ~spectra_df.precursor_id.isna()
+    ].precursor_mz.drop_duplicates()
+    precursor_mzs.sort_values(inplace=True)
+    agg_data = precursor_mzs.diff().agg(["mean", "std"])
+
+    mean_less_std = agg_data.at["mean"] - agg_data.at["std"]
+    if mean_less_std > 0:
+        res = mean_less_std / 2
+    else:
+        res = agg_data.at["mean"] / 2
+
+    return res
+
+
+def suggest_resolution_gradient_and_tolerance(spectra_df):
+    df = spectra_df.loc[spectra_df.precursor_id.isna()]
+    # use only thge last few scans
+    scan_count = df.scan_id.unique().size
+
+    df["scan_id_f"] = df["scan_id"].factorize()[0]
+    df.sort_values(["mz", "scan_id_f"], ascending=False, inplace=True)
+    df["nunique_scans"] = df.rolling(60)["scan_id_f"].apply(lambda s: len(set(s)))
+    # try https://stackoverflow.com/questions/46470743/how-to-efficiently-compute-a-rolling-unique-count-in-a-pandas-time-series
+    max_unique_scans = df["nunique_scans"].max()
+    df["mean_diff"] = df["mz"].diff(-1).rolling(max_unique_scans).mean()
+    df["mz_r"] = (df.mz / 10).round() * 10
+
+    valids = df.loc[df["nunique_scans"] >= max_unique_scans * 0.9]
+    valids.sort_values("mz", inplace=True)
+    valids["max_diff"] = valids["mean_diff"].cummax()
+    selected = valids.groupby("mz_r")["resolution"].min().to_frame().reset_index()
+    # selected.plot(x='mz_r', y="resolution")
+    res_at_loest_mass = selected["resolution"].iat[0]
+    gradient = (
+        selected["resolution"].iat[-1]
+        - selected["resolution"].iat[0] / selected["mz_r"].iat[-1]
+        - selected["mz_r"].iat[0]
+    )
+
+    return res_at_loest_mass, gradient
 
 
 if __name__ == "__main__":

@@ -88,11 +88,13 @@ def spectra_2_df(options):
     ms1_mass_range = options["MSmassrange"]
     ms2_mass_range = options["MSMSmassrange"]
 
-    polarity = options.get("lx2_polarity", None)
-    drop_fuzzy = options.get("lx2_drop_fuzzy", None)
+    polarity = options._data.get("lx2_polarity", None)
+    drop_fuzzy = options._data.get("lx2_drop_fuzzy", None)
 
-    include_text = options.get("lx2_include_text", None)
-    exclude_text = options.get("lx2_exclude_text", None)
+    include_text = options._data.get("lx2_include_text", None)
+    exclude_text = options._data.get("lx2_exclude_text", None)
+
+    # options mstolerance is never used so , will ignore
 
     # generaste ms1 data
     spectra_dfs = [
