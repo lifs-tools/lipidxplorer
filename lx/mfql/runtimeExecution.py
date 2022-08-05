@@ -355,7 +355,8 @@ class TypeResult:
     def __getitem__(self, item):
         return self.dictQuery[item]
 
-    def generateResultSC(self):
+    def generateResultSC(self, merge_ids=True):
+        #
 
         resultSC = self.mfqlObj.resultSC
 
@@ -381,6 +382,18 @@ class TypeResult:
                     resultSC.append(se)
 
         resultSC.sort()
+
+        if merge_ids:
+            from itertools import groupby
+
+            merged_resultSC = []
+            for key, group in groupby(resultSC, lambda x: str(x.listPrecurmassSF)):
+                base = next(group)
+                for entry in group:
+                    for k, v in base.dictIntensity.items():
+                        base.dictIntensity[k] = max(v, entry.dictIntensity[k])
+                merged_resultSC.append(base)
+            self.mfqlObj.resultSC = merged_resultSC
 
     def generateComplementSC(self):
 

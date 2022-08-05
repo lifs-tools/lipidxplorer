@@ -1346,12 +1346,12 @@ def startParsing(
     # testwise put it here before MS/MS correction, because MS/MS correction has to
     # note the change first
     print("generating result MasterScan ...", end=" ")
-    mfqlObj.result.generateResultSC()
-    seethis(mfqlObj.result)
+    mfqlObj.result.generateResultSC(merge_ids=True)
+    seethis(mfqlObj.resultSC)
     print("%.2f sec." % time.clock())
 
-    print("only some surveys are of interest")
-    print("\n".join(map(str, mfqlObj.resultSC)))
+    # print("only some surveys are of interest")
+    # print("\n".join(map(str, mfqlObj.resultSC)))
 
     ## debugging ###
     # for se in mfqlObj.result.mfqlObj.resultSC:
