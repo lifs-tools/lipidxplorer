@@ -35,7 +35,7 @@ def make_lx1_masterscan(options) -> MasterScan:
     ms1_dfs = {}
     for df in spectra_dfs:  # first file, already teim range and mass range filtered
         ms1_peaks = df.loc[df.precursor_id.isna()]
-        agg_df = ms1_peaks_agg(ms1_peaks, options)
+        agg_df = ms1_peaks_agg_lx2(ms1_peaks, options)
         agg_df["stem"] = df.stem.iloc[0]
         ms1_dfs[df.stem.iloc[0]] = agg_df
 
@@ -127,16 +127,7 @@ def bin_linear_alignment(masses, options):
 
 
 def ms1_peaks_agg(ms1_peaks, options):
-    ms1_peaks.sort_values("mz", inplace=True)
-
-    # binning is done 3 times in lx1, between each fadi filter is performed, we do it at the end intead
-    bins1 = list(bin_linear_alignment(ms1_peaks.mz, options))
-    bins2 = list(
-        bin_linear_alignment(ms1_peaks.groupby(bins1)["mz"].transform("mean"), options)
-    )
-    bins3 = list(
-        bin_linear_alignment(ms1_peaks.groupby(bins2)["mz"].transform("mean"), options)
-    )
+    bins3 = make_lx1_bins(ms1_peaks, options)
 
     ms1_peaks["bin_mass"] = bins3
 
@@ -189,6 +180,133 @@ def ms1_peaks_agg(ms1_peaks, options):
     return agg_df
 
 
+def make_lx1_bins(ms1_peaks, options):
+    ms1_peaks.sort_values("mz", inplace=True)
+
+    # binning is done 3 times in lx1, between each fadi filter is performed, we do it at the end intead
+    bins1 = list(bin_linear_alignment(ms1_peaks.mz, options))
+    bins2 = list(
+        bin_linear_alignment(ms1_peaks.groupby(bins1)["mz"].transform("mean"), options)
+    )
+    bins3 = list(
+        bin_linear_alignment(ms1_peaks.groupby(bins2)["mz"].transform("mean"), options)
+    )
+
+    return bins3
+
+
+def get_collapsable_bins(df, accross_column="scan_id", cluster_column="bin_mass"):
+    df["accross_column_f"] = df[accross_column].factorize()[0]
+    grouped = df.groupby(cluster_column)
+    grouped_stats = grouped.agg({"mz": ["max", "min", "std"]})
+    close_mz = grouped_stats[("mz", "min")] - grouped_stats[("mz", "max")].shift(
+        -1
+    ) < grouped_stats[("mz", "std")] + grouped_stats[("mz", "std")].shift(-1)
+    close_mz_groups = close_mz[close_mz | close_mz.shift(1)].index.to_numpy()
+    close_sets = (
+        df.loc[df[cluster_column].isin(close_mz_groups)]
+        .groupby(cluster_column)["accross_column_f"]
+        .apply(lambda s: set(s))
+    )
+
+    collapsable_map = {}
+    prev_set = set()
+    prev_idx = 0
+    merging = False
+    for idx, curr_set in close_sets.iteritems():
+        if (idx - prev_idx <= 1 or merging) and not curr_set.intersection(prev_set):
+            collapsable_map[idx] = prev_idx
+            prev_set.update(curr_set)
+            merging = True
+        prev_idx = idx
+        prev_set = curr_set
+        merging = False
+
+    return collapsable_map
+
+
+def diff_bin(df):
+
+    cur_bin = 0
+    curr_long = 0.01
+
+    for tup in df.itertuples():
+        if tup.mz_diff > curr_long:
+            cur_bin += 1
+
+        if tup.mz_diff_long < curr_long:
+            curr_long = tup.mz_diff_long
+
+        yield cur_bin
+
+
+def ms1_peaks_agg_lx2(ms1_peaks, options):
+    ms1_peaks.sort_values("mz", ascending=False, inplace=True)
+    # repetition_rate = 0.7
+    scan_count = ms1_peaks.scan_id.unique().size
+    if scan_count < 2:
+        log.info("no averaging, not enough scans")
+        return ms1_peaks
+    ms1_peaks["mz_diff"] = ms1_peaks.mz.diff(-1)
+    ms1_peaks["mz_diff_long"] = (
+        ms1_peaks["mz_diff"].rolling(scan_count).mean()
+    )  # neg because of sorting order
+
+    # below for reference in as a reminders
+    # df['scan_id_f'] = df['scan_id'].factorize()[0]
+    # df['scan_cnt'] = df.scan_id_f.rolling(scan_count).apply(lambda s: len(set(s)))
+    # df['mean_mz_diff']  = df.mz_diff.rolling(window = 31, center=True, win_type ='cosine' ).mean() # note win_type =should be tukey
+
+    ms1_peaks["bin_mass"] = list(diff_bin(ms1_peaks))
+
+    ######collapse adjacent
+    collapsable_map = get_collapsable_bins(ms1_peaks)
+
+    ms1_peaks["bin_mass"].replace(collapsable_map, inplace=True)
+
+    # merge mutiple peaks from single scan
+    g = ms1_peaks.groupby(["bin_mass", "scan_id"])
+    ms1_peaks["scan_cumcount"] = g.cumcount()
+    ms1_peaks["merged_mass"] = g["mz"].transform("mean")
+    ms1_peaks["merged_inty"] = g["inty"].transform(
+        "mean"
+    )  # NOTE merge is NOT weighted average
+
+    # aggregate results
+    agg_df = (
+        ms1_peaks.loc[
+            ms1_peaks.scan_cumcount == 0
+        ]  # use only the first of merged masses
+        .assign(
+            mass_intensity=lambda x: x.mz * x.merged_inty
+        )  # for the weighted average intensity
+        .groupby("bin_mass")
+        .agg({"merged_mass": ["mean", "count"], "merged_inty": "mean",})
+        .dropna()
+    )
+    agg_df.columns = ["_".join(col).strip() for col in agg_df.columns.values]
+
+    # apply fadi filters, in lx1 its done between each bin  process
+    fadi_denominator = ms1_peaks.scan_id.unique().shape[0]
+    mask_ff = agg_df.merged_mass_count / fadi_denominator >= options["MSfilter"]
+    agg_df = agg_df[mask_ff]
+
+    # NOTE intensity threshold is do in add_Sample... but lets do it here
+    MSthreshold = options["MSthreshold"]
+    mask_inty = agg_df.merged_inty_mean > MSthreshold
+    agg_df = agg_df[mask_inty]
+
+    # for reference...weigted_mass shoud not be necesary
+    # agg_df["weigted_mass"] = agg_df.mass_intensity_sum / agg_df.merged_inty_sum
+    # lx1 intensity is wrong because it uses the total number of scans, instead of the numebr of scans with a peak
+    # agg_df["lx1_bad_inty"] = agg_df.merged_inty_sum / fadi_denominator
+
+    agg_df.rename(
+        columns={"merged_mass_mean": "mz", "merged_inty_mean": "inty"}, inplace=True
+    )
+    return agg_df
+
+
 ############### ms1 agg accross spectra
 def bin_mkSurveyLinear(masses, options):
     # TODO assert masses are ordered
@@ -214,33 +332,41 @@ def bin_mkSurveyLinear(masses, options):
 
 
 def ms1_scans_agg(ms1_agg_peaks, options):
-    ms1_agg_peaks.sort_values("mz", inplace=True)
+    ms1_agg_peaks.sort_values("mz", ascending=False, inplace=True)
+    sample_count = ms1_agg_peaks.stem.unique().size
+    if sample_count < 2:
+        log.info("no averaging, not enough samples")
+        ms1_agg_peaks["mass"] = ms1_agg_peaks["mz"]
+        return ms1_agg_peaks
 
-    # binning is done 3 times in lx1, between each fadi filter is performed, we do it at the end intead
-    bins1 = list(bin_mkSurveyLinear(ms1_agg_peaks.mz, options))
-    bins2 = list(
-        bin_mkSurveyLinear(
-            ms1_agg_peaks.groupby(bins1)["mz"].transform("mean"), options
-        )
-    )
-    bins3 = list(
-        bin_mkSurveyLinear(
-            ms1_agg_peaks.groupby(bins2)["mz"].transform("mean"), options
-        )
-    )
+    ms1_agg_peaks["mz_diff"] = ms1_agg_peaks.mz.diff(-1)
+    ms1_agg_peaks["mz_diff"]
 
-    ms1_agg_peaks["bins"] = bins3
+    ms1_agg_peaks["mz_diff_long"] = (
+        ms1_agg_peaks["mz_diff"]
+        .replace(0, np.nan)
+        .rolling(sample_count, min_periods=2)
+        .mean()
+    )  # neg because of sorting order
+    # .replace(0,np.nan).fillna(method = 'bfill').fillna(method = 'ffill')
+
+    ms1_agg_peaks["bins"] = list(diff_bin(ms1_agg_peaks))
+    collapsable_map = get_collapsable_bins(
+        ms1_agg_peaks, accross_column="stem", cluster_column="bins"
+    )
+    ms1_agg_peaks["bins"].replace(collapsable_map, inplace=True)
+
+    # -----------------------
 
     # check occupation spectracontainer.py masterscan.chekoccupation
     # occupation is the % of peak intensities abvove "thrsld: "
-    threshold_denominator = ms1_agg_peaks.stem.unique().shape[0]  # same as len(res)
+    threshold_denominator = sample_count
     threshold = options["MSminOccupation"]
     bin_peak_count = ms1_agg_peaks.groupby("bins")["inty"].transform("count")
     tf_mask = (bin_peak_count / threshold_denominator) >= threshold
     ms1_agg_peaks["above_threshold"] = tf_mask
 
     ms1_agg_peaks["mass"] = ms1_agg_peaks.groupby("bins")["mz"].transform("mean")
-    # TODO collape_join_adjecent_clusters
     return ms1_agg_peaks
 
 
