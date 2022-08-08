@@ -4808,7 +4808,7 @@ intensity."""
                 LX1_masterscan.log.info(f"saving file to: {filename}")
                 with open(filename, "wb") as scFile:
                     pickle.dump(masterscan, scFile, pickle.HIGHEST_PROTOCOL)
-                return None
+                return self.CONST_THREAD_SUCCESSFUL
 
             requestQ = queue.Queue()
             resultQ = queue.Queue()
