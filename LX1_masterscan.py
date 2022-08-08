@@ -39,10 +39,11 @@ def make_lx1_masterscan(options) -> MasterScan:
         agg_df["stem"] = df.stem.iloc[0]
         ms1_dfs[df.stem.iloc[0]] = agg_df
 
-    for ms1_df in ms1_dfs.values():
-        cal_matchs, cal_vals = recalibration_values(ms1_df, options)
-        if cal_matchs and cal_vals:
-            ms1_df.mz = ms1_df.mz + np.interp(ms1_df.mz, cal_matchs, cal_vals)
+    if options._data.get("MScalibration"):
+        for ms1_df in ms1_dfs.values():
+            cal_matchs, cal_vals = recalibration_values(ms1_df, options)
+            if cal_matchs and cal_vals:
+                ms1_df.mz = ms1_df.mz + np.interp(ms1_df.mz, cal_matchs, cal_vals)
 
     ms1_agg_peaks = pd.concat(ms1_dfs.values())
     # agg ms1 acrosss spectra
