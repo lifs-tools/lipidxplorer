@@ -252,7 +252,7 @@ def ms1_peaks_agg_lx2(ms1_peaks, options):
     ms1_peaks["mz_diff"] = ms1_peaks.mz.diff(-1).shift()
     ms1_peaks["mz_diff_long"] = (
         ms1_peaks["mz_diff"]
-        .replace(0, np.nan)
+        .where(ms1_peaks["mz_diff"] > 0.0001, np.nan)
         .rolling(scan_count, min_periods=2)
         .mean()
     )  # neg because of sorting order
@@ -348,7 +348,7 @@ def ms1_scans_agg(ms1_agg_peaks, options):
 
     ms1_agg_peaks["mz_diff_long"] = (
         ms1_agg_peaks["mz_diff"]
-        .replace(0, np.nan)
+        .where(ms1_agg_peaks["mz_diff"] > 0.0001, np.nan)
         .rolling(sample_count, min_periods=2)
         .mean()
     )  # neg because of sorting order
