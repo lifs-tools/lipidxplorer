@@ -203,6 +203,7 @@ def get_collapsable_bins(df, accross_column="scan_id", cluster_column="bin_mass"
     close_mz = grouped_stats[("mz", "min")] - grouped_stats[("mz", "max")].shift(
         -1
     ) < grouped_stats[("mz", "std")] + grouped_stats[("mz", "std")].shift(-1)
+
     close_mz_groups = close_mz[close_mz | close_mz.shift(1)].index.to_numpy()
     close_sets = (
         df.loc[df[cluster_column].isin(close_mz_groups)]
@@ -248,9 +249,12 @@ def ms1_peaks_agg_lx2(ms1_peaks, options):
     if scan_count < 2:
         log.info("no averaging, not enough scans")
         return ms1_peaks
-    ms1_peaks["mz_diff"] = ms1_peaks.mz.diff(-1)
+    ms1_peaks["mz_diff"] = ms1_peaks.mz.diff(-1).shift()
     ms1_peaks["mz_diff_long"] = (
-        ms1_peaks["mz_diff"].rolling(scan_count).mean()
+        ms1_peaks["mz_diff"]
+        .replace(0, np.nan)
+        .rolling(scan_count, min_periods=2)
+        .mean()
     )  # neg because of sorting order
 
     # below for reference in as a reminders
@@ -340,8 +344,7 @@ def ms1_scans_agg(ms1_agg_peaks, options):
         ms1_agg_peaks["mass"] = ms1_agg_peaks["mz"]
         return ms1_agg_peaks
 
-    ms1_agg_peaks["mz_diff"] = ms1_agg_peaks.mz.diff(-1)
-    ms1_agg_peaks["mz_diff"]
+    ms1_agg_peaks["mz_diff"] = ms1_agg_peaks.mz.diff(-1).shift()
 
     ms1_agg_peaks["mz_diff_long"] = (
         ms1_agg_peaks["mz_diff"]
