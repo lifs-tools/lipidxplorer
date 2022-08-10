@@ -148,6 +148,7 @@ def ms1_peaks_agg(ms1_peaks, options):
     ms1_peaks["merged_inty"] = g["inty"].transform(
         "mean"
     )  # NOTE merge is NOT weighted average
+    # TODO make a weighted intensity based on standard deviation... but not now
 
     # aggregate results
     agg_df = (
@@ -230,7 +231,7 @@ def get_collapsable_bins(
 
     collapsable_map = {}
     prev_set = set()
-    prev_idx = 0
+    prev_idx = close_mz[close_mz].index[0]
     merging = False
     for idx, curr_set in close_sets.iteritems():
         if (
@@ -375,6 +376,10 @@ def ms1_scans_agg(ms1_agg_peaks, options):
     )
 
     ms1_agg_peaks["bins"] = bins3
+    collapsable_map = get_collapsable_bins(
+        ms1_agg_peaks, accross_column="stem", cluster_column="bins"
+    )
+    ms1_agg_peaks["bins"].replace(collapsable_map, inplace=True)
 
     # check occupation spectracontainer.py masterscan.chekoccupation
     # occupation is the % of peak intensities abvove "thrsld: "
@@ -386,6 +391,7 @@ def ms1_scans_agg(ms1_agg_peaks, options):
 
     ms1_agg_peaks["mass"] = ms1_agg_peaks.groupby("bins")["mz"].transform("mean")
     # TODO collape_join_adjecent_clusters
+
     return ms1_agg_peaks
 
 
