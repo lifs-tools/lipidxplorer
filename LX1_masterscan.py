@@ -182,10 +182,10 @@ def ms1_peaks_agg(ms1_peaks, options):
     # for reference...weigted_mass shoud not be necesary
     agg_df["weigted_mass"] = agg_df.mass_intensity_sum / agg_df.merged_inty_sum
     # lx1 intensity is wrong because it uses the total number of scans, instead of the numebr of scans with a peak
-    agg_df["lx1_bad_inty"] = agg_df.merged_inty_sum / fadi_denominator
+    # agg_df["lx1_bad_inty"] = agg_df.merged_inty_sum / fadi_denominator
 
     agg_df.rename(
-        columns={"merged_mass_mean": "mz", "merged_inty_mean": "inty"}, inplace=True
+        columns={"weigted_mass": "mz", "merged_inty_mean": "inty"}, inplace=True
     )
     return agg_df
 
