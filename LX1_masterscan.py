@@ -32,10 +32,13 @@ def make_lx1_masterscan(options) -> MasterScan:
     suggested_selection_window = suggest_selection_window(spectra_dfs[0])
 
     # agg ms1 per spectra
+    agg_strategy = (
+        ms1_peaks_agg if options._data.get("MSresolution") else ms1_peaks_agg_lx2
+    )
     ms1_dfs = {}
     for df in spectra_dfs:  # first file, already teim range and mass range filtered
         ms1_peaks = df.loc[df.precursor_id.isna()]
-        agg_df = ms1_peaks_agg_lx2(ms1_peaks, options)
+        agg_df = agg_strategy(ms1_peaks, options)
         agg_df["stem"] = df.stem.iloc[0]
         ms1_dfs[df.stem.iloc[0]] = agg_df
 
