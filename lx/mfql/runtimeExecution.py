@@ -355,7 +355,7 @@ class TypeResult:
     def __getitem__(self, item):
         return self.dictQuery[item]
 
-    def generateResultSC(self, merge_ids=True):
+    def generateResultSC(self, merge_ids=False):
         #
 
         resultSC = self.mfqlObj.resultSC
