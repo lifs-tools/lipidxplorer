@@ -258,6 +258,9 @@ def p_scriptname(p):
         mfqlObj.scan.wasOR = False
         mfqlObj.dictDefinitionTable[mfqlObj.queryName] = {}
 
+        if not hasattr(mfqlObj, "dictSuchThat"):
+            mfqlObj.dictSuchThat = {}
+
         # gprogressCount += 1
         # if gparent:
         # 	(cont, skip) = gparent.debug.progressDialog.Update(gprogressCount)
@@ -270,7 +273,6 @@ def p_scriptname(p):
 
 def p_getQueryName(p):
     """getQueryName : ID"""
-
     # 	'''tagname : ID'''
     mfqlObj.queryName = p[1]
 
@@ -836,12 +838,10 @@ def p_body_bool(p):
 
 def p_bterm(p):
     """bterm : booleanterm"""
-
     report = []
-
     # apply SUCHTHAT filter if vars were found
     if mfqlObj.parsePart == "report":
-
+        mfqlObj.dictSuchThat[mfqlObj.queryName] = p[1]
         print("testing constraints of SUCHTHAT ...", end=" ")
         report = []
         count = 0
