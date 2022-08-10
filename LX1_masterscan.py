@@ -29,16 +29,18 @@ def make_lx1_masterscan(options) -> MasterScan:
     spectra_dfs = spectra_2_df(options)  # already teim range and mass range filtered
     polarity = spectra_dfs[0].polarity.iat[0]
 
-    suggested_selection_window = suggest_selection_window(spectra_dfs[0])
+    # suggested_selection_window = suggest_selection_window(spectra_dfs[0])
 
     # agg ms1 per spectra
-    agg_strategy = (
-        ms1_peaks_agg if options._data.get("MSresolution") else ms1_peaks_agg_lx2
-    )
+    use_lx2 = options._data.get("MSresolution") is None
     ms1_dfs = {}
     for df in spectra_dfs:  # first file, already teim range and mass range filtered
         ms1_peaks = df.loc[df.precursor_id.isna()]
-        agg_df = agg_strategy(ms1_peaks, options)
+        agg_df = (
+            ms1_peaks_agg(ms1_peaks, options)
+            if not use_lx2
+            else ms1_peaks_agg_lx2(ms1_peaks, options)
+        )
         agg_df["stem"] = df.stem.iloc[0]
         ms1_dfs[df.stem.iloc[0]] = agg_df
 
@@ -50,7 +52,11 @@ def make_lx1_masterscan(options) -> MasterScan:
 
     ms1_agg_peaks = pd.concat(ms1_dfs.values())
     # agg ms1 acrosss spectra
-    ms1_agg_peaks = ms1_scans_agg(ms1_agg_peaks, options)
+    ms1_agg_peaks = (
+        ms1_scans_agg(ms1_agg_peaks, options)
+        if not use_lx2
+        else ms1_scans_agg_lx2(ms1_agg_peaks, options)
+    )
     # ms1_agg_peaks.pivot(index='mass', columns='stem', values=['inty','lx1_bad_inty'])
 
     ##### agg ms2
@@ -353,6 +359,37 @@ def bin_mkSurveyLinear(masses, options):
 
 
 def ms1_scans_agg(ms1_agg_peaks, options):
+    ms1_agg_peaks.sort_values("mz", inplace=True)
+
+    # binning is done 3 times in lx1, between each fadi filter is performed, we do it at the end intead
+    bins1 = list(bin_mkSurveyLinear(ms1_agg_peaks.mz, options))
+    bins2 = list(
+        bin_mkSurveyLinear(
+            ms1_agg_peaks.groupby(bins1)["mz"].transform("mean"), options
+        )
+    )
+    bins3 = list(
+        bin_mkSurveyLinear(
+            ms1_agg_peaks.groupby(bins2)["mz"].transform("mean"), options
+        )
+    )
+
+    ms1_agg_peaks["bins"] = bins3
+
+    # check occupation spectracontainer.py masterscan.chekoccupation
+    # occupation is the % of peak intensities abvove "thrsld: "
+    threshold_denominator = ms1_agg_peaks.stem.unique().shape[0]  # same as len(res)
+    threshold = options["MSminOccupation"]
+    bin_peak_count = ms1_agg_peaks.groupby("bins")["inty"].transform("count")
+    tf_mask = (bin_peak_count / threshold_denominator) >= threshold
+    ms1_agg_peaks["above_threshold"] = tf_mask
+
+    ms1_agg_peaks["mass"] = ms1_agg_peaks.groupby("bins")["mz"].transform("mean")
+    # TODO collape_join_adjecent_clusters
+    return ms1_agg_peaks
+
+
+def ms1_scans_agg_lx2(ms1_agg_peaks, options):
     ms1_agg_peaks.sort_values("mz", ascending=False, inplace=True)
     sample_count = ms1_agg_peaks.stem.unique().size
     if sample_count < 2:
