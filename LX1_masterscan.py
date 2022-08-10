@@ -196,13 +196,21 @@ def make_lx1_bins(ms1_peaks, options):
     return bins3
 
 
-def get_collapsable_bins(df, accross_column="scan_id", cluster_column="bin_mass"):
+def get_collapsable_bins(
+    df, accross_column="scan_id", cluster_column="bin_mass", close_enogh=0.001
+):
     df["accross_column_f"] = df[accross_column].factorize()[0]
     grouped = df.groupby(cluster_column)
     grouped_stats = grouped.agg({"mz": ["max", "min", "std"]})
     close_mz = grouped_stats[("mz", "min")] - grouped_stats[("mz", "max")].shift(
         -1
     ) < grouped_stats[("mz", "std")] + grouped_stats[("mz", "std")].shift(-1)
+    close_enough_mz = (
+        grouped_stats[("mz", "min")] - grouped_stats[("mz", "max")].shift(-1)
+        < close_enogh
+    )
+
+    close_mz = close_mz | close_enough_mz
 
     close_mz_groups = close_mz[close_mz | close_mz.shift(1)].index.to_numpy()
     close_sets = (
@@ -216,10 +224,15 @@ def get_collapsable_bins(df, accross_column="scan_id", cluster_column="bin_mass"
     prev_idx = 0
     merging = False
     for idx, curr_set in close_sets.iteritems():
-        if (idx - prev_idx <= 1 or merging) and not curr_set.intersection(prev_set):
+        if (
+            close_mz[prev_idx]
+            and (idx - prev_idx <= 1 or merging)
+            and not curr_set.intersection(prev_set)
+        ):
             collapsable_map[idx] = prev_idx
             prev_set.update(curr_set)
             merging = True
+            continue
         prev_idx = idx
         prev_set = curr_set
         merging = False
