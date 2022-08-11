@@ -1346,7 +1346,9 @@ def startParsing(
     # testwise put it here before MS/MS correction, because MS/MS correction has to
     # note the change first
     print("generating result MasterScan ...", end=" ")
-    mfqlObj.result.generateResultSC(merge_ids=True)
+
+    merge_collapse_ids = mfqlObj.options._data.get("lx2_merge_collapse_ids", True)
+    mfqlObj.result.generateResultSC(merge_collapse_ids=merge_collapse_ids)
     seethis(mfqlObj.resultSC)
     print("%.2f sec." % time.clock())
 

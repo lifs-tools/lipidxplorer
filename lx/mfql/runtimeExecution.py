@@ -355,7 +355,7 @@ class TypeResult:
     def __getitem__(self, item):
         return self.dictQuery[item]
 
-    def generateResultSC(self, merge_ids=False):
+    def generateResultSC(self, merge_collapse_ids=False):
         #
 
         resultSC = self.mfqlObj.resultSC
@@ -383,15 +383,31 @@ class TypeResult:
 
         resultSC.sort()
 
-        if merge_ids:
+        if merge_collapse_ids:
             from itertools import groupby
+            from copy import  deepcopy
 
             merged_resultSC = []
             for key, group in groupby(resultSC, lambda x: str(x.listPrecurmassSF)):
-                base = next(group)
+                precurmass_sum = 0
+                precurmass_sum_counts = 0
+                dictsumIntensity = {}
+                dictcountIntensity = {}
+                
                 for entry in group:
-                    for k, v in base.dictIntensity.items():
-                        base.dictIntensity[k] = max(v, entry.dictIntensity[k])
+                    new_dict = {k:v for k,v in entry.dictIntensity.items() if v != 0}
+                    count = len(new_dict)
+                    precurmass_sum_counts += count
+                    precurmass_sum += entry.precurmass * count
+                    for k,v in new_dict.items():
+                        dictsumIntensity[k] = dictsumIntensity.get(k,0) + v
+                        dictcountIntensity[k] = dictcountIntensity.get(k,0) + 1
+
+                base= deepcopy(entry)
+                base.precurmass = precurmass_sum / precurmass_sum_counts
+                for k in base.dictIntensity.keys():
+                    base.dictIntensity[k] = dictsumIntensity.get(k,0) / dictcountIntensity.get(k,1)
+
                 merged_resultSC.append(base)
             self.mfqlObj.resultSC = merged_resultSC
 
