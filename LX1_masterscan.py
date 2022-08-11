@@ -32,7 +32,8 @@ def make_lx1_masterscan(options) -> MasterScan:
     # suggested_selection_window = suggest_selection_window(spectra_dfs[0])
 
     # agg ms1 per spectra
-    use_lx2 = options._data.get("MSresolution") is None
+    use_lx2 = options._data.get("MSresolution", "") == ""
+
     ms1_dfs = {}
     for df in spectra_dfs:  # first file, already teim range and mass range filtered
         ms1_peaks = df.loc[df.precursor_id.isna()]
@@ -45,8 +46,13 @@ def make_lx1_masterscan(options) -> MasterScan:
         ms1_dfs[df.stem.iloc[0]] = agg_df
 
     if options._data.get("MScalibration"):
+        if use_lx2:
+            (
+                options["lx2_MSresolution"],
+                options["lx2_MSresolution_gradient"],
+            ) = suggest_resolution_gradient_and_tolerance(spectra_dfs[0])
         for ms1_df in ms1_dfs.values():
-            cal_matchs, cal_vals = recalibration_values(ms1_df, options)
+            cal_matchs, cal_vals = recalibration_values(ms1_df, options, use_lx2)
             if cal_matchs and cal_vals:
                 ms1_df.mz = ms1_df.mz + np.interp(ms1_df.mz, cal_matchs, cal_vals)
 
@@ -390,7 +396,6 @@ def ms1_scans_agg(ms1_agg_peaks, options):
     ms1_agg_peaks["above_threshold"] = tf_mask
 
     ms1_agg_peaks["mass"] = ms1_agg_peaks.groupby("bins")["mz"].transform("mean")
-    # TODO collape_join_adjecent_clusters
 
     return ms1_agg_peaks
 
@@ -576,10 +581,11 @@ def ms2_peaks_group_generator(grouped_prec, options):
 
 
 # #recalibrate
-def recalibration_values(ms1_df, options):
+def recalibration_values(ms1_df, options, use_lx2=False):
+    tol = options["MSresolution"] if not use_lx2 else options["lx2_MSresolution"]
     res = []
     for cal_mass in options["MScalibration"]:
-        tol = cal_mass / options["MSresolution"].tolerance
+        tol = cal_mass / tol
         # find close enough most intense
 
         reference_mass = (
@@ -644,6 +650,8 @@ def build_masterscan(options, listSurveyEntry, samples):
 
 
 #######LX2 functionsloity
+
+
 def suggest_selection_window(spectra_df):
     precursor_mzs = spectra_df.loc[
         ~spectra_df.precursor_id.isna()
@@ -664,7 +672,11 @@ def suggest_resolution_gradient_and_tolerance(spectra_df):
     df = spectra_df.loc[spectra_df.precursor_id.isna()]
     # use only thge last few scans
     scan_count = df.scan_id.unique().size
-
+    if scan_count < 2:
+        min_diffs = df["mz"].diff()
+        idx_min = min_diffs.where(min_diffs > 0.01, np.nan).idxmin()
+        res = df["mz"].at[idx_min] / min_diffs.at[idx_min]
+        return res, 0
     df["scan_id_f"] = df["scan_id"].factorize()[0]
     df.sort_values(["mz", "scan_id_f"], ascending=False, inplace=True)
     df["nunique_scans"] = df.rolling(60)["scan_id_f"].apply(lambda s: len(set(s)))

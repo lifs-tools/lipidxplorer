@@ -1382,9 +1382,14 @@ class MasterScan:
                 strOut += "MS/MS tolerance: ,+/- %s\n" % (
                     repr(self.options["MSMStolerance"])
                 )
-            strOut += "MS resolution: , %s\n" % (
-                repr(self.options["MSresolution"].tolerance)
-            )
+            if self.options._data.get("MSresolution"):
+                strOut += "MS resolution: , %s\n" % (
+                    repr(self.options["MSresolution"].tolerance)
+                )
+            if self.options._data.get("lx2_MSresolution"):
+                strOut += "lx2 MS resolution: , %s\n" % (
+                    repr(self.options["lx2_MSresolution"])
+                )
             if "MSMSresolution" in self.options and not (
                 self.options.isEmpty("MSMSresolution")
             ):
