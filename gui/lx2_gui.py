@@ -103,7 +103,7 @@ class Lx2_gui ( wx.Frame ):
 		bSizer21.Add( self.neg_mode_buttom, 1, wx.ALL|wx.EXPAND, 5 )
 
 		self.drop_fuzzy_button = wx.Button( self.m_panel5, wx.ID_ANY, u"Drop Fuzzy", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.drop_fuzzy_button.SetToolTip( u"Initial scans oftenhave invalid data, discard these scans?" )
+		self.drop_fuzzy_button.SetToolTip( u"Initial scans often have invalid data, discard these scans?" )
 
 		bSizer21.Add( self.drop_fuzzy_button, 1, wx.ALL|wx.EXPAND, 5 )
 
@@ -593,7 +593,7 @@ class Lx2_gui ( wx.Frame ):
 		self.neg_mode_buttom.Bind( wx.EVT_BUTTON, self.neg_mode_clicked )
 		self.drop_fuzzy_button.Bind( wx.EVT_BUTTON, self.drop_fuzzy_clicked )
 		self.rep_rate_slider.Bind( wx.EVT_SCROLL, self.rep_rate_slider_scroll )
-		self.rep_rate_txt.Bind( wx.EVT_TEXT_ENTER, self.rep_rate_texted )
+		self.rep_rate_txt.Bind( wx.EVT_TEXT, self.rep_rate_texted )
 		self.select_blank_btn.Bind( wx.EVT_BUTTON, self.select_blanck_clicked )
 		self.QC_spectra_button.Bind( wx.EVT_BUTTON, self.qc_spectrza_clicked )
 		self.found_in_slider.Bind( wx.EVT_SCROLL, self.found_in_slider_scroll )
