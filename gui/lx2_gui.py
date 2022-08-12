@@ -592,11 +592,11 @@ class Lx2_gui ( wx.Frame ):
 		self.pos_mode_button.Bind( wx.EVT_BUTTON, self.pos_mode_clicked )
 		self.neg_mode_buttom.Bind( wx.EVT_BUTTON, self.neg_mode_clicked )
 		self.drop_fuzzy_button.Bind( wx.EVT_BUTTON, self.drop_fuzzy_clicked )
-		self.rep_rate_slider.Bind( wx.EVT_SCROLL, self.rep_rate_slider )
+		self.rep_rate_slider.Bind( wx.EVT_SCROLL, self.rep_rate_slider_scroll )
 		self.rep_rate_txt.Bind( wx.EVT_TEXT_ENTER, self.rep_rate_texted )
 		self.select_blank_btn.Bind( wx.EVT_BUTTON, self.select_blanck_clicked )
 		self.QC_spectra_button.Bind( wx.EVT_BUTTON, self.qc_spectrza_clicked )
-		self.found_in_slider.Bind( wx.EVT_SCROLL, self.found_in_slider )
+		self.found_in_slider.Bind( wx.EVT_SCROLL, self.found_in_slider_scroll )
 		self.found_int_txt.Bind( wx.EVT_TEXT_ENTER, self.found_in_texted )
 		self.qc_count_txt.Bind( wx.EVT_TEXT_ENTER, self.qc_count_texted )
 		self.m_button20.Bind( wx.EVT_BUTTON, self.estimate_prec_group_clicked )
@@ -630,7 +630,7 @@ class Lx2_gui ( wx.Frame ):
 	def drop_fuzzy_clicked( self, event ):
 		event.Skip()
 
-	def rep_rate_slider( self, event ):
+	def rep_rate_slider_scroll( self, event ):
 		event.Skip()
 
 	def rep_rate_texted( self, event ):
@@ -642,7 +642,7 @@ class Lx2_gui ( wx.Frame ):
 	def qc_spectrza_clicked( self, event ):
 		event.Skip()
 
-	def found_in_slider( self, event ):
+	def found_in_slider_scroll( self, event ):
 		event.Skip()
 
 	def found_in_texted( self, event ):

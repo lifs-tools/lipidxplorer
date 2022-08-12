@@ -2361,7 +2361,7 @@
                                                                     <property name="window_extra_style"></property>
                                                                     <property name="window_name"></property>
                                                                     <property name="window_style"></property>
-                                                                    <event name="OnScroll">rep_rate_slider</event>
+                                                                    <event name="OnScroll">rep_rate_slider_scroll</event>
                                                                 </object>
                                                             </object>
                                                             <object class="sizeritem" expanded="0">
@@ -2420,7 +2420,7 @@
                                                                     <property name="tooltip"></property>
                                                                     <property name="validator_data_type"></property>
                                                                     <property name="validator_style">wxFILTER_NUMERIC</property>
-                                                                    <property name="validator_type">wxDefaultValidator</property>
+                                                                    <property name="validator_type">wxTextValidator</property>
                                                                     <property name="validator_variable"></property>
                                                                     <property name="value">70</property>
                                                                     <property name="window_extra_style"></property>
@@ -2834,7 +2834,7 @@
                                                                     <property name="window_extra_style"></property>
                                                                     <property name="window_name"></property>
                                                                     <property name="window_style"></property>
-                                                                    <event name="OnScroll">found_in_slider</event>
+                                                                    <event name="OnScroll">found_in_slider_scroll</event>
                                                                 </object>
                                                             </object>
                                                             <object class="sizeritem" expanded="0">
