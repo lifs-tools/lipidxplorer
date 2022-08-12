@@ -11,10 +11,10 @@ import wx
 import wx.xrc
 
 ###########################################################################
-## Class MyFrame7
+## Class Lx2_gui
 ###########################################################################
 
-class MyFrame7 ( wx.Frame ):
+class Lx2_gui ( wx.Frame ):
 
 	def __init__( self, parent ):
 		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"LX2_dev", pos = wx.DefaultPosition, size = wx.Size( 738,767 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
