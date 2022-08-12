@@ -224,8 +224,8 @@ class Lx2_gui ( wx.Frame ):
 		self.select_blank_btn = wx.Button( self.m_panel5, wx.ID_ANY, u"Select Blank", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer212.Add( self.select_blank_btn, 0, wx.ALL, 5 )
 
-		self.QC_spectra_button = wx.Button( self.m_panel5, wx.ID_ANY, u"QC Spectra", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer212.Add( self.QC_spectra_button, 0, wx.ALL, 5 )
+		self.qc_spectra_button = wx.Button( self.m_panel5, wx.ID_ANY, u"QC Spectra", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer212.Add( self.qc_spectra_button, 0, wx.ALL, 5 )
 
 
 		bSizer201.Add( bSizer212, 0, 0, 5 )
@@ -593,9 +593,9 @@ class Lx2_gui ( wx.Frame ):
 		self.neg_mode_buttom.Bind( wx.EVT_BUTTON, self.neg_mode_clicked )
 		self.drop_fuzzy_button.Bind( wx.EVT_BUTTON, self.drop_fuzzy_clicked )
 		self.rep_rate_slider.Bind( wx.EVT_SCROLL, self.rep_rate_slider_scroll )
-		self.rep_rate_txt.Bind( wx.EVT_TEXT, self.rep_rate_texted )
+		self.rep_rate_txt.Bind( wx.EVT_LEAVE_WINDOW, self.rep_rate_exited )
 		self.select_blank_btn.Bind( wx.EVT_BUTTON, self.select_blanck_clicked )
-		self.QC_spectra_button.Bind( wx.EVT_BUTTON, self.qc_spectrza_clicked )
+		self.qc_spectra_button.Bind( wx.EVT_BUTTON, self.qc_spectrza_clicked )
 		self.found_in_slider.Bind( wx.EVT_SCROLL, self.found_in_slider_scroll )
 		self.found_int_txt.Bind( wx.EVT_TEXT_ENTER, self.found_in_texted )
 		self.qc_count_txt.Bind( wx.EVT_TEXT_ENTER, self.qc_count_texted )
@@ -633,7 +633,7 @@ class Lx2_gui ( wx.Frame ):
 	def rep_rate_slider_scroll( self, event ):
 		event.Skip()
 
-	def rep_rate_texted( self, event ):
+	def rep_rate_exited( self, event ):
 		event.Skip()
 
 	def select_blanck_clicked( self, event ):
