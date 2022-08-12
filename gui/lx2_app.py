@@ -6,9 +6,13 @@ class lx2_gui_controler(Lx2_gui):
     def __init__(self, parent):
         Lx2_gui.__init__(self, parent)
 
-    def gen_masterscan_clicked(self, event):
-        num = int(self.ms1_tolerance_txt.GetValue())
-        self.ms2_tol_text.SetValue(str(num))
+    def rep_rate_texted(self, event):
+        num = int(self.rep_rate_txt.GetValue())
+        self.rep_rate_slider.SetValue(num)
+
+    def rep_rate_slider_scroll(self, event):
+        num = self.rep_rate_slider.GetValue()
+        self.rep_rate_txt.SetValue(str(num))
 
 
 def main():
