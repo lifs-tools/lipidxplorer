@@ -5,6 +5,39 @@ from collections import namedtuple
 
 # TODO make this a dataclass
 P_elem = namedtuple("P_element", "name index default", defaults=(None, None, ""))
+model_map = {
+    "time_range1": P_elem("timerange", 0),
+    "time_range2": P_elem("timerange", 1),
+    "cal_masses_ms1": P_elem("MScalibration"),
+    "cal_masses_ms2": P_elem("MSMScalibration"),
+    "mass_range_ms1_1": P_elem("MSmassrange", 0),
+    "mass_range_ms1_2": P_elem("MSmassrange", 1),
+    "mass_range_ms2_1": P_elem("MSMSmassrange", 0),
+    "mass_range_ms2_2": P_elem("MSMSmassrange", 1),
+    # 'text_include'
+    # 'text_exclude'
+    "rep_rate_txt": P_elem("MSfilter", None, 0.7),
+    # MSMSminOccupation is ignored
+    # 'rep_rate_slider' done manually below
+    "found_int_txt": P_elem("MSminOccupation"),
+    # 'found_in_slider' done manually below
+    # 'qc_count_txt'
+    "signla_inty_ms1_txt": P_elem("MSthreshold"),
+    "ms1_sig_inty_type": P_elem("MSthresholdType"),
+    "signla_inty_ms2_txt": P_elem("MSMSthreshold"),
+    "ms2_sig_inty_type": P_elem("MSMSthresholdType"),
+    "prec_group_tol": P_elem("selectionWindow"),
+    "cal_masses_ms1": P_elem("MScalibration"),
+    "cal_masses_ms2": P_elem("MSMScalibration"),
+    "ms1_low_mass_res_txt": P_elem("MSresolution"),
+    "ms2_low_mass_res_txt": P_elem("MSMSresolution"),
+    "ms1_res_gradient_txt": P_elem("MSresolutionDelta"),
+    "ms2_res_gradient_txt": P_elem("MSMSresolutionDelta"),
+    "ms1_tolerance_txt": P_elem("MStolerance"),
+    "ms1_tolerance_type_choise": P_elem("MStoleranceType"),
+    "ms2_tol_text": P_elem("MSMStolerance"),
+    "ms2_tol_type_choise": P_elem("ms2_tol_type_choise"),
+}
 
 
 class lx2_gui_controler(Lx2_gui):
@@ -16,40 +49,6 @@ class lx2_gui_controler(Lx2_gui):
         self.project.load(path)
         self.project.testOptions()
         self.project.formatOptions()
-
-        model_map = {
-            "time_range1": P_elem("timerange", 0),
-            "time_range2": P_elem("timerange", 1),
-            "cal_masses_ms1": P_elem("MScalibration"),
-            "cal_masses_ms2": P_elem("MSMScalibration"),
-            "mass_range_ms1_1": P_elem("MSmassrange", 0),
-            "mass_range_ms1_2": P_elem("MSmassrange", 1),
-            "mass_range_ms2_1": P_elem("MSMSmassrange", 0),
-            "mass_range_ms2_2": P_elem("MSMSmassrange", 1),
-            # 'text_include'
-            # 'text_exclude'
-            "rep_rate_txt": P_elem("MSfilter", None, 0.7),
-            # MSMSminOccupation is ignored
-            # 'rep_rate_slider' done manually below
-            "found_int_txt": P_elem("MSminOccupation"),
-            # 'found_in_slider' done manually below
-            # 'qc_count_txt'
-            "signla_inty_ms1_txt": P_elem("MSthreshold"),
-            "ms1_sig_inty_type": P_elem("MSthresholdType"),
-            "signla_inty_ms2_txt": P_elem("MSMSthreshold"),
-            "ms2_sig_inty_type": P_elem("MSMSthresholdType"),
-            "prec_group_tol": P_elem("selectionWindow"),
-            "cal_masses_ms1": P_elem("MScalibration"),
-            "cal_masses_ms2": P_elem("MSMScalibration"),
-            "ms1_low_mass_res_txt": P_elem("MSresolution"),
-            "ms2_low_mass_res_txt": P_elem("MSMSresolution"),
-            "ms1_res_gradient_txt": P_elem("MSresolutionDelta"),
-            "ms2_res_gradient_txt": P_elem("MSMSresolutionDelta"),
-            "ms1_tolerance_txt": P_elem("MStolerance"),
-            "ms1_tolerance_type_choise": P_elem("MStoleranceType"),
-            "ms2_tol_text": P_elem("MSMStolerance"),
-            "ms2_tol_type_choise": P_elem("ms2_tol_type_choise"),
-        }
 
         def proj_t2str(item, index, default=""):
             """helper for tuples"""
@@ -88,13 +87,46 @@ class lx2_gui_controler(Lx2_gui):
 
             widget = getattr(self, k)
             widget.SetValue(value)
+        print(self.project.options)
 
-    ################## add vals to controls
+    def dump_project(self, path):
+        typed = [
+            "ms1_sig_inty_type",
+            "ms2_sig_inty_type",
+            "ms1_tolerance_type_choise",
+            "ms2_tol_type_choise",
+        ]
+
+        for k, v in model_map.items():
+            if k[-1] == "2":  # ignore all the secon part of tuples
+                continue
+            if k in typed:
+                idx = getattr(self, k).GetSelection()
+                value = getattr(self, k).GetString(idx).lower()
+            elif k == "rep_rate_txt" or k == "found_int_txt":
+                value = float(getattr(self, k).GetValue()) / 100.0
+            elif v.index is None:
+                value = getattr(self, k).GetValue()
+            else:
+                stem = k[:-1]
+                value = str(
+                    (
+                        float(getattr(self, stem + "1").GetValue()),
+                        float(getattr(self, stem + "2").GetValue()),
+                    )
+                )
+
+            self.project.options[v.name] = value
+        print(self.project.options)
 
     ################ bind controls
     def ini_file_changed(self, event):
         path = self.ini_file.GetPath()
         self.load_project(path)
+
+    def save_settings_clicked(self, event):
+        path = self.ini_file.GetPath()
+        self.dump_project(path)
 
     def rep_rate_exited(self, event):
         try:
