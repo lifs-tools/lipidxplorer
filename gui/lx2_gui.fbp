@@ -503,7 +503,7 @@
                                                     <property name="validator_type">wxDefaultValidator</property>
                                                     <property name="validator_variable"></property>
                                                     <property name="value"></property>
-                                                    <property name="wildcard">*.*</property>
+                                                    <property name="wildcard">LX Project file (*.lxp)|*.lxp|&#x0A;Configuration file (*.ini)|*.ini|&#x0A;All files (*.*)|*.*</property>
                                                     <property name="window_extra_style"></property>
                                                     <property name="window_name"></property>
                                                     <property name="window_style"></property>
@@ -823,7 +823,7 @@
                                                                     <property name="minimize_button">0</property>
                                                                     <property name="minimum_size"></property>
                                                                     <property name="moveable">1</property>
-                                                                    <property name="name">m_textCtrl10</property>
+                                                                    <property name="name">time_range2</property>
                                                                     <property name="pane_border">1</property>
                                                                     <property name="pane_position"></property>
                                                                     <property name="pane_size"></property>
@@ -1367,7 +1367,7 @@
                                                                     <property name="minimize_button">0</property>
                                                                     <property name="minimum_size"></property>
                                                                     <property name="moveable">1</property>
-                                                                    <property name="name">mass_range_ms1_1</property>
+                                                                    <property name="name">mass_range_ms1_2</property>
                                                                     <property name="pane_border">1</property>
                                                                     <property name="pane_position"></property>
                                                                     <property name="pane_size"></property>
@@ -2061,7 +2061,7 @@
                                                                     <property name="minimize_button">0</property>
                                                                     <property name="minimum_size"></property>
                                                                     <property name="moveable">1</property>
-                                                                    <property name="name">text_eclude</property>
+                                                                    <property name="name">text_exclude</property>
                                                                     <property name="pane_border">1</property>
                                                                     <property name="pane_position"></property>
                                                                     <property name="pane_size"></property>
@@ -2414,7 +2414,7 @@
                                                                     <property name="resize">Resizable</property>
                                                                     <property name="show">1</property>
                                                                     <property name="size"></property>
-                                                                    <property name="style"></property>
+                                                                    <property name="style">wxTE_PROCESS_ENTER</property>
                                                                     <property name="subclass">; ; forward_declare</property>
                                                                     <property name="toolbar_pane">0</property>
                                                                     <property name="tooltip"></property>
@@ -2888,7 +2888,7 @@
                                                                     <property name="resize">Resizable</property>
                                                                     <property name="show">1</property>
                                                                     <property name="size"></property>
-                                                                    <property name="style"></property>
+                                                                    <property name="style">wxTE_PROCESS_ENTER</property>
                                                                     <property name="subclass">; ; forward_declare</property>
                                                                     <property name="toolbar_pane">0</property>
                                                                     <property name="tooltip"></property>
@@ -2901,6 +2901,7 @@
                                                                     <property name="window_name"></property>
                                                                     <property name="window_style"></property>
                                                                     <event name="OnLeaveWindow">found_in_exited</event>
+                                                                    <event name="OnTextEnter">found_in_entered</event>
                                                                 </object>
                                                             </object>
                                                             <object class="sizeritem" expanded="0">
@@ -3616,7 +3617,7 @@
                                                                     <property name="caption"></property>
                                                                     <property name="caption_visible">1</property>
                                                                     <property name="center_pane">0</property>
-                                                                    <property name="choices">&quot;Absolute&quot; &quot;Relative&quot;</property>
+                                                                    <property name="choices">&quot;moretest&quot; &quot;Absolute&quot; &quot;Relative&quot;</property>
                                                                     <property name="close_button">1</property>
                                                                     <property name="context_help"></property>
                                                                     <property name="context_menu">1</property>
@@ -4433,7 +4434,7 @@
                                                                     <property name="minimize_button">0</property>
                                                                     <property name="minimum_size"></property>
                                                                     <property name="moveable">1</property>
-                                                                    <property name="name">l_masses_ms2</property>
+                                                                    <property name="name">cal_masses_ms2</property>
                                                                     <property name="pane_border">1</property>
                                                                     <property name="pane_position"></property>
                                                                     <property name="pane_size"></property>

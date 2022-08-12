@@ -53,7 +53,7 @@ class Lx2_gui ( wx.Frame ):
 
 		bSizer131.Add( self.m_staticText41, 0, wx.ALL, 5 )
 
-		self.ini_file = wx.FilePickerCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, u"Select a file", u"*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE )
+		self.ini_file = wx.FilePickerCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, u"Select a file", u"LX Project file (*.lxp)|*.lxp|\nConfiguration file (*.ini)|*.ini|\nAll files (*.*)|*.*", wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE )
 		bSizer131.Add( self.ini_file, 1, wx.ALL|wx.EXPAND, 5 )
 
 
@@ -83,8 +83,8 @@ class Lx2_gui ( wx.Frame ):
 		self.time_range1 = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer21.Add( self.time_range1, 0, wx.TOP|wx.BOTTOM, 5 )
 
-		self.m_textCtrl10 = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer21.Add( self.m_textCtrl10, 0, wx.TOP|wx.BOTTOM, 5 )
+		self.time_range2 = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer21.Add( self.time_range2, 0, wx.TOP|wx.BOTTOM, 5 )
 
 		self.m_staticText13 = wx.StaticText( self.m_panel5, wx.ID_ANY, u"s", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText13.Wrap( -1 )
@@ -120,8 +120,8 @@ class Lx2_gui ( wx.Frame ):
 		self.mass_range_ms1_1 = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer211.Add( self.mass_range_ms1_1, 0, wx.TOP|wx.BOTTOM, 5 )
 
-		self.mass_range_ms1_1 = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer211.Add( self.mass_range_ms1_1, 0, wx.TOP|wx.BOTTOM, 5 )
+		self.mass_range_ms1_2 = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer211.Add( self.mass_range_ms1_2, 0, wx.TOP|wx.BOTTOM, 5 )
 
 		self.m_staticText131 = wx.StaticText( self.m_panel5, wx.ID_ANY, u"MS1", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText131.Wrap( -1 )
@@ -172,8 +172,8 @@ class Lx2_gui ( wx.Frame ):
 
 		bSizer25.Add( self.m_staticText26, 0, wx.ALL|wx.EXPAND, 5 )
 
-		self.text_eclude = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer25.Add( self.text_eclude, 1, wx.ALL|wx.EXPAND, 5 )
+		self.text_exclude = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer25.Add( self.text_exclude, 1, wx.ALL|wx.EXPAND, 5 )
 
 
 		bSizer20.Add( bSizer25, 0, wx.EXPAND, 5 )
@@ -296,8 +296,8 @@ class Lx2_gui ( wx.Frame ):
 
 		bSizer2111.Add( self.m_staticText12111, 0, wx.ALL, 5 )
 
-		self.signla_inty_ms1_txt = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer2111.Add( self.signla_inty_ms1_txt, 0, wx.TOP|wx.BOTTOM, 5 )
+		self.signla_inty_ms2_txt = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer2111.Add( self.signla_inty_ms2_txt, 0, wx.TOP|wx.BOTTOM, 5 )
 
 		ms2_sig_inty_typeChoices = [ u"Absolute", u"Relative" ]
 		self.ms2_sig_inty_type = wx.Choice( self.m_panel5, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, ms2_sig_inty_typeChoices, 0 )
@@ -375,10 +375,10 @@ class Lx2_gui ( wx.Frame ):
 
 		bSizer59.Add( self.m_staticText106, 0, wx.ALL, 5 )
 
-		self.l_masses_ms2 = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.l_masses_ms2.SetToolTip( u"will use MS! calubration masses if none are provieded" )
+		self.cal_masses_ms2 = wx.TextCtrl( self.m_panel5, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.cal_masses_ms2.SetToolTip( u"will use MS! calubration masses if none are provieded" )
 
-		bSizer59.Add( self.l_masses_ms2, 0, wx.ALL, 5 )
+		bSizer59.Add( self.cal_masses_ms2, 0, wx.ALL, 5 )
 
 		self.m_staticText107 = wx.StaticText( self.m_panel5, wx.ID_ANY, u"MS2", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText107.Wrap( -1 )
