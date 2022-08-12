@@ -582,7 +582,11 @@ def ms2_peaks_group_generator(grouped_prec, options):
 
 # #recalibrate
 def recalibration_values(ms1_df, options, use_lx2=False):
-    tol = options["MSresolution"] if not use_lx2 else options["lx2_MSresolution"]
+    tol = (
+        options["MSresolution"].tolerance
+        if not use_lx2
+        else options["lx2_MSresolution"]
+    )
     res = []
     for cal_mass in options["MScalibration"]:
         tol = cal_mass / tol
