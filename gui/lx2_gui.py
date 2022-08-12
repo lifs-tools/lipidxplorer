@@ -208,7 +208,7 @@ class Lx2_gui ( wx.Frame ):
 		self.rep_rate_slider = wx.Slider( self.m_panel5, wx.ID_ANY, 70, 0, 100, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL )
 		bSizer212.Add( self.rep_rate_slider, 0, wx.ALL, 5 )
 
-		self.rep_rate_txt = wx.TextCtrl( self.m_panel5, wx.ID_ANY, u"70", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.rep_rate_txt = wx.TextCtrl( self.m_panel5, wx.ID_ANY, u"70", wx.DefaultPosition, wx.DefaultSize, wx.TE_PROCESS_ENTER )
 		bSizer212.Add( self.rep_rate_txt, 0, wx.ALL, 5 )
 
 		self.m_staticText132 = wx.StaticText( self.m_panel5, wx.ID_ANY, u"%", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -240,7 +240,7 @@ class Lx2_gui ( wx.Frame ):
 		self.found_in_slider = wx.Slider( self.m_panel5, wx.ID_ANY, 0, 0, 100, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL )
 		bSizer2121.Add( self.found_in_slider, 0, wx.ALL, 5 )
 
-		self.found_int_txt = wx.TextCtrl( self.m_panel5, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.found_int_txt = wx.TextCtrl( self.m_panel5, wx.ID_ANY, u"0", wx.DefaultPosition, wx.DefaultSize, wx.TE_PROCESS_ENTER )
 		bSizer2121.Add( self.found_int_txt, 0, wx.ALL, 5 )
 
 		self.m_staticText1321 = wx.StaticText( self.m_panel5, wx.ID_ANY, u"%", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -594,10 +594,12 @@ class Lx2_gui ( wx.Frame ):
 		self.drop_fuzzy_button.Bind( wx.EVT_BUTTON, self.drop_fuzzy_clicked )
 		self.rep_rate_slider.Bind( wx.EVT_SCROLL, self.rep_rate_slider_scroll )
 		self.rep_rate_txt.Bind( wx.EVT_LEAVE_WINDOW, self.rep_rate_exited )
+		self.rep_rate_txt.Bind( wx.EVT_TEXT_ENTER, self.rep_rate_txextenter )
 		self.select_blank_btn.Bind( wx.EVT_BUTTON, self.select_blanck_clicked )
 		self.qc_spectra_button.Bind( wx.EVT_BUTTON, self.qc_spectrza_clicked )
-		self.found_in_slider.Bind( wx.EVT_SCROLL, self.found_in_slider_scroll )
-		self.found_int_txt.Bind( wx.EVT_TEXT_ENTER, self.found_in_texted )
+		self.found_in_slider.Bind( wx.EVT_SCROLL, self.found_in_slider_scrolled )
+		self.found_int_txt.Bind( wx.EVT_LEAVE_WINDOW, self.found_in_exited )
+		self.found_int_txt.Bind( wx.EVT_TEXT_ENTER, self.found_in_entered )
 		self.qc_count_txt.Bind( wx.EVT_TEXT_ENTER, self.qc_count_texted )
 		self.m_button20.Bind( wx.EVT_BUTTON, self.estimate_prec_group_clicked )
 		self.m_button21.Bind( wx.EVT_BUTTON, self.suggest_cal_masses_clicked )
@@ -636,16 +638,22 @@ class Lx2_gui ( wx.Frame ):
 	def rep_rate_exited( self, event ):
 		event.Skip()
 
+	def rep_rate_txextenter( self, event ):
+		event.Skip()
+
 	def select_blanck_clicked( self, event ):
 		event.Skip()
 
 	def qc_spectrza_clicked( self, event ):
 		event.Skip()
 
-	def found_in_slider_scroll( self, event ):
+	def found_in_slider_scrolled( self, event ):
 		event.Skip()
 
-	def found_in_texted( self, event ):
+	def found_in_exited( self, event ):
+		event.Skip()
+
+	def found_in_entered( self, event ):
 		event.Skip()
 
 	def qc_count_texted( self, event ):

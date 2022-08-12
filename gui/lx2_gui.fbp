@@ -2426,7 +2426,8 @@
                                                                     <property name="window_extra_style"></property>
                                                                     <property name="window_name"></property>
                                                                     <property name="window_style"></property>
-                                                                    <event name="OnText">rep_rate_texted</event>
+                                                                    <event name="OnLeaveWindow">rep_rate_exited</event>
+                                                                    <event name="OnTextEnter">rep_rate_txextenter</event>
                                                                 </object>
                                                             </object>
                                                             <object class="sizeritem" expanded="0">
@@ -2673,7 +2674,7 @@
                                                                     <property name="minimize_button">0</property>
                                                                     <property name="minimum_size"></property>
                                                                     <property name="moveable">1</property>
-                                                                    <property name="name">QC_spectra_button</property>
+                                                                    <property name="name">qc_spectra_button</property>
                                                                     <property name="pane_border">1</property>
                                                                     <property name="pane_position"></property>
                                                                     <property name="pane_size"></property>
@@ -2834,7 +2835,7 @@
                                                                     <property name="window_extra_style"></property>
                                                                     <property name="window_name"></property>
                                                                     <property name="window_style"></property>
-                                                                    <event name="OnScroll">found_in_slider_scroll</event>
+                                                                    <event name="OnScroll">found_in_slider_scrolled</event>
                                                                 </object>
                                                             </object>
                                                             <object class="sizeritem" expanded="0">
@@ -2899,7 +2900,7 @@
                                                                     <property name="window_extra_style"></property>
                                                                     <property name="window_name"></property>
                                                                     <property name="window_style"></property>
-                                                                    <event name="OnTextEnter">found_in_texted</event>
+                                                                    <event name="OnLeaveWindow">found_in_exited</event>
                                                                 </object>
                                                             </object>
                                                             <object class="sizeritem" expanded="0">
