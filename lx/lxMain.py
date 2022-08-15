@@ -143,6 +143,12 @@ def startMFQL(options={}, queries={}, parent=None):
         if i in Options.importOptions and (not mfqlObj.sc.options.isEmpty(i)):
             mfqlObj.options[i] = mfqlObj.sc.options[i]
 
+    # read the lx2 options
+    lx2_opts = {
+        k: v for k, v in mfqlObj.sc.options._data.items() if k.startswith("lx2_")
+    }
+    mfqlObj.options.update(lx2_opts)
+
     # set the seperator
     if options["tabLimited"]:
         mfqlObj.outputSeperator = "\t"
