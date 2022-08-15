@@ -3,6 +3,8 @@ from lx2_gui import Lx2_gui
 from lx.project import Project
 from collections import namedtuple
 
+from LX1_masterscan import make_lx1_masterscan
+
 # TODO make this a dataclass
 P_elem = namedtuple("P_elem", "name index default", defaults=(None, None, ""))
 model_map = {
@@ -93,7 +95,7 @@ class lx2_gui_controler(Lx2_gui):
             widget = getattr(self, k)
             widget.SetValue(value)
 
-    def dump_project(self, path):
+    def update_project(self):
         typed = [
             "ms1_sig_inty_type",
             "ms2_sig_inty_type",
@@ -131,7 +133,6 @@ class lx2_gui_controler(Lx2_gui):
 
     def save_settings_clicked(self, event):
         path = self.ini_file.GetPath()
-        self.dump_project(path)
 
     def rep_rate_exited(self, event):
         try:
@@ -188,6 +189,13 @@ class lx2_gui_controler(Lx2_gui):
     def found_in_slider_scrolled(self, event):
         num = self.found_in_slider.GetValue()
         self.found_int_txt.SetValue(str(num))
+
+    def gen_masterscan_clicked(self, event):
+        self.update_project()
+        self.project.testOptions()
+        self.project.formatOptions()
+        options = self.project.getOptions()
+        make_lx1_masterscan(options)
 
 
 def main():
