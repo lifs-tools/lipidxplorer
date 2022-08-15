@@ -215,14 +215,15 @@ def make_lx1_bins(ms1_peaks, options):
 def get_collapsable_bins(
     df, accross_column="scan_id", cluster_column="bin_mass", close_enogh=0.001
 ):
+    shift_val = -1 if df.mz.is_monotonic_decreasing else 1
     df["accross_column_f"] = df[accross_column].factorize()[0]
     grouped = df.groupby(cluster_column)
     grouped_stats = grouped.agg({"mz": ["max", "min", "std"]})
     close_mz = grouped_stats[("mz", "min")] - grouped_stats[("mz", "max")].shift(
         -1
-    ) < grouped_stats[("mz", "std")] + grouped_stats[("mz", "std")].shift(-1)
+    ) < grouped_stats[("mz", "std")] + grouped_stats[("mz", "std")].shift(shift_val)
     close_enough_mz = (
-        grouped_stats[("mz", "min")] - grouped_stats[("mz", "max")].shift(-1)
+        grouped_stats[("mz", "min")] - grouped_stats[("mz", "max")].shift(shift_val)
         < close_enogh
     )
 
