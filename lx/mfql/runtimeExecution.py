@@ -385,7 +385,7 @@ class TypeResult:
 
         if merge_collapse_ids:
             from itertools import groupby
-            from copy import  deepcopy
+            from copy import deepcopy
 
             merged_resultSC = []
             for key, group in groupby(resultSC, lambda x: str(x.listPrecurmassSF)):
@@ -393,20 +393,22 @@ class TypeResult:
                 precurmass_sum_counts = 0
                 dictsumIntensity = {}
                 dictcountIntensity = {}
-                
+
                 for entry in group:
-                    new_dict = {k:v for k,v in entry.dictIntensity.items() if v != 0}
+                    new_dict = {k: v for k, v in entry.dictIntensity.items() if v != 0}
                     count = len(new_dict)
                     precurmass_sum_counts += count
                     precurmass_sum += entry.precurmass * count
-                    for k,v in new_dict.items():
-                        dictsumIntensity[k] = dictsumIntensity.get(k,0) + v
-                        dictcountIntensity[k] = dictcountIntensity.get(k,0) + 1
+                    for k, v in new_dict.items():
+                        dictsumIntensity[k] = dictsumIntensity.get(k, 0) + v
+                        dictcountIntensity[k] = dictcountIntensity.get(k, 0) + 1
 
-                base= deepcopy(entry)
+                base = deepcopy(entry)
                 base.precurmass = precurmass_sum / precurmass_sum_counts
                 for k in base.dictIntensity.keys():
-                    base.dictIntensity[k] = dictsumIntensity.get(k,0) / dictcountIntensity.get(k,1)
+                    base.dictIntensity[k] = dictsumIntensity.get(
+                        k, 0
+                    ) / dictcountIntensity.get(k, 1)
 
                 merged_resultSC.append(base)
             self.mfqlObj.resultSC = merged_resultSC
@@ -957,6 +959,11 @@ class TypeResult:
                 if self.mfqlObj.sc.options["alignmentMethodMS"] == "calctol":
                     listSE = self.mfqlObj.sc.listSurveyEntry
                     res = max(e.massWindow for e in listSE if e.massWindow > 0)
+                elif self.mfqlObj.options._data.get("lx2_MSresolution"):
+                    res = listSE[entry].precurmass / self.mfqlObj.options._data.get(
+                        "lx2_MSresolution"
+                    )
+
                 else:
                     res = self.mfqlObj.options["MSresolution"].getTinDA(
                         listSE[entry].precurmass
