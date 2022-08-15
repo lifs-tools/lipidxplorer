@@ -4,8 +4,9 @@ from lx.project import Project
 from collections import namedtuple
 
 # TODO make this a dataclass
-P_elem = namedtuple("P_element", "name index default", defaults=(None, None, ""))
+P_elem = namedtuple("P_elem", "name index default", defaults=(None, None, ""))
 model_map = {
+    "spectra_folder": P_elem("importDir"),
     "time_range1": P_elem("timerange", 0),
     "time_range2": P_elem("timerange", 1),
     "cal_masses_ms1": P_elem("MScalibration"),
@@ -84,10 +85,13 @@ class lx2_gui_controler(Lx2_gui):
                 idx = 0 if v == "ppm" else 1
                 widget.SetSelection(idx)
                 continue
+            elif k == "spectra_folder":
+                widget = getattr(self, k)
+                widget.SetPath(value)
+                continue
 
             widget = getattr(self, k)
             widget.SetValue(value)
-        print(self.project.options)
 
     def dump_project(self, path):
         typed = [
@@ -100,11 +104,13 @@ class lx2_gui_controler(Lx2_gui):
         for k, v in model_map.items():
             if k[-1] == "2":  # ignore all the secon part of tuples
                 continue
-            if k in typed:
+            elif k in typed:
                 idx = getattr(self, k).GetSelection()
                 value = getattr(self, k).GetString(idx).lower()
             elif k == "rep_rate_txt" or k == "found_int_txt":
                 value = float(getattr(self, k).GetValue()) / 100.0
+            elif k == "spectra_folder":
+                value = getattr(self, k).GetPath()
             elif v.index is None:
                 value = getattr(self, k).GetValue()
             else:
@@ -117,7 +123,6 @@ class lx2_gui_controler(Lx2_gui):
                 )
 
             self.project.options[v.name] = value
-        print(self.project.options)
 
     ################ bind controls
     def ini_file_changed(self, event):

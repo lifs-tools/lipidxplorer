@@ -3575,7 +3575,7 @@
                                                                     <property name="minimize_button">0</property>
                                                                     <property name="minimum_size"></property>
                                                                     <property name="moveable">1</property>
-                                                                    <property name="name">signla_inty_ms1_txt</property>
+                                                                    <property name="name">signla_inty_ms2_txt</property>
                                                                     <property name="pane_border">1</property>
                                                                     <property name="pane_position"></property>
                                                                     <property name="pane_size"></property>
@@ -3617,7 +3617,7 @@
                                                                     <property name="caption"></property>
                                                                     <property name="caption_visible">1</property>
                                                                     <property name="center_pane">0</property>
-                                                                    <property name="choices">&quot;moretest&quot; &quot;Absolute&quot; &quot;Relative&quot;</property>
+                                                                    <property name="choices">&quot;Absolute&quot; &quot;Relative&quot;</property>
                                                                     <property name="close_button">1</property>
                                                                     <property name="context_help"></property>
                                                                     <property name="context_menu">1</property>
