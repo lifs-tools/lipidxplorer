@@ -6023,7 +6023,7 @@ intensity."""
             )
 
         for i in rslt:
-            outtext = "m/z: %.4f sc: %s error: %.4f ppm" % (
+            outtext = "m/z: %.4f sc: %s error: %.4f (m/z)" % (
                 i.getWeight(),
                 i,
                 (float(mass) - i.getWeight()),
