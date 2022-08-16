@@ -387,8 +387,17 @@ class TypeResult:
             from itertools import groupby
             from copy import deepcopy
 
+            exploded_resultSC = (
+                ((PrecurmassSF, PrecurmassSF.scriptTag), se)
+                for se in resultSC
+                for PrecurmassSF in se.listPrecurmassSF
+            )
+
             merged_resultSC = []
-            for key, group in groupby(resultSC, lambda x: str(x.listPrecurmassSF)):
+            for key, group_tuple in groupby(
+                sorted(exploded_resultSC), lambda se_tuple: str(se_tuple[0])
+            ):
+                _, group = zip(*group_tuple)
                 precurmass_sum = 0
                 precurmass_sum_counts = 0
                 dictsumIntensity = {}
@@ -411,7 +420,8 @@ class TypeResult:
                     ) / dictcountIntensity.get(k, 1)
 
                 merged_resultSC.append(base)
-            self.mfqlObj.resultSC = merged_resultSC
+
+            self.mfqlObj.resultSC = sorted(merged_resultSC)
 
     def generateComplementSC(self):
 
