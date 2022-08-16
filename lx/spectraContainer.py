@@ -1386,28 +1386,30 @@ class MasterScan:
                 strOut += "MS resolution: , %s\n" % (
                     repr(self.options["MSresolution"].tolerance)
                 )
+            else:
+                strOut += "MS resolution: , 0 , not given\n"
             if self.options._data.get("lx2_MSresolution"):
                 strOut += "lx2 MS resolution: , %s\n" % (
                     repr(self.options["lx2_MSresolution"])
                 )
-            if "MSMSresolution" in self.options and not (
-                self.options.isEmpty("MSMSresolution")
-            ):
+            if self.options._data.get("MSMSresolution"):
                 strOut += "MS/MS resolution: , %s\n" % (
                     repr(self.options["MSMSresolution"].tolerance)
                 )
             else:
-                strOut += "MS/MS resolution: , 0\n"
-            strOut += "MS resolution gradient: , %s\n" % (
-                repr(self.options["MSresolutionDelta"])
-            )
-            if "MSMSresolutionDelta" in self.options and not (
-                self.options.isEmpty("MSMSresolutionDelta")
-            ):
+                strOut += "MS/MS resolution: , 0 , not given\n"
+            if self.options._data.get("MSresolutionDelta"):
+                strOut += "MS resolution gradient: , %s\n" % (
+                    repr(self.options["MSresolutionDelta"])
+                )
+            if self.options._data.get("MSMSresolutionDelta"):
                 strOut += "MS/MS resolution gradient: , %s\n" % (
                     repr(self.options["MSMSresolutionDelta"])
                 )
-            strOut += "MS threshold: , %s\n" % (repr(self.options["MSthreshold"]))
+            if "MSthreshold" in self.options and not (
+                self.options.isEmpty("MSthreshold")
+            ):
+                strOut += "MS threshold: , %s\n" % (repr(self.options["MSthreshold"]))
             if "MSMSthreshold" in self.options and not (
                 self.options.isEmpty("MSMSthreshold")
             ):
