@@ -1,8 +1,10 @@
-from pathlib import Path
-import pandas as pd
-import numpy as np
-import logging, sys
+import logging
+import sys
 from collections import OrderedDict
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 logging.basicConfig(
     level=logging.INFO,
@@ -12,9 +14,8 @@ logging.basicConfig(
 )
 log = logging.getLogger(Path(__file__).stem)
 
-from LX2_masterscan import mz_ml_paths, spectra_2_df
+from LX2_masterscan import ms2entry_factory, se_factory, spectra_2_df
 from lx.spectraContainer import MasterScan
-from LX2_masterscan import se_factory, ms2entry_factory
 
 
 def make_lx1_masterscan(options) -> MasterScan:
