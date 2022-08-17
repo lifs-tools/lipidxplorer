@@ -283,8 +283,8 @@ def path2df(
                 a = p.arrays
                 df = pd.DataFrame(
                     {
-                        "mz": a.mz,
-                        "inty": a.intensity,
+                        "mz": a.mz.astype("float32"),
+                        "inty": a.intensity.astype("float32"),
                         "stem": path.stem,
                         "scan_id": p.scan_id,
                         "filter_string": p.annotations["filter string"]
