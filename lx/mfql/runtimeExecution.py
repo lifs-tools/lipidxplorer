@@ -969,12 +969,14 @@ class TypeResult:
                 if self.mfqlObj.sc.options["alignmentMethodMS"] == "calctol":
                     listSE = self.mfqlObj.sc.listSurveyEntry
                     res = max(e.massWindow for e in listSE if e.massWindow > 0)
-                elif self.mfqlObj.options._data.get("lx2_MSresolution"):
-                    res = listSE[entry].precurmass / self.mfqlObj.options._data.get(
-                        "lx2_MSresolution"
-                    )
+
+                if self.mfqlObj.options._data.get("lx2_MSresolution") and not self.mfqlObj.options._data.get("MSresolution"):
+                    res = max(
+                        0.001, listSE[entry].massWindow
+                    )  # 0.003 because one porder of magnitude above isotopicDistance , basically arbitrary
 
                 else:
+                    # self.mfqlObj.options._data.get("MSresolution"):
                     res = self.mfqlObj.options["MSresolution"].getTinDA(
                         listSE[entry].precurmass
                     )

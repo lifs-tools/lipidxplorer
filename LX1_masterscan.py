@@ -617,8 +617,8 @@ def mass_inty_generator_ms1_agg(ms1_agg_peaks, polarity):
         dictIntensity = gdf.set_index("stem")["inty"].to_dict()
         # dictIntensity.update({f"{k}_lx2": v for k, v in dictIntensity_lx2.items()})
         dictIntensity = OrderedDict(sorted(dictIntensity.items()))
-        massWindow = gdf.mz.max() - gdf.mz.min()
-        mass = gdf.mz.mean()
+        massWindow = float(gdf.mz.max() - gdf.mz.min())
+        mass = float(gdf.mz.mean())
         yield (mass, dictIntensity, polarity, massWindow)
 
 
