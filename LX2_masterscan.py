@@ -490,10 +490,10 @@ def mass_inty_generator_ms1(ms1_df, occupancy=1):
         yield msmass, dictIntensity, polarity
 
 
-def se_factory(msmass, dictIntensity, samples, polarity):
+def se_factory(msmass, dictIntensity, samples, polarity, massWindow=0):
     holder = {s: 0 for s in samples}
     holder.update(dictIntensity)
-    return SurveyEntry(
+    se = SurveyEntry(
         msmass=msmass,
         smpl=holder,
         peaks=[],
@@ -505,6 +505,10 @@ def se_factory(msmass, dictIntensity, samples, polarity):
         msms=None,
         dictBasePeakIntensity={s: 1 for s in samples},
     )
+    se.massWindow = (
+        massWindow  # used for isotopic c orrection when no resolution is given
+    )
+    return se
 
 
 def mass_inty_generator_prec_ms2(g_df):

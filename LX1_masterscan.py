@@ -51,10 +51,11 @@ def make_lx1_masterscan(options) -> MasterScan:
                 options["lx2_MSresolution"],
                 options["lx2_MSresolution_gradient"],
             ) = suggest_resolution_gradient_and_tolerance(spectra_dfs[0])
-        for ms1_df in ms1_dfs.values():
+        for stem, ms1_df in ms1_dfs.items():
             cal_matchs, cal_vals = recalibration_values(ms1_df, options, use_lx2)
             if cal_matchs and cal_vals:
                 ms1_df.mz = ms1_df.mz + np.interp(ms1_df.mz, cal_matchs, cal_vals)
+            log.info(f"{stem} recalibrated with {cal_matchs} {cal_vals}")
 
     ms1_agg_peaks = pd.concat(ms1_dfs.values())
     # agg ms1 acrosss spectra
@@ -91,8 +92,8 @@ def make_lx1_masterscan(options) -> MasterScan:
     # TODO assert there is only one polarity
 
     listSurveyEntry = [
-        se_factory(msmass, dictIntensity, samples, polarity)
-        for msmass, dictIntensity, polarity in mass_inty_generator_ms1_agg(
+        se_factory(msmass, dictIntensity, samples, polarity, massWindow)
+        for msmass, dictIntensity, polarity, massWindow in mass_inty_generator_ms1_agg(
             ms1_agg_peaks, polarity
         )
     ]
@@ -240,21 +241,19 @@ def get_collapsable_bins(
     collapsable_map = {}
     prev_set = set()
     prev_idx = close_mz[close_mz].index[0]
-    merging = False
+    base_idx = prev_idx
     for idx, curr_set in close_sets.iteritems():
         if (
             close_mz[prev_idx]
-            and (idx - prev_idx <= 1 or merging)
+            and idx - prev_idx <= 1
             and not curr_set.intersection(prev_set)
         ):
-            collapsable_map[idx] = prev_idx
+            collapsable_map[idx] = base_idx
             prev_set.update(curr_set)
-            merging = True
-            continue
+        else:
+            prev_set = curr_set
+            base_idx = idx
         prev_idx = idx
-        prev_set = curr_set
-        merging = False
-
     return collapsable_map
 
 
@@ -613,12 +612,14 @@ def recalibration_values(ms1_df, options, use_lx2=False):
 
 ###################### build masterscan
 def mass_inty_generator_ms1_agg(ms1_agg_peaks, polarity):
-    for mass, gdf in ms1_agg_peaks.groupby("mass"):
+    for mass, gdf in ms1_agg_peaks.groupby("bins"):
         # dictIntensity = gdf.set_index("stem")["lx1_bad_inty"].to_dict()
         dictIntensity = gdf.set_index("stem")["inty"].to_dict()
         # dictIntensity.update({f"{k}_lx2": v for k, v in dictIntensity_lx2.items()})
         dictIntensity = OrderedDict(sorted(dictIntensity.items()))
-        yield (mass, dictIntensity, polarity)
+        massWindow = gdf.mz.max() - gdf.mz.min()
+        mass = gdf.mz.mean()
+        yield (mass, dictIntensity, polarity, massWindow)
 
 
 def MSMSEntry_list_generator(gdf, samples, polarity):
@@ -645,7 +646,6 @@ def MS2_dict_generator(ms2_agg_peaks, samples, polarity):
 def build_masterscan(options, listSurveyEntry, samples):
     scan = MasterScan(options)
     scan.listSurveyEntry = listSurveyEntry
-    scan.listSurveyEntry[0].massWindow = 0.01  # to avoid bug
     scan.sampleOccThr["MS"] = [(0.0, [])]  # to avoid bug at def checkOccupation
     scan.sampleOccThr["MSMS"] = [(0.0, [])]
 
