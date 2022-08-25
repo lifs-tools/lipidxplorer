@@ -69,17 +69,25 @@ def make_lx1_masterscan(options) -> MasterScan:
 
     ##### agg ms2
     try:
-        ms2_peaks = pd.concat((df.loc[~df.precursor_id.isna()] for df in spectra_dfs))
+        df = spectra_dfs[0]
+        ms2_peaks = df.loc[~df.precursor_id.isna()]
     except ValueError:
         log.info("no ms2 found")
 
     if not ms2_peaks.empty:
-        precursors_df = grouped_precursors_df(ms2_peaks, options)
+        if not use_lx2:
+            precursors_df = grouped_precursors_df(spectra_dfs, options)
+        else:
+            precursors_df = lx2_grouped_precursors_df(spectra_dfs, options)
         precursors_bins = precursors_df.set_index("precursor_mz")["prec_bin"].to_dict()
 
         ms2_peaks["prec_bin"] = ms2_peaks.precursor_mz.map(precursors_bins)
+
         grouped_prec = ms2_peaks.groupby("prec_bin")
-        ms2_agg_peaks = pd.concat(ms2_peaks_group_generator(grouped_prec, options))
+        if not use_lx2:
+            ms2_agg_peaks = pd.concat(ms2_peaks_group_generator(grouped_prec, options))
+        else:
+            ms2_agg_peaks = pd.concat(lx2_ms2_peaks_group_generator(grouped_prec, options))
 
         # TODO recalibrate
         # TODO # collape_join_adjecent_clusters_msms(cluster)
@@ -457,8 +465,42 @@ def bin_linear_alignment_for_ms2(masses, telerance_da):
             yield up_to
 
 
-def grouped_precursors_df(ms2_peaks, options):
-    ms2_peaks.sort_values(["precursor_mz", "mz"], inplace=True)
+def lx2_grouped_precursors_df(ms2_peaks, options):
+    # are there enough to do stats?
+    # within a sample
+    # accross samples
+    # use ms1 as default?
+    # fallback to 0.5 da
+
+    precursors_df = ms2_peaks[["stem", "scan_id", "precursor_mz"]].drop_duplicates()
+    precursors_df.sort_values("precursor_mz", inplace=True)
+    mz_diffs = precursors_df.precursor_mz.diff()
+    mz_diffs = mz_diffs.where(mz_diffs >= 0, np.NAN)
+    mediandiff = mz_diffs.median()
+    # mindiff = mz_diffs.replace(0,0.0001).min()
+    min_ratio = (
+        sum(mz_diffs <= 0.1) / mz_diffs.size
+    )  # one order of magnitude in daltons
+    log.info(f"Pct. of duplicate precursors within sample {min_ratio * 100}%")
+
+    if min_ratio < 0.1:  # one order of magitede
+        log.info("no ms2 grouping within scans, will try accross scans")
+        precursors_df.sort_values("precursor_mz", inplace=True)
+        mz_diffs = precursors_df.precursor_mz.diff()
+        mz_diffs = mz_diffs.where(mz_diffs >= 0, np.NAN)
+        mediana = mz_diffs.replace(0, 0.0001).median()
+    else:
+        mediana = 0.001
+
+    precursors_df["prec_bin"] = list(
+        bin_linear_alignment_for_ms2(precursors_df.precursor_mz, mediana)
+    )
+    return precursors_df
+
+
+def grouped_precursors_df(spectra_dfs, options):
+    # ms2_peaks.sort_values(["precursor_mz", "mz"], inplace=True)
+    ms2_peaks = pd.concat((df.loc[~df.precursor_id.isna()] for df in spectra_dfs))
     precursors_df = ms2_peaks[
         ["stem", "scan_id", "precursor_mz"]
     ].drop_duplicates()  # similar to unqie but return a series instead of an array
@@ -481,7 +523,7 @@ def grouped_precursors_df(ms2_peaks, options):
             options["selectionWindow"],
         )
     )
-
+    # todo FOR LX 2 TRY from scipy.cluster.hierarchy import dendrogram, linkage FROM https://www.w3schools.com/python/python_ml_hierarchial_clustering.asp#:~:text=Hierarchical%20clustering%20is%20an%20unsupervised,need%20a%20%22target%22%20variable.
     precursors_df["prec_bin"] = bins3
 
     # no fadi filter for precursors
@@ -514,6 +556,26 @@ def bin_mkSurveyLinear_for_ms2(masses, options):  # copied from above
             )
             up_to = mass + (mass / deltatol)
             yield up_to
+
+
+def lx2_ms2_peaks_group_generator(grouped_prec, options):
+    for idx, prec_ms2_peaks in grouped_prec:
+        prec_ms2_peaks.sort_values("mz", ascending=False, inplace=True)
+        sample_count = prec_ms2_peaks.stem.unique().size
+        if sample_count < 2:
+            log.info("no averaging, not enough samples")
+            prec_ms2_peaks["mass"] = prec_ms2_peaks["mz"]
+            yield prec_ms2_peaks
+
+        prec_ms2_peaks["mz_diff"] = prec_ms2_peaks.mz.diff(-1).shift()
+        prec_ms2_peaks["mz_diff_long"] = (
+            prec_ms2_peaks["mz_diff"]
+            .where(prec_ms2_peaks["mz_diff"] > 0.0001, np.nan)
+            .rolling(sample_count, min_periods=2)
+            .mean()
+        )
+
+        prec_ms2_peaks["bins"] = list(diff_bin(prec_ms2_peaks))
 
 
 def ms2_peaks_group_generator(grouped_prec, options):
