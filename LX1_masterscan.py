@@ -70,24 +70,27 @@ def make_lx1_masterscan(options) -> MasterScan:
     ##### agg ms2
     try:
         df = spectra_dfs[0]
-        ms2_peaks = df.loc[~df.precursor_id.isna()]
+        has_ms2 = not df.loc[~df.precursor_id.isna()].empty
     except ValueError:
         log.info("no ms2 found")
 
-    if not ms2_peaks.empty:
+    if has_ms2:
         if not use_lx2:
             precursors_df = grouped_precursors_df(spectra_dfs, options)
         else:
             precursors_df = lx2_grouped_precursors_df(spectra_dfs, options)
         precursors_bins = precursors_df.set_index("precursor_mz")["prec_bin"].to_dict()
 
+        ms2_peaks = pd.concat((df.loc[~df.precursor_id.isna()] for df in spectra_dfs))
         ms2_peaks["prec_bin"] = ms2_peaks.precursor_mz.map(precursors_bins)
 
         grouped_prec = ms2_peaks.groupby("prec_bin")
         if not use_lx2:
             ms2_agg_peaks = pd.concat(ms2_peaks_group_generator(grouped_prec, options))
         else:
-            ms2_agg_peaks = pd.concat(lx2_ms2_peaks_group_generator(grouped_prec, options))
+            ms2_agg_peaks = pd.concat(
+                lx2_ms2_peaks_group_generator(grouped_prec, options)
+            )
 
         # TODO recalibrate
         # TODO # collape_join_adjecent_clusters_msms(cluster)
@@ -505,6 +508,7 @@ def grouped_precursors_df(spectra_dfs, options):
         ["stem", "scan_id", "precursor_mz"]
     ].drop_duplicates()  # similar to unqie but return a series instead of an array
     # using "stem", 'scan_id' to replicate the numebr of instances for the averaging later
+    precursors_df.sort_values("precursor_mz", inplace=True)
 
     bins1 = list(
         bin_linear_alignment_for_ms2(
