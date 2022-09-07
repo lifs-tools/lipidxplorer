@@ -324,19 +324,19 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
             min_da_delta_all_scans=min_da_delta_all_scans,
         )
 
-        r_listClusters = r_linearAlignment(
-            list(dictSpecEntry.keys()),
-            dictSpecEntry,
-            options["MSresolution"],
-            merge=mergeSumIntensity,
-            mergeTolerance=options["MSresolution"],
-            mergeDeltaRes=options["MSresolutionDelta"],
-            fadi_denominator=fadi_denominator,
-            fadi_percentage=fadi_percentage,
-            bintolerance=options["MStolerance"],
-            res_by_fullbin=options["scanAveragingMethod"] == "calctol",
-            min_da_delta_all_scans=min_da_delta_all_scans,
-        )
+        # r_listClusters = r_linearAlignment(
+        #     list(dictSpecEntry.keys()),
+        #     dictSpecEntry,
+        #     options["MSresolution"],
+        #     merge=mergeSumIntensity,
+        #     mergeTolerance=options["MSresolution"],
+        #     mergeDeltaRes=options["MSresolutionDelta"],
+        #     fadi_denominator=fadi_denominator,
+        #     fadi_percentage=fadi_percentage,
+        #     bintolerance=options["MStolerance"],
+        #     res_by_fullbin=options["scanAveragingMethod"] == "calctol",
+        #     min_da_delta_all_scans=min_da_delta_all_scans,
+        # )
 
         # free memory
         del dictSpecEntry
@@ -451,6 +451,16 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                 if val.content
             )
             df = pd.DataFrame(peaks)
+            df.rename(
+                columns={
+                    0: "specName",
+                    1: "cluster",
+                    2: "sample",
+                    3: "mass",
+                    4: "intensity",
+                },
+                inplace=True,
+            )
             peaks_df_list.append(df)
         # free memory
         del listClusters
