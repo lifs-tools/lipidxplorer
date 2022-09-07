@@ -159,14 +159,17 @@ def ms1_peaks_agg(ms1_peaks, options):
     bins3 = make_lx1_bins(ms1_peaks, options)
 
     ms1_peaks["bin_mass"] = bins3
+    ms1_peaks["inty_x_mass"] = ms1_peaks["mz"] * ms1_peaks["inty"]
 
     # merge mutiple peaks from single scan
     g = ms1_peaks.groupby(["bin_mass", "scan_id"])
     ms1_peaks["scan_cumcount"] = g.cumcount()
     ms1_peaks["merged_mass"] = g["mz"].transform("mean")
-    ms1_peaks["merged_inty"] = g["inty"].transform(
-        "mean"
-    )  # NOTE merge is NOT weighted average
+    ms1_peaks["merged_inty"] = g["inty"].transform("mean")
+    ms1_peaks["weigted_mass"] = g["inty_x_mass"].transform("sum") / g["inty"].transform(
+        "sum"
+    )
+
     # TODO make a weighted intensity based on standard deviation... but not now
 
     # aggregate results
@@ -183,6 +186,7 @@ def ms1_peaks_agg(ms1_peaks, options):
                 "merged_mass": ["mean", "count"],
                 "merged_inty": ["mean", "sum"],
                 "mass_intensity": "sum",
+                "weigted_mass": "mean",
             }
         )
         .dropna()
@@ -200,12 +204,12 @@ def ms1_peaks_agg(ms1_peaks, options):
     agg_df = agg_df[mask_inty]
 
     # for reference...weigted_mass shoud not be necesary
-    agg_df["weigted_mass"] = agg_df.mass_intensity_sum / agg_df.merged_inty_sum
+    # agg_df["weigted_mass"] = agg_df.mass_intensity_sum / agg_df.merged_inty_sum
     # lx1 intensity is wrong because it uses the total number of scans, instead of the numebr of scans with a peak
     # agg_df["lx1_bad_inty"] = agg_df.merged_inty_sum / fadi_denominator
 
     agg_df.rename(
-        columns={"weigted_mass": "mz", "merged_inty_mean": "inty"}, inplace=True
+        columns={"weigted_mass_mean": "mz", "merged_inty_mean": "inty"}, inplace=True
     )
     return agg_df
 
