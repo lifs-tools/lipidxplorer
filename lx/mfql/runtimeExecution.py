@@ -398,6 +398,10 @@ class TypeResult:
                 sorted(exploded_resultSC), lambda se_tuple: str(se_tuple[0])
             ):
                 _, group = zip(*group_tuple)
+                if len(group) <= 1:
+                    merged_resultSC.append(group[0])
+                    continue
+
                 precurmass_sum = 0
                 precurmass_sum_counts = 0
                 dictsumIntensity = {}
@@ -412,7 +416,7 @@ class TypeResult:
                         dictsumIntensity[k] = dictsumIntensity.get(k, 0) + v
                         dictcountIntensity[k] = dictcountIntensity.get(k, 0) + 1
 
-                base = deepcopy(entry)
+                base = deepcopy(entry)  # TODO this takes a long time
                 base.precurmass = precurmass_sum / precurmass_sum_counts
                 for k in base.dictIntensity.keys():
                     base.dictIntensity[k] = dictsumIntensity.get(
@@ -970,7 +974,9 @@ class TypeResult:
                     listSE = self.mfqlObj.sc.listSurveyEntry
                     res = max(e.massWindow for e in listSE if e.massWindow > 0)
 
-                if self.mfqlObj.options._data.get("lx2_MSresolution") and not self.mfqlObj.options._data.get("MSresolution"):
+                if self.mfqlObj.options._data.get(
+                    "lx2_MSresolution"
+                ) and not self.mfqlObj.options._data.get("MSresolution"):
                     res = max(
                         0.001, listSE[entry].massWindow
                     )  # 0.003 because one porder of magnitude above isotopicDistance , basically arbitrary
