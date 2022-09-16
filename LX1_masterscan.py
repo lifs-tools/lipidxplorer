@@ -171,6 +171,8 @@ def ms1_peaks_agg(ms1_peaks, options):
     )
 
     # TODO make a weighted intensity based on standard deviation... but not now
+    # NOTE lx1 adds the intesities of close peaks... see alignmebt.py mk survey linear:643
+    # NOTE LX! does a bad averagin if peaks see readspectra:add_sample:401
 
     # aggregate results
     agg_df = (
