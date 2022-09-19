@@ -109,7 +109,8 @@ def make_lx1_masterscan(options) -> MasterScan:
             ms1_agg_peaks, polarity
         )
     ]
-    if not ms2_peaks.empty:
+    
+    if has_ms2:
         MS1_precurmass = pd.Series(
             [se.precurmass for se in listSurveyEntry], name="MS1_precurmass"
         )
