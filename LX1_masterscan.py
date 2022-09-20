@@ -94,6 +94,7 @@ def make_lx1_masterscan(options) -> MasterScan:
 
         # TODO recalibrate
         # TODO # collape_join_adjecent_clusters_msms(cluster)
+        # TODO reorder entries ascending... to be consistent with lx1 results
 
     # make listSurveyEntry
 
@@ -109,7 +110,7 @@ def make_lx1_masterscan(options) -> MasterScan:
             ms1_agg_peaks, polarity
         )
     ]
-    
+
     if has_ms2:
         MS1_precurmass = pd.Series(
             [se.precurmass for se in listSurveyEntry], name="MS1_precurmass"
@@ -718,6 +719,7 @@ def MS2_dict_generator(ms2_agg_peaks, samples, polarity):
 
 
 def build_masterscan(options, listSurveyEntry, samples):
+    listSurveyEntry = list(sorted(listSurveyEntry, key=lambda x: x.precurmass))
     scan = MasterScan(options)
     scan.listSurveyEntry = listSurveyEntry
     scan.sampleOccThr["MS"] = [(0.0, [])]  # to avoid bug at def checkOccupation
