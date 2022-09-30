@@ -17,7 +17,9 @@ from LX1_masterscan import make_lx1_masterscan
 
 
 def test_make_masterscan():
-    options = read_options(proy_path)
+    options = read_options(
+        r"d:\ownCloud\LX2_Dev\MS2_Data_eval\PRM_import_not_strained.lxp"
+    )
     masterscan = make_masterscan(options)
     expected = loadSC(expected_ms_path)
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
