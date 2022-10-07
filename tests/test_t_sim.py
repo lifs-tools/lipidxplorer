@@ -67,8 +67,8 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
     result = make_MFQL_result(
         get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True
     )
+    #to see results you can use makeResultsString(result, options)
     assert compareMasterScans(result.resultSC, reference.resultSC)
-
 
 
 def compareMasterScans(created, reference):
@@ -82,4 +82,3 @@ def compareMasterScans(created, reference):
             # TODO does this work and check the listMSMS ?
 
     return same
-
