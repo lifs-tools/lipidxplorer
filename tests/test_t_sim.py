@@ -54,17 +54,19 @@ def test_masterescan_automatic(get_no_res_options, get_no_res_masterscan):
     assert compareMasterScans(masterscan, reference)
 
 
-def test_mfql_manual(get_masterscan,get_options, getMfqlFiles):
+def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
     with open(r"test_resources\t_sim\reference\result_1.pkl", "rb") as f:
         reference = pickle.load(f)
     result = make_MFQL_result(get_masterscan, getMfqlFiles, get_options, log_steps=True)
     assert compareMasterScans(result.resultSC, reference.resultSC)
 
 
-def test_mfql_automatic(get_no_res_masterscan,get_no_res_options, getMfqlFiles):
+def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles):
     with open(r"test_resources\t_sim\reference\result_2.pkl", "rb") as f:
         reference = pickle.load(f)
-    result = make_MFQL_result(get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True)
+    result = make_MFQL_result(
+        get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True
+    )
     assert compareMasterScans(result.resultSC, reference.resultSC)
 
 
@@ -77,7 +79,7 @@ def compareMasterScans(created, reference):
     for c, a in zip(c_ls, a_ls):
         if c != a:
             same = False
-            #TODO does this work and check the listMSMS ?
+            # TODO does this work and check the listMSMS ?
 
     return same
 
