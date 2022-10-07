@@ -1,0 +1,30 @@
+##########################################################
+# Identify Cer with checking the precursor mass     #
+##########################################################
+
+QUERYNAME = Cerd7;
+	DEFINE pr = 'C[35..43] H[59..75] D[7] N[1] O[5]' WITH DBR = (1.5,5.5), CHG = -1;
+
+IDENTIFY
+	pr IN MS1-
+
+SUCHTHAT
+	isOdd(pr.chemsc[H]) AND
+	isOdd(pr.chemsc[db]*2)
+  
+REPORT
+	PRM = pr.mass;
+	EC = pr.chemsc;
+	CLASS = "Cerd7" % "()";
+	PRC = "%d" % "((pr.chemsc)[C] - 1)";
+	PRDB = "%d" % "((pr.chemsc)[db] - 1.5)";
+	PROH = "%d" % "((pr.chemsc)[O] - 5)";
+	SPECIE = "Cerd7 %d:%d:%d" % "((pr.chemsc)[C]-1, pr.chemsc[db]-1.5, pr.chemsc[O]-5)";
+	POLARITY = "-";
+	TYPE = "M+HCOO";
+
+      QSERR = "%2.2f" % "(pr.errppm)";
+	QS = pr.intensity;
+	;
+
+################ end script ##################

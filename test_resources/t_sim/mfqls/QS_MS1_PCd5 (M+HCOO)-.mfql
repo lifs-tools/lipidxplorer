@@ -1,0 +1,30 @@
+##########################################################
+# Identify PC with checking the precursor mass    #
+##########################################################
+
+QUERYNAME = PCd5;
+	DEFINE pr = 'C[40..48] H[72..82] D[5] O[10] N[1] P[1]' WITH DBR = (2.5,14.5), CHG = -1;
+
+IDENTIFY  
+	pr IN MS1-
+
+SUCHTHAT
+	isEven(pr.chemsc[H]) AND
+	isOdd(pr.chemsc[db]*2)
+  
+REPORT 
+	PRM = pr.mass;
+	EC = pr.chemsc;
+	CLASS = "PCd5" % "()";
+	PRC = "%d" % "((pr.chemsc)[C] - 9)";
+	PRDB = "%d" % "((pr.chemsc)[db] - 2.5)";
+	PROH = "%d" % "((pr.chemsc)[O] - 10)";
+	SPECIE = "PCd5 %d:%d:%d" % "((pr.chemsc)[C]-9, pr.chemsc[db]-2.5, pr.chemsc[O]-10)";
+	POLARITY = "-";
+	TYPE = "M+HCOO";
+
+      QSERR = "%2.2f" % "(pr.errppm)";
+	QS = pr.intensity;
+	;
+
+################ end script ##################

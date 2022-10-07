@@ -1,0 +1,30 @@
+##########################################################
+# Identify LPI with checking the precursor mass    #
+##########################################################
+
+QUERYNAME = LPId5;
+	DEFINE pr = 'C[24..28] H[41..49] D[5] O[12] P[1]' WITH DBR = (2.5,8.5), CHG = -1;
+
+IDENTIFY
+	pr IN MS1-
+
+SUCHTHAT
+	isOdd(pr.chemsc[H]) AND
+	isOdd(pr.chemsc[db]*2)
+
+REPORT 
+	PRM = pr.mass;
+	EC = pr.chemsc;
+	CLASS = "LPId5" % "()";
+	PRC = "%d" % "((pr.chemsc)[C] - 9)";
+	PRDB = "%d" % "((pr.chemsc)[db] - 2.5)";
+	PROH = "%d" % "((pr.chemsc)[O] - 12)";
+	SPECIE = "LPId5 %d:%d:%d" % "((pr.chemsc)[C]-9, pr.chemsc[db]-2.5, pr.chemsc[O]-12)";
+	POLARITY = "-";
+	TYPE = "M-H";
+
+      QSERR = "%2.2f" % "(pr.errppm)";
+	QS = pr.intensity;
+	;
+
+################ end script ##################

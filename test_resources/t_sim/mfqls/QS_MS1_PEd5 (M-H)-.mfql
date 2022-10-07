@@ -1,0 +1,30 @@
+##########################################################
+# Identify PE with checking the precursor mass     #
+##########################################################
+
+QUERYNAME = PEd5;
+	DEFINE pr = 'C[36..44] H[64..74] D[5] N[1] O[8] P[1]' WITH DBR = (2.5,6.5), CHG = -1;
+
+IDENTIFY
+	pr IN MS1-
+
+SUCHTHAT
+	isEven(pr.chemsc[H]) AND
+	isOdd(pr.chemsc[db] * 2)
+  
+REPORT 
+	PRM = pr.mass;
+	EC = pr.chemsc;
+	CLASS = "PEd5" % "()";
+	PRC = "%d" % "((pr.chemsc)[C] - 5)";
+	PRDB = "%d" % "((pr.chemsc)[db] - 2.5)";
+	PROH = "%d" % "((pr.chemsc)[O] - 8)";
+	SPECIE = "PEd5 %d:%d:%d" % "((pr.chemsc)[C]-5, pr.chemsc[db]-2.5, pr.chemsc[O]-8)";
+	POLARITY = "-";
+	TYPE = "M-H";
+
+      QSERR = "%2.2f" % "(pr.errppm)";
+	QS = pr.intensity;
+	;
+
+################ end script ##################
