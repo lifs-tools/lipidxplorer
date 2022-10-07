@@ -54,19 +54,19 @@ def test_masterescan_automatic(get_no_res_options, get_no_res_masterscan):
     assert compareMasterScans(masterscan, reference)
 
 
-# def test_mfql_manual(get_options, getMfqlFiles):
-#     with open(r"test_resources\reference\masterscan_1.pkl", "rb") as f:
-#         get_masterscan = pickle.load(f)
-#     with open(r"test_resources\reference\resultStr_1.pkl", "rb") as f:
-#         reference = pickle.load(f)
-#     result = make_MFQL_result(get_masterscan, getMfqlFiles, get_options, log_steps=True)
-#     assert resultStr == reference
+def test_mfql_manual(get_masterscan,get_options, getMfqlFiles):
+    with open(r"test_resources\t_sim\reference\result_1.pkl", "rb") as f:
+        reference = pickle.load(f)
+    result = make_MFQL_result(get_masterscan, getMfqlFiles, get_options, log_steps=True)
+    assert compareMasterScans(result.resultSC, reference.resultSC)
 
 
-# def test_mfql_automatic(getMfqlFiles, get_no_res_options, get_no_res_masterscan):
-#     # result = make_MFQL_result(get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True)
-#     # resultStr = makeResultsString(result, get_no_res_options)
-#     assert False
+def test_mfql_automatic(get_no_res_masterscan,get_no_res_options, getMfqlFiles):
+    with open(r"test_resources\t_sim\reference\result_2.pkl", "rb") as f:
+        reference = pickle.load(f)
+    result = make_MFQL_result(get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True)
+    assert compareMasterScans(result.resultSC, reference.resultSC)
+
 
 
 def compareMasterScans(created, reference):
@@ -77,6 +77,7 @@ def compareMasterScans(created, reference):
     for c, a in zip(c_ls, a_ls):
         if c != a:
             same = False
-            break
+            #TODO does this work and check the listMSMS ?
+
     return same
 
