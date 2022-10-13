@@ -1,0 +1,32 @@
+##########################################################
+# Identify LPC with checking the precursor mass         #
+# AND check for PIS 184.07 in MS2                       #
+##########################################################
+
+QUERYNAME = LPC;
+	DEFINE pr = 'C[21..35] H[32..200] N[1] O[7] P[1]' WITH DBR = (0.5,6.5), CHG = +1;
+	DEFINE head = 'C5 H15 O4 N1 P1' WITH CHG = +1;
+
+IDENTIFY
+	pr IN MS1+ AND
+	head in MS2+
+
+SUCHTHAT
+	isOdd(pr.chemsc[H]) AND
+	isOdd(pr.chemsc[db]*2) 
+
+REPORT 
+	PRM = pr.mass;
+	EC = pr.chemsc;
+	CLASS = "LPC" % "()";
+	PRC = "%d" % "((pr.chemsc)[C] - 8)";
+	PRDB = "%d" % "((pr.chemsc)[db] - 0.5)";
+      PRERR = "%2.2f" % "(pr.errppm)";
+	PRI = pr.intensity;
+
+	FRM = head.mass;
+      FRERR = "%2.2f" % "(head.errppm)";
+	FRI = head.intensity;
+	;
+
+################ end script ##################

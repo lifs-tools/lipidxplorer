@@ -1,0 +1,32 @@
+##########################################################
+# Identify PC with checking the precursor mass          #
+# AND check for PIS 185.07 in MS2                       #
+##########################################################
+
+QUERYNAME = PCNi;
+	DEFINE pr = 'C[16..80] H[20..200] Ni[1] O[8] P[1]' WITH DBR = (1.5,15.5), CHG = +1;
+	DEFINE head = 'C5 H15 O4 Ni1 P1' WITH CHG = +1;
+
+IDENTIFY
+	pr IN MS1+ AND
+	head in MS2+
+
+SUCHTHAT
+	isOdd(pr.chemsc[H]) AND
+	isOdd(pr.chemsc[db]*2)
+  
+REPORT 
+	PRM = pr.mass;
+	EC = pr.chemsc;
+	CLASS = "PCNi" % "()";
+	PRC = "%d" % "((pr.chemsc)[C] - 8)";
+	PRDB = "%d" % "((pr.chemsc)[db] - 1.5)";
+      PRERR = "%2.2f" % "(pr.errppm)";
+	PRI = pr.intensity;
+
+	FRM = head.mass;
+      FRERR = "%2.2f" % "(head.errppm)";
+	FRI = head.intensity;
+	;
+
+################ end script ##################
