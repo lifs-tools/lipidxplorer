@@ -1,0 +1,18 @@
+# Screening for SM - MSMS Check for 184# written 2017 - 02 - 13# Lars F. Eggers
+QUERYNAME =SMSplash;
+DEFINE PR = 'C[41] H[73] D[9] O[6] N[2] P[1]' WITH DBR = (0.5,7.5), CHG = +1;DEFINE FR = 'C[5] H[15] O[4] N[1] P[1]' WITH DBR = (1.5,3.5), CHG = +1;
+
+
+
+IDENTIFY
+	
+	# marking
+	PR IN MS1+ AND	FR IN MS2+
+
+
+  
+REPORT 
+	SPECIE = "SM-IS";    	CLASS = "SM";	MASS = PR.mass;	IDMSLEVEL = 2;	QUANTMSLEVEL = 1;		ISOBARIC = PR.isobaric;	CHEMSC = PR.chemsc;	ERRppm = "%2.2f" % "(PR.errppm)";	FRERRppm = "%2.2f" % "(FR.errppm)";	INT = PR.intensity;	QUALA = FR.intensity;	QUALB = FR.intensity;	QUALC = FR.intensity;	;		
+	
+
+################ end script ##################

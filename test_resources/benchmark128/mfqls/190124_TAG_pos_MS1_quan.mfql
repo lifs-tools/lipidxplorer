@@ -1,0 +1,16 @@
+# Screening for TAG - MS quan# Neutral Loss of Fatty Acids as Qualifier only# written 2018 - 03 - 27# Lars F. Eggers, Dominik Schwudke
+
+QUERYNAME = triacylglycerolMSMS;
+	DEFINE PR = 'C[39..75] H[50..200] N[1] O[6]' WITH DBR = (1.5,9.5), CHG = +1;
+	
+IDENTIFY
+	PR IN MS1+ 
+
+SUCHTHAT
+	isOdd(PR.chemsc[C]) 
+
+REPORT
+
+	SPECIE = "TAG %d:%d" % "((PR.chemsc[C]-3), (PR.chemsc[db]-1.5))";	CLASS = "TAG";	MASS = PR.mass;	IDMSLEVEL = 1;		QUANTMSLEVEL = 1;		ISOBARIC = PR.isobaric;	CHEMSC = PR.chemsc;	ERRppm = "%2.2f" % "(PR.errppm)";	FRERRppm = "%2.2f" % "(PR.errppm)";	INT = PR.intensity;	QUALA = PR.intensity;	QUALB = PR.intensity;	QUALC = PR.intensity;	;
+
+################ end script ##################

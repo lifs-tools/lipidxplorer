@@ -1,0 +1,36 @@
+###########################################################
+##### find PE-plasmalogens with MS2 in positive mode ######
+###########################################################
+
+
+QUERYNAME = PEplasmalogen;
+DEFINE PR = 'C[25..80] H[30..200] N[1] O[7] P[1]' WITH DBR = (0.5,10.5), CHG = 1;
+DEFINE FRFA = 'C[17..25] H[20..80] O[3]' WITH DBR = (1.5,7.5), CHG = 1;
+DEFINE FRP = 'C[16..24] H[20..80] N[1] O[4] P[1]' WITH DBR = (0.5,7.5), CHG = 1;
+
+IDENTIFY
+	PR IN MS1+ AND
+	FRFA IN MS2+ AND 
+	FRP IN MS2+ 
+	
+SUCHTHAT
+	FRFA + FRP - 'H1' == PR 
+
+REPORT
+	
+	SPECIE = "PE p%d:%d/%d:%d" % "((FRP.chemsc)[C] - 2, (FRP.chemsc)[db] - 0.5, (FRFA.chemsc)[C] - 3, (FRFA.chemsc)[db] - 1.5)";
+	CLASS = "PEP";
+	MASS = PR.mass;
+	IDMSLEVEL = 2;
+	QUANTMSLEVEL = 2;	
+	ISOBARIC = PR.isobaric;
+	CHEMSC = PR.chemsc;
+	ERRppm = "%2.2f" % "(PR.errppm)";
+	FRERRppm = "%2.2f and %2.2f" % "(FRFA.errppm, FRP.errppm)";
+	INT = sumIntensity(FRFA.intensity, FRP.intensity)/2;
+	QUALA = FRFA.intensity;
+	QUALB = FRP.intensity;
+	QUALC = FRP.intensity;
+	;
+
+################ end script ##################

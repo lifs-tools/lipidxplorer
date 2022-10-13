@@ -1,0 +1,16 @@
+# Screening for TAG IS - MS1 # MS1 Scan# written 2018 - 03 -27# Lars F. Eggers, Dominik Schwudke
+
+QUERYNAME = TAGSplash;
+	DEFINE PR = 'C[51] H[93] D[7] N[1] O[6]' WITH DBR = (1.5,19.5), CHG = +1;
+	DEFINE FR = 'C[18] H[10..76] D[7] N[1] O[2] ' WITH DBR = (0.0,6.0), CHG = 0;
+IDENTIFY
+	PR IN MS1+ AND
+	FR IN MS2+ 
+
+
+
+REPORT
+
+	SPECIE = "TAG-IS";	CLASS = "TAG";	MASS = PR.mass;	IDMSLEVEL = 2;	QUANTMSLEVEL = 1;		ISOBARIC = PR.isobaric;	CHEMSC = PR.chemsc;	ERRppm = "%2.2f" % "(PR.errppm)";	FRERRppm = "%2.2f" % "(FR.errppm)";	INT = PR.intensity;	QUALA = PR.intensity;	QUALB = PR.intensity;	QUALC = PR.intensity;	;
+
+################ end script ##################

@@ -1,0 +1,24 @@
+##########################################################
+# Identify PE with checking  the precursor mass, and NLS 141          #
+##########################################################
+# Modified LE: 2017 - 02 -13
+QUERYNAME = PESplash;
+DEFINE PR = 'C[38] H[68] D[7] N[1] O[8] P[1]' WITH DBR = (1.5,9.5), CHG = 1;
+DEFINE FR = 'C2 H8 O4 N1 P1' WITH CHG = 0;
+
+IDENTIFY
+	
+	# marking
+	PR IN MS1+ AND
+	FR IN MS2+
+          
+REPORT 
+	SPECIE = "PE-IS";  	CLASS = "PEP";	MASS = PR.mass;
+	IDMSLEVEL = 2;
+	QUANTMSLEVEL = 2;		ISOBARIC = PR.isobaric;	CHEMSC = PR.chemsc;	ERRppm = "%2.2f" % "(PR.errppm)";	FRERRppm = "%2.2f" % "(FR.errppm)";	INT = FR.intensity;
+	QUALA = PR.intensity;
+	QUALB = FR.intensity;
+	QUALC = FR.intensity;
+	;
+
+################ end script ##################

@@ -1,0 +1,11 @@
+# Screening for LPC - MS/MS# Check for Fragment 184# written 2017 - 02 - 13# Lars F. Eggers
+QUERYNAME = LPCSplash;
+DEFINE PR = 'C[26] H[43..67] D[7] O[7] N[1] P[1]' WITH DBR = (0.5,6.5), CHG = +1;DEFINE FR = 'C[5] H[15] O[4] N[1] P[1]' WITH DBR = (1.5,3.5), CHG = +1;
+IDENTIFY
+	# marking
+	PR IN MS1+ AND	FR IN MS2+
+REPORT 
+	SPECIE = "LPC-IS";   	CLASS = "LPC";	MASS = PR.mass;	IDMSLEVEL = 2;	QUANTMSLEVEL = 2;		ISOBARIC = PR.isobaric;	CHEMSC = PR.chemsc;	ERRppm = "%2.2f" % "(PR.errppm)";	INT = FR.intensity;	QUALA = FR.intensity;	QUALB = FR.intensity;	QUALC = FR.intensity;	;
+	
+
+################ end script ##################
