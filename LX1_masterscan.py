@@ -73,6 +73,7 @@ def make_lx1_masterscan(options) -> MasterScan:
         has_ms2 = not df.loc[~df.precursor_id.isna()].empty
     except ValueError:
         log.info("no ms2 found")
+        has_ms2 = False
 
     if has_ms2:
         if not use_lx2:
@@ -250,6 +251,8 @@ def get_collapsable_bins(
     )
 
     close_mz = close_mz | close_enough_mz
+    if not close_mz.any():
+        return None
 
     close_mz_groups = close_mz[close_mz | close_mz.shift(1)].index.to_numpy()
     close_sets = (
@@ -482,8 +485,9 @@ def lx2_grouped_precursors_df(ms2_peaks, options):
     # accross samples
     # use ms1 as default?
     # fallback to 0.5 da
+    all_ms2_peaks = pd.concat(ms2_peaks)
 
-    precursors_df = ms2_peaks[["stem", "scan_id", "precursor_mz"]].drop_duplicates()
+    precursors_df = all_ms2_peaks[["stem", "scan_id", "precursor_mz"]].drop_duplicates()
     precursors_df.sort_values("precursor_mz", inplace=True)
     mz_diffs = precursors_df.precursor_mz.diff()
     mz_diffs = mz_diffs.where(mz_diffs >= 0, np.NAN)
@@ -588,6 +592,55 @@ def lx2_ms2_peaks_group_generator(grouped_prec, options):
         )
 
         prec_ms2_peaks["bins"] = list(diff_bin(prec_ms2_peaks))
+        #TODO make this dry
+        tf_mask = prec_ms2_peaks.inty > options["MSMSthreshold"]
+    
+        # it uses merge sum intensity for getting the averrage intensity...
+        agg_prec_ms2_peaks = (
+            prec_ms2_peaks[tf_mask]
+            .groupby(
+                ["bins", "stem"]
+            )  # weighted_mass is as indicateive as the bin
+            .agg({"inty": "mean", "mz": ["count",'mean']})
+        )
+        agg_prec_ms2_peaks.columns = [
+            "_".join(col).strip("_").strip() for col in agg_prec_ms2_peaks.columns.values
+        ]
+        agg_prec_ms2_peaks.rename(columns={"mz_count": "count"}, inplace=True)
+        agg_prec_ms2_peaks.reset_index(inplace=True)
+        agg_prec_ms2_peaks.rename(columns={"mz_mean": "mz"}, inplace=True)
+        agg_prec_ms2_peaks.rename(columns={"inty_mean": "inty"}, inplace=True)
+
+        fadi_denominators = (
+            prec_ms2_peaks.groupby("stem")["scan_id"].nunique().to_dict()
+        )
+
+        ff_mask = (
+            agg_prec_ms2_peaks["count"] / agg_prec_ms2_peaks.stem.map(fadi_denominators)
+            >= options["MSMSfilter"]
+        )
+        mof_mask = (
+            agg_prec_ms2_peaks["count"] / agg_prec_ms2_peaks.stem.map(fadi_denominators)
+            >= options["MSMSminOccupation"]
+        )
+
+        agg_prec_ms2_peaks["precursor_mz"] = prec_ms2_peaks.precursor_mz.mean()
+        agg_prec_ms2_peaks = agg_prec_ms2_peaks[ff_mask & mof_mask]
+
+        # agg_prec_ms2_peaks.columns = [
+        #     "_".join(col).strip() for col in agg_prec_ms2_peaks.columns.values
+        # ]
+        # names = {
+        #     "weighted_mass_mean": "mz",
+        #     "weighted_mass_count": "count",
+        #     "inty_mean": "inty",
+        #     "precursor_mz_": "precursor_mz",
+        #     "stem_": "stem",
+        # }
+        # agg_prec_ms2_peaks.rename(columns=names, inplace=True)
+
+        yield agg_prec_ms2_peaks
+
 
 
 def ms2_peaks_group_generator(grouped_prec, options):
@@ -764,13 +817,15 @@ def suggest_resolution_gradient_and_tolerance(spectra_df):
     df["nunique_scans"] = df.rolling(60)["scan_id_f"].apply(lambda s: len(set(s)))
     # try https://stackoverflow.com/questions/46470743/how-to-efficiently-compute-a-rolling-unique-count-in-a-pandas-time-series
     max_unique_scans = df["nunique_scans"].max()
+    max_unique_scans = int(max_unique_scans)
     df["mean_diff"] = df["mz"].diff(-1).rolling(max_unique_scans).mean()
+    df["mean_diff"] = df["mean_diff"].where(df["mean_diff"] > 0.001, np.nan) # make a floor of 0.001
+    df["min_mean_diff"] = df["mean_diff"].cummin()
     df["mz_r"] = (df.mz / 10).round() * 10
-
     valids = df.loc[df["nunique_scans"] >= max_unique_scans * 0.9]
     valids.sort_values("mz", inplace=True)
-    valids["max_diff"] = valids["mean_diff"].cummax()
-    selected = valids.groupby("mz_r")["resolution"].min().to_frame().reset_index()
+    selected = valids.groupby("mz_r")["min_mean_diff"].max().to_frame().reset_index()
+    selected["resolution"] = selected["mz_r"] /selected["min_mean_diff"] 
     # selected.plot(x='mz_r', y="resolution")
     res_at_loest_mass = selected["resolution"].iat[0]
     gradient = (
