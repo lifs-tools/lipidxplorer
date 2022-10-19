@@ -222,7 +222,7 @@ class TypeMFQL:
             for variable in list(marks.keys()):
                 x = se.dictMarks[variable]
                 for e in x:
-                    if variable not in varsToBeCombined:
+                    if variable not in varsToBeCombined.keys():
                         varsToBeCombined[variable] = [e]
                     else:
                         varsToBeCombined[variable].append(e)
