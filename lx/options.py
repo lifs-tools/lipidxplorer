@@ -202,6 +202,7 @@ class Options:
         # for this setting exists no possibility to change it ...
         # however...
         self.options["loopNr"] = 3
+        self.options["lx2_MSresolution"] = None
 
         # the "formatted options" contain the options in the correct data format
         # the method 'readOptions' fills this dictionary
