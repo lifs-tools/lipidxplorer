@@ -18,6 +18,7 @@ def get_no_res_options():
     options["MSMSresolution"] = ""
     options["MSresolutionDelta"] = ""
     options["MSMSresolutionDelta"] = ""
+    options["lx2_MSresolution"] = True
     return options
 
 
