@@ -7,18 +7,22 @@ import pickle
 
 @pytest.fixture
 def get_options():
-    options = read_options(r"test_resources\benchmark128\project_data\benchmark_data_128-project.lxp")
+    options = read_options(
+        r"test_resources\benchmark128\project_data\benchmark_data_128-project.lxp"
+    )
     return options
 
 
 @pytest.fixture
 def get_no_res_options():
-    options = read_options(r"test_resources\benchmark128\project_data\benchmark_data_128-project.lxp")
+    options = read_options(
+        r"test_resources\benchmark128\project_data\benchmark_data_128-project.lxp"
+    )
     options["MSresolution"] = ""
     options["MSMSresolution"] = ""
     options["MSresolutionDelta"] = ""
     options["MSMSresolutionDelta"] = ""
-    options['lx2_MSresolution'] = True
+    options["lx2_MSresolution"] = True
     return options
 
 
@@ -62,7 +66,7 @@ def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
     assert compareMasterScans(result.resultSC, reference.resultSC)
 
 
-def test_mfql_automatic( get_no_res_options, getMfqlFiles):
+def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles):
     with open(r"test_resources\benchmark128\reference\result_2.pkl", "rb") as f:
         reference = pickle.load(f)
     result = make_MFQL_result(
