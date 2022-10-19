@@ -929,6 +929,8 @@ class TypeResult:
 
         listSE = sorted(listSE, key=lambda x: x.peakMean)
 
+        use_lx2_MSresolution = self.mfqlObj.options._data.get('lx2_MSresolution')
+
         if Debug("isotopicCorrection"):
             dbgstr = "\n"
             dbgstr += "\n - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
@@ -974,9 +976,7 @@ class TypeResult:
                     listSE = self.mfqlObj.sc.listSurveyEntry
                     res = max(e.massWindow for e in listSE if e.massWindow > 0)
 
-                if self.mfqlObj.options._data.get(
-                    "lx2_MSresolution"
-                ) and not self.mfqlObj.options._data.get("MSresolution"):
+                if use_lx2_MSresolution and not self.mfqlObj.options._data.get("MSresolution"):
                     res = max(
                         0.001, listSE[entry].massWindow
                     )  # 0.003 because one porder of magnitude above isotopicDistance , basically arbitrary
@@ -2017,10 +2017,11 @@ class TypeResult:
 
         isotopicDistance = 1.0033
 
+        use_lx2_MSresolution  = self.mfqlObj.options._data.get("lx2_MSresolution")
         if self.mfqlObj.sc.options["alignmentMethodMSMS"] == "calctol":
             toleranceMS = self.mfqlObj.sc.options["calcSelectionWindow"]
             toleranceMSMS = None  # not used
-        elif self.mfqlObj.options["lx2_MSresolution"]:
+        elif use_lx2_MSresolution:
             toleranceMS = self.mfqlObj.options[
                 "selectionWindow"  # to get same results as in lx1 but this is wrong
                 # TODO this is wrong fix this code
@@ -2405,7 +2406,7 @@ class TypeResult:
                                 if (
                                     self.mfqlObj.sc.options["alignmentMethodMSMS"]
                                     == "calctol"
-                                    or self.mfqlObj.sc.options["lx2_MSresolution"]
+                                    or use_lx2_MSresolution
                                 ):
                                     res = M.binsize
                                 else:
@@ -2570,7 +2571,7 @@ class TypeResult:
                                 if (
                                     self.mfqlObj.sc.options["alignmentMethodMSMS"]
                                     == "calctol"
-                                    or self.mfqlObj.options["lx2_MSresolution"]
+                                    or use_lx2_MSresolution
                                     # TODO fix this its just a bad guess
                                 ):
                                     res = M.binsize
@@ -2786,7 +2787,7 @@ class TypeResult:
 
                             resolution = (
                                 self.mfqlObj.options["MSMSresolution"].tolerance
-                                if not self.mfqlObj.options["lx2_MSresolution"]
+                                if not use_lx2_MSresolution
                                 else None
                             )
                             index = 0
@@ -2804,7 +2805,7 @@ class TypeResult:
                                 if (
                                     self.mfqlObj.sc.options["alignmentMethodMSMS"]
                                     == "calctol"
-                                    or self.mfqlObj.options["lx2_MSresolution"]
+                                    or use_lx2_MSresolution
                                     # TODO fix this its just a bad guess
                                 ):
                                     res = M.binsize
@@ -3100,7 +3101,7 @@ class TypeResult:
                                 if (
                                     self.mfqlObj.sc.options["alignmentMethodMSMS"]
                                     == "calctol"
-                                    or self.mfqlObj.options["lx2_MSresolution"]
+                                    or use_lx2_MSresolution
                                     # TODO fix this its just a bad guess
                                 ):
                                     res = M.binsize
