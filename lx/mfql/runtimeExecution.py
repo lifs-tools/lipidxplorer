@@ -2020,6 +2020,11 @@ class TypeResult:
         if self.mfqlObj.sc.options["alignmentMethodMSMS"] == "calctol":
             toleranceMS = self.mfqlObj.sc.options["calcSelectionWindow"]
             toleranceMSMS = None  # not used
+        elif self.mfqlObj.options["lx2_MSresolution"]:
+            toleranceMS = self.mfqlObj.options[
+                "selectionWindow"  # to get same results as in lx1 but this is wrong
+                # TODO this is wrong fix this code
+            ]
         else:
             toleranceMS = self.mfqlObj.options[
                 "selectionWindow"
@@ -2400,6 +2405,7 @@ class TypeResult:
                                 if (
                                     self.mfqlObj.sc.options["alignmentMethodMSMS"]
                                     == "calctol"
+                                    or self.mfqlObj.sc.options["lx2_MSresolution"]
                                 ):
                                     res = M.binsize
                                 else:
@@ -2564,6 +2570,8 @@ class TypeResult:
                                 if (
                                     self.mfqlObj.sc.options["alignmentMethodMSMS"]
                                     == "calctol"
+                                    or self.mfqlObj.options["lx2_MSresolution"]
+                                    # TODO fix this its just a bad guess
                                 ):
                                     res = M.binsize
                                 else:
@@ -2776,9 +2784,11 @@ class TypeResult:
                             MSMS2found = []
                             MSMS1found = []
 
-                            resolution = self.mfqlObj.options[
-                                "MSMSresolution"
-                            ].tolerance
+                            resolution = (
+                                self.mfqlObj.options["MSMSresolution"].tolerance
+                                if not self.mfqlObj.options["lx2_MSresolution"]
+                                else None
+                            )
                             index = 0
                             next = 0
 
@@ -2794,6 +2804,8 @@ class TypeResult:
                                 if (
                                     self.mfqlObj.sc.options["alignmentMethodMSMS"]
                                     == "calctol"
+                                    or self.mfqlObj.options["lx2_MSresolution"]
+                                    # TODO fix this its just a bad guess
                                 ):
                                     res = M.binsize
                                 else:
@@ -3088,6 +3100,8 @@ class TypeResult:
                                 if (
                                     self.mfqlObj.sc.options["alignmentMethodMSMS"]
                                     == "calctol"
+                                    or self.mfqlObj.options["lx2_MSresolution"]
+                                    # TODO fix this its just a bad guess
                                 ):
                                     res = M.binsize
                                 else:
