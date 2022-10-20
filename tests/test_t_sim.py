@@ -67,8 +67,7 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
     result = make_MFQL_result(
         get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True
     )
-    #to see results you can use utils.makeResultsString(result, get_no_res_options)
-    #with open('result-out.csv', 'w') as f: f.write(utils.makeResultsString(result, get_no_res_options))
+    #to see results print(makeResultsString(result, get_options))
     assert compareMasterScans(result.resultSC, reference.resultSC)
 
 
