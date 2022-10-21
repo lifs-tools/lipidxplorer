@@ -1,12 +1,14 @@
 import pytest
-
-from utils import expected_options_str, proy_path, read_options
+import pickle
+from utils import proy_path, read_options
 
 
 def test_read_project():
     options = read_options(proy_path)
+    with open(r'test_resources\small_test\expected_options.pkl','rb') as f: 
+        expected_options = pickle.load(f)
 
-    assert expected_options_str == str(options)
+    assert str(expected_options) == str(options)
 
 
 def test_trigger_calcres():
