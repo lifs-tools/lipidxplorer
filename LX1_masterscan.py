@@ -92,6 +92,7 @@ def make_lx1_masterscan(options) -> MasterScan:
             ms2_agg_peaks = pd.concat(
                 lx2_ms2_peaks_group_generator(grouped_prec, options)
             )
+        ms2_agg_peaks.sort_values('mz', inplace=True)
 
         # TODO recalibrate
         # TODO # collape_join_adjecent_clusters_msms(cluster)
@@ -112,6 +113,7 @@ def make_lx1_masterscan(options) -> MasterScan:
         )
     ]
 
+    listSurveyEntry = sorted(listSurveyEntry, key=lambda x:x.precurmass )
     if has_ms2:
         MS1_precurmass = pd.Series(
             [se.precurmass for se in listSurveyEntry], name="MS1_precurmass"
