@@ -70,6 +70,35 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
     #to see results print(makeResultsString(result, get_options))
     assert compareMasterScans(result.resultSC, reference.resultSC)
 
+def test_multi_id_isotopic_correction(getMfqlFiles, get_options):
+    with open(r"test_resources\t_sim\reference\masterscan_2.pkl", "rb") as f:
+        scan = pickle.load(f)
+    scan.listSurveyEntry = [e for e in scan.listSurveyEntry if 790 < e.precurmass < 860]
+    
+    problem_mz = [798.5179466, 826.5485398, 854.5812816]
+    problem_mz = [round(mz,3) for mz in problem_mz]
+
+    #problem_se = [se for se in scan.listSurveyEntry if round(se.precurmass,3) in problem_mz]
+    #above values modified by runing the query
+
+    mfql_keys = ['QS_MS1_PId5 (M-H)-.mfql','QS_MS1_PSd5 (M-H)-.mfql']
+    mfqlFiles = {k:getMfqlFiles[k] for k in mfql_keys}
+    result = make_MFQL_result(scan, mfqlFiles, get_options, log_steps=True)
+    result.resultSC.listSurveyEntry = [se for se in result.resultSC.listSurveyEntry if len(se.listPrecurmassSF)>1]
+    #to see results print(makeResultsString(result, get_options))
+    problem_res = [se for se in result.resultSC.listSurveyEntry if round(se.precurmass,3) in problem_mz]
+    is_ok = True
+    for se in problem_res:
+        for k,v in se.dictIntensity.items():
+            if v == 0: continue
+            ratio = se.dictBeforeIsocoIntensity[k] / v
+            ratio = round(ratio,3)
+            if ratio != round(se.monoisotopicRatio,3):
+                is_ok = False
+                break
+
+    assert is_ok
+
 
 def compareMasterScans(created, reference):
     c_ls = created.listSurveyEntry
