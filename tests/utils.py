@@ -120,7 +120,7 @@ def makeResultsString(result, options):
     return strResult
 
 
-def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = True):
+def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = False):
     mfqlObj = TypeMFQL(masterScan=masterscan)
     mfqlObj.options = options
     mfqlObj.outputSeperator = ","
