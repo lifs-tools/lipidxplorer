@@ -1576,22 +1576,27 @@ class TypeResult:
         listKeys = scan.listSamples
         listSE = self.mfqlObj.resultSC
         # listSE = self.resultSC # this is a MasterScan
+        for se in listSE:
+            se.monoisotopicCorrected = False
 
         for entry in range(len(listSE)):
 
+
             # correct the monoisotopic peak
             for sample in list(listSE[entry].dictIntensity.keys()):
-
                 # store the original intensity for the dump
                 if listSE[entry].dictBeforeIsocoIntensity == {}:
                     listSE[entry].dictBeforeIsocoIntensity = deepcopy(
                         listSE[entry].dictIntensity
                     )
 
-                listSE[entry].dictIntensity[sample] = (
-                    listSE[entry].dictIntensity[sample]
-                    / listSE[entry].monoisotopicRatio
-                )
+                if not listSE[entry].monoisotopicCorrected:
+                    listSE[entry].dictIntensity[sample] = (
+                        listSE[entry].dictIntensity[sample]
+                        / listSE[entry].monoisotopicRatio
+                    )
+            
+            listSE[entry].monoisotopicCorrected = True
 
             for msmsEntry in listSE[entry].listMSMS:
                 if msmsEntry.listMark != [] and not msmsEntry.monoisotopicCorrected:
