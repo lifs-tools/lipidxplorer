@@ -73,10 +73,10 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
 def test_multi_id_isotopic_correction(getMfqlFiles, get_options):
     with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
         scan = pickle.load(f)
-    scan.listSurveyEntry = [e for e in scan.listSurveyEntry if 790 < e.precurmass < 860]
+    scan.listSurveyEntry = [e for e in scan.listSurveyEntry if 760 < e.precurmass < 860]
     
     problem_mz = [798.5179466, 826.5485398, 854.5812816]
-    problem_mz = [round(mz,3) for mz in problem_mz]
+    problem_mz = [round(mz,2) for mz in problem_mz]
 
     #problem_se = [se for se in scan.listSurveyEntry if round(se.precurmass,3) in problem_mz]
     #above values modified by runing the query
@@ -86,14 +86,14 @@ def test_multi_id_isotopic_correction(getMfqlFiles, get_options):
     result = make_MFQL_result(scan, mfqlFiles, get_options, log_steps=True)
     result.resultSC.listSurveyEntry = [se for se in result.resultSC.listSurveyEntry if len(se.listPrecurmassSF)>1]
     #to see results print(makeResultsString(result, get_options))
-    problem_res = [se for se in result.resultSC.listSurveyEntry if round(se.precurmass,3) in problem_mz]
+    problem_res = [se for se in result.resultSC.listSurveyEntry if round(se.precurmass,2) in problem_mz]
     is_ok = True
     for se in problem_res:
         for k,v in se.dictIntensity.items():
             if v == 0: continue
             ratio = se.dictBeforeIsocoIntensity[k] / v
-            ratio = round(ratio,3)
-            if ratio != round(se.monoisotopicRatio,3):
+            ratio = round(ratio,1)
+            if ratio != round(se.monoisotopicRatio,1) :
                 is_ok = False
                 break
 
@@ -108,6 +108,6 @@ def compareMasterScans(created, reference):
     for c, a in zip(c_ls, a_ls):
         if c != a:
             same = False
-            # TODO does this work and check the listMSMS ?
+                # TODO does this work and check the listMSMS ?
 
     return same
