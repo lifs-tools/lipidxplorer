@@ -165,6 +165,7 @@ class lx2_spectra:
         # filter repetition
         # merge within spectra
         # recalibrate
+        pass
 
 
 def test_readfile():
