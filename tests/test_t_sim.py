@@ -71,7 +71,7 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
     assert compareMasterScans(result.resultSC, reference.resultSC)
 
 def test_multi_id_isotopic_correction(getMfqlFiles, get_options):
-    with open(r"test_resources\t_sim\reference\masterscan_2.pkl", "rb") as f:
+    with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
         scan = pickle.load(f)
     scan.listSurveyEntry = [e for e in scan.listSurveyEntry if 790 < e.precurmass < 860]
     
