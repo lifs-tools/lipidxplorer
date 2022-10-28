@@ -108,6 +108,7 @@ def compareMasterScans(created, reference):
     for c, a in zip(c_ls, a_ls):
         if c != a:
             same = False
-                # TODO does this work and check the listMSMS ?
+            break
+            # TODO does this work and check the listMSMS ?
 
     return same
