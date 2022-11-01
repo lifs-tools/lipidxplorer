@@ -58,7 +58,7 @@ def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
     with open(r"test_resources\t_sim\reference\result_1.pkl", "rb") as f:
         reference = pickle.load(f)
     result = make_MFQL_result(get_masterscan, getMfqlFiles, get_options, log_steps=True)
-    assert compareMasterScans(result.resultSC, reference.resultSC)
+    assert compareResults(result, reference)
 
 
 def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles):
@@ -68,7 +68,7 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
         get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True
     )
     #to see results print(makeResultsString(result, get_options))
-    assert compareMasterScans(result.resultSC, reference.resultSC)
+    assert compareResults(result, reference)
 
 def test_multi_id_isotopic_correction(getMfqlFiles, get_options):
     with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
@@ -112,3 +112,20 @@ def compareMasterScans(created, reference):
             # TODO does this work and check the listMSMS ?
 
     return same
+
+def compareResults(created, reference):
+    # col_headers = reference.listHead
+    same = True
+    for k in reference.dictQuery:
+        created_q = created.dictQuery[k]
+        reference_q = reference.dictQuery[k]
+
+        for col_header in reference_q.dataMatrix:
+            for idx,val in enumerate(reference_q.dataMatrix[col_header]):
+                if created_q.dataMatrix[col_header][idx] != val:
+                    same =False
+                    break
+    return same
+
+
+
