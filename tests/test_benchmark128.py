@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from utils import read_options, make_MFQL_result, makeResultsString
+from utils import read_options, make_MFQL_result, makeResultsString, compareResults, compareMasterScans
 from LX1_masterscan import make_lx1_masterscan
 import pickle
 
@@ -76,14 +76,3 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
     assert compareMasterScans(result.resultSC, reference.resultSC)
 
 
-def compareMasterScans(created, reference):
-    c_ls = created.listSurveyEntry
-    a_ls = reference.listSurveyEntry
-
-    same = True
-    for c, a in zip(c_ls, a_ls):
-        if c != a:
-            same = False
-            # TODO does this work and check the listMSMS ?
-
-    return same

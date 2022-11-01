@@ -49,7 +49,7 @@ def make_lx2_masterscan(options) -> MasterScan:
         )
     ]
 
-    listSurveyEntry = sorted(listSurveyEntry, key=lambda x:x.precurmass)
+    listSurveyEntry = sorted(listSurveyEntry, key=lambda x: x.precurmass)
 
     occup_between_ms2_scans = options["MSMSfilter"]
     ms2_df = pd.concat(
@@ -191,7 +191,8 @@ def precur_msmslists_from(ms2_df, samples, occupancy=1):
     for idx, g_df in ms2_df.groupby(level=0):
         precurs.append(idx)
         msms_list = [
-            ms2entry_factory(*e, samples) for e in mass_inty_generator_prec_ms2(g_df)
+            ms2entry_factory(mass, dictIntensity, samples, polarity)
+            for mass, dictIntensity, polarity in mass_inty_generator_prec_ms2(g_df)
         ]
         msmslists.append(msms_list)
     return precurs, msmslists
@@ -521,7 +522,7 @@ def mass_inty_generator_prec_ms2(g_df):
         yield mass, dictIntensity, polarity
 
 
-def ms2entry_factory(mass, dictIntensity, polarity, samples):
+def ms2entry_factory(mass, dictIntensity, samples, polarity):
     holder = {s: 0 for s in samples}
     holder.update(dictIntensity)
     return MSMSEntry(

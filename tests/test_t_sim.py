@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from utils import read_options, make_MFQL_result, makeResultsString
+from utils import read_options, make_MFQL_result, makeResultsString, compareMasterScans, compareResults
 from LX1_masterscan import make_lx1_masterscan
 import pickle
 
@@ -100,32 +100,6 @@ def test_multi_id_isotopic_correction(getMfqlFiles, get_options):
     assert is_ok
 
 
-def compareMasterScans(created, reference):
-    c_ls = created.listSurveyEntry
-    a_ls = reference.listSurveyEntry
-
-    same = True
-    for c, a in zip(c_ls, a_ls):
-        if c != a:
-            same = False
-            break
-            # TODO does this work and check the listMSMS ?
-
-    return same
-
-def compareResults(created, reference):
-    # col_headers = reference.listHead
-    same = True
-    for k in reference.dictQuery:
-        created_q = created.dictQuery[k]
-        reference_q = reference.dictQuery[k]
-
-        for col_header in reference_q.dataMatrix:
-            for idx,val in enumerate(reference_q.dataMatrix[col_header]):
-                if created_q.dataMatrix[col_header][idx] != val:
-                    same =False
-                    break
-    return same
 
 
 
