@@ -1,6 +1,12 @@
 import pytest
 from pathlib import Path
-from utils import read_options, make_MFQL_result, makeResultsString, compareMasterScans, compareResults
+from utils import (
+    read_options,
+    make_MFQL_result,
+    makeResultsString,
+    compareMasterScans,
+    compareResults,
+)
 from LX1_masterscan import make_lx1_masterscan
 import pickle
 
@@ -67,39 +73,43 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
     result = make_MFQL_result(
         get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True
     )
-    #to see results print(makeResultsString(result, get_options))
+    # to see results print(makeResultsString(result, get_options))
     assert compareResults(result, reference)
+
 
 def test_multi_id_isotopic_correction(getMfqlFiles, get_options):
     with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
         scan = pickle.load(f)
     scan.listSurveyEntry = [e for e in scan.listSurveyEntry if 760 < e.precurmass < 860]
-    
+
     problem_mz = [798.5179466, 826.5485398, 854.5812816]
-    problem_mz = [round(mz,2) for mz in problem_mz]
+    problem_mz = [round(mz, 2) for mz in problem_mz]
 
-    #problem_se = [se for se in scan.listSurveyEntry if round(se.precurmass,3) in problem_mz]
-    #above values modified by runing the query
+    # problem_se = [se for se in scan.listSurveyEntry if round(se.precurmass,3) in problem_mz]
+    # above values modified by runing the query
 
-    mfql_keys = ['QS_MS1_PId5 (M-H)-.mfql','QS_MS1_PSd5 (M-H)-.mfql']
-    mfqlFiles = {k:getMfqlFiles[k] for k in mfql_keys}
+    mfql_keys = ["QS_MS1_PId5 (M-H)-.mfql", "QS_MS1_PSd5 (M-H)-.mfql"]
+    mfqlFiles = {k: getMfqlFiles[k] for k in mfql_keys}
     result = make_MFQL_result(scan, mfqlFiles, get_options, log_steps=True)
-    result.resultSC.listSurveyEntry = [se for se in result.resultSC.listSurveyEntry if len(se.listPrecurmassSF)>1]
-    #to see results print(makeResultsString(result, get_options))
-    problem_res = [se for se in result.resultSC.listSurveyEntry if round(se.precurmass,2) in problem_mz]
+    result.resultSC.listSurveyEntry = [
+        se for se in result.resultSC.listSurveyEntry if len(se.listPrecurmassSF) > 1
+    ]
+    # to see results print(makeResultsString(result, get_options))
+    problem_res = [
+        se
+        for se in result.resultSC.listSurveyEntry
+        if round(se.precurmass, 2) in problem_mz
+    ]
     is_ok = True
     for se in problem_res:
-        for k,v in se.dictIntensity.items():
-            if v == 0: continue
+        for k, v in se.dictIntensity.items():
+            if v == 0:
+                continue
             ratio = se.dictBeforeIsocoIntensity[k] / v
-            ratio = round(ratio,1)
-            if ratio != round(se.monoisotopicRatio,1) :
+            ratio = round(ratio, 1)
+            if ratio != round(se.monoisotopicRatio, 1):
                 is_ok = False
                 break
 
     assert is_ok
-
-
-
-
 
