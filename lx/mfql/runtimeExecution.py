@@ -964,7 +964,7 @@ class TypeResult:
             # if not (float(countNonZeros) / numSamples) >= self.mfqlObj.sc.options['MSminOccupation']:
             if not check:
                 actualKey.removedByIsotopicCorrection_MS = True
-
+            res = None
             if listSE[entry].listMark != []:
 
                 # if scan.options.has_key('MSMSresolutionDelta') and scan.options['MSresolutionDelta']:
@@ -977,9 +977,14 @@ class TypeResult:
                     res = max(e.massWindow for e in listSE if e.massWindow > 0)
 
                 if use_lx2_MSresolution and not self.mfqlObj.options._data.get("MSresolution"):
-                    res = max(
-                        0.001, listSE[entry].massWindow
-                    )  # 0.003 because one porder of magnitude above isotopicDistance , basically arbitrary
+                    last_res = res
+                    if last_res is None: last_res = max(e.massWindow for e in listSE if e.massWindow > 0)
+
+                    if listSE[entry].massWindow > 0: #minimum size
+                        res = max(0.001, listSE[entry].massWindow)
+                    else:
+                        res = last_res
+
 
                 else:
                     # self.mfqlObj.options._data.get("MSresolution"):
