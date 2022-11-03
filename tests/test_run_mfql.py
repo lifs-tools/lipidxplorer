@@ -6,7 +6,6 @@ from utils import (
     getMfqlFiles,
     make_MFQL_result,
     makeResultsString,
-    out_reference,
     proy_path,
     read_options,
 )
