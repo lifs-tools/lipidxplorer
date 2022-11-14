@@ -39,8 +39,8 @@ def ThermoRawfile2DataFrames(file_path, head=None):
         retTime = rawfile.RTFromScanNum(scanNum) * 60
         chargeState = rawfile.GetTrailerExtraForScanNum(scanNum)["Charge State"]
         isolationMass = (
-            rawfile.GetPrecursorInfoFromScanNum(scanNum).isolationMass
-            if rawfile.GetPrecursorInfoFromScanNum(scanNum) is not None
+            rawfile.GetFullMSOrderPrecursorDataFromScanNum(scanNum,0).precursorMass
+            if rawfile.GetFullMSOrderPrecursorDataFromScanNum(scanNum,0) is not None
             else 0.0
         )  # or monoIsoMass
         row = [scanNum, filterLine, retTime, chargeState, isolationMass]
