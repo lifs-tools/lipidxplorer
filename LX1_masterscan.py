@@ -92,7 +92,7 @@ def make_lx1_masterscan(options) -> MasterScan:
             ms2_agg_peaks = pd.concat(
                 lx2_ms2_peaks_group_generator(grouped_prec, options)
             )
-        ms2_agg_peaks.sort_values('mz', inplace=True)
+        ms2_agg_peaks.sort_values("mz", inplace=True)
 
         # TODO recalibrate
         # TODO # collape_join_adjecent_clusters_msms(cluster)
@@ -113,7 +113,7 @@ def make_lx1_masterscan(options) -> MasterScan:
         )
     ]
 
-    listSurveyEntry = sorted(listSurveyEntry, key=lambda x:x.precurmass )
+    listSurveyEntry = sorted(listSurveyEntry, key=lambda x: x.precurmass)
     if has_ms2:
         MS1_precurmass = pd.Series(
             [se.precurmass for se in listSurveyEntry], name="MS1_precurmass"
@@ -282,7 +282,7 @@ def get_collapsable_bins(
     return collapsable_map
 
 
-def diff_bin(df):
+def diff_bin(df, currlong=False):
 
     cur_bin = 0
     curr_long = 0.01
@@ -294,10 +294,13 @@ def diff_bin(df):
         if tup.mz_diff_long < curr_long:
             curr_long = tup.mz_diff_long
 
-        yield cur_bin
+        if currlong:
+            yield cur_bin, curr_long
+        else:
+            yield cur_bin
 
 
-def ms1_peaks_agg_lx2(ms1_peaks, options):
+def ms1_peaks_agg_lx2(ms1_peaks, options, out_dpm=False):
     ms1_peaks.sort_values("mz", ascending=False, inplace=True)
     # repetition_rate = 0.7
     scan_count = ms1_peaks.scan_id.unique().size
@@ -316,8 +319,9 @@ def ms1_peaks_agg_lx2(ms1_peaks, options):
     # df['scan_id_f'] = df['scan_id'].factorize()[0]
     # df['scan_cnt'] = df.scan_id_f.rolling(scan_count).apply(lambda s: len(set(s)))
     # df['mean_mz_diff']  = df.mz_diff.rolling(window = 31, center=True, win_type ='cosine' ).mean() # note win_type =should be tukey
-
-    ms1_peaks["bin_mass"] = list(diff_bin(ms1_peaks))
+    bin_mass, curr_long = zip(*diff_bin(ms1_peaks, currlong=True))
+    ms1_peaks["bin_mass"] = list(bin_mass)
+    ms1_peaks["curr_long"] = list(curr_long)
 
     ######collapse adjacent
     collapsable_map = get_collapsable_bins(ms1_peaks)
@@ -341,7 +345,14 @@ def ms1_peaks_agg_lx2(ms1_peaks, options):
             mass_intensity=lambda x: x.mz * x.merged_inty
         )  # for the weighted average intensity
         .groupby("bin_mass")
-        .agg({"merged_mass": ["mean", "count"], "merged_inty": "mean",})
+        .agg(
+            {
+                "merged_mass": ["mean", "count"],
+                "merged_inty": "mean",
+                "mz": ["min", "max"],
+                "curr_long": "first",
+            }
+        )
         .dropna()
     )
     agg_df.columns = ["_".join(col).strip() for col in agg_df.columns.values]
@@ -364,6 +375,12 @@ def ms1_peaks_agg_lx2(ms1_peaks, options):
     agg_df.rename(
         columns={"merged_mass_mean": "mz", "merged_inty_mean": "inty"}, inplace=True
     )
+    if out_dpm:
+        sel = agg_df[agg_df.mz_max - agg_df.mz_min > 0].assign(
+            mz_diff=lambda x: x.mz_max - x.mz_min
+        )
+        sel.plot.scatter(x="mz", y="mz_diff")
+        sel.plot.scatter(x="mz", y="curr_long")
     return agg_df
 
 
@@ -594,19 +611,18 @@ def lx2_ms2_peaks_group_generator(grouped_prec, options):
         )
 
         prec_ms2_peaks["bins"] = list(diff_bin(prec_ms2_peaks))
-        #TODO make this dry
+        # TODO make this dry
         tf_mask = prec_ms2_peaks.inty > options["MSMSthreshold"]
-    
+
         # it uses merge sum intensity for getting the averrage intensity...
         agg_prec_ms2_peaks = (
             prec_ms2_peaks[tf_mask]
-            .groupby(
-                ["bins", "stem"]
-            )  # weighted_mass is as indicateive as the bin
-            .agg({"inty": "mean", "mz": ["count",'mean']})
+            .groupby(["bins", "stem"])  # weighted_mass is as indicateive as the bin
+            .agg({"inty": "mean", "mz": ["count", "mean"]})
         )
         agg_prec_ms2_peaks.columns = [
-            "_".join(col).strip("_").strip() for col in agg_prec_ms2_peaks.columns.values
+            "_".join(col).strip("_").strip()
+            for col in agg_prec_ms2_peaks.columns.values
         ]
         agg_prec_ms2_peaks.rename(columns={"mz_count": "count"}, inplace=True)
         agg_prec_ms2_peaks.reset_index(inplace=True)
@@ -642,7 +658,6 @@ def lx2_ms2_peaks_group_generator(grouped_prec, options):
         # agg_prec_ms2_peaks.rename(columns=names, inplace=True)
 
         yield agg_prec_ms2_peaks
-
 
 
 def ms2_peaks_group_generator(grouped_prec, options):
@@ -821,13 +836,15 @@ def suggest_resolution_gradient_and_tolerance(spectra_df):
     max_unique_scans = df["nunique_scans"].max()
     max_unique_scans = int(max_unique_scans)
     df["mean_diff"] = df["mz"].diff(-1).rolling(max_unique_scans).mean()
-    df["mean_diff"] = df["mean_diff"].where(df["mean_diff"] > 0.001, np.nan) # make a floor of 0.001
+    df["mean_diff"] = df["mean_diff"].where(
+        df["mean_diff"] > 0.001, np.nan
+    )  # make a floor of 0.001
     df["min_mean_diff"] = df["mean_diff"].cummin()
     df["mz_r"] = (df.mz / 10).round() * 10
     valids = df.loc[df["nunique_scans"] >= max_unique_scans * 0.9]
     valids.sort_values("mz", inplace=True)
     selected = valids.groupby("mz_r")["min_mean_diff"].max().to_frame().reset_index()
-    selected["resolution"] = selected["mz_r"] /selected["min_mean_diff"] 
+    selected["resolution"] = selected["mz_r"] / selected["min_mean_diff"]
     # selected.plot(x='mz_r', y="resolution")
     res_at_loest_mass = selected["resolution"].iat[0]
     gradient = (
