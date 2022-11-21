@@ -54,10 +54,19 @@ def test_masterscan_manual(get_options, get_masterscan):
 
 def test_masterscan_2_df():
     with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
-        reference = pickle.load(f)
-    df = masterscan_2_df(reference)
+        reference1 = pickle.load(f)
+    df1 = masterscan_2_df(reference1)
     
-    assert len(reference.listSurveyEntry) == df.shape[0]
+    with open(r"test_resources\t_sim\reference\masterscan_2.pkl", "rb") as f:
+        reference2 = pickle.load(f)
+    df2 = masterscan_2_df(reference2)
+
+    assert len(reference1.listSurveyEntry) == df1.shape[0]
+    assert len(reference2.listSurveyEntry) == df2.shape[0]
+    assert df2.shape[0] < 1.2 * df1.shape[0] # if they are roughly the same shape it indicates lx1 comparable clustering
+
+
+
 
 
 
