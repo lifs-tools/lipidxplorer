@@ -45,12 +45,7 @@ def getMfqlFiles():
     return {mfql.name: mfql.read_text() for mfql in mfqls}
 
 
-def test_masterscan_manual(get_options, get_masterscan):
-    assert get_options["MSresolution"]
-    masterscan = get_masterscan
-    with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
-        reference = pickle.load(f)
-    assert compareMasterScans(masterscan, reference)
+
 
 def test_masterscan_2_df():
     with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
@@ -65,9 +60,12 @@ def test_masterscan_2_df():
     assert len(reference2.listSurveyEntry) == df2.shape[0]
     assert df2.shape[0] < 1.2 * df1.shape[0] # if they are roughly the same shape it indicates lx1 comparable clustering
 
-
-
-
+def test_masterscan_manual(get_options, get_masterscan):
+    assert get_options["MSresolution"]
+    masterscan = get_masterscan
+    with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
+        reference = pickle.load(f)
+    assert compareMasterScans(masterscan, reference)
 
 
 def test_masterescan_automatic(get_no_res_options, get_no_res_masterscan):
