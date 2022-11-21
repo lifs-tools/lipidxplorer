@@ -1,6 +1,7 @@
 import pytest
 from pathlib import Path
 from utils import (
+    masterscan_2_df,
     read_options,
     make_MFQL_result,
     makeResultsString,
@@ -50,6 +51,14 @@ def test_masterscan_manual(get_options, get_masterscan):
     with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
         reference = pickle.load(f)
     assert compareMasterScans(masterscan, reference)
+
+def test_masterscan_2_df():
+    with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
+        reference = pickle.load(f)
+    df = masterscan_2_df(reference)
+    
+    assert len(reference.listSurveyEntry) == df.shape[0]
+
 
 
 def test_masterescan_automatic(get_no_res_options, get_no_res_masterscan):

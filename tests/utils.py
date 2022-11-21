@@ -1,4 +1,6 @@
 from pathlib import Path
+import pickle
+import pandas as pd
 
 from lx.project import Project
 
@@ -131,3 +133,14 @@ def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = False):
     )
 
     return mfqlObj.result
+
+
+def masterscan_2_df(masterscan):
+    def se_2_dict(se):
+        res = dict(se.dictIntensity)
+        res['precurmass'] = se.precurmass
+        res['massWindow'] = se.massWindow
+        return res
+    return pd.DataFrame((se_2_dict(se) for se in masterscan.listSurveyEntry))
+    
+
