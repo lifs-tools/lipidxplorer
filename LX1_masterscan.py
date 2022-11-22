@@ -408,6 +408,15 @@ def bin_mkSurveyLinear(masses, options):
             up_to = mass + (mass / deltatol)
             yield up_to
 
+def bin_mkSurveyLinear_masswindow(masses, options):
+    minmass = masses.min()
+    for _, mass in masses.iteritems():
+        deltatol = (
+            options["MSresolution"].tolerance
+            + (mass - minmass) * options["MSresolutionDelta"]
+        )
+        yield deltatol
+
 
 def ms1_scans_agg(ms1_agg_peaks, options):
     ms1_agg_peaks.sort_values("mz", inplace=True)
@@ -430,6 +439,8 @@ def ms1_scans_agg(ms1_agg_peaks, options):
         ms1_agg_peaks, accross_column="stem", cluster_column="bins"
     )
     ms1_agg_peaks["bins"].replace(collapsable_map, inplace=True)
+    ms1_agg_peaks["masswindow"] = list(bin_mkSurveyLinear_masswindow(ms1_agg_peaks.mz, options))
+
 
     # check occupation spectracontainer.py masterscan.chekoccupation
     # occupation is the % of peak intensities abvove "thrsld: "
@@ -462,7 +473,9 @@ def ms1_scans_agg_lx2(ms1_agg_peaks, options):
     )  # neg because of sorting order
     # .replace(0,np.nan).fillna(method = 'bfill').fillna(method = 'ffill')
 
-    ms1_agg_peaks["bins"] = list(diff_bin(ms1_agg_peaks, scan_count=sample_count))
+    res = list(diff_bin(ms1_agg_peaks, scan_count=sample_count, currlong=True))
+    ms1_agg_peaks["bins"] = [e[0] for e in res]
+    ms1_agg_peaks["masswindow"] = [e[1] for e in res]
 
     #handle split peaks
     gdf = ms1_agg_peaks.groupby(['bins','stem'])
@@ -770,7 +783,7 @@ def mass_inty_generator_ms1_agg(ms1_agg_peaks, polarity):
         dictIntensity = gdf.set_index("stem")["inty"].to_dict()
         # dictIntensity.update({f"{k}_lx2": v for k, v in dictIntensity_lx2.items()})
         dictIntensity = OrderedDict(sorted(dictIntensity.items()))
-        massWindow = float(gdf.mz.max() - gdf.mz.min())
+        massWindow = float(gdf.masswindow.mean())
         mass = float(gdf.mz.mean())
         yield (mass, dictIntensity, polarity, massWindow)
 
