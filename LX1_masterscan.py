@@ -282,14 +282,15 @@ def get_collapsable_bins(
     return collapsable_map
 
 
-def diff_bin(df, currlong=False):
+def diff_bin(df, scan_count = 1, currlong=False):
 
     cur_bin = 0
     curr_long = 0.01
 
     for tup in df.itertuples():
-        if tup.mz_diff > curr_long:
+        if tup.mz_diff > (curr_long * scan_count):
             cur_bin += 1
+
 
         if tup.mz_diff_long < curr_long:
             curr_long = tup.mz_diff_long
@@ -461,7 +462,14 @@ def ms1_scans_agg_lx2(ms1_agg_peaks, options):
     )  # neg because of sorting order
     # .replace(0,np.nan).fillna(method = 'bfill').fillna(method = 'ffill')
 
-    ms1_agg_peaks["bins"] = list(diff_bin(ms1_agg_peaks))
+    ms1_agg_peaks["bins"] = list(diff_bin(ms1_agg_peaks, scan_count=sample_count))
+
+    #handle split peaks
+    gdf = ms1_agg_peaks.groupby(['bins','stem'])
+    ms1_agg_peaks['mz'] = gdf['mz'].transform('mean')
+    ms1_agg_peaks['inty'] = gdf['inty'].transform('mean')
+    ms1_agg_peaks = ms1_agg_peaks[gdf.cumcount()==0]
+
     collapsable_map = get_collapsable_bins(
         ms1_agg_peaks, accross_column="stem", cluster_column="bins"
     )
