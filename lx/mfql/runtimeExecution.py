@@ -981,7 +981,9 @@ class TypeResult:
                     if last_res is None: last_res = max(e.massWindow for e in listSE if e.massWindow > 0)
 
                     if listSE[entry].massWindow > 0: #minimum size
-                        res = max(0.005, listSE[entry].massWindow)
+                        #arbitrary 5 ppm
+                        ppm5 = 5/1_000_000 * listSE[entry].precurmass
+                        res = max(ppm5, listSE[entry].massWindow)
                     else:
                         res = last_res
 
