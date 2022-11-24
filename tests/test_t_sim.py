@@ -102,7 +102,7 @@ def test_mfql_intermediate_results( get_options, getMfqlFiles):
     
     result = make_MFQL_result(masterscan, getMfqlFiles, get_options, log_steps=True, callback = callback)
 
-    assert False
+    assert logs and result is not None
 
 
 

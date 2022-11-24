@@ -1251,8 +1251,7 @@ parser = yacc.yacc(debug=0, optimize=0)
 # bparser = yacc.yacc(method = 'LALR')
 
 
-def seethis(this):
-    pass
+
 
 
 def startParsing(
@@ -1267,6 +1266,7 @@ def startParsing(
     generateStatistics,
     mode="",
     log_steps=False,
+    callback = None
 ):
 
     time.clock()
@@ -1310,12 +1310,12 @@ def startParsing(
 
         mfqlObj.reset()
     if log_steps:
-        print("all entries are... mfqlObj.result.resultSC")
-        print(
-            "added id to ... [se for se in mfqlObj.result.resultSC.listSurveyEntry if se.listMark]"
-        )
-        for se in (se for se in mfqlObj.result.resultSC.listSurveyEntry if se.listMark):
-            print(se)
+        if  callback is None:
+            def holder(this,that):
+                pass
+            callback = holder
+
+        callback('identification', mfqlObj.result.resultSC)
 
     if isotopicCorrectionMS:
         # mfqlObj.result.isotopicCorrectionMSMS()
@@ -1325,13 +1325,7 @@ def startParsing(
         # to drop high ppms and lower the influense of isotopic corrections
         mfqlObj.result.isotopicCorrectionMS()
         if log_steps:
-            print("changed intensities base on isotopicCorrectionMS")
-            for se in (
-                se
-                for se in mfqlObj.result.resultSC.listSurveyEntry
-                if se.dictBeforeIsocoIntensity
-            ):
-                print(se)
+            callback('isotopicCorrectionMS', mfqlObj.result.resultSC)
         # gprogressCount += 1
         # if parent:
         # 	(cont, skip) = parent.debug.progressDialog.Update(gprogressCount)
@@ -1349,7 +1343,8 @@ def startParsing(
 
     merge_collapse_ids = mfqlObj.options._data.get("lx2_merge_collapse_ids", True)
     mfqlObj.result.generateResultSC(merge_collapse_ids=merge_collapse_ids)
-    seethis(mfqlObj.resultSC)
+    if log_steps:
+        callback('merge_collapse_ids',mfqlObj.resultSC) # now its a list not actually scans
     print("%.2f sec." % time.clock())
 
     # print("only some surveys are of interest")
@@ -1366,7 +1361,7 @@ def startParsing(
     if isotopicCorrectionMSMS:
         print("type II isotopic correction in MS/MS ...", end=" ")
         mfqlObj.result.isotopicCorrectionMSMS()
-        seethis(mfqlObj.result)
+
         # gprogressCount += 1
         # if parent:
         # 	(cont, skip) = parent.debug.progressDialog.Update(gprogressCount)
@@ -1384,6 +1379,7 @@ def startParsing(
             mfqlObj.result.correctMonoisotopicPeaks()
         print("%.2f sec." % time.clock())
         if log_steps:
+            callback('correctMonoisotopicPeaks', mfqlObj.resultSC)
             print(
                 "changed the intentity again, now I dont know who changed the intensity"
             )
@@ -1392,11 +1388,13 @@ def startParsing(
 
     if Debug("removeIsotopes"):  # and (isotopicCorrectionMS or isotopicCorrectionMSMS):
         mfqlObj.result.removeIsotopicCorrected()
-        seethis(mfqlObj.result)
+        if log_steps:
+            callback('removeIsotopicCorrected', mfqlObj.resultSC)
 
     print("generate query result MasterScans ...", end=" ")
     mfqlObj.result.generateQueryResultSC()
-    seethis(mfqlObj.result)
+    if log_steps:
+            callback('generateQueryResultSC', mfqlObj.resultSC)
     print("%.2f sec." % time.clock())
 
     if log_steps:
@@ -1416,7 +1414,8 @@ def startParsing(
     # check for isobaric species
     print("checking if there are isobaric species ...", end=" ")
     mfqlObj.result.checkIsobaricSpeciesBeforeSUCHTHAT()
-    seethis(mfqlObj.result)
+    if log_steps:
+            callback('checkIsobaricSpeciesBeforeSUCHTHAT', mfqlObj.resultSC)
     print("%.2f sec." % time.clock())
 
     ### do the REPORT ###
@@ -1464,7 +1463,7 @@ def startParsing(
                     for k, variab in variabs.items():
                         for s in variab.se:
                             print(s)
-        seethis(mfqlObj.result)
+        
 
     ## debugging ###
     # for se in mfqlObj.result.mfqlObj.resultSC:
@@ -1485,7 +1484,6 @@ def startParsing(
                 for k, variab in variabs.items():
                     for s in variab.isobaric:
                         print(s)
-    seethis(mfqlObj.result)
     print("%.2f sec." % time.clock())
 
     print("generate report ...", end=" ")
@@ -1498,7 +1496,6 @@ def startParsing(
             print(Queryitems.strOutput)
             print(Queryitems.dataMatrix)
 
-    seethis(mfqlObj.result)
     print("%.2f sec." % time.clock())
 
     if generateStatistics and mfqlObj.result.mfqlOutput:
