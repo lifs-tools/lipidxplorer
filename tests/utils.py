@@ -114,7 +114,7 @@ def makeResultsString(result, options)->str:
     return strResult
 
 
-def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = False):
+def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = False, callback = None):
     mfqlObj = TypeMFQL(masterScan=masterscan)
     mfqlObj.options = options
     mfqlObj.outputSeperator = ","
@@ -130,24 +130,31 @@ def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = False):
         progressCount=0,
         generateStatistics=options["statistics"],
         log_steps=log_steps,
+        callback=callback 
     )
 
     return mfqlObj.result
 
 
-def masterscan_2_df(masterscan, add_ids = False, add_og_intensity = False):
+def masterscan_2_df(masterscan_or_list, add_ids = False, add_og_intensity = False):
     def se_2_dict(se):
         res = dict(se.dictIntensity)
         res['precurmass'] = se.precurmass
         res['massWindow'] = se.massWindow
         if add_ids:
-            res['listMark'] = str(se.listMark)
+            res['listMark'] = ','.join(map(str,se.listMark))
         if add_og_intensity:
             og_intensity = dict(se.dictBeforeIsocoIntensity)
             og_intensity = {f"og_{k}":v for k,v in og_intensity.items()}
             res.update(og_intensity)
         
         return res
-    return pd.DataFrame((se_2_dict(se) for se in masterscan.listSurveyEntry))
+    
+    if isinstance(masterscan_or_list, list): 
+        listSurveyEntry = masterscan_or_list
+    else:
+        listSurveyEntry = masterscan_or_list.listSurveyEntry
+
+    return pd.DataFrame((se_2_dict(se) for se in listSurveyEntry))
     
 
