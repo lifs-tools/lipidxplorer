@@ -59,7 +59,7 @@ def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
     with open(r"test_resources\ms2_strained\reference\result_1.pkl", "rb") as f:
         reference = pickle.load(f)
     result = make_MFQL_result(get_masterscan, getMfqlFiles, get_options, log_steps=True)
-    assert compareMasterScans(result.resultSC, reference.resultSC)
+    assert compareResults(result, reference)
 
 
 def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles):
@@ -69,5 +69,5 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
         get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True
     )
     # to see results print(makeResultsString(result, get_options))
-    assert compareMasterScans(result.resultSC, reference.resultSC)
+    assert compareResults(result, reference)
 

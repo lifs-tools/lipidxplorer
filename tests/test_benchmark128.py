@@ -1,6 +1,12 @@
 import pytest
 from pathlib import Path
-from utils import read_options, make_MFQL_result, makeResultsString, compareResults, compareMasterScans
+from utils import (
+    read_options,
+    make_MFQL_result,
+    makeResultsString,
+    compareResults,
+    compareMasterScans,
+)
 from LX1_masterscan import make_lx1_masterscan
 import pickle
 
@@ -63,7 +69,7 @@ def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
     with open(r"test_resources\benchmark128\reference\result_1.pkl", "rb") as f:
         reference = pickle.load(f)
     result = make_MFQL_result(get_masterscan, getMfqlFiles, get_options, log_steps=True)
-    assert compareMasterScans(result.resultSC, reference.resultSC)
+    assert compareResults(result, reference)
 
 
 def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles):
@@ -72,7 +78,6 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
     result = make_MFQL_result(
         get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True
     )
-    #to see results print(makeResultsString(result, get_options))
-    assert compareMasterScans(result.resultSC, reference.resultSC)
-
+    # to see results print(makeResultsString(result, get_options))
+    assert compareResults(result, reference)
 
