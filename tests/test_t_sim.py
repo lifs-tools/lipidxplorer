@@ -86,21 +86,21 @@ def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
     result = make_MFQL_result(get_masterscan, getMfqlFiles, get_options, log_steps=True)
     assert compareResults(result, reference)
 
-def test_mfql_stages( get_options, getMfqlFiles):
-    with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
-        masterscan = pickle.load(f)
-    
-    #after identification
+def test_mfql_intermediate_results( get_options, getMfqlFiles):
+    logs = {}
+        #after identification
     #after isotopic correction_ms
     #after merge_ids
     #after monoisotopic correction
     #after suchthat
     #after remove permutations
+    def callback(stage, masterscan):
+        logs[stage] = masterscan_2_df(masterscan, add_ids = True)
 
-    # make it a callback
-
-    result,  = make_MFQL_result(masterscan, getMfqlFiles, get_options, log_steps=True)
-
+    with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
+        masterscan = pickle.load(f)
+    
+    result = make_MFQL_result(masterscan, getMfqlFiles, get_options, log_steps=True, callback = callback)
 
     assert False
 
@@ -110,7 +110,7 @@ def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles)
     with open(r"test_resources\t_sim\reference\result_2.pkl", "rb") as f:
         reference = pickle.load(f)
     result = make_MFQL_result(
-        get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True
+        get_no_res_masterscan, getMfqlFiles, get_no_res_options
     )
     # to see results print(makeResultsString(result, get_options))
     assert compareResults(result, reference)
