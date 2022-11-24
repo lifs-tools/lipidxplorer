@@ -86,6 +86,25 @@ def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
     result = make_MFQL_result(get_masterscan, getMfqlFiles, get_options, log_steps=True)
     assert compareResults(result, reference)
 
+def test_mfql_stages( get_options, getMfqlFiles):
+    with open(r"test_resources\t_sim\reference\masterscan_1.pkl", "rb") as f:
+        masterscan = pickle.load(f)
+    
+    #after identification
+    #after isotopic correction_ms
+    #after merge_ids
+    #after monoisotopic correction
+    #after suchthat
+    #after remove permutations
+
+    # make it a callback
+
+    result,  = make_MFQL_result(masterscan, getMfqlFiles, get_options, log_steps=True)
+
+
+    assert False
+
+
 
 def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles):
     with open(r"test_resources\t_sim\reference\result_2.pkl", "rb") as f:
