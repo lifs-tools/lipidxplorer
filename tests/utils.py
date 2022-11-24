@@ -135,11 +135,18 @@ def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = False):
     return mfqlObj.result
 
 
-def masterscan_2_df(masterscan):
+def masterscan_2_df(masterscan, add_ids = False, add_og_intensity = False):
     def se_2_dict(se):
         res = dict(se.dictIntensity)
         res['precurmass'] = se.precurmass
         res['massWindow'] = se.massWindow
+        if add_ids:
+            res['listMark'] = str(se.listMark)
+        if add_og_intensity:
+            og_intensity = dict(se.dictBeforeIsocoIntensity)
+            og_intensity = {f"og_{k}":v for k,v in og_intensity.items()}
+            res.update(og_intensity)
+        
         return res
     return pd.DataFrame((se_2_dict(se) for se in masterscan.listSurveyEntry))
     
