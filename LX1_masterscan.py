@@ -14,8 +14,87 @@ logging.basicConfig(
 )
 log = logging.getLogger(Path(__file__).stem)
 
-from LX2_masterscan import ms2entry_factory, se_factory, spectra_2_df
+from LX2_masterscan import ms2entry_factory, se_factory, spectra_2_df, spectra_2_df_single
 from lx.spectraContainer import MasterScan
+
+def make_lx_spectra(mzml, options):
+    #all peaks - time and mass range
+    spectra_df = spectra_2_df_single(Path(mzml), options)
+    ms1_peaks = spectra_df.loc[spectra_df.precursor_id.isna()]
+    bins = make_lx1_bins(ms1_peaks, options)
+    ms1_peaks['bin_mass_lx1']= bins 
+    agg_ms1_peaks = ms1_peaks_agg(ms1_peaks, options)
+    agg_ms1_peaks["stem"] = ms1_peaks.stem.iloc[0]
+    if options._data.get("MScalibration"):
+        cal_matchs, cal_vals = recalibration_values(agg_ms1_peaks, options)
+        if cal_matchs and cal_vals:
+            agg_ms1_peaks.mz = agg_ms1_peaks.mz + np.interp(agg_ms1_peaks.mz, cal_matchs, cal_vals)
+    
+    bins_lx2,_ = ms1_peaks_agg_lx2_bin(ms1_peaks)
+    ms1_peaks['bin_mass_lx2']= list(bins_lx2)
+    agg_ms1_peaks_lx2 = ms1_peaks_agg_lx2(ms1_peaks, options)
+    if options._data.get("MScalibration"):
+        (options["lx2_MSresolution"],
+        options["lx2_MSresolution_gradient"] ) = suggest_resolution_gradient_and_tolerance(spectra_df)
+        cal_matchs, cal_vals = recalibration_values(agg_ms1_peaks_lx2, options, use_lx2=True)
+        if cal_matchs and cal_vals:
+            agg_ms1_peaks_lx2.mz = agg_ms1_peaks_lx2.mz + np.interp(agg_ms1_peaks_lx2.mz, cal_matchs, cal_vals)
+
+
+    peaks_with_agg = ms1_peaks.merge(agg_ms1_peaks, how='left', left_on ='bin_mass_lx1', right_on='bin_mass', suffixes = ('_og','_lx1'))
+    # now add lx2 data
+    peaks_with_agg = peaks_with_agg.merge(agg_ms1_peaks_lx2, how='left', left_on ='bin_mass_lx2', right_on='bin_mass', suffixes = ('_og','_lx2'))
+    peaks_with_agg.rename(columns = {'mz':'mz_lx2','inty':'inty_lx2'}, inplace = True)
+    return peaks_with_agg
+
+def compare_grouping(mzml, options):
+
+
+    peaks_with_agg = make_lx_spectra(mzml, options)
+    
+    
+    cols = ['mz_og','inty_og', 'stem_og','scan_id', 
+    'inty_lx1', 'mz_lx1','mz_lx2','inty_lx2']
+    peaks = peaks_with_agg[cols]
+    peaks = peaks[(peaks.mz_lx1 != peaks.mz_lx2) & ~(peaks.mz_lx1.isna() & peaks.mz_lx2.isna())]
+    peaks[(abs(peaks.inty_lx1 - peaks.inty_lx2) / peaks.inty_lx1)>0.1].to_clipboard()
+
+    # peaks_with_agg make the stdde
+    df = peaks_with_agg[['mz_og','inty_og','stem_og','scan_id']]
+    count = df.scan_id.unique().shape[0]
+    df['r_mean'] = df.mz_og.rolling(count, center=True).mean()
+    df['r_std'] = df.mz_og.rolling(count, center = True).apply(np.std)
+    df['r_std_min'] = df['r_std'].rolling(count, center = True).min()
+    df['is_std_min'] = df['r_std'] == df['r_std_min']
+    bins = df.loc[df.is_std_min]
+    # add kurtosis and skew to check 
+    cuts = pd.concat([bins.r_mean - (3* bins['r_std']), bins.r_mean + (3* bins['r_std'])]).sort_values()
+    cuts = cuts.drop_duplicates()
+    df = df.sort_values('mz_og')
+
+    df['cuts'] = pd.cut(df.mz_og,cuts, labels = False)
+    bins['cuts'] = pd.cut(bins.mz_og,cuts, labels = False)
+
+    #merger peaks from single scan
+    mad = lambda x: np.fabs(x - x.mean())
+    def mz_weight(mz_series):
+        # https://stackoverflow.com/questions/64368050/gaussian-rolling-weights-pandas
+        # https://www.youtube.com/watch?v=QIi2eWmdPM8&ab_channel=learndataa
+        #https://dsp.stackexchange.com/questions/84471/rolling-average-in-pandas-using-a-gaussian-window\
+        import numpy as np
+        x = mz_series
+        m = mz_series.mean()
+        weights = np.exp(-(x-mu)**2 / 2*sigma**2) / np.sqrt(2*np.pi*sigma**2)
+        return weights 
+
+
+    df['weights'] = df.groupby('cuts')['mz_og'].apply(mad)    
+    df['inty_low_bound'] = df.groupby('cuts')['inty_og'].transform('std')
+    #only keep peaks that are above  inty_low_bound
+    #averge mz value
+
+    return peaks
+
 
 
 def make_lx1_masterscan(options) -> MasterScan:
@@ -300,8 +379,7 @@ def diff_bin(df, scan_count = 1, currlong=False):
         else:
             yield cur_bin
 
-
-def ms1_peaks_agg_lx2(ms1_peaks, options, out_dpm=False):
+def ms1_peaks_agg_lx2_bin(ms1_peaks):
     ms1_peaks.sort_values("mz", ascending=False, inplace=True)
     # repetition_rate = 0.7
     scan_count = ms1_peaks.scan_id.unique().size
@@ -321,6 +399,11 @@ def ms1_peaks_agg_lx2(ms1_peaks, options, out_dpm=False):
     # df['scan_cnt'] = df.scan_id_f.rolling(scan_count).apply(lambda s: len(set(s)))
     # df['mean_mz_diff']  = df.mz_diff.rolling(window = 31, center=True, win_type ='cosine' ).mean() # note win_type =should be tukey
     bin_mass, curr_long = zip(*diff_bin(ms1_peaks, currlong=True))
+    return bin_mass, curr_long
+
+def ms1_peaks_agg_lx2(ms1_peaks, options, out_dpm=False):
+    ms1_peaks.sort_values("mz", ascending=False, inplace=True)
+    bin_mass, curr_long = ms1_peaks_agg_lx2_bin(ms1_peaks)
     ms1_peaks["bin_mass"] = list(bin_mass)
     ms1_peaks["curr_long"] = list(curr_long)
 

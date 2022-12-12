@@ -82,10 +82,7 @@ def make_lx2_masterscan(options) -> MasterScan:
 
     return scan
 
-
-def spectra_2_df(options):
-    mzmls = mz_ml_paths(options)
-
+def spectra_2_df_single(mzml, options):
     time_range = options["timerange"]
     ms1_mass_range = options["MSmassrange"]
     ms2_mass_range = options["MSMSmassrange"]
@@ -96,30 +93,22 @@ def spectra_2_df(options):
     include_text = options._data.get("lx2_include_text", None)
     exclude_text = options._data.get("lx2_exclude_text", None)
 
-    # options mstolerance is never used so , will ignore
-
-    # generaste ms1 data
-    spectra_dfs = [
-        path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range, polarity)
-        for mzml in mzmls
-    ]
-
+    spectra_df = path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range, polarity)
     if drop_fuzzy:
-        spectra_dfs = [drop_fuzzy(spectra_df) for spectra_df in spectra_dfs]
-
+        spectra_df = drop_fuzzy(spectra_df)
+    
     if include_text:
-        spectra_dfs = [
-            spectra_df.loc[spectra_df.filter_string.str.contains(exclude_text)]
-            for spectra_df in spectra_dfs
-        ]
+        spectra_df = spectra_df.loc[spectra_df.filter_string.str.contains(exclude_text)]
 
-    if include_text:
-        spectra_dfs = [
-            spectra_df.loc[~spectra_df.filter_string.str.contains(exclude_text)]
-            for spectra_df in spectra_dfs
-        ]
+    if exclude_text:
+        spectra_df = spectra_df.loc[~spectra_df.filter_string.str.contains(exclude_text)]
+    
+    return spectra_df
 
-    return spectra_dfs
+
+def spectra_2_df(options):
+    mzmls = mz_ml_paths(options)
+    return [spectra_2_df_single(mzml, options) for mzml in mzmls]
 
 
 def drop_fuzzy(spectra_df):

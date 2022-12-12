@@ -7,7 +7,7 @@ from utils import (
     compareResults,
     compareMasterScans,
 )
-from LX1_masterscan import make_lx1_masterscan
+from LX1_masterscan import make_lx1_masterscan, compare_grouping
 import pickle
 
 
@@ -47,6 +47,14 @@ def getMfqlFiles():
     p = Path(r"test_resources\benchmark128\mfqls")
     mfqls = p.glob("*.mfql")
     return {mfql.name: mfql.read_text() for mfql in mfqls}
+
+
+def test_intermediate_steps(get_options):
+    singe = compare_grouping(
+        r"test_resources\benchmark128\spectra\190321_Serum_Lipidextract_368723_01.mzML",
+        get_options,
+    )
+    assert False
 
 
 def test_masterscan_manual(get_options, get_masterscan):
