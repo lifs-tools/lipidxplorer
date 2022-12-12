@@ -1,0 +1,68 @@
+<html><head></head><body><br><h3>Options</h3>
+<table>
+<tr><td>MSMScalibration:</td><td>[184.07331]</td></tr>
+<tr><td>MSMSfilter:</td><td>0.0</td></tr>
+<tr><td>MSMSmassrange:</td><td>(180.0, 1000.0)</td></tr>
+<tr><td>MSMSminOccupation:</td><td>0.5</td></tr>
+<tr><td>MSMSresolution:</td><td>6.91 ppm</td></tr>
+<tr><td>MSMSresolutionDelta:</td><td>-141.0</td></tr>
+<tr><td>MSMSthreshold:</td><td>0.0001</td></tr>
+<tr><td>MSMSthresholdType:</td><td>absolute</td></tr>
+<tr><td>MSMStolerance:</td><td>5.00 ppm</td></tr>
+<tr><td>MSMStoleranceType:</td><td>ppm</td></tr>
+<tr><td>MScalibration:</td><td>[496.33973]</td></tr>
+<tr><td>MSfilter:</td><td>0.0</td></tr>
+<tr><td>MSmassrange:</td><td>(400.0, 1000.0)</td></tr>
+<tr><td>MSminOccupation:</td><td>0.0</td></tr>
+<tr><td>MSresolution:</td><td>9.39 ppm</td></tr>
+<tr><td>MSresolutionDelta:</td><td>-73.0</td></tr>
+<tr><td>MSthreshold:</td><td>0.0001</td></tr>
+<tr><td>MSthresholdType:</td><td>absolute</td></tr>
+<tr><td>MStolerance:</td><td>5.00 ppm</td></tr>
+<tr><td>MStoleranceType:</td><td>ppm</td></tr>
+<tr><td>alignmentMethodMS:</td><td>linear</td></tr>
+<tr><td>alignmentMethodMSMS:</td><td>linear</td></tr>
+<tr><td>complementMasterScan:</td><td>False</td></tr>
+<tr><td>complementMasterScanFile:</td><td>D:\ownCloud\LX2_Dev\Liver MS2 Data\mzML_MS Convert\mzML_MS Convert-complement.csv</td></tr>
+<tr><td>compress:</td><td>False</td></tr>
+<tr><td>dataType:</td><td>mzML</td></tr>
+<tr><td>dumpMasterScan:</td><td>True</td></tr>
+<tr><td>dumpMasterScanFile:</td><td>D:\ownCloud\LX2_Dev\Liver MS2 Data\mzML_MS Convert\mzML_MS Convert-dump.csv</td></tr>
+<tr><td>importDir:</td><td>D:\ownCloud\LX2_Dev\Liver MS2 Data\mzML_MS Convert</td></tr>
+<tr><td>importMSMS:</td><td>True</td></tr>
+<tr><td>ini:</td><td>lpdxImportSettings_benchmark.ini</td></tr>
+<tr><td>intensityCorrection:</td><td>False</td></tr>
+<tr><td>isotopesInMasterScan:</td><td>False</td></tr>
+<tr><td>isotopicCorrectionMS:</td><td>True</td></tr>
+<tr><td>isotopicCorrectionMSMS:</td><td>True</td></tr>
+<tr><td>isotopicCorrection_MSMS:</td><td>False</td></tr>
+<tr><td>logMemory:</td><td>False</td></tr>
+<tr><td>loopNr:</td><td>3</td></tr>
+<tr><td>masterScanFileImport:</td><td>D:\ownCloud\LX2_Dev\Liver MS2 Data\mzML_MS Convert\mzML_MS Convert.sc</td></tr>
+<tr><td>masterScanFileRun:</td><td>D:\ownCloud\LX2_Dev\Liver MS2 Data\mzML_MS Convert\mzML_MS Convert.sc</td></tr>
+<tr><td>masterScanImport:</td><td>D:\ownCloud\LX2_Dev\Liver MS2 Data\mzML_MS Convert\mzML_MS Convert.sc</td></tr>
+<tr><td>masterScanInSQL:</td><td>False</td></tr>
+<tr><td>masterScanRun:</td><td>D:\ownCloud\LX2_Dev\Liver MS2 Data\mzML_MS Convert\mzML_MS Convert.sc</td></tr>
+<tr><td>monoisotopicCorrection:</td><td>False</td></tr>
+<tr><td>noHead:</td><td>False</td></tr>
+<tr><td>noPermutations:</td><td>True</td></tr>
+<tr><td>optionalMSMStoleranceType:</td><td>ppm</td></tr>
+<tr><td>optionalMStoleranceType:</td><td>ppm</td></tr>
+<tr><td>pisSpectra:</td><td>False</td></tr>
+<tr><td>precursorMassShift:</td><td>0.0</td></tr>
+<tr><td>precursorMassShiftOrbi:</td><td>0.0</td></tr>
+<tr><td>relativeIntensity:</td><td>False</td></tr>
+<tr><td>removeIsotopes:</td><td>True</td></tr>
+<tr><td>resultFile:</td><td>D:\ownCloud\LX2_Dev\Liver MS2 Data\mzML_MS Convert\mzML_MS Convert-out.csv</td></tr>
+<tr><td>scanAveragingMethod:</td><td>linear</td></tr>
+<tr><td>selectionWindow:</td><td>0.4</td></tr>
+<tr><td>setting:</td><td>-1.0</td></tr>
+<tr><td>settingsPrefix:</td><td>False</td></tr>
+<tr><td>spectraFormat:</td><td>mzML</td></tr>
+<tr><td>statistics:</td><td>False</td></tr>
+<tr><td>sumFattyAcids:</td><td>False</td></tr>
+<tr><td>tabLimited:</td><td>False</td></tr>
+<tr><td>timerange:</td><td>(0.0, 462.0)</td></tr>
+</table><br>
+<h3>MFQL queries</h3><tt>
+ <br><br>>> filename: PIS_LPC (M+H)+_14N.mfql >><br><br>##########################################################<br># Identify LPC with checking the precursor mass         #<br># AND check for PIS 184.07 in MS2                       #<br>##########################################################<br><br>QUERYNAME = LPC;<br>	DEFINE pr = 'C[21..35] H[32..200] N[1] O[7] P[1]' WITH DBR = (0.5,6.5), CHG = +1;<br>	DEFINE head = 'C5 H15 O4 N1 P1' WITH CHG = +1;<br><br>IDENTIFY<br>	pr IN MS1+ AND<br>	head in MS2+<br><br>SUCHTHAT<br>	isOdd(pr.chemsc[H]) AND<br>	isOdd(pr.chemsc[db]*2) <br><br>REPORT <br>	PRM = pr.mass;<br>	EC = pr.chemsc;<br>	CLASS = "LPC" % "()";<br>	PRC = "%d" % "((pr.chemsc)[C] - 8)";<br>	PRDB = "%d" % "((pr.chemsc)[db] - 0.5)";<br>      PRERR = "%2.2f" % "(pr.errppm)";<br>	PRI = pr.intensity;<br><br>	FRM = head.mass;<br>      FRERR = "%2.2f" % "(head.errppm)";<br>	FRI = head.intensity;<br>	;<br><br>################ end script ##################<br> <br><br>>> filename: PIS_LPC (M+H)+_15N.mfql >><br><br>##########################################################<br># Identify LPC with checking the precursor mass         #<br># AND check for PIS 185.07 in MS2                       #<br>##########################################################<br><br>QUERYNAME = LPCNi;<br>	DEFINE pr = 'C[21..35] H[32..200] Ni[1] O[7] P[1]' WITH DBR = (0.5,6.5), CHG = +1;<br>	DEFINE head = 'C5 H15 O4 Ni1 P1' WITH CHG = +1;<br><br>IDENTIFY<br>	pr IN MS1+ AND<br>	head in MS2+<br><br>SUCHTHAT<br>	isOdd(pr.chemsc[H]) AND<br>	isOdd(pr.chemsc[db]*2) <br>  <br>REPORT <br>	PRM = pr.mass;<br>	EC = pr.chemsc;<br>	CLASS = "LPCNi" % "()";<br>	PRC = "%d" % "((pr.chemsc)[C] - 8)";<br>	PRDB = "%d" % "((pr.chemsc)[db] - 0.5)";<br>      PRERR = "%2.2f" % "(pr.errppm)";<br>	PRI = pr.intensity;<br><br>	FRM = head.mass;<br>      FRERR = "%2.2f" % "(head.errppm)";<br>	FRI = head.intensity;<br>	;<br><br>################ end script ##################<br> <br><br>>> filename: PIS_PC (M+H)+_14N.mfql >><br><br>##########################################################<br># Identify PC with checking the precursor mass          #<br># AND check for PIS 184.07 in MS2                       #<br>##########################################################<br><br>QUERYNAME = PC;<br>	DEFINE pr = 'C[16..80] H[20..200] N[1] O[8] P[1]' WITH DBR = (1.5,15.5), CHG = +1;<br>	DEFINE head = 'C5 H15 O4 N1 P1' WITH CHG = +1;<br><br>IDENTIFY<br>	pr IN MS1+ AND<br>	head in MS2+<br><br>SUCHTHAT<br>	isOdd(pr.chemsc[H]) AND<br>	isOdd(pr.chemsc[db]*2)<br>  <br>REPORT <br>	PRM = pr.mass;<br>	EC = pr.chemsc;<br>	CLASS = "PC" % "()";<br>	PRC = "%d" % "((pr.chemsc)[C] - 8)";<br>	PRDB = "%d" % "((pr.chemsc)[db] - 1.5)";<br>      PRERR = "%2.2f" % "(pr.errppm)";<br>	PRI = pr.intensity;<br><br>	FRM = head.mass;<br>      FRERR = "%2.2f" % "(head.errppm)";<br>	FRI = head.intensity;<br>	;<br><br>################ end script ##################<br> <br><br>>> filename: PIS_PC (M+H)+_15N.mfql >><br><br>##########################################################<br># Identify PC with checking the precursor mass          #<br># AND check for PIS 185.07 in MS2                       #<br>##########################################################<br><br>QUERYNAME = PCNi;<br>	DEFINE pr = 'C[16..80] H[20..200] Ni[1] O[8] P[1]' WITH DBR = (1.5,15.5), CHG = +1;<br>	DEFINE head = 'C5 H15 O4 Ni1 P1' WITH CHG = +1;<br><br>IDENTIFY<br>	pr IN MS1+ AND<br>	head in MS2+<br><br>SUCHTHAT<br>	isOdd(pr.chemsc[H]) AND<br>	isOdd(pr.chemsc[db]*2)<br>  <br>REPORT <br>	PRM = pr.mass;<br>	EC = pr.chemsc;<br>	CLASS = "PCNi" % "()";<br>	PRC = "%d" % "((pr.chemsc)[C] - 8)";<br>	PRDB = "%d" % "((pr.chemsc)[db] - 1.5)";<br>      PRERR = "%2.2f" % "(pr.errppm)";<br>	PRI = pr.intensity;<br><br>	FRM = head.mass;<br>      FRERR = "%2.2f" % "(head.errppm)";<br>	FRI = head.intensity;<br>	;<br><br>################ end script ##################<br></tt></body></html>
