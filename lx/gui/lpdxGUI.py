@@ -1035,6 +1035,19 @@ class SetOutputOptionFrame(wx.Frame):
             self.checkBox_settingsPrefix, 0, wx.LEFT | wx.CENTER, 20
         )
 
+        self.sizer_v_mz_tab_out = wx.BoxSizer(wx.HORIZONTAL)
+        self.checkBox_mz_tab_out = wx.CheckBox(
+            self, -1, "output the results as mz_tab-m"
+        )
+        self.checkBox_mz_tab_out.SetToolTip(
+            wx.ToolTip(
+                "output the results as mz_tab-m, in addition to -out.csv"
+            )
+        )
+        self.sizer_v_mz_tab_out.Add(
+            self.checkBox_mz_tab_out, 0, wx.LEFT | wx.CENTER, 20
+        )
+
         self.sizer.Add((10, 10))
         self.sizer.Add(self.sizer_v_correctIntensities)
         self.sizer.Add((10, 10))
@@ -1043,11 +1056,13 @@ class SetOutputOptionFrame(wx.Frame):
         self.sizer.Add(self.sizer_v_sumFattyAcids)
         self.sizer.Add((10, 10))
         self.sizer.Add(self.sizer_v_settingsPrefix)
+        self.sizer.Add((10, 10))
+        self.sizer.Add(self.sizer_v_mz_tab_out)
         # self.sizer.Add(wx.StaticLine(self, -1))
         self.SetSizer(self.sizer)
 
-        self.SetMinSize((565, 160))
-        self.SetSize((565, 160))
+        self.SetMinSize((565, 180))
+        self.SetSize((565, 180))
         self.Layout()
 
         ### generate the window with the set options ###
