@@ -3,6 +3,8 @@ from lx.spectraImport import doImport, lpdxImportDEF_new
 from lx.spectraTools import loadSC
 from x_masterscan import compareMasterScans
 
+from utils import masterscan_2_df
+
 from utils import (
     expected_ms_path,
     expected_lx2ms_path,
@@ -23,6 +25,13 @@ def test_make_masterscan():
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
     masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]
     assert compareMasterScans(masterscan, expected)
+
+def test_compare_ms2s():
+    expected_lx1 = loadSC(expected_ms_path)
+    expected_lx2_manual = loadSC(expected_lx2ms_path)
+    df1 = masterscan_2_df(expected_lx1)
+    df2 = masterscan_2_df(expected_lx2_manual) # missing ms2 data
+    print('compare ms2')
 
 
 def test_make_lx2_masterscan():
