@@ -121,9 +121,9 @@ def as_mztab(result):
     return txt
 
 
-def save_MZTab(txt, outfile=None):
-    if outfile is None:
-        outfile = "unnamed_mztab.tsv"
+def save_MZTab(txt, options):
+    outfile = str(options['resultFile'])
+    outfile = outfile.replace('-out.csv', '-mztab.csv')
 
     with open(outfile, "w") as f:
         f.write(txt)

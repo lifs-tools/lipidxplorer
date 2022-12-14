@@ -67,6 +67,7 @@ def files_UI(path, calctol=True):
     config["project"]["masterscanimport"] = os.path.join(basepath, "session.sc")
     config["project"]["ini"] = os.path.join(basepath, "ImportSettings.ini")
     config["project"]["resultfile"] = os.path.join(basepath, "session-out.csv")
+    config["project"]["mzTabOut"] = os.path.join(basepath, "session-mztab.csv")
 
     if calctol:
         config["project"]["alignmentMethodMS"] = "calctol"

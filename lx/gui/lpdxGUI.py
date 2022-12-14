@@ -2855,6 +2855,9 @@ intensity."""
             "settingsPrefix"
         ] = self.outputOptionSetting.checkBox_settingsPrefix.GetValue()
         project.options[
+            "mzTabOut"
+        ] = self.outputOptionSetting.checkBox_mz_tab_out.GetValue()
+        project.options[
             "resultFile"
         ] = self.text_ctrl_OutputSection.GetValue()  # here starts the RUN panel
         project.options["optionalMStolerance"] = self.text_ctrl_RunOptions_MS.GetValue()
@@ -2978,6 +2981,9 @@ intensity."""
         project.options[
             "settingsPrefix"
         ] = self.outputOptionSetting.checkBox_settingsPrefix.GetValue()
+        project.options[
+            "mzTabOut"
+        ] = self.outputOptionSetting.checkBox_mz_tab_out.GetValue()
         project.options[
             "resultFile"
         ] = self.text_ctrl_OutputSection.GetValue()  # here starts the RUN panel
@@ -3207,6 +3213,9 @@ intensity."""
             )
             self.outputOptionSetting.checkBox_settingsPrefix.SetValue(
                 strToBool(options["settingsPrefix"])
+            )
+            self.outputOptionSetting.checkBox_mz_tab_out.SetValue(
+                strToBool(options["mzTabOut"])
             )
 
             # here starts the RUN panel(options['resultFile']

@@ -191,6 +191,9 @@ class Options:
         self.options[
             "settingsPrefix"
         ] = None  # option key used in lpdxImport.py, substituted by 'dataType'
+        self.options[
+            "mzTabOut"
+        ] = None  # option key used generate additional resul file in mzTab format
         # self.options['vendorsAveraging'] = None # True/False for switching to Thermo's averaging
         self.options[
             "MSfilter"

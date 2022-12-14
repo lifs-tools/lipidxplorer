@@ -9,7 +9,8 @@ from lx.mfql.mfqlParser import startParsing
 from lx.tools import odict
 from lx.spectraTools import *
 from lx.options import Options
-from mztab.mztab_util import as_mztab
+from mztab.mztab_util import as_mztab, save_MZTab
+import re
 
 import time
 
@@ -167,8 +168,9 @@ def startMFQL(options={}, queries={}, parent=None):
 
     # process the result
     result = mfqlObj.result
-    if result.mfqlOutput:
+    if options["mzTabOut"]:
         txt = as_mztab(result)
+        save_MZTab(txt, options)
 
     if result.mfqlOutput:
         strHead = ""

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import re
+import re, os
 
 # sysPath = '..' + os.sep + 'lib'
 # sys.path.append(sysPath)
