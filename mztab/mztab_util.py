@@ -70,9 +70,9 @@ def make_MTD3(file_count):
     MTD_dict[f"assay[1]-sample_ref"] = 'Sample[1]'
     MTD_dict[f"assay[1]-ms_run_ref"] = '|'.join((f'[ms_run[{idx}]' for idx in range(1,file_count+1)))
 
-    # MTD_dict[f"study_variable[1]"] = 'BAL-WT'
-    # MTD_dict[f"study_variable[{count+idx}]-assay_refs"] = f"assay[{count+idx}]"
-    # MTD_dict[f"study_variable[{count+idx}]-description"] = f"{count+idx}"
+    MTD_dict[f"study_variable[1]"] = 'undefined'
+    MTD_dict[f"study_variable[1]-assay_refs"] = "assay[1]"
+    MTD_dict[f"study_variable[1]-description"] = 'undefined'
 
     lines = [f"MTD\t{m}\t{v}" for m, v in MTD_dict.items()]
     return "\n" + "\n".join(lines)+"\n" 
@@ -122,7 +122,7 @@ def as_mztab(result):
 
 def save_MZTab(txt, options):
     outfile = str(options['resultFile'])
-    outfile = outfile.replace('-out.csv', '-mztab.csv')
+    outfile = outfile.replace('-out.csv', '.mztab')
 
     with open(outfile, "w") as f:
         f.write(txt)
