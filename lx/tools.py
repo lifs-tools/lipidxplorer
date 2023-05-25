@@ -1,6 +1,6 @@
 ### functions returning the content of objects ###
 import sys, traceback, threading, re
-from collections import MutableMapping as DictMixin
+from collections.abc import MutableMapping as DictMixin
 from functools import reduce
 
 
