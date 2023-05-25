@@ -22,14 +22,14 @@ def make_lx_spectra(mzml, options):
     spectra_df = spectra_2_df_single(Path(mzml), options)
     ms1_peaks = spectra_df.loc[spectra_df.precursor_id.isna()]
     bins = make_lx1_bins(ms1_peaks, options)
-    ms1_peaks['bin_mass_lx1']= bins 
+    ms1_peaks['bin_mass_lx1']= bins
     agg_ms1_peaks = ms1_peaks_agg(ms1_peaks, options)
     agg_ms1_peaks["stem"] = ms1_peaks.stem.iloc[0]
     if options._data.get("MScalibration"):
         cal_matchs, cal_vals = recalibration_values(agg_ms1_peaks, options)
         if cal_matchs and cal_vals:
             agg_ms1_peaks.mz = agg_ms1_peaks.mz + np.interp(agg_ms1_peaks.mz, cal_matchs, cal_vals)
-    
+
     bins_lx2,_ = ms1_peaks_agg_lx2_bin(ms1_peaks)
     ms1_peaks['bin_mass_lx2']= list(bins_lx2)
     agg_ms1_peaks_lx2 = ms1_peaks_agg_lx2(ms1_peaks, options)
@@ -51,9 +51,9 @@ def compare_grouping(mzml, options):
 
 
     peaks_with_agg = make_lx_spectra(mzml, options)
-    
-    
-    cols = ['mz_og','inty_og', 'stem_og','scan_id', 
+
+
+    cols = ['mz_og','inty_og', 'stem_og','scan_id',
     'inty_lx1', 'mz_lx1','mz_lx2','inty_lx2']
     peaks = peaks_with_agg[cols]
     peaks = peaks[(peaks.mz_lx1 != peaks.mz_lx2) & ~(peaks.mz_lx1.isna() & peaks.mz_lx2.isna())]
@@ -67,7 +67,7 @@ def compare_grouping(mzml, options):
     df['r_std_min'] = df['r_std'].rolling(count, center = True).min()
     df['is_std_min'] = df['r_std'] == df['r_std_min']
     bins = df.loc[df.is_std_min]
-    # add kurtosis and skew to check 
+    # add kurtosis and skew to check
     cuts = pd.concat([bins.r_mean - (3* bins['r_std']), bins.r_mean + (3* bins['r_std'])]).sort_values()
     cuts = cuts.drop_duplicates()
     df = df.sort_values('mz_og')
@@ -85,10 +85,10 @@ def compare_grouping(mzml, options):
         x = mz_series
         m = mz_series.mean()
         weights = np.exp(-(x-mu)**2 / 2*sigma**2) / np.sqrt(2*np.pi*sigma**2)
-        return weights 
+        return weights
 
 
-    df['weights'] = df.groupby('cuts')['mz_og'].apply(mad)    
+    df['weights'] = df.groupby('cuts')['mz_og'].apply(mad)
     df['inty_low_bound'] = df.groupby('cuts')['inty_og'].transform('std')
     #only keep peaks that are above  inty_low_bound
     #averge mz value
@@ -192,6 +192,7 @@ def make_lx1_masterscan(options) -> MasterScan:
         )
     ]
 
+    # TODO: need to optimised (most time spent)
     listSurveyEntry = sorted(listSurveyEntry, key=lambda x: x.precurmass)
     if has_ms2:
         MS1_precurmass = pd.Series(

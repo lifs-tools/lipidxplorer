@@ -10,10 +10,10 @@ from lx.mfql.runtimeExecution import TypeMFQL
 from lx.mfql.mfqlParser import startParsing
 
 
-proy_path = r"test_resources/small_test/small_test-project.lxp"
+proy_path = r"resources/small_test/small_test-project.lxp"
 
-expected_ms_path = r"test_resources/small_test/small_test_LX12.sc"
-expected_lx2ms_path = r"test_resources/small_test/small_test_LX2.sc"
+expected_ms_path = r"resources/small_test/small_test_LX12.sc"
+expected_lx2ms_path = r"resources/small_test/small_test_LX2.sc"
 
 
 def read_options(project_path, make_msresolution_auto=False):
@@ -130,7 +130,7 @@ def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = False, callback
         progressCount=0,
         generateStatistics=options["statistics"],
         log_steps=log_steps,
-        callback=callback 
+        callback=callback
     )
 
     return mfqlObj.result
@@ -147,14 +147,14 @@ def masterscan_2_df(masterscan_or_list, add_ids = False, add_og_intensity = Fals
             og_intensity = dict(se.dictBeforeIsocoIntensity)
             og_intensity = {f"og_{k}":v for k,v in og_intensity.items()}
             res.update(og_intensity)
-        
+
         return res
-    
-    if isinstance(masterscan_or_list, list): 
+
+    if isinstance(masterscan_or_list, list):
         listSurveyEntry = masterscan_or_list
     else:
         listSurveyEntry = masterscan_or_list.listSurveyEntry
 
     return pd.DataFrame((se_2_dict(se) for se in listSurveyEntry))
-    
+
 

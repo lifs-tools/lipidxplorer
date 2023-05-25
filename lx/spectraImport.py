@@ -539,6 +539,7 @@ def doImport(
 
     import pandas as pd
 
+    # intermediate output
     df = pd.concat(peaks_df_list)
 
     df.to_pickle("lx1_bins_v1.pkl")

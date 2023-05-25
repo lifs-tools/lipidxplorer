@@ -1,3 +1,4 @@
+# Test Step 1: Check the master scan
 import pytest
 from lx.spectraImport import doImport, lpdxImportDEF_new
 from lx.spectraTools import loadSC
@@ -20,7 +21,7 @@ from LX1_masterscan import make_lx1_masterscan
 
 def test_make_masterscan():
     options = read_options(proy_path)
-    masterscan = make_masterscan(options)
+    masterscan = make_masterscan(options)  # original lx1
     expected = loadSC(expected_ms_path)
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
     masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]
@@ -45,7 +46,7 @@ def test_make_lx2_masterscan():
 
 def test_make_lx1_masterscan():
     options = read_options(proy_path)
-    masterscan = make_lx1_masterscan(options)
+    masterscan = make_lx1_masterscan(options)  # refactored code of lx1
     expected = loadSC(expected_lx2ms_path)
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
     masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]

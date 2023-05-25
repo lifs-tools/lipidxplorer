@@ -1,11 +1,11 @@
 [project]
-importdir = test_resources/small_test
-masterscanrun = test_resources/small_test/small_test.sc
-masterscanimport = test_resources/small_test/small_test.sc
+importdir = resources/small_test
+masterscanrun = resources/small_test/small_test.sc
+masterscanimport = resources/small_test/small_test.sc
 importmsms = True
 pisspectra = False
 datatype = mzML
-ini = test_resources/small_test/lpdxImportSettings_benchmark.ini
+ini = resources/small_test/lpdxImportSettings_benchmark.ini
 setting = 1
 selectionwindow = 0.4
 timerange = (33,1080)
@@ -43,7 +43,7 @@ intensitycorrectionprecursor =
 intensitycorrectionfragment = 
 masterscaninsql = False
 sumfattyacids = False
-resultfile = test_resources/small_test/small_test-out.csv
+resultfile = resources/small_test/small_test-out.csv
 optionalmstolerance = 5
 optionalmsmstolerance = 5
 optionalmstolerancetype = ppm
@@ -72,7 +72,7 @@ loopnr = 3
 
 [mfql]
 170213_ce_d7.mfql-name = 170213_CE_D7.mfql
-170213_ce_d7.mfql = test_resources/small_test/170213_CE_D7.mfql
+170213_ce_d7.mfql = resources/small_test/170213_CE_D7.mfql
 170213_ce_pos_msms.mfql-name = 170213_CE_pos_MSMS.mfql
-170213_ce_pos_msms.mfql = test_resources/small_test/170213_CE_pos_MSMS.mfql
+170213_ce_pos_msms.mfql = resources/small_test/170213_CE_pos_MSMS.mfql
 

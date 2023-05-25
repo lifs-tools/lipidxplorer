@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -96,18 +97,19 @@ def spectra_2_df_single(mzml, options):
     spectra_df = path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range, polarity)
     if drop_fuzzy:
         spectra_df = drop_fuzzy(spectra_df)
-    
+
     if include_text:
         spectra_df = spectra_df.loc[spectra_df.filter_string.str.contains(exclude_text)]
 
     if exclude_text:
         spectra_df = spectra_df.loc[~spectra_df.filter_string.str.contains(exclude_text)]
-    
+
     return spectra_df
 
 
 def spectra_2_df(options):
     mzmls = mz_ml_paths(options)
+    print(mzmls)
     return [spectra_2_df_single(mzml, options) for mzml in mzmls]
 
 
@@ -133,11 +135,11 @@ def drop_fuzzy(spectra_df):
 
 def mz_ml_paths(options):
     p = Path(options["importDir"])
-    mzmls = list(p.glob("*.mzml"))
+    mzmls = list(p.glob("*.[mM][zZ][mM][lL]"))
     if not mzmls:
         log.warning("no mzml files found in {}".format(p))
         log.warning("using all mzXML files in {}".format(p))
-        mzmls = list(p.glob("*.mzxml"))
+        mzmls = list(p.glob("*.[mM][zZ][xX][mM][lL]"))
 
     return mzmls
 
