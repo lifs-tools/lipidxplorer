@@ -84,8 +84,15 @@ flag_df = flag_df[flag_df['flag'].notna()] # column 'variable' is the unmelted c
 molecules_df = df.iloc[:,:4]
 molecules_df = molecules_df.reset_index()
 molecules_df.loc[molecules_df.mass == ' ','index'] = None
+
 molecules_df['index'].fillna(method='ffill', inplace=True)
 molecules_df.set_index('index', inplace=True)
+molecules_df = molecules_df[molecules_df['mol'] != '%']
+molecules_df[['molecule','error']] = molecules_df['mol'].str.extract(r'\((.*?) ; (.*?)\)')
+molecules_df['error'] = pd.to_numeric(molecules_df['error'])
+molecules_df['abs_err'] = molecules_df['error'].abs()
+molecules_df['min_err'] = molecules_df.groupby('molecule')['abs_err'].transform('min')
+molecules_df['selected'] = molecules_df['min_err'] == molecules_df['abs_err']
 
 print("First Section:")
 # print(header_data)
