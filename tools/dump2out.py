@@ -49,8 +49,10 @@ for line in second_section:
 
 # Convert the second_section_data into a DataFrame
 df = pd.DataFrame(second_section_data[1:])
+
+headers = second_section_data[0]
 new_column_names = []
-for idx,name in enumerate(second_section_data[0]):
+for idx,name in enumerate(headers):
     if name.strip():
         new_column_names.append(name)
     else:
@@ -60,7 +62,7 @@ for idx,name in enumerate(second_section_data[0]):
 new_column_names[0]='dash'
 new_column_names[1]='empty'
 new_column_names[2]='mass'
-new_column_names[3]='pct'
+new_column_names[3]='mol'
 
 
 df.rename(columns=dict(zip(df.columns, new_column_names)), inplace=True)
@@ -72,19 +74,19 @@ for column in df.columns:
     except ValueError:
         pass
 
-string_columns = df.select_dtypes(include='object').columns.tolist()
-first_flag_column = string_columns[4] # specifically 4 because of the fixed columns
-# unique_ids = df[first_flag_column].unique().tolist() 
-# unique_ids = [flag for flag in unique_ids if flag is not None]
-# unique_ids = [flag for flag in unique_ids if flag.strip()]
 
-flag_columns = [col for col in df.columns if str(col).isdigit() and int(col) > first_flag_column]
+flag_columns = df.columns[len(headers):]
 dirty_flag_df = df[flag_columns]
 flag_df = pd.melt(dirty_flag_df.reset_index(), id_vars='index', value_name='flag')
 flag_df['flag'].replace('', np.nan, inplace=True)
 flag_df = flag_df[flag_df['flag'].notna()] # column 'variable' is the unmelted column name
 
-flag_df.groupby('flag').filter(lambda x: len(x)>1).head(1).flag
+molecules_df = df.iloc[:,:4]
+molecules_df = molecules_df.reset_index()
+molecules_df.loc[molecules_df.mass == ' ','index'] = None
+molecules_df['index'].fillna(method='ffill', inplace=True)
+molecules_df.set_index('index', inplace=True)
+
 print("First Section:")
 # print(header_data)
 # Print the DataFrame
