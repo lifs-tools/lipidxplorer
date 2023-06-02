@@ -80,10 +80,14 @@ dirty_flag_df = df[flag_columns]
 flag_df = pd.melt(dirty_flag_df.reset_index(), id_vars='index', value_name='flag')
 flag_df['flag'].replace('', np.nan, inplace=True)
 flag_df = flag_df[flag_df['flag'].notna()] # column 'variable' is the unmelted column name
+flag_df[['var','nominal','mode','molecule']] = flag_df.flag.str.split(":", expand = True)
+flag_df.set_index('index', inplace=True)
+# flag_df = flag_df.drop_duplicates()
+# flag_df = flag_df.sort_values(['var','nominal'])
 
 molecules_df = df.iloc[:,:4]
 molecules_df = molecules_df.reset_index()
-molecules_df.loc[molecules_df.mass == ' ','index'] = None
+molecules_df.loc[molecules_df.mass == ' ','index'] = np.nan
 
 molecules_df['index'].fillna(method='ffill', inplace=True)
 molecules_df.set_index('index', inplace=True)
@@ -93,6 +97,9 @@ molecules_df['error'] = pd.to_numeric(molecules_df['error'])
 molecules_df['abs_err'] = molecules_df['error'].abs()
 molecules_df['min_err'] = molecules_df.groupby('molecule')['abs_err'].transform('min')
 molecules_df['selected'] = molecules_df['min_err'] == molecules_df['abs_err']
+
+result_df = pd.merge(molecules_df, flag_df, how='left', left_index=True, right_index=True)
+result_df = result_df.drop_duplicates()
 
 print("First Section:")
 # print(header_data)
