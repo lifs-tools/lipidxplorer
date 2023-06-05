@@ -2,7 +2,7 @@
 
 import numpy as np
 import pandas as pd
-
+from pathlib import Path
 
 def to_lister(lines):
     for line in lines:
@@ -136,20 +136,69 @@ def  parse_out_file(out):
 
     return df
 
+def check_and_relace_results(out, dump):
+    outs_mass_row = 0
+    outs_elemental_comp_row = 1
+    outs_error_row = 9
+    out_title_prefix = 'QS:'
+
+    header_data, df = parse_dump_file(dump)
+    result_df = get_id_info(header_data, df)
+    result_df = result_df[result_df.selected]
+
+    with open(out, "r") as file:
+        lines = file.readlines()
+
+    lines_out = []
+    header = lines[0].split(',')
+    
+    lines_out.append(header)
+    
+    for line in lines[1:]:
+        if not line.strip(): # nothing there
+            lines_out.append(line)
+            continue
+        if line.startswith('###'): # nothing to do
+            lines_out.append(line)
+            continue
+
+        row = line.split(',')
+        Elemental_comp = row[outs_elemental_comp_row]
+        Elemental_comp = Elemental_comp.strip()
+        error = float(row[outs_error_row])
+        error = round(error,2)
+
+        result = result_df[result_df.molecule_x == Elemental_comp].reset_index().iloc[0]
+        e_1 = round(float(result.error),2)
+
+        if error == e_1: # same error no replacement
+            lines_out.append(line)
+            continue
+
+        replacement = df.iloc[int(result['index'])]
+        
+
+        for idx,title in enumerate(header):
+            if title.strip(out_title_prefix ) in replacement.index:
+                row[idx] = str(replacement[title.strip(out_title_prefix )])
+
+        row[outs_mass_row] = replacement.mass
+        row[outs_error_row] = str(result.error)
+
+        lines_out.append(','.join(row))
+    
+    out_path = Pathlib(out)
+
+
+    return lines_out
 
 def main():
     import pprint
     dump = r"c:\Users\mirandaa\Downloads\LX1 Dump-Out\LX1 Dump-Out\Trim-dump- 5 ppm.csv"
     out = r'c:\Users\mirandaa\Downloads\LX1 Dump-Out\LX1 Dump-Out\Trim-out-5 ppm.csv'
-    header_data, df = parse_dump_file(dump)
-    result_df = get_id_info(header_data, df)
-    parse_out_file(out)
-    print("First Section:")
-    pprint.pprint(header_data)
-    # Print the DataFrame
-    print("Second Section DataFrame:")
-    print(df)
 
+    lines = check_and_relace_results(out, dump)
+    
 
 if __name__ == '__main__':
     main()
