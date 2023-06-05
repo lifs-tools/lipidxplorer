@@ -152,7 +152,7 @@ def check_and_relace_results(out, dump):
     lines_out = []
     header = lines[0].split(',')
     
-    lines_out.append(header)
+    lines_out.append(lines[0])
     
     for line in lines[1:]:
         if not line.strip(): # nothing there
@@ -187,18 +187,31 @@ def check_and_relace_results(out, dump):
 
         lines_out.append(','.join(row))
     
-    out_path = Pathlib(out)
+    out_path = Path(out)
+    new_file_path = out_path.with_name(out_path.stem + "_v2" + out_path.suffix)
+    print(f'saving to {new_file_path}')
 
+    with open(new_file_path, 'w') as file:
+        file.writelines('\n'.join(lines_out))
 
     return lines_out
 
 def main():
-    import pprint
-    dump = r"c:\Users\mirandaa\Downloads\LX1 Dump-Out\LX1 Dump-Out\Trim-dump- 5 ppm.csv"
-    out = r'c:\Users\mirandaa\Downloads\LX1 Dump-Out\LX1 Dump-Out\Trim-out-5 ppm.csv'
 
-    lines = check_and_relace_results(out, dump)
-    
+    import sys
+
+    # Check if at least two arguments were provided
+    if len(sys.argv) >= 3:
+        out = sys.argv[1]
+        dump = sys.argv[2]
+        print("out path:", out)
+        print("dump path:", dump)
+
+        check_and_relace_results(out, dump)
+
+    else:
+        print("Please provide the out path and the dump path")
+
 
 if __name__ == '__main__':
     main()
