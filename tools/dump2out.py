@@ -192,7 +192,7 @@ def check_and_relace_results(out, dump):
     print(f'saving to {new_file_path}')
 
     with open(new_file_path, 'w') as file:
-        file.writelines('\n'.join(lines_out))
+        file.writelines(''.join(lines_out))
 
     return lines_out
 
