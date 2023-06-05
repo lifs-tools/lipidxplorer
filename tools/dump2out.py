@@ -110,6 +110,31 @@ def get_id_info(header_data, df):
 
     return result_df
 
+def  parse_out_file(out):
+        # Read the file content
+    with open(out, "r") as file:
+        lines = file.readlines()
+
+    df = pd.DataFrame((line.split(',') for line in lines))
+    df['row_no'] = df.index
+
+    col_names = []
+    for idx,e in enumerate(df.iloc[0].to_list()):
+        if e:
+            col_names.append(e.strip())
+        else:
+            col_names.append(idx)
+
+    df.columns = col_names
+
+    df = df.drop(0)
+    df['section'] = df['EC'].where(df['PRM'] == '###')
+    df['section'] = df['section'].str.strip()
+    df['section'] = df['section'].ffill()
+
+    df = df[df['CLASS'].notna()]
+
+    return df
 
 
 def main():
@@ -118,6 +143,7 @@ def main():
     out = r'c:\Users\mirandaa\Downloads\LX1 Dump-Out\LX1 Dump-Out\Trim-out-5 ppm.csv'
     header_data, df = parse_dump_file(dump)
     result_df = get_id_info(header_data, df)
+    parse_out_file(out)
     print("First Section:")
     pprint.pprint(header_data)
     # Print the DataFrame
