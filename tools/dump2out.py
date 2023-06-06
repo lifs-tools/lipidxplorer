@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import argparse
+from gooey import Gooey
 
 def to_lister(lines):
     for line in lines:
@@ -193,7 +194,7 @@ def check_and_relace_results(out, dump, result_file):
 
     return lines_out
 
-
+@Gooey
 def parse_args():
     # Create the argument parser
     parser = argparse.ArgumentParser(description='Process input and output files.')
