@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
+import argparse
 
 def to_lister(lines):
     for line in lines:
@@ -136,7 +137,7 @@ def  parse_out_file(out):
 
     return df
 
-def check_and_relace_results(out, dump):
+def check_and_relace_results(out, dump, result_file):
     outs_mass_row = 0
     outs_elemental_comp_row = 1
     outs_error_row = 9
@@ -187,31 +188,48 @@ def check_and_relace_results(out, dump):
 
         lines_out.append(','.join(row))
     
-    out_path = Path(out)
-    new_file_path = out_path.with_name(out_path.stem + "_v2" + out_path.suffix)
-    print(f'saving to {new_file_path}')
-
-    with open(new_file_path, 'w') as file:
+    with open(result_file, 'w') as file:
         file.writelines(''.join(lines_out))
 
     return lines_out
 
+
+def parse_args():
+    # Create the argument parser
+    parser = argparse.ArgumentParser(description='Process input and output files.')
+
+    # Add the input file argument
+    parser.add_argument('out_file', type=argparse.FileType('r'), help='path to the output file')
+
+    # Add the dump file argument
+    parser.add_argument('dump_file', type=argparse.FileType('r'), help='path to the dump file')
+
+    # Add an optional result file argument
+    parser.add_argument('-r', '--result_file', type=argparse.FileType('w'), help='path to the result file (default: next to the out file with "_v2" suffix)')
+
+
+    # Parse the command-line arguments
+    args = parser.parse_args()
+
+    # Get the paths from the arguments
+    out_file = args.out_file.name
+    dump_file = args.dump_file.name
+    result_file = args.result_file.name if args.result_file else None
+
+    out_path = Path(out_file)
+    if not result_file:
+        result_file = str(out_path.with_name(out_path.stem + "_v2" + out_path.suffix))
+
+    # Print the file paths
+    print(f'Output file: {out_file}')
+    print(f'Dump file: {dump_file}')
+    print(f'Result file: {result_file}')
+
+    return out_file, dump_file, result_file
+
 def main():
-
-    import sys
-
-    # Check if at least two arguments were provided
-    if len(sys.argv) >= 3:
-        out = sys.argv[1]
-        dump = sys.argv[2]
-        print("out path:", out)
-        print("dump path:", dump)
-
-        check_and_relace_results(out, dump)
-
-    else:
-        print("Please provide the out path and the dump path")
-
+    args  = parse_args()
+    check_and_relace_results(*args)
 
 if __name__ == '__main__':
     main()
