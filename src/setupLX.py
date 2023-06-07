@@ -11,7 +11,7 @@ setup(
     windows=[
         {
             "scripts": "Lipidxplorer.py",
-            "icon_resources": [(1, "lx/stuff/lipidx_ico.ico")],
+            "icon_resources": [(1, "src/lx/stuff/lipidx_ico.ico")],
         }
     ],
     scripts=["LipidXplorer.py"],

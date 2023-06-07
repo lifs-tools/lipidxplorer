@@ -10,7 +10,7 @@ from lx.mfql.mfqlParser import startParsing
 from lx.tools import odict
 from lx.spectraTools import *
 from lx.options import Options
-from mztab.mztab_util import as_mztab
+from lx.mztab_util import as_mztab
 
 import time
 

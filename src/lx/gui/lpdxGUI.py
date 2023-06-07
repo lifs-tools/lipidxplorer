@@ -67,14 +67,6 @@ except ImportError:
 # import lpdxSCC
 import platform
 
-pf = platform.system()
-if re.match(".*LINUX.*", pf, re.IGNORECASE):
-    playSound = False
-if re.match(".*CYGWIN_NT.*", pf, re.IGNORECASE):
-    playSound = False
-if re.match(".*WINDOWS.*", pf, re.IGNORECASE):
-    playSound = False
-
 # for exception forwarding
 def formatExceptionInfo(maxTBlevel=None):
     cla, exc, trbk = sys.exc_info()
@@ -1943,7 +1935,7 @@ intensity."""
         # image
         try:
             self.bmp_LipidX_Logo = wx.Image(
-                opj("lx/stuff/LipidXplorer-50.png"), wx.BITMAP_TYPE_PNG
+                opj("src/lx/stuff/LipidXplorer-50.png"), wx.BITMAP_TYPE_PNG
             ).ConvertToBitmap()
             # self.bmp_LipidX_Logo = wx.Image('..%spics%slipidx_logo-smaller.png' % (os.sep, os.sep), wx.BITMAP_TYPE_PNG).ConvertToBitmap()
             wx.StaticBitmap(
@@ -3417,9 +3409,6 @@ intensity."""
 
         self.Destroy()
 
-        if playSound:
-            wx.Sound.Stop()
-            wx.Sound("../pics/CloseApp.wav").Play()
 
     def handleSyntaxErrorException(self):
 
@@ -3607,9 +3596,6 @@ intensity."""
 
     def startConvertWiff(self):
 
-        if playSound:
-            wx.Sound("../pics/PressButton.wav").Play()
-
         wiffIn = wiffOut = self.filePath_WiffIn
 
         if os.path.exists(wiffIn):
@@ -3702,9 +3688,6 @@ intensity."""
                 return False
 
     def startConvertRaw(self):
-
-        if playSound:
-            wx.Sound("../pics/PressButton.wav").Play()
 
         rawIn = rawOut = self.filePath_RawIn
 
@@ -4296,9 +4279,6 @@ intensity."""
 
     def OnOpen_Output(self, evt):
 
-        if playSound:
-            wx.Sound("../pics/OpenFile.wav").Play()
-
         curScript = self.text_ctrl_OutputSection.GetValue().split(os.sep)[-1]
         fileName = self.text_ctrl_OutputSection.GetValue()
 
@@ -4420,9 +4400,6 @@ intensity."""
         # self.filePath_Dump = self.filePath_MasterScan + os.sep + self.filePath_MasterScan.split(os.sep)[-1] + '-dump.csv'
 
     def OnOpen_Dump(self, evt):
-
-        if playSound:
-            wx.Sound("../pics/OpenFile.wav").Play()
 
         curScript = self.filePath_Dump.split(os.sep)[-1]
         fileName = self.filePath_Dump
@@ -5245,8 +5222,6 @@ intensity."""
 
     def OnOpenFile(self, evt=None, newFile=None):
 
-        if playSound:
-            wx.Sound("../pics/OpenFile.wav").Play()
         sortedKeys = list(self.dictMFQLScripts.keys())
 
         if not newFile:
@@ -6033,9 +6008,6 @@ intensity."""
 
     def OnSumCompositionToMass(self, evt):
 
-        if playSound:
-            wx.Sound("../pics/PressButton.wav").Play(flags=wx.SOUND_ASYNC)
-
         strAccuracy = ""
 
         if (
@@ -6066,18 +6038,12 @@ intensity."""
 
         max = 1
 
-        if playSound:
-            sound = wx.Sound("../pics/Wait2.wav")
-            sound.Play(flags=wx.SOUND_LOOP | wx.SOUND_ASYNC)
-
         outtext = (
             "For %s:\nExact mass is %.6f; Double Bonds are: %.1f; charge is: %d"
             % (elemSeq, elemSeq.getWeight(), elemSeq.get_DB(), elemSeq.charge)
         )
         self.text_ctrl_mstools_OutputSection.SetValue(outtext)
 
-        if playSound:
-            sound.Stop()
         pass
 
     def OnCalcIsotopes(self, evt):
@@ -7887,8 +7853,6 @@ class MyApp(wx.App):
 def main():
 
     app = MyApp(0)
-    if playSound:
-        wx.Sound("../pics/StartApp.wav").Play()
     app.MainLoop()
     ## end of the software
 

@@ -8,7 +8,7 @@ with open("CHANGELOG", "a") as myfile:
     myfile.write("git hash of this build: "+label)
 
 # copy assets to dist
-assetsDir = "lx/stuff/"
+assetsDir = "src/lx/stuff/"
 if os.path.isdir(DISTPATH+"/lx/"):
     shutil.rmtree(DISTPATH+"/lx/")
 
@@ -18,9 +18,9 @@ shutil.copy("README.md", DISTPATH+"/")
 shutil.copy("CHANGELOG", DISTPATH+"/")
 shutil.copy("COPYRIGHT.txt", DISTPATH+"/")
 shutil.copy("LICENSES-third-party.txt", DISTPATH+"/")
-shutil.copy("lpdxImportSettings_benchmark.ini", DISTPATH+"/")
-shutil.copy("lpdxImportSettings_tutorial.ini", DISTPATH+"/")
-shutil.copy("lpdxopts.ini", DISTPATH+"/")
+shutil.copy("settings/lpdxImportSettings_benchmark.ini", DISTPATH+"/")
+shutil.copy("settings/lpdxImportSettings_tutorial.ini", DISTPATH+"/")
+shutil.copy("settings/lpdxopts.ini", DISTPATH+"/")
 shutil.copy("ReleaseNotes.docx", DISTPATH+"/")
 
 block_cipher = None
@@ -53,7 +53,7 @@ exe = EXE(pyz,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
-          icon='lx/stuff/lipidx_tb.ico',
+          icon='src/lx/stuff/lipidx_tb.ico',
           console=False )
 
 with ZipFile(DISTPATH+'.zip', 'w') as zipObj:
