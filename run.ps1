@@ -1,7 +1,13 @@
-$Remove = 'C:\Python27\Scripts;'
-$Path = ($env:Path.Split(';') | Where-Object -FilterScript {$_ -ne $Remove}) -join ';'
-$Remove = 'C:\Python27\;'
-$Path = ($Path.Split(';') | Where-Object -FilterScript {$_ -ne $Remove}) -join ';'
+$python = 'C:\Python310\Scripts\python.exe'
 
-[Environment]::SetEnvironmentVariable('Path', $Path, 'User')
+$python --version
+
+$python -m venv venv
+
+venv\Scripts\Activate.ps1
+
+$python -m pip install -r requirements.txt
+
+$python ./src/LipidXplorer.py
+
 

@@ -24,7 +24,7 @@ build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
     - $env:Path += ";C:\Windows\system32\config\systemprofile\.windows-build-tools\"
-    - python3 --version
+    - ./run.ps1
     - systeminfo /fo csv | ConvertFrom-Csv | select OS* | Format-List
     - echo $env:Path
     - Set-Variable -Name "time" -Value (date -Format "%H:%m")
