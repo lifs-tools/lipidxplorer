@@ -24,10 +24,8 @@ build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
     - echo $env:Path
-    - $Remove = 'C:\Python27\Scripts;'
-    - $env:Path = ($env:Path.Split(';') | Where-Object -FilterScript {$_ -ne $Remove}) -join ';'
-    - $Remove = 'C:\Python27\;'
-    - $env:Path = ($env:Path.Split(';') | Where-Object -FilterScript {$_ -ne $Remove}) -join ';'
+    - ./run.ps1
+    - echo $env:Path
     - $env:Path += ";C:\Windows\system32\config\systemprofile\.windows-build-tools\"
     - python --version
     - systeminfo /fo csv | ConvertFrom-Csv | select OS* | Format-List
