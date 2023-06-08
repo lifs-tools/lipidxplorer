@@ -25,7 +25,7 @@ build-job:       # This job runs in the build stage, which runs first.
   script:
     - echo $env:Path
     - $env:Path += ";C:\ProgramData\chocolatey;C:\Windows\system32\config\systemprofile\.windows-build-tools\"
-    - winget install -e --id Python.Python.3.7
+    - choco install -y python3
     - python --version
     - systeminfo /fo csv | ConvertFrom-Csv | select OS* | Format-List
     - echo $env:Path
