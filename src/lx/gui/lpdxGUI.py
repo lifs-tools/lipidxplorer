@@ -1339,8 +1339,14 @@ class LpdxFrame(wx.Frame):
         # font for the units
         self.font_units_size = 10
 
+        self.m_splitter = wx.SplitterWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_NOBORDER )
+        self.m_splitter.Bind( wx.EVT_IDLE, self.m_splitterOnIdle )
+
+        self.m_version_choice_panel = wx.Panel( self.m_splitter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.m_notebook_panel = wx.Panel(self.m_splitter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+
         # create the notebook panels
-        self.notebook_1 = wx.Notebook(self, -1, style=0)
+        self.notebook_1 = wx.Notebook(self.m_notebook_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
         self.notebook_1_pane_3 = wx.Panel(self.notebook_1, -1)
         self.notebook_1_pane_2 = wx.Panel(self.notebook_1, -1)
         self.notebook_1_pane_4 = wx.Panel(self.notebook_1, -1)
@@ -2548,6 +2554,10 @@ intensity."""
 
         # bind events for progressDialog
         self.Bind(EVT_PROGRESSDLG_UPDATE, self.OnUpdateProgressDialog)
+
+    def m_splitterOnIdle( self, event ):
+        self.m_splitter.SetSashPosition( 100 )
+        self.m_splitter.Unbind( wx.EVT_IDLE )
 
     def OnUpdateOutputWindow(self, evt):
         self.debug.text_ctrl.AppendText(evt.text)
@@ -6952,7 +6962,20 @@ intensity."""
         self.notebook_1_pane_4.SetSizer(sizer_toolPane)
 
         ### RUN pane ###
+        bSizer1 = wx.BoxSizer( wx.VERTICAL )
+        bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
+
+        m_radio_box_version_choices = [ u"LX1", u"LX1_refactored", u"LX2" ]
+        self.m_radioBoxVersions = wx.RadioBox( self.m_version_choice_panel, wx.ID_ANY, u"Select versions", wx.DefaultPosition, wx.DefaultSize, m_radio_box_version_choices, 1, wx.RA_SPECIFY_ROWS )
+        self.m_radioBoxVersions.SetSelection( 0 )
+        bSizer2.Add( self.m_radioBoxVersions, 0, wx.ALL, 5 )
+
+        self.m_version_choice_panel.SetSizer( bSizer2 )
+        self.m_version_choice_panel.Layout()
+        bSizer2.Fit( self.m_version_choice_panel)
+
         sizer_2 = wx.BoxSizer(wx.VERTICAL)
+
         grid_sizer_1_RunCard = wx.BoxSizer(wx.VERTICAL)
         grid_sizer_1_RunCard_0 = wx.BoxSizer(wx.VERTICAL)
         grid_sizer_1_RunCard_0.Add(
@@ -7794,11 +7817,21 @@ intensity."""
         self.counterNotebookPages += 1
         self.dictNotebookPages["MSTools"] = self.counterNotebookPages
 
-        sizer_2.Add(self.notebook_1, 1, wx.EXPAND, 0)
+        sizer_2.Add( self.notebook_1, 1, wx.EXPAND |wx.ALL, 5 )
+        self.m_notebook_panel.SetSizer( sizer_2 )
+        self.m_notebook_panel.Layout()
+        sizer_2.Fit(self.m_notebook_panel)
+
+        self.m_version_choice_panel.SetSizer( sizer_2 )
+        self.m_version_choice_panel.Layout()
+
+        self.m_splitter.SplitHorizontally(self.m_version_choice_panel, self.m_notebook_panel, 0)
+        bSizer1.Add( self.m_splitter, 1, wx.EXPAND, 5 )
+
         self.counterNotebookPages += 1
         self.dictNotebookPages["Import"] = self.counterNotebookPages
         self.SetAutoLayout(True)
-        self.SetSizer(sizer_2)
+        self.SetSizer(bSizer1)
         self.Layout()
 
         # end wxGlade
