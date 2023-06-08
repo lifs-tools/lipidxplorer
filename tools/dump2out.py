@@ -139,6 +139,14 @@ def  parse_out_file(out):
     return df
 
 def check_and_relace_results(out, dump, result_file):
+    '''
+    replace the results from the out file with values from the dump file,
+    where the eabsolute error is smaller,
+
+    out: out csv from
+    dunp: dum.csv file that contains the results from the out file
+    result_file: path to the updated outfile, if falsy no file is created
+    '''
     outs_mass_row = 0
     outs_elemental_comp_row = 1
     outs_error_row = 9
@@ -189,8 +197,9 @@ def check_and_relace_results(out, dump, result_file):
 
         lines_out.append(','.join(row))
     
-    with open(result_file, 'w') as file:
-        file.writelines(''.join(lines_out))
+    if result_file:
+        with open(result_file, 'w') as file:
+            file.writelines(''.join(lines_out))
 
     return lines_out
 
