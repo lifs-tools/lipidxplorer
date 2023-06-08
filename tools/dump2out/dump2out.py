@@ -10,6 +10,11 @@ def to_lister(lines):
     for line in lines:
         yield line.strip().split(',')
 
+def suggest_result_file(out_file):
+    out_path = Path(out_file)
+    result_file = str(out_path.with_name(out_path.stem + "_v2" + out_path.suffix))
+    return result_file
+
 def  parse_dump_file(dump):
         # Read the file content
     with open(dump, "r") as file:
@@ -226,9 +231,8 @@ def parse_args():
     dump_file = args.dump_file.name
     result_file = args.result_file.name if args.result_file else None
 
-    out_path = Path(out_file)
     if not result_file:
-        result_file = str(out_path.with_name(out_path.stem + "_v2" + out_path.suffix))
+        result_file = suggest_result_file(out_file)
 
     # Print the file paths
     print(f'Output file: {out_file}')
