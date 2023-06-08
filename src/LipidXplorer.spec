@@ -9,10 +9,10 @@ with open("CHANGELOG", "a") as myfile:
 
 # copy assets to dist
 assetsDir = "src/lx/stuff/"
-if os.path.isdir(DISTPATH+"/lx/"):
-    shutil.rmtree(DISTPATH+"/lx/")
+if os.path.isdir(DISTPATH+"/src/lx/"):
+    shutil.rmtree(DISTPATH+"/src/lx/")
 
-shutil.copytree(assetsDir, DISTPATH+"/lx/stuff/")
+shutil.copytree(assetsDir, DISTPATH+"/src/lx/stuff/")
 
 shutil.copy("README.md", DISTPATH+"/")
 shutil.copy("CHANGELOG", DISTPATH+"/")
@@ -53,7 +53,7 @@ exe = EXE(pyz,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
-          icon='src/lx/stuff/lipidx_tb.ico',
+          icon='lx/stuff/lipidx_tb.ico',
           console=False )
 
 with ZipFile(DISTPATH+'.zip', 'w') as zipObj:
