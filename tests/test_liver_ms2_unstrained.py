@@ -7,13 +7,13 @@ import pickle
 
 @pytest.fixture
 def get_options():
-    options = read_options(r"test_resources\liver_ms2_unstrained\project_data\PRM_import.lxp")
+    options = read_options(r"tests/resources/liver_ms2_unstrained/project_data/PRM_import.lxp")
     return options
 
 
 @pytest.fixture
 def get_no_res_options():
-    options = read_options(r"test_resources\liver_ms2_unstrained\project_data\PRM_import.lxp")
+    options = read_options(r"tests/resources/liver_ms2_unstrained/project_data/PRM_import.lxp")
     options["MSresolution"] = ""
     options["MSMSresolution"] = ""
     options["MSresolutionDelta"] = ""
@@ -34,7 +34,7 @@ def get_no_res_masterscan(get_no_res_options):
 
 @pytest.fixture
 def getMfqlFiles():
-    p = Path(r"test_resources\liver_ms2_unstrained\mfqls")
+    p = Path(r"tests/resources/liver_ms2_unstrained/mfqls")
     mfqls = p.glob("*.mfql")
     return {mfql.name: mfql.read_text() for mfql in mfqls}
 
@@ -42,7 +42,7 @@ def getMfqlFiles():
 def test_masterscan_manual(get_options, get_masterscan):
     assert get_options["MSresolution"]
     masterscan = get_masterscan
-    with open(r"test_resources\liver_ms2_unstrained\reference\masterscan_1.pkl", "rb") as f:
+    with open(r"tests/resources/liver_ms2_unstrained/reference/masterscan_1.pkl", "rb") as f:
         reference = pickle.load(f)
     assert compareMasterScans(masterscan, reference)
 
@@ -50,20 +50,20 @@ def test_masterscan_manual(get_options, get_masterscan):
 def test_masterescan_automatic(get_no_res_options, get_no_res_masterscan):
     assert not get_no_res_options._data["MSresolution"]
     masterscan = get_no_res_masterscan
-    with open(r"test_resources\liver_ms2_unstrained\reference\masterscan_2.pkl", "rb") as f:
+    with open(r"tests/resources/liver_ms2_unstrained/reference/masterscan_2.pkl", "rb") as f:
         reference = pickle.load(f)
     assert compareMasterScans(masterscan, reference)
 
 
 def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
-    with open(r"test_resources\liver_ms2_unstrained\reference\result_1.pkl", "rb") as f:
+    with open(r"tests/resources/liver_ms2_unstrained/reference/result_1.pkl", "rb") as f:
         reference = pickle.load(f)
     result = make_MFQL_result(get_masterscan, getMfqlFiles, get_options, log_steps=True)
     assert compareResults(result, reference)
 
 
 def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles):
-    with open(r"test_resources\liver_ms2_unstrained\reference\result_2.pkl", "rb") as f:
+    with open(r"tests/resources/liver_ms2_unstrained/reference/result_2.pkl", "rb") as f:
         reference = pickle.load(f)
     result = make_MFQL_result(
         get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True

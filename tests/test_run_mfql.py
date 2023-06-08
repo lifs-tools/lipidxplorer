@@ -11,9 +11,9 @@ from utils import (
 )
 
 
-# @pytest.mark.skip(
-#     reason="other test change the masterscan, need to setup better, see conftest.py"
-# )
+@pytest.mark.skip(
+    reason="out_reference is not defined!"
+)
 def test_run_mfql():
     options = read_options(proy_path)
 
@@ -25,18 +25,20 @@ def test_run_mfql():
     for se in masterscan.listSurveyEntry:
         se.listMSMS = [msms for msms in se.listMSMS if 360 < msms.mass < 380]
 
-    mfqlFiles = getMfqlFiles(r"test_resources\small_test")
+    mfqlFiles = getMfqlFiles(r"test_resources/small_test")
 
     result = make_MFQL_result(masterscan, mfqlFiles, options, log_steps=True)
     resultStr = makeResultsString(result, options)
 
     assert resultStr.strip() == out_reference.strip()
 
-
+@pytest.mark.skip(
+    reason="out_reference is not defined!"
+)
 def test_lx2_sc_on_run_mfql():
     options = read_options(proy_path)
 
-    with open("test_resources/small_test/small_test.sc", "rb") as fh:
+    with open(r"tests/resources/small_test/small_test.sc", "rb") as fh:
         scan = pickle.load(fh)  # make_lx2_masterscan(options)
 
     scan.listSurveyEntry = [
@@ -45,7 +47,7 @@ def test_lx2_sc_on_run_mfql():
     for se in scan.listSurveyEntry:
         se.listMSMS = [msms for msms in se.listMSMS if 360 < msms.mass < 380]
 
-    mfqlFiles = getMfqlFiles(r"test_resources\small_test")
+    mfqlFiles = getMfqlFiles(r"test_resources/small_test")
 
     result_lx2 = make_MFQL_result(scan, mfqlFiles, options)
     resultStr_lx2 = makeResultsString(result_lx2, options)

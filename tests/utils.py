@@ -10,10 +10,10 @@ from lx.mfql.runtimeExecution import TypeMFQL
 from lx.mfql.mfqlParser import startParsing
 
 
-proy_path = r"resources/small_test/small_test-project.lxp"
+proy_path = r"tests/resources/small_test/small_test-project.lxp"
 
-expected_ms_path = r"resources/small_test/small_test_LX12.sc"
-expected_lx2ms_path = r"resources/small_test/small_test_LX2.sc"
+expected_ms_path = r"tests/resources/small_test/small_test_LX12.sc"
+expected_lx2ms_path = r"tests/resources/small_test/small_test_LX2.sc"
 
 
 def read_options(project_path, make_msresolution_auto=False):

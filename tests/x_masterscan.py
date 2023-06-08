@@ -1,6 +1,6 @@
 import os
-from x_options import read_options
-from lx.spectraContainer import MasterScan
+
+from legacy.lx_masterscan import lx2_spectra
 from lx.spectraImport import doImport, lpdxImportDEF_new
 from lx.spectraTools import loadSC
 

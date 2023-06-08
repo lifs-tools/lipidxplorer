@@ -1,10 +1,10 @@
 import pytest
-from lx_masterscan import lx2_spectra
+from legacy.lx_masterscan import lx2_spectra
 
 
 def test_readfile():
     spectra_path = (
-        r"test_resources\benchmark128\spectra\190321_Serum_Lipidextract_368723_01.mzML"
+        r"tests/resources/benchmark128/spectra/190321_Serum_Lipidextract_368723_01.mzML"
     )
     options = {  # NOTE to initialize Masterscan(options) a dictionalry is not enough
         "timerange": (33.0, 1080.0),

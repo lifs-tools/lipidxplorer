@@ -5,7 +5,11 @@ from utils import proy_path, read_options
 
 def test_read_project():
     options = read_options(proy_path)
-    with open(r'test_resources\small_test\expected_options.pkl','rb') as f: 
+
+    # with open(r'tests/resources/small_test/expected_options.pkl', "wb") as fh:
+    #     pickle.dump(options, fh)
+
+    with open(r'tests/resources/small_test/expected_options.pkl','rb') as f:
         expected_options = pickle.load(f)
 
     assert str(expected_options) == str(options)

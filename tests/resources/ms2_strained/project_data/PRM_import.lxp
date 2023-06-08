@@ -1,7 +1,7 @@
 [project]
-importdir = test_resources\ms2_strained\spectra
-masterscanrun = test_resources\ms2_strained\reference\tmp.sc
-masterscanimport = test_resources\ms2_strained\reference\tmp.sc
+importdir = tests/resources/ms2_strained/spectra
+masterscanrun = tests/resources/ms2_strained/reference/tmp.sc
+masterscanimport = tests/resources/ms2_strained/reference/tmp.sc
 importmsms = True
 pisspectra = False
 datatype = mzML
@@ -43,7 +43,7 @@ intensitycorrectionprecursor =
 intensitycorrectionfragment = 
 masterscaninsql = False
 sumfattyacids = False
-resultfile = test_resources\ms2_strained\reference\tmp-out.csv
+resultfile = tests/resources/ms2_strained/reference/tmp-out.csv
 optionalmstolerance = 
 optionalmsmstolerance = 
 optionalmstolerancetype = ppm
@@ -72,11 +72,11 @@ loopnr = 3
 
 [mfql]
 pis_lpc (m+h)+_14n.mfql-name = PIS_LPC (M+H)+_14N.mfql
-pis_lpc (m+h)+_14n.mfql = test_resources\ms2_strained\mfqls\PIS_LPC (M+H)+_14N.mfql
+pis_lpc (m+h)+_14n.mfql = tests/resources/ms2_strained/mfqls/PIS_LPC (M+H)+_14N.mfql
 pis_lpc (m+h)+_15n.mfql-name = PIS_LPC (M+H)+_15N.mfql
-pis_lpc (m+h)+_15n.mfql = test_resources\ms2_strained\mfqls\PIS_LPC (M+H)+_15N.mfql
+pis_lpc (m+h)+_15n.mfql = tests/resources/ms2_strained/mfqls/PIS_LPC (M+H)+_15N.mfql
 pis_pc (m+h)+_14n.mfql-name = PIS_PC (M+H)+_14N.mfql
-pis_pc (m+h)+_14n.mfql = test_resources\ms2_strained\mfqls\PIS_PC (M+H)+_14N.mfql
+pis_pc (m+h)+_14n.mfql = tests/resources/ms2_strained/mfqls/PIS_PC (M+H)+_14N.mfql
 pis_pc (m+h)+_15n.mfql-name = PIS_PC (M+H)+_15N.mfql
-pis_pc (m+h)+_15n.mfql = test_resources\ms2_strained\mfqls\PIS_PC (M+H)+_15N.mfql
+pis_pc (m+h)+_15n.mfql = tests/resources/ms2_strained/mfqls/PIS_PC (M+H)+_15N.mfql
 
