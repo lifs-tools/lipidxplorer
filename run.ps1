@@ -1,13 +1,11 @@
-$python = 'C:\Python310\Scripts\ipython.exe'
+C:\Python310\Scripts\ipython.exe --version
 
-$python --version
-
-$python -m venv venv
+C:\Python310\Scripts\ipython.exe -m venv venv
 
 venv\Scripts\Activate.ps1
 
-$python -m pip install -r requirements.txt
+C:\Python310\Scripts\ipython.exe -m pip install -r requirements.txt
 
-$python ./src/LipidXplorer.py
+C:\Python310\Scripts\ipython.exe ./src/LipidXplorer.py
 
 
