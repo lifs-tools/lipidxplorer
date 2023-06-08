@@ -1238,7 +1238,8 @@ class LpdxFrame(wx.Frame):
         # lx or lo?
         self.lipidxplorer = kwds["lipidxplorer"]
 
-        self.lx_ver = None
+        # specific LX versions is being used for import and run
+        self.lx_ver = 'LX1'  # 'LX1', 'LX1_refactored', 'LX2'
 
         # allow import of raw files?
         self.rawimport = kwds["rawimport"]
@@ -1339,14 +1340,8 @@ class LpdxFrame(wx.Frame):
         # font for the units
         self.font_units_size = 10
 
-        self.m_splitter = wx.SplitterWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_NOBORDER )
-        self.m_splitter.Bind( wx.EVT_IDLE, self.m_splitterOnIdle )
-
-        self.m_version_choice_panel = wx.Panel( self.m_splitter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        self.m_notebook_panel = wx.Panel(self.m_splitter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-
         # create the notebook panels
-        self.notebook_1 = wx.Notebook(self.m_notebook_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
+        self.notebook_1 = wx.Notebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
         self.notebook_1_pane_3 = wx.Panel(self.notebook_1, -1)
         self.notebook_1_pane_2 = wx.Panel(self.notebook_1, -1)
         self.notebook_1_pane_4 = wx.Panel(self.notebook_1, -1)
@@ -2554,10 +2549,6 @@ intensity."""
 
         # bind events for progressDialog
         self.Bind(EVT_PROGRESSDLG_UPDATE, self.OnUpdateProgressDialog)
-
-    def m_splitterOnIdle( self, event ):
-        self.m_splitter.SetSashPosition( 100 )
-        self.m_splitter.Unbind( wx.EVT_IDLE )
 
     def OnUpdateOutputWindow(self, evt):
         self.debug.text_ctrl.AppendText(evt.text)
@@ -4732,38 +4723,39 @@ intensity."""
         # get the options from GUI settings
         project = self.readOptions()
 
-        # if self.lx_ver == "LX 2":
-        #     # elements below will be ignored when using calctol
-        #     elems = [
-        #         "MSresolution",  # self.text_ctrl_SettingsSection_resolution_ms,
-        #         "MSMSresolution",  # self.text_ctrl_SettingsSection_resolution_msms,
-        #         "MSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_ms,
-        #         "MSMSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_msms,
-        #         "MStolerance",  # self.text_ctrl_SettingsSection_tolerance_ms,
-        #         "MSMStolerance",  # self.text_ctrl_SettingsSection_tolerance_msms,
-        #         "selectionWindow",  # self.text_ctrl_SettingsSection_selectionWindow,
-        #         # 'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
-        #         # 'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
-        #         # 'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
-        #         # 'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
-        #     ]
+        # in LX2 mode, override the options if necessary
+        if self.lx_ver == "LX2":
+            # elements below will be ignored when using calctol
+            elems = [
+                "MSresolution",  # self.text_ctrl_SettingsSection_resolution_ms,
+                "MSMSresolution",  # self.text_ctrl_SettingsSection_resolution_msms,
+                "MSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_ms,
+                "MSMSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_msms,
+                "MStolerance",  # self.text_ctrl_SettingsSection_tolerance_ms,
+                "MSMStolerance",  # self.text_ctrl_SettingsSection_tolerance_msms,
+                "selectionWindow",  # self.text_ctrl_SettingsSection_selectionWindow,
+                # 'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
+                # 'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
+                # 'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
+                # 'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
+            ]
 
-        #     for e in elems:
-        #         project.options[
-        #             e
-        #         ] = "0.123456"  # TODO replace this dirty fix that avoids div by zero
+            for e in elems:
+                project.options[
+                    e
+                ] = "0.123456"  # TODO replace this dirty fix that avoids div by zero
 
-        #     project.options["optionalMStolerance"] = "20"
-        #     project.options["optionalMSMStolerance"] = "20"
-        #     project.options["optionalMStoleranceType"] = "ppm"
-        #     project.options["optionalMSMStoleranceType"] = "ppm"
+            project.options["optionalMStolerance"] = "20"
+            project.options["optionalMSMStolerance"] = "20"
+            project.options["optionalMStoleranceType"] = "ppm"
+            project.options["optionalMSMStoleranceType"] = "ppm"
 
-        #     project.options["scanAveragingMethod"] = "calctol"  # vs 'linear'
-        #     project.options["alignmentMethodMS"] = "calctol"
-        #     project.options["alignmentMethodMSMS"] = "calctol"
+            project.options["scanAveragingMethod"] = "calctol"  # vs 'linear'
+            project.options["alignmentMethodMS"] = "calctol"
+            project.options["alignmentMethodMSMS"] = "calctol"
 
         # test if all options are correct
-        # project.testOptions()
+        project.testOptions()
 
         # change them into the right format
         project.formatOptions()
@@ -4777,7 +4769,8 @@ intensity."""
         # start import
         # startImportGUI(self, options)
 
-        if True:  # self.lx_ver == "LX 2":
+        # in LX2 mode
+        if self.lx_ver == "LX2":
             import LX1_masterscan
             import pickle
             from pathlib import Path
@@ -4823,6 +4816,14 @@ intensity."""
             self.isRunning = False
 
             return None
+
+        # in LX1_refactored mode
+        elif self.lx_ver == "LX1_refactored":
+            print('LX1 Refactored mode')
+
+        # in old LX1 mode
+        elif self.lx_ver == "LX1":
+            print('LX1 mode')
 
         try:  # generate a new MasterScan and set the import settings
 
@@ -6962,18 +6963,6 @@ intensity."""
         self.notebook_1_pane_4.SetSizer(sizer_toolPane)
 
         ### RUN pane ###
-        bSizer1 = wx.BoxSizer( wx.VERTICAL )
-        bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
-
-        m_radio_box_version_choices = [ u"LX1", u"LX1_refactored", u"LX2" ]
-        self.m_radioBoxVersions = wx.RadioBox( self.m_version_choice_panel, wx.ID_ANY, u"Select versions", wx.DefaultPosition, wx.DefaultSize, m_radio_box_version_choices, 1, wx.RA_SPECIFY_ROWS )
-        self.m_radioBoxVersions.SetSelection( 0 )
-        bSizer2.Add( self.m_radioBoxVersions, 0, wx.ALL, 5 )
-
-        self.m_version_choice_panel.SetSizer( bSizer2 )
-        self.m_version_choice_panel.Layout()
-        bSizer2.Fit( self.m_version_choice_panel)
-
         sizer_2 = wx.BoxSizer(wx.VERTICAL)
 
         grid_sizer_1_RunCard = wx.BoxSizer(wx.VERTICAL)
@@ -7817,24 +7806,26 @@ intensity."""
         self.counterNotebookPages += 1
         self.dictNotebookPages["MSTools"] = self.counterNotebookPages
 
+        m_radio_box_version_choices = [ u"LX1", u"LX1_refactored", u"LX2" ]
+        self.m_radioBoxVersions = wx.RadioBox( self, wx.ID_ANY, u"Select LX versions:", wx.DefaultPosition, wx.DefaultSize, m_radio_box_version_choices, 1, wx.RA_SPECIFY_ROWS )
+        self.m_radioBoxVersions.SetSelection( 0 )
+        self.m_radioBoxVersions.Bind( wx.EVT_RADIOBOX, self.m_radioBoxOnVersionChanged )
+
+        sizer_2.Add( self.m_radioBoxVersions, 0, wx.ALL, 5 )
         sizer_2.Add( self.notebook_1, 1, wx.EXPAND |wx.ALL, 5 )
-        self.m_notebook_panel.SetSizer( sizer_2 )
-        self.m_notebook_panel.Layout()
-        sizer_2.Fit(self.m_notebook_panel)
-
-        self.m_version_choice_panel.SetSizer( sizer_2 )
-        self.m_version_choice_panel.Layout()
-
-        self.m_splitter.SplitHorizontally(self.m_version_choice_panel, self.m_notebook_panel, 0)
-        bSizer1.Add( self.m_splitter, 1, wx.EXPAND, 5 )
 
         self.counterNotebookPages += 1
         self.dictNotebookPages["Import"] = self.counterNotebookPages
         self.SetAutoLayout(True)
-        self.SetSizer(bSizer1)
+        self.SetSizer(sizer_2)
         self.Layout()
 
         # end wxGlade
+
+    # Virtual event handlers, overide them in your derived class
+    def m_radioBoxOnVersionChanged( self, event ):
+        self.lx_ver = self.m_radioBoxVersions.GetStringSelection()
+        print(f'Mode is changed to {self.lx_ver}')
 
     def writeOutput(self, destination, content):
 
