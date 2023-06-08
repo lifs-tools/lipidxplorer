@@ -1,14 +1,15 @@
 import sys
 import os
-from lx.gui import lpdxGUI
+from LXLandingGUI import LandingFrame
 import wx
 
 sys.path.append(os.environ.get('SRC_DIR'))
 
+
 class MyApp(wx.App):
     def OnInit(self):
-        self.frame = lpdxGUI.LpdxFrame(
-            None, -1, "", rawimport=False, lipidxplorer=True, version="1.3.2_lx2"
+        self.frame = LandingFrame(
+            None, -1, "", rawimport=False, lipidxplorer=True, version="1.0.1"
         )
         self.frame.SetIcon(wx.Icon("src/lx/stuff/lipidx_ico2.ico", wx.BITMAP_TYPE_ICO))
         self.frame.Show(True)
@@ -18,13 +19,13 @@ class MyApp(wx.App):
 
 
 def main():
-
     app = MyApp(0)
     os.chdir(os.getcwd())
     app.MainLoop()
-    wx.Exit()
+    # wx.Exit()
     ## end of the software
 
 
 if __name__ == "__main__":
     main()
+

@@ -17,3 +17,10 @@ Communications
 * Better test environment needs to be setup
 * The clean repo is located in https://git.mpi-cbg.de/labShevchenko/lx2/-/tree/dev
 * Complete the test scenarios until the next week
+
+
+### 7th June 2023
+* Jacobo, HongKee
+* @moon: make a main GUI panel with lx2, lx1, tools tabs
+* @jacobo: dump2out.py in tools with test routines and test dataset
+* 

@@ -43,3 +43,16 @@ deploy-job:      # This job runs in the deploy stage.
   script:
     - echo "Deploying application..."
     - echo "Application successfully deployed."
+
+branch-pipeline-job:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+  script:
+    - echo "Code testing scripts here, for example."
+
+merge-request-pipeline-job:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  script:
+    - echo "No tests run, but this pipeline always succeeds and enables merge."
+    - echo true
