@@ -24,11 +24,11 @@ build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
     - echo $env:Path
-    - $env:Path += ";C:\ProgramData\chocolatey;C:\Windows\system32\config\systemprofile\.windows-build-tools\"
+    - $env:Path += ";C:\ProgramData\chocolatey;C:\py3\Scripts;C:\Windows\system32\config\systemprofile\.windows-build-tools\"
     - Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-    - choco install python3 --version=$PYTHON_VERSION --yes --force --no-progress --pre
+    - choco install python3 --version=$PYTHON_VERSION --yes --force --no-progress --pre --install-arguments="'/DIR=C:\py3'"
     - refreshenv
-    - python --version
+    - python3 --version
     - systeminfo /fo csv | ConvertFrom-Csv | select OS* | Format-List
     - echo $env:Path
     - Set-Variable -Name "time" -Value (date -Format "%H:%m")
