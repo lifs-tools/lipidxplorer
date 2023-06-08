@@ -1,4 +1,4 @@
-$python = 'C:\Python310\Scripts\python.exe'
+$python = 'C:\Python310\Scripts\ipython.exe'
 
 $python --version
 
