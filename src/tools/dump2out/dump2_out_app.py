@@ -1,6 +1,6 @@
 import wx
 from  dump2out_frame import Dump2outFrame
-from dump2out import suggest_result_file, check_and_relace_results
+from tools.dump2out.dump2out import suggest_result_file, check_and_relace_results
 
 class dump2outApp(Dump2outFrame):
     def init(self,parent):

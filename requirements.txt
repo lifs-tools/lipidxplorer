@@ -102,3 +102,4 @@ ipywidgets
 brain-isotopic-distribution
 ms_peak_picker
 ms_deisotope
+gooey
