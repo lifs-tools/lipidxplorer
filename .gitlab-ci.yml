@@ -24,9 +24,8 @@ build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
     - echo $env:Path
-    - msiexec.exe /a https://www.python.org/ftp/python/3.7.9/python-3.7.9-amd64.exe /quiet
-    - $env:Path += ";C:\Windows\system32\config\systemprofile\.windows-build-tools\;C:\Python37\"
-    - echo python --version
+    - $env:Path += ";C:\Windows\system32\config\systemprofile\.windows-build-tools\"
+    - python --version
     - systeminfo /fo csv | ConvertFrom-Csv | select OS* | Format-List
     - echo $env:Path
     - Set-Variable -Name "time" -Value (date -Format "%H:%m")
