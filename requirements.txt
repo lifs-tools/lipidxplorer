@@ -32,7 +32,6 @@ jupyter_client==5.3.4
 jupyter_core==4.6.1
 kiwisolver==1.1.0
 lazy-object-proxy
-python-iconv
 pypng
 libsodium
 XSLTools
@@ -78,9 +77,9 @@ rope==0.14.0
 seaborn==0.10.0
 send2trash==1.5.0
 setuptools==41.6.0
-sip==4.19.8
+sip==5.0.0
 six==1.13.0
-pysqlite3
+pysqlite-binary
 terminado==0.8.3
 testpath==0.4.4
 toml==0.10.2
