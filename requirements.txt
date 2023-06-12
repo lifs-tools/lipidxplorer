@@ -32,6 +32,7 @@ jupyter_client==5.3.4
 jupyter_core==4.6.1
 kiwisolver==1.1.0
 lazy-object-proxy
+llvmlite==0.32.1
 pypng
 libsodium
 XSLTools
@@ -47,7 +48,7 @@ nbconvert==5.6.1
 nbformat==4.4.0
 notebook==6.0.2
 numpy
-numba
+numba==0.47.0
 packaging
 pandas
 pandoc
