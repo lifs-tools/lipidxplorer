@@ -1346,6 +1346,7 @@ class LpdxFrame(wx.Frame):
         self.notebook_1_pane_2 = wx.Panel(self.notebook_1, -1)
         self.notebook_1_pane_4 = wx.Panel(self.notebook_1, -1)
         self.notebook_1_pane_5 = wx.Panel(self.notebook_1, -1)
+        self.notebook_1_pane_6 = wx.Panel(self.notebook_1, -1)
 
         # self.notebook_1_pane_2.SetFont(self.font)
         # self.notebook_1_pane_3.SetFont(self.font)
@@ -1412,6 +1413,11 @@ class LpdxFrame(wx.Frame):
                 "shape": tipballoon_windowsshape,
                 "tipstyle": tipballoon_tipstyle,
             }
+
+        ########################
+        ### Extra tools pane ###
+        self.m_dump2outButton = wx.Button( self.notebook_1_pane_6, wx.ID_ANY, u"dump2out", wx.DefaultPosition, wx.DefaultSize, 0 )
+
 
         ##############################
         ### MS tools notebook pane ###
@@ -2435,6 +2441,11 @@ intensity."""
         # for the editor
         self.Bind(wx.EVT_TEXT_ENTER, self.OnTextEnter)
         self.Bind(wx.EVT_TEXT, self.OnText)
+
+        # extra tools panel buttons
+        self.Bind(
+            wx.EVT_BUTTON, self.OnDump2out, self.m_dump2outButton
+        )
 
         # mstools panel buttons
         self.Bind(
@@ -5932,6 +5943,12 @@ intensity."""
             self.isRunning = False
             return None
 
+
+    def OnDump2out(self, event):
+        from tools.dump2out.dump2_out_app import openDump2_out
+        openDump2_out(self)
+
+
     def OnMassToSumComposition(self, evt):
 
         if self.text_ctrl_mstools_InputSection_mz.IsEmpty():
@@ -7805,6 +7822,10 @@ intensity."""
         self.notebook_1.AddPage(self.notebook_1_pane_4, "MS Tools")
         self.counterNotebookPages += 1
         self.dictNotebookPages["MSTools"] = self.counterNotebookPages
+
+        self.notebook_1.AddPage(self.notebook_1_pane_6, "Extra Tools")
+        self.counterNotebookPages += 1
+        self.dictNotebookPages["ExtraTools"] = self.counterNotebookPages
 
         m_radio_box_version_choices = [ u"LX1", u"LX1_refactored", u"LX2" ]
         self.m_radioBoxVersions = wx.RadioBox( self, wx.ID_ANY, u"Select LX versions:", wx.DefaultPosition, wx.DefaultSize, m_radio_box_version_choices, 1, wx.RA_SPECIFY_ROWS )
