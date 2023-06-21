@@ -458,6 +458,7 @@ def doImport(
     scanAvg,
     importMSMS=True,
     saveScan=True,
+    ** kwargs
 ):
 
     # some statistics
@@ -479,7 +480,9 @@ def doImport(
     # the scan.dictSample variable is filled with
     # MSmass and MSMS classes taken from mzXML files.
     # After loading the cleaning algorithm is applied.
-    peaks_df_list = []
+    peaks_df_list = None
+    if kwargs.get('make_intermediate_output', False):
+        peaks_df_list = []
     if listFiles != []:
         listFiles.sort()
 
@@ -540,18 +543,19 @@ def doImport(
     import pandas as pd
 
     # intermediate output
-    df = pd.concat(peaks_df_list)
+    if kwargs.get('make_intermediate_output', False):
+        df = pd.concat(peaks_df_list)
 
-    df.to_pickle("lx1_bins_v1.pkl")
+        df.to_pickle("lx1_bins_v1.pkl")
 
-    lpm = (
-        (scan_name, pm.precurmass, pm.intensity)
-        for scan_name, item in scan.dictSamples.items()
-        for pm in item.listPrecurmass
-    )
+        lpm = (
+            (scan_name, pm.precurmass, pm.intensity)
+            for scan_name, item in scan.dictSamples.items()
+            for pm in item.listPrecurmass
+        )
 
-    lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
-    lpm_df.to_pickle("lx1_before_shift_or_recalibrate.pkl")
+        lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
+        lpm_df.to_pickle("lx1_before_shift_or_recalibrate.pkl")
 
     if (not scan.options.isEmpty("precursorMassShift")) and scan.options[
         "precursorMassShift"

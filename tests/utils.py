@@ -29,7 +29,7 @@ def read_options(project_path, make_msresolution_auto=False):
 
 
 # ==========masterscan
-def make_masterscan(options):
+def make_masterscan(options, **kwargs):
     listIntermission = lpdxImportDEF_new(options=options, parent=None)
 
     scan = doImport(
@@ -45,6 +45,7 @@ def make_masterscan(options):
         options["alignmentMethodMSMS"],
         options["scanAveragingMethod"],
         options["importMSMS"],
+        **kwargs
     )
     return scan
 
