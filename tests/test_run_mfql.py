@@ -10,7 +10,7 @@ from utils import (
     read_options,
 )
 
-
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="out_reference is not defined!"
 )
@@ -32,6 +32,7 @@ def test_run_mfql():
 
     assert resultStr.strip() == out_reference.strip()
 
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="out_reference is not defined!"
 )

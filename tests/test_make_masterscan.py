@@ -19,7 +19,7 @@ from LX1_masterscan import make_lx1_masterscan
 # from memory_profiler import profile
 
 
-def test_make_masterscan(): 
+def test_make_masterscan():
     '''this tests lx1 it has intermediate results
      file (eg. *.mzml) has a spectra
      a spectra has multiple scans
@@ -32,7 +32,7 @@ def test_make_masterscan():
     peaks are grouped by mass to average the intensity, (eg avereage mass, average intensity)
     a weighted average can be used where more intensse peaks influence the average mass more
     for each spectra masses can be "recalibrated" based on expected mass (see np.interp)
-    
+
     lx1_bins_v1.pkl:    per scan grouping of ms1 peaks
     lx1_before_shift_or_recalibrate.pkl:    per scan averrage of grouping
 
@@ -42,7 +42,7 @@ def test_make_masterscan():
 
     the colection of grouped / averaged and aligned spectra is stored  in a masterscan file
     that contains the averaged mass of the aligned spectra and the intensity for each spectra
-    
+
     for ms2 there is a similar operation, of grouping, averaging and aligning
 
      '''
@@ -61,6 +61,7 @@ def test_compare_ms2s():
     df2 = masterscan_2_df(expected_lx2_manual) # missing ms2 data
     print('compare ms2')
 
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="assert False"
 )

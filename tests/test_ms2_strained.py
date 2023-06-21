@@ -45,6 +45,7 @@ def getMfqlFiles():
     mfqls = p.glob("*.mfql")
     return {mfql.name: mfql.read_text() for mfql in mfqls}
 
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="AssertionError"
 )
@@ -57,6 +58,7 @@ def test_masterscan_manual(get_options, get_masterscan, get_lx2_masterscan):
     assert compareMasterScans(masterscan, lx2masterscan)
 
 
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="Please handle LX1_masterscan.py:388 no averaging, not enough scans"
 )
@@ -68,6 +70,7 @@ def test_masterescan_automatic(get_no_res_options, get_no_res_masterscan, get_no
     #     reference = pickle.load(f)
     assert compareMasterScans(masterscan, lx2masterscan)
 
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="ValueError: too many values to unpack"
 )
@@ -78,6 +81,7 @@ def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
     assert compareResults(result, reference)
 
 
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="ValueError: too many values to unpack"
 )

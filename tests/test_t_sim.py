@@ -45,7 +45,7 @@ def getMfqlFiles():
     return {mfql.name: mfql.read_text() for mfql in mfqls}
 
 
-
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="Make it work in assertion"
 )
@@ -65,6 +65,7 @@ def test_masterscan_2_df():
     )  # if they are roughly the same shape it indicates lx1 comparable clustering
     # pd.merge_asof(df1,df2.assign(precurmass_2=lambda x:x.precurmass), on='precurmass', direction='nearest', tolerance=0.05).to_clipboard()
 
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="Make it work in assertion"
 )
@@ -75,6 +76,7 @@ def test_masterscan_manual(get_options, get_masterscan):
         reference = pickle.load(f)
     assert compareMasterScans(masterscan, reference)
 
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="Error in get_no_res_masterscan"
 )
@@ -110,7 +112,7 @@ def test_mfql_intermediate_results( get_options, getMfqlFiles):
 
     assert logs and result is not None
 
-
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="Error in get_no_res_masterscan"
 )

@@ -3,6 +3,7 @@ import pickle
 
 from lx.mfql.runtimeExecution import TypeResult, TypeMFQL
 
+# TODO: @Jacobo
 @pytest.mark.skip(
     reason="Make it work in assertion"
 )
