@@ -1,5 +1,5 @@
 import pandas as pd
-from tools.dump2out.dump2out import check_and_relace_results
+from tools import check_and_relace_results
 
 OUT_FILE = r'tests/resources/dump2out/Trim-out-5 ppm.csv'
 DUMP_FILE = r'tests/resources/dump2out/Trim-dump- 5 ppm.csv'
@@ -13,7 +13,5 @@ def test_check_and_relace_results():
 
     assert lines_out == lines
 
-
-# test_check_and_relace_results()
 
 
