@@ -4726,6 +4726,9 @@ intensity."""
 
     def OnStartImport(self, evt):
 
+        # TODO: @Jacobo: please check the version and change the method accordingly here
+        # In this part we setup parameters according to the version as well as method overrides
+
         if self.lipidxplorer:
             from lx.lxMain import startImport
         else:
@@ -4734,6 +4737,7 @@ intensity."""
         # get the options from GUI settings
         project = self.readOptions()
 
+        # TODO: @Jacobo: please check the parameters for LX2
         # in LX2 mode, override the options if necessary
         if self.lx_ver == "LX2":
             # elements below will be ignored when using calctol
@@ -4780,6 +4784,9 @@ intensity."""
         # start import
         # startImportGUI(self, options)
 
+        # Processing part according to the version
+
+        # TODO: @Jacobo: LX2
         # in LX2 mode
         if self.lx_ver == "LX2":
             import LX1_masterscan
@@ -4828,16 +4835,19 @@ intensity."""
 
             return None
 
+        # TODO: @Jacobo: this is LX1_refactored
         # in LX1_refactored mode
         elif self.lx_ver == "LX1_refactored":
             print('LX1 Refactored mode')
 
+        # TODO: @Jacobo: this is LX1 which is original
         # in old LX1 mode
         elif self.lx_ver == "LX1":
             print('LX1 mode')
 
         try:  # generate a new MasterScan and set the import settings
 
+            # We can move version check logic here instead
             if self.lipidxplorer:
 
                 if not wx.GetApp().frame.debugOpen:
@@ -4848,6 +4858,7 @@ intensity."""
                 resultQ = queue.Queue()
                 worker = Worker(self, requestQ, resultQ)
 
+                # TODO: @Jacobo: according to the version, we call different method here
                 startImport(
                     options=options,
                     queries=project.mfql,
