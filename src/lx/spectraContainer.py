@@ -73,7 +73,15 @@ class MSMSEntry:
     """Class is like SurveyEntry and handls the *.dta MSMS data."""
 
     def __init__(
-        self, mass, dictIntensity, peaks, polarity, charge, se, dictScanCount, **argv
+        self,
+        mass,
+        dictIntensity,
+        peaks,
+        polarity,
+        charge,
+        se,
+        dictScanCount,
+        **argv
     ):
         # if se != []:
         if se and isinstance(se, list) and se != []:
@@ -454,7 +462,6 @@ class MSMass:
 
 class UnSpec:
     def __init__(self, options, name, mzxml):
-
         self.listUnSmpl = []
         self.listMSMS = []
         self.name = name
@@ -471,7 +478,6 @@ class UnSpec:
         self.listMSMS.append([precursorMass, listMSMS])
 
     def mergeSpectraHeuristic(self, threshold=None, threshold_type="absolute"):
-
         nrOfSpectra = len(self.listUnSmpl)
 
         # get max number of peaks
@@ -501,11 +507,12 @@ class UnSpec:
         dictSpecEntry = {}
         index = 0
         for l in self.listUnSmpl:
-
             sample = "%d" % index
             dictSpecEntry[sample] = []
             for i in l:
-                dictSpecEntry[sample].append(specEntry(mass=i[0], content=i[1]))
+                dictSpecEntry[sample].append(
+                    specEntry(mass=i[0], content=i[1])
+                )
             index += 1
 
         listClusters = heuristicAlignment(
@@ -522,11 +529,12 @@ class UnSpec:
             avgMass = 0
             listIntensities = []
             for sample in list(dictSpecEntry.keys()):  # cl.keys():
-
                 takeIt = False
                 if sample in cl:
                     if cl[sample].content:
-                        sumMassTimesInt += cl[sample].mass * float(cl[sample].content)
+                        sumMassTimesInt += cl[sample].mass * float(
+                            cl[sample].content
+                        )
                         sumInt += float(cl[sample].content)
                         listIntensities.append(cl[sample].content)
                         if (
@@ -537,7 +545,6 @@ class UnSpec:
                     dbgout("missing sample %s while averaging" % sample)
 
             if takeIt and sumInt > 0.0:
-
                 avgMass = sumMassTimesInt / sumInt
                 avgInt = sumInt / nrOfSpectra
 
@@ -562,7 +569,6 @@ class UnSpec:
         # exit(0)
 
     def mergeSpectra(self, threshold=None, threshold_type="absolute"):
-
         nrOfSpectra = len(self.listUnSmpl)
 
         # get max number of peaks
@@ -602,7 +608,6 @@ class UnSpec:
             numL = 0
             for l in self.listUnSmpl:
                 if len(l) > index and l[index][1]:
-
                     ### routine for Kai (delete after usage) ###
                     ## calc mass window for cluster
                     # if not self.deltaRes:
@@ -621,7 +626,9 @@ class UnSpec:
 
                     ### End of routine for Kai ###
 
-                    listPeaks[0].append([l[index][0], l[index][1], l[index][2], []])
+                    listPeaks[0].append(
+                        [l[index][0], l[index][1], l[index][2], []]
+                    )
 
                 numL += 1
 
@@ -648,20 +655,22 @@ class UnSpec:
             width = listPeaks[0][index + 1][0] - listPeaks[0][index][0]
 
         for count in range(numMerges):
-
             # hpy().heap().dump("C:\Users\The Duke\My_Projects\LipidXplorer BUGS\Dominik - 14-07-2011\LipidXplorer-v1.1\log-1.2.hpy")
 
             current = 0
             lnext = []
 
             listPeaks[count].sort(
-                cmp=lambda i, j: (i[0] < j[0]) and -1 or (i[0] > j[0]) and 1 or 0
+                cmp=lambda i, j: (i[0] < j[0])
+                and -1
+                or (i[0] > j[0])
+                and 1
+                or 0
             )
 
             lastEntry = False
 
             while current < (len(listPeaks[count]) - 1):
-
                 # routine for collecting all masses which are in partialRes
                 index = 1
                 svIndex = 0
@@ -685,10 +694,10 @@ class UnSpec:
                         partialRes = listPeaks[count][current][0] / tmp
 
                 while (
-                    listPeaks[count][current + index][0] - listPeaks[count][current][0]
+                    listPeaks[count][current + index][0]
+                    - listPeaks[count][current][0]
                     < partialRes
                 ):
-
                     # 					listSmpl += listAlignmentSpec[current + index][1].keys()
                     lrslt.append(listPeaks[count][current + index])
 
@@ -740,7 +749,6 @@ class UnSpec:
                     )
 
         if listPeaks[-1] != []:
-
             index = 0
             while True:
                 if isinstance(listPeaks[-1][index][2], list):
@@ -768,7 +776,6 @@ class Sample:
     stored in the dictionary entry"""
 
     def __init__(self, sampleName, sourceDir, sourceFile, polarity, options):
-
         # name for the sample
         self.sampleName = sampleName
 
@@ -845,7 +852,6 @@ class Sample:
 
         for i in f:
             if numstart.match(i):
-
                 # split it to read it
                 n = i.split(",")
 
@@ -943,7 +949,6 @@ class MasterScan:
     """
 
     def __init__(self, options=None):
-
         self.importSettingsFile = ""
         self.setting = ""
         self.importDir = ""
@@ -1000,7 +1005,6 @@ class MasterScan:
             raise "No sample %s." % (smpl)
 
     def __repr__(self):
-
         noListMSMS = True
         noDictMSMS = False
 
@@ -1028,7 +1032,6 @@ class MasterScan:
                 return se
 
     def sortAndIndedice(self):
-
         self.listSurveyEntry.sort()
 
         # generate indices
@@ -1064,7 +1067,6 @@ class MasterScan:
                 )
                 and self.listSurveyEntry[i].polarity == polarity
             ):
-
                 # "one-to-right" look ahead
                 try:
                     dummy = self.listSurveyEntry[i + 1]
@@ -1096,7 +1098,10 @@ class MasterScan:
         l = []
         for i in self.listSurveyEntry:
             tMS = i.precurmass / self.options["MStolerance"]
-            if lowerBound <= i.precurmass + tMS and upperBound >= i.precurmass - tMS:
+            if (
+                lowerBound <= i.precurmass + tMS
+                and upperBound >= i.precurmass - tMS
+            ):
                 l.append(i)
         return l
 
@@ -1140,8 +1145,12 @@ class MasterScan:
 
         s = float(shift)
         for keySample in list(self.dictSamples.keys()):
-            for index in range(len(self.dictSamples[keySample].listPrecurmass)):
-                self.dictSamples[keySample].listPrecurmass[index].precurmass += s
+            for index in range(
+                len(self.dictSamples[keySample].listPrecurmass)
+            ):
+                self.dictSamples[keySample].listPrecurmass[
+                    index
+                ].precurmass += s
 
     def checkOccupation(
         self,
@@ -1171,17 +1180,23 @@ class MasterScan:
                 assert k in dictScans
                 assert dictScans[k] > 0
         except AssertionError:
-            dbgout(">d> %d: %s" % (len(self.listSamples), repr(self.listSamples)))
+            dbgout(
+                ">d> %d: %s" % (len(self.listSamples), repr(self.listSamples))
+            )
             dbgout(">d> %d: %s" % (len(dictIntensity), repr(dictIntensity)))
             dbgout(
                 ">d> %d: %s"
-                % (len(list(dictBasePeakIntensity.keys())), repr(dictBasePeakIntensity))
+                % (
+                    len(list(dictBasePeakIntensity.keys())),
+                    repr(dictBasePeakIntensity),
+                )
             )
-            dbgout(">d> %d: %s" % (len(list(dictScans.keys())), repr(dictScans)))
+            dbgout(
+                ">d> %d: %s" % (len(list(dictScans.keys())), repr(dictScans))
+            )
             raise AssertionError
 
         if not occThr is None:
-
             # check every group, if only one group matches the occupation Threshold
             # return True (i.e. OR of all occupation tests)
             for occThrEntry in self.sampleOccThr[mode]:
@@ -1190,10 +1205,11 @@ class MasterScan:
                     length = len(occThrEntry[1])
                     t = {}
                     for sample in occThrEntry[1]:
-
                         # if the threshold is given as a relative value make absolute value
                         if threshold_type == "relative":
-                            t[sample] = threshold * dictBasePeakIntensity[sample]
+                            t[sample] = (
+                                threshold * dictBasePeakIntensity[sample]
+                            )
                         else:
                             t[sample] = threshold
 
@@ -1210,10 +1226,11 @@ class MasterScan:
 
                     t = {}
                     for sample in self.listSamples:
-
                         # if the threshold is given as a relative value make absolute value
                         if threshold_type == "relative":
-                            t[sample] = threshold * dictBasePeakIntensity[sample]
+                            t[sample] = (
+                                threshold * dictBasePeakIntensity[sample]
+                            )
                         else:
                             t[sample] = threshold
 
@@ -1231,7 +1248,6 @@ class MasterScan:
 
             t = {}
             for sample in self.listSamples:
-
                 # if the threshold is given as a relative value make absolute value
                 if threshold_type == "relative":
                     t[sample] = threshold * dictBasePeakIntensity[sample]
@@ -1259,7 +1275,6 @@ class MasterScan:
         factor=1,
         threshold_type="absolute",
     ):
-
         nbScans = 1
 
         # security check for dictScans and dictIntensity
@@ -1267,7 +1282,9 @@ class MasterScan:
             for k in self.listSamples:
                 assert k in dictIntensity
         except AssertionError:
-            dbgout(">d> %d: %s" % (len(self.listSamples), repr(self.listSamples)))
+            dbgout(
+                ">d> %d: %s" % (len(self.listSamples), repr(self.listSamples))
+            )
             dbgout(">d> %d: %s" % (len(dictIntensity), repr(dictIntensity)))
             raise AssertionError
 
@@ -1276,7 +1293,6 @@ class MasterScan:
 
         t = {}
         for sample in self.listSamples:
-
             if dictScans != {}:
                 nbScans = dictScans[sample]
 
@@ -1340,16 +1356,16 @@ class MasterScan:
         return False
 
     def dump(self, dump_file):
-
         reportout("Dumping Master Scan content")
 
         with open(dump_file, "w") as f:
-
             strOut = "\n"
             strOut += "\nMasterScan: ," + self.name
             strOut += "\n"
             strOut += "data folder: , %s\n" % self.importDir
-            strOut += "import configuration file: , %s\n" % self.importSettingsFile
+            strOut += (
+                "import configuration file: , %s\n" % self.importSettingsFile
+            )
             strOut += "import configuration: , %s\n" % self.setting
             strOut += "\n"
             if self.forcesinglecharge != 0:
@@ -1369,7 +1385,9 @@ class MasterScan:
                     repr(self.options["MSMSmassrange"][0]),
                     repr(self.options["MSMSmassrange"][1]),
                 )
-            strOut += "MS tolerance: ,+/- %s\n" % (repr(self.options["MStolerance"]))
+            strOut += "MS tolerance: ,+/- %s\n" % (
+                repr(self.options["MStolerance"])
+            )
             if "MSMSfilter" in self.options and not (
                 self.options.isEmpty("MSMSfilter")
             ):
@@ -1409,7 +1427,9 @@ class MasterScan:
             if "MSthreshold" in self.options and not (
                 self.options.isEmpty("MSthreshold")
             ):
-                strOut += "MS threshold: , %s\n" % (repr(self.options["MSthreshold"]))
+                strOut += "MS threshold: , %s\n" % (
+                    repr(self.options["MSthreshold"])
+                )
             if "MSMSthreshold" in self.options and not (
                 self.options.isEmpty("MSMSthreshold")
             ):
@@ -1425,7 +1445,9 @@ class MasterScan:
                 strOut += "MS/MS minimum occupation: ,+/- %s\n" % (
                     repr(self.options["MSMSminOccupation"])
                 )
-            if "MSfilter" in self.options and not (self.options.isEmpty("MSfilter")):
+            if "MSfilter" in self.options and not (
+                self.options.isEmpty("MSfilter")
+            ):
                 strOut += "MS/MS frequency filter: %s\n" % (
                     repr(self.options["MSfilter"])
                 )
@@ -1435,11 +1457,15 @@ class MasterScan:
             strOut += ",,,,"
             for i in self.listSamples:
                 strOut += i.rjust(13) + ","
-            strOut += "Peak Quality, Mean, Median, Variance, standardDeviation\n"
+            strOut += (
+                "Peak Quality, Mean, Median, Variance, standardDeviation\n"
+            )
 
             f.write(strOut)
 
-            reportout("containing:\n%d MS entries and" % len(self.listSurveyEntry))
+            reportout(
+                "containing:\n%d MS entries and" % len(self.listSurveyEntry)
+            )
             countMSMS = 0
             for i in sorted(self.listSurveyEntry):
                 # if options['massrange'] is given
@@ -1453,7 +1479,6 @@ class MasterScan:
                     "polarity" not in self.options
                     or self.options["polarity"] == i.polarity
                 ):
-
                     # strOut += i.reprCSV() + "\n"
                     f.write(i.reprCSV() + "\n")
 
@@ -1470,11 +1495,9 @@ class MasterScan:
         return True
 
     def dumpInSQL(self, dump_file):
-
         reportout("Dumping Master Scan content")
 
         with open(dump_file, "w") as f:
-
             strSQL = ""
             strSQL += ",, Precursormass,"
             for i in self.listSamples:
@@ -1487,7 +1510,9 @@ class MasterScan:
 
             f.write(strSQL)
 
-            reportout("containing:\n%d MS entries and" % len(self.listSurveyEntry))
+            reportout(
+                "containing:\n%d MS entries and" % len(self.listSurveyEntry)
+            )
             countMSMS = 0
             for i in sorted(self.listSurveyEntry):
                 # if options['massrange'] is given
@@ -1501,7 +1526,6 @@ class MasterScan:
                     "polarity" not in self.options
                     or self.options["polarity"] == i.polarity
                 ):
-
                     # strSQL += i.reprCSV_SQL() + "\n"
 
                     for line in i.reprCSV_SQL():
@@ -1527,9 +1551,16 @@ class SurveyEntry:
     """
 
     def __init__(
-        self, msmass, smpl, peaks, charge, polarity, dictScans, msms=None, **argv
+        self,
+        msmass,
+        smpl,
+        peaks,
+        charge,
+        polarity,
+        dictScans,
+        msms=None,
+        **argv
     ):
-
         self.index = 0
 
         if isinstance(msmass, MSMass):
@@ -1545,7 +1576,9 @@ class SurveyEntry:
 
         self.polarity = polarity
 
-        self.listPrecurmassSF = []  # contains sum compositions of the precursor mass
+        self.listPrecurmassSF = (
+            []
+        )  # contains sum compositions of the precursor mass
         self.sumComposition = []  # guess it is not used anymore
         self.listMark = []  # contains marks of the precursor mass
         self.dictScans = dictScans  # needed for the intensity threshold (thrshl / sqrt(nb. of scans))
@@ -1562,7 +1595,9 @@ class SurveyEntry:
         )  # used when queries are parsed - the internal variable data structure
 
         self.dictIntensity = smpl  # the intensities
-        self.dictBeforeIsocoIntensity = {}  # the intensities before isotopic correction
+        self.dictBeforeIsocoIntensity = (
+            {}
+        )  # the intensities before isotopic correction
         # for outputting it in the MasterScan
 
         # for the relative intensities of the associated fragment
@@ -1583,7 +1618,6 @@ class SurveyEntry:
 
         # peaks can be empty if it is a virtual SurveyEntry
         if self.peaks != []:
-
             # content of peaks: [i.precurmass, {i.smpl : i.intensity}, i.charge]
             lIntens = []
             lMass = []
@@ -1623,9 +1657,9 @@ class SurveyEntry:
         return self.precurmass < other.precurmass
 
     def __repr__(self):
-
         str = (
-            "/%s/ . %.4f | " % (("%d" % self.polarity)[0], float(self.precurmass))
+            "/%s/ . %.4f | "
+            % (("%d" % self.polarity)[0], float(self.precurmass))
         ).rjust(9)
 
         for i in sorted(self.dictIntensity.keys()):
@@ -1635,7 +1669,9 @@ class SurveyEntry:
                 if i not in self.dictIntensity:
                     str = str + ("  %d  " % (int(0))).rjust(13)
                 else:
-                    str = str + ("  %d  " % (int(self.dictIntensity[i]))).rjust(13)
+                    str = str + (
+                        "  %d  " % (int(self.dictIntensity[i]))
+                    ).rjust(13)
 
         str += " QP: %.4f Mean: %.4f Median: %.4f V(X): %.4f E(X): %.4f %s" % (
             self.massWindow,
@@ -1649,7 +1685,6 @@ class SurveyEntry:
         return str
 
     def reprCSV(self, tab=False):
-
         if not tab:
             seperator = ","
         else:
@@ -1658,12 +1693,14 @@ class SurveyEntry:
         # calculate the error to sort the precursor masses
         listSF = []
         for sf in self.listPrecurmassSF:
-            tmp = -((sf.getWeight() - self.precurmass) / self.precurmass) * 1000000
+            tmp = (
+                -((sf.getWeight() - self.precurmass) / self.precurmass)
+                * 1000000
+            )
             listSF.append((sf, tmp))
         listSF.sort(key=lambda x: x[1])
 
         if not tab:
-
             if self.isIsotope:
                 strIsotope = "*"
             else:
@@ -1682,12 +1719,15 @@ class SurveyEntry:
             else:
                 str = (
                     "%s,%s,%.4f,%%,"
-                    % (("%d" % self.polarity)[0], strIsotope, float(self.precurmass))
+                    % (
+                        ("%d" % self.polarity)[0],
+                        strIsotope,
+                        float(self.precurmass),
+                    )
                 ).rjust(9)
 
             intensities = {}
             if not Debug("isotopesInMasterScan"):
-
                 if self.dictBeforeIsocoIntensity != {}:
                     intensities = self.dictBeforeIsocoIntensity
 
@@ -1739,7 +1779,9 @@ class SurveyEntry:
             if Debug("relativeIntensity"):
                 for i in sorted(intensities.keys()):
                     if i in self.dictMSMS and i in intensities:
-                        str = str + (" [%.4f]," % (float(intensities[i]))).rjust(13)
+                        str = str + (
+                            " [%.4f]," % (float(intensities[i]))
+                        ).rjust(13)
                     else:
                         if i not in intensities:
                             str = str + ("  %.4f, " % (float(0.0))).rjust(13)
@@ -1753,7 +1795,9 @@ class SurveyEntry:
             else:
                 for i in sorted(intensities.keys()):
                     if i in self.dictMSMS and i in intensities:
-                        str = str + (" [%.1f]," % (float(intensities[i]))).rjust(13)
+                        str = str + (
+                            " [%.1f]," % (float(intensities[i]))
+                        ).rjust(13)
                     else:
                         if i not in intensities:
                             str = str + ("  %.1f, " % (float(0.0))).rjust(13)
@@ -1783,11 +1827,13 @@ class SurveyEntry:
                 for sf in listSF[1:]:
                     str += (
                         "\n%s, , ,%s,"
-                        % (("%d" % self.polarity)[0], "(%s; %.4f)" % (sf[0], sf[1]))
+                        % (
+                            ("%d" % self.polarity)[0],
+                            "(%s; %.4f)" % (sf[0], sf[1]),
+                        )
                     ).rjust(9)
 
         else:
-
             if listSF != []:
                 str = (
                     "%s\t%.4f\t%s\t"
@@ -1804,11 +1850,14 @@ class SurveyEntry:
                 ).rjust(9)
 
             if self.dictBeforeIsocoIntensity != {}:
-
                 for i in sorted(self.dictBeforeIsocoIntensity.keys()):
-                    if i in self.dictMSMS and i in self.dictBeforeIsocoIntensity:
+                    if (
+                        i in self.dictMSMS
+                        and i in self.dictBeforeIsocoIntensity
+                    ):
                         str = str + (
-                            " [%.1f]," % (float(self.dictBeforeIsocoIntensity[i]))
+                            " [%.1f],"
+                            % (float(self.dictBeforeIsocoIntensity[i]))
                         ).rjust(13)
                     else:
                         if i not in self.dictBeforeIsocoIntensity:
@@ -1823,12 +1872,11 @@ class SurveyEntry:
                                 ).rjust(13)
                             # str = str + ("  %6.4f, " % (float(self.dictIntensity[i]))).rjust(13)
             else:
-
                 for i in sorted(self.dictIntensity.keys()):
                     if i in self.dictMSMS and i in self.dictIntensity:
-                        str = str + (" [%.1f]," % (float(self.dictIntensity[i]))).rjust(
-                            13
-                        )
+                        str = str + (
+                            " [%.1f]," % (float(self.dictIntensity[i]))
+                        ).rjust(13)
                     else:
                         if i not in self.dictIntensity:
                             str = str + ("  %.1f, " % (float(0.0))).rjust(13)
@@ -1837,7 +1885,8 @@ class SurveyEntry:
                                 str += "  -1, "
                             else:
                                 str = str + (
-                                    "  %.1f, " % (float(repr(self.dictIntensity[i])))
+                                    "  %.1f, "
+                                    % (float(repr(self.dictIntensity[i])))
                                 ).rjust(13)
                             # str = str + ("  %6.4f, " % (float(self.dictIntensity[i]))).rjust(13)
 
@@ -1860,13 +1909,15 @@ class SurveyEntry:
                 for sf in listSF[1:]:
                     str += (
                         "\n%s\t \t%s\t"
-                        % (("%d" % self.polarity)[0], "(%s; %.4f)" % (sf[0], sf[1]))
+                        % (
+                            ("%d" % self.polarity)[0],
+                            "(%s; %.4f)" % (sf[0], sf[1]),
+                        )
                     ).rjust(9)
 
         return str
 
     def reprCSV_SQL(self, tab=False):
-
         if not tab:
             seperator = ","
         else:
@@ -1875,7 +1926,10 @@ class SurveyEntry:
         # calculate the error to sort the precursor masses
         listSF = []
         for sf in self.listPrecurmassSF:
-            tmp = -((sf.getWeight() - self.precurmass) / self.precurmass) * 1000000
+            tmp = (
+                -((sf.getWeight() - self.precurmass) / self.precurmass)
+                * 1000000
+            )
             listSF.append((sf, tmp))
         listSF.sort(cmp=lambda x, y: cmp(x[1], y[1]))
 
@@ -1888,16 +1942,12 @@ class SurveyEntry:
 
         # for every precursor sum composition one line
         for markMS in self.listMark:
-
             for msmse in self.listMSMS:
-
                 for markMSMS in msmse.listMark:
-
                     if (
                         markMS.encodedName.split("_")[0]
                         == markMSMS.encodedName.split("_")[0]
                     ):
-
                         str = (
                             "%s&%s&%.4f&"
                             % (
@@ -1908,21 +1958,36 @@ class SurveyEntry:
                         ).rjust(9)
 
                         if not Debug("isotopesInMasterScan"):
-
                             if self.dictBeforeIsocoIntensity != {}:
-                                for i in sorted(self.dictBeforeIsocoIntensity.keys()):
+                                for i in sorted(
+                                    self.dictBeforeIsocoIntensity.keys()
+                                ):
                                     if i in self.dictMSMS:
                                         str = str + (
                                             " %.1f& "
-                                            % (float(self.dictBeforeIsocoIntensity[i]))
+                                            % (
+                                                float(
+                                                    self.dictBeforeIsocoIntensity[
+                                                        i
+                                                    ]
+                                                )
+                                            )
                                         ).rjust(13)
                                     else:
-                                        if i not in self.dictBeforeIsocoIntensity:
+                                        if (
+                                            i
+                                            not in self.dictBeforeIsocoIntensity
+                                        ):
                                             str = str + (
                                                 "  %.1f& " % (float(0.0))
                                             ).rjust(13)
                                         else:
-                                            if self.dictBeforeIsocoIntensity[i] == "-1":
+                                            if (
+                                                self.dictBeforeIsocoIntensity[
+                                                    i
+                                                ]
+                                                == "-1"
+                                            ):
                                                 str += "  -1& "
                                             else:
                                                 str = str + (
@@ -1938,9 +2003,13 @@ class SurveyEntry:
 
                             else:
                                 for i in sorted(self.dictIntensity.keys()):
-                                    if i in self.dictMSMS and i in self.dictIntensity:
+                                    if (
+                                        i in self.dictMSMS
+                                        and i in self.dictIntensity
+                                    ):
                                         str = str + (
-                                            " %.1f&" % (float(self.dictIntensity[i]))
+                                            " %.1f&"
+                                            % (float(self.dictIntensity[i]))
                                         ).rjust(13)
                                     else:
                                         if i not in self.dictIntensity:
@@ -1953,26 +2022,44 @@ class SurveyEntry:
                                             else:
                                                 str = str + (
                                                     "  %.1f& "
-                                                    % (float(self.dictIntensity[i]))
+                                                    % (
+                                                        float(
+                                                            self.dictIntensity[
+                                                                i
+                                                            ]
+                                                        )
+                                                    )
                                                 ).rjust(13)
                         else:
                             for i in sorted(self.dictIntensity.keys()):
-                                if i in self.dictMSMS and i in self.dictIntensity:
+                                if (
+                                    i in self.dictMSMS
+                                    and i in self.dictIntensity
+                                ):
                                     str = str + (
-                                        " [%.1f]&" % (float(self.dictIntensity[i]))
+                                        " [%.1f]&"
+                                        % (float(self.dictIntensity[i]))
                                     ).rjust(13)
                                 else:
                                     if i not in self.dictIntensity:
-                                        str = str + ("  %.1f& " % (float(0.0))).rjust(
-                                            13
-                                        )
+                                        str = str + (
+                                            "  %.1f& " % (float(0.0))
+                                        ).rjust(13)
                                     else:
                                         if self.dictIntensity[i] == "-1":
                                             str += "  -1& "
                                         else:
                                             str = str + (
                                                 "  %.1f& "
-                                                % (float(repr(self.dictIntensity[i])))
+                                                % (
+                                                    float(
+                                                        repr(
+                                                            self.dictIntensity[
+                                                                i
+                                                            ]
+                                                        )
+                                                    )
+                                                )
                                             ).rjust(13)
 
                         error = (
@@ -1995,32 +2082,42 @@ class SurveyEntry:
                         # MSMS
                         if not Debug("isotopesInMasterScan"):
                             if msmse.dictBeforeIsocoIntensity != {}:
-                                for i in sortDictKeys(msmse.dictBeforeIsocoIntensity):
+                                for i in sortDictKeys(
+                                    msmse.dictBeforeIsocoIntensity
+                                ):
                                     str += (
-                                        " %.1f, " % msmse.dictBeforeIsocoIntensity[i]
+                                        " %.1f, "
+                                        % msmse.dictBeforeIsocoIntensity[i]
                                     ).rjust(13)
                             else:
                                 for i in sortDictKeys(msmse.dictIntensity):
-                                    str += (" %.1f, " % msmse.dictIntensity[i]).rjust(
-                                        13
-                                    )
+                                    str += (
+                                        " %.1f, " % msmse.dictIntensity[i]
+                                    ).rjust(13)
                         else:
                             for i in sortDictKeys(msmse.dictIntensity):
-                                str += (" %.1f, " % msmse.dictIntensity[i]).rjust(13)
+                                str += (
+                                    " %.1f, " % msmse.dictIntensity[i]
+                                ).rjust(13)
 
                         ### include it later,... maybe
                         # str += " %.4f& %.4f& %.4f& %.4f& %.4f&" % \
                         # 	(self.massWindow, self.peakMean, self.peakMedian, self.variance, self.standardDeviation)
 
                         error = (
-                            -((markMSMS.chemsc.getWeight() - msmse.mass) / msmse.mass)
+                            -(
+                                (markMSMS.chemsc.getWeight() - msmse.mass)
+                                / msmse.mass
+                            )
                             * 1000000
                         )
 
                         if markMSMS.chemsc:
                             str += "%.4f&%s&%.2f&%s&%s&" % (
                                 msmse.mass,
-                                markMSMS.encodedName.split("_")[1].split(":")[0],
+                                markMSMS.encodedName.split("_")[1].split(":")[
+                                    0
+                                ],
                                 error,
                                 markMSMS.frsc,
                                 markMSMS.nlsc,
@@ -2063,7 +2160,6 @@ class SurveyEntry:
         return self.listMSMS[smpl]
 
     def sortAndIndedice(self):
-
         self.listMSMS.sort()
 
         # generate indices
@@ -2073,7 +2169,10 @@ class SurveyEntry:
     def isInQueryMS(self, query, sep):
         found = False
         for mark in self.listMark:
-            if mark.encodedName.split(":")[0].split(sep)[0] == query.split(sep)[0]:
+            if (
+                mark.encodedName.split(":")[0].split(sep)[0]
+                == query.split(sep)[0]
+            ):
                 found = True
         return found
 
@@ -2167,7 +2266,6 @@ class SurveyEntry:
         return flag
 
     def insert(self, msmass, smpl, avgPreMasses=1):
-
         # check if charge is right
         # assert self.polarity == self.sc.dictSamples[smpl].polarity
 
@@ -2189,7 +2287,6 @@ def set_PrecurmassFromMSMS(sample, chg=None):
     be given."""
     if sample.listMsms != []:
         for i in sample.listMsms:
-
             if chg and i.precurmass:
                 isIn = False
                 for p in sample.listPrecurmass:
@@ -2211,7 +2308,6 @@ def set_PrecurmassFromMSMS(sample, chg=None):
                     )
 
             elif hasattr(i, "charge"):
-
                 if i.charge > 0:
                     p = 1
                 else:
@@ -2231,7 +2327,6 @@ def set_PrecurmassFromMSMS(sample, chg=None):
                 )
 
             else:
-
                 if i.polarity == "+":
                     c = 1
                 else:

@@ -44,7 +44,9 @@ def get_triggerScan(peaks_df, tol=0.01):
             triggeredScans[prev2].append(tup.scanNum)
         else:
             # triggerScan.append(None)  # none was found
-            warnings.warn("no ms1 trigger peak found for scan {}".format(tup.scanNum))
+            warnings.warn(
+                "no ms1 trigger peak found for scan {}".format(tup.scanNum)
+            )
 
     # unique_scan_df['triggerScan'] = triggerScan
     # unique_scan_df.index = unique_scan_df.scanNum
@@ -55,11 +57,19 @@ def getScansDF_fromPeaksDF(peaks_df):
     # get only the scans not the peaks
     unique_scan_df = peaks_df[["scanNum", "filterLine"]].drop_duplicates()
     # todo make this Dry
-    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(" ms "), "msLevel"] = 1
-    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(" ms2 "), "msLevel"] = 2
+    unique_scan_df.loc[
+        unique_scan_df.filterLine.str.contains(" ms "), "msLevel"
+    ] = 1
+    unique_scan_df.loc[
+        unique_scan_df.filterLine.str.contains(" ms2 "), "msLevel"
+    ] = 2
     unique_scan_df["msLevel"] = unique_scan_df["msLevel"].astype("category")
-    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(" - "), "mode"] = "neg"
-    unique_scan_df.loc[unique_scan_df.filterLine.str.contains(" + "), "mode"] = "pos"
+    unique_scan_df.loc[
+        unique_scan_df.filterLine.str.contains(" - "), "mode"
+    ] = "neg"
+    unique_scan_df.loc[
+        unique_scan_df.filterLine.str.contains(" + "), "mode"
+    ] = "pos"
     unique_scan_df["mode"] = unique_scan_df["mode"].astype("category")
     unique_scan_df["precursor"] = unique_scan_df["filterLine"].str.extract(
         "(\d*\.\d*)@", expand=True

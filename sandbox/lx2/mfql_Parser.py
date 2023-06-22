@@ -2,7 +2,15 @@ import warnings
 
 import ply.yacc as yacc
 
-from data_structs import mfql_dict, Var, Obj, ElementSeq, Evaluable, ReportItem, Func
+from data_structs import (
+    mfql_dict,
+    Var,
+    Obj,
+    ElementSeq,
+    Evaluable,
+    ReportItem,
+    Func,
+)
 from mfql_lexer import tokens, lexer
 
 tokens = tokens  # for linting

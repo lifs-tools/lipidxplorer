@@ -12,6 +12,7 @@ import lximport, lxrun
 
 # from https://gitlab.isas.de/lifs/lipidxplorer-web/-/tree/master/lipidxplorer-linux-128/src/main/python
 
+
 # https://stackoverflow.com/questions/37265888/how-to-remove-a-section-from-an-ini-file-using-python-configparser
 def insensitive_glob(baseDir, pattern):
     print(baseDir)
@@ -65,7 +66,9 @@ def files_UI(path, calctol=True):
 
     config["project"]["importDir"] = basepath
     config["project"]["masterscanrun"] = os.path.join(basepath, "session.sc")
-    config["project"]["masterscanimport"] = os.path.join(basepath, "session.sc")
+    config["project"]["masterscanimport"] = os.path.join(
+        basepath, "session.sc"
+    )
     config["project"]["ini"] = os.path.join(basepath, "ImportSettings.ini")
     config["project"]["resultfile"] = os.path.join(basepath, "session-out.csv")
 

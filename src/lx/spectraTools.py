@@ -7,7 +7,6 @@ sys.setrecursionlimit(10000)  # because the pickle needs it
 
 
 def getCalibrationPoints(lTable, lSpectrum, tolerance):
-
     lResultTable = []
 
     if lTable:
@@ -43,7 +42,6 @@ def getCalibrationPoints(lTable, lSpectrum, tolerance):
 
 
 def getCalibrationPointsMSMS(lTable, lSpectrum, tolerance):
-
     lResultTable = []
 
     if lTable is not None:
@@ -79,10 +77,8 @@ def getCalibrationPointsMSMS(lTable, lSpectrum, tolerance):
 
 
 def frecal(x, listRecal, resolution):
-
     if listRecal:
         if len(listRecal) > 0:
-
             if x <= listRecal[0][0]:
                 return listRecal[0][1]
             elif listRecal[-1][0] <= x:
@@ -97,7 +93,9 @@ def frecal(x, listRecal, resolution):
 
 def calc_tol(listPrecurmass):
     s_listPrecurmass = sorted((s.precurmass for s in listPrecurmass))
-    d = [d1 - d2 for d1, d2 in zip(s_listPrecurmass[1:], s_listPrecurmass[:-1])]
+    d = [
+        d1 - d2 for d1, d2 in zip(s_listPrecurmass[1:], s_listPrecurmass[:-1])
+    ]
     if not d:
         d.append(0.0001)  # in case there are no values
     md = min(d)
@@ -105,19 +103,19 @@ def calc_tol(listPrecurmass):
 
 
 def recalibrateMS(sc, listRecalibration, isCalctol=False):
-
     # generate calibration
     lRecalTable = []
 
     if listRecalibration and len(listRecalibration) > 0:
         ret = {}
         for key in sc.listSamples:
-
             if isCalctol:
                 sc.options["MStolerance"].tolerance = (
                     calc_tol(sc.dictSamples[key].listPrecurmass) / 2
                 )
-                sc.options["MStolerance"].res = sc.options["MStolerance"].tolerance
+                sc.options["MStolerance"].res = sc.options[
+                    "MStolerance"
+                ].tolerance
 
             lRecalTable = getCalibrationPoints(
                 listRecalibration,
@@ -139,10 +137,14 @@ def recalibrateMS(sc, listRecalibration, isCalctol=False):
             if lRecalTable:
                 for entry in sc.dictSamples[key].listPrecurmass:
                     delta = frecal(
-                        entry.precurmass, lRecalTable, sc.options["MSresolution"]
+                        entry.precurmass,
+                        lRecalTable,
+                        sc.options["MSresolution"],
                     )
                     delta = frecal(
-                        entry.precurmass, lRecalTable, sc.options["MStolerance"]
+                        entry.precurmass,
+                        lRecalTable,
+                        sc.options["MStolerance"],
                     )
                     entry.precurmass = entry.precurmass - delta
 
@@ -163,27 +165,31 @@ def calc_tol_ms2(entries):
 
 
 def recalibrateMSMS(
-    sc, listRecalibrationMSMS, isCalctol, listRecalibrationMS=None, ms1_recal_table=None
+    sc,
+    listRecalibrationMSMS,
+    isCalctol,
+    listRecalibrationMS=None,
+    ms1_recal_table=None,
 ):
-
     # generate calibration table
     lRecalTableMS = []
     lRecalTableMSMS = []
 
     if listRecalibrationMSMS and len(listRecalibrationMSMS) > 0:
         for key in sc.listSamples:
-
             if isCalctol:
                 sc.options["MStolerance"].tolerance = (
                     calc_tol(sc.dictSamples[key].listPrecurmass) / 2
                 )
-                sc.options["MStolerance"].res = sc.options["MStolerance"].tolerance
+                sc.options["MStolerance"].res = sc.options[
+                    "MStolerance"
+                ].tolerance
                 all_tols_ms2 = []
                 for entry in sc.dictSamples[key].listMsms:
                     all_tols_ms2.append(calc_tol_ms2(entry.entries))
-                sc.options["MSMStolerance"].tolerance = sum(all_tols_ms2) / len(
+                sc.options["MSMStolerance"].tolerance = sum(
                     all_tols_ms2
-                )
+                ) / len(all_tols_ms2)
                 sc.options["MSMStolerance"].tolerance = (
                     sc.options["MSMStolerance"].tolerance / 2
                 )
@@ -210,7 +216,6 @@ def recalibrateMSMS(
             # 	lRecalTableMS = getCalibrationPoints(listRecalibrationMS, sc.dictSamples[key].listPrecurmass, MStolerance)
 
             for entry in sc.dictSamples[key].listMsms:
-
                 if ms1_recal_table and ms1_recal_table.get(key):
                     lRecalTableMSMS = ms1_recal_table[key]
                 else:
@@ -235,10 +240,14 @@ def recalibrateMSMS(
                 if lRecalTableMSMS:
                     for index in range(len(entry.entries)):
                         delta = frecal(
-                            entry.entries[index][0], lRecalTableMSMS, MSMStolerance
+                            entry.entries[index][0],
+                            lRecalTableMSMS,
+                            MSMStolerance,
                         )
                         delta = frecal(
-                            entry.entries[index][0], lRecalTableMSMS, MSMStolerance
+                            entry.entries[index][0],
+                            lRecalTableMSMS,
+                            MSMStolerance,
                         )
                         entry.entries[index] = [
                             entry.entries[index][0] - delta,
@@ -247,10 +256,14 @@ def recalibrateMSMS(
                 elif lRecalTableMS:
                     for index in range(len(entry.entries)):
                         delta = frecal(
-                            entry.entries[index].precurmass, lRecalTableMS, MStolerance
+                            entry.entries[index].precurmass,
+                            lRecalTableMS,
+                            MStolerance,
                         )
                         delta = frecal(
-                            entry.entries[index].precurmass, lRecalTableMS, MStolerance
+                            entry.entries[index].precurmass,
+                            lRecalTableMS,
+                            MStolerance,
                         )
                         entry.entries[index] = (
                             entry.entries[index][0] - delta,
@@ -300,7 +313,6 @@ def assignMSMS(sc, smpl):
     window = sc.selectionWindow / 2
 
     if sc.dictSamples[smpl].listMsms != []:
-
         # for all msms in sample smpl
         for i in range(len(sc.dictSamples[smpl].listMsms) - 1):
             # !!! check if also the last entry in listMsms is concidered !!!
@@ -312,7 +324,6 @@ def assignMSMS(sc, smpl):
                 sc.dictSamples[smpl].listMsms[i].precurmass + window
                 > sc.dictSamples[smpl].listMsms[i + 1].precurmass - window
             ):
-
                 # test for the two precursor masses which one fits more to one of these windows
                 precurmasses = sc.dictSamples[smpl].bestFitWindow(
                     sc.dictSamples[smpl].listMsms[i],
@@ -321,9 +332,13 @@ def assignMSMS(sc, smpl):
                 )
 
                 for j in precurmasses:
-                    ni = j.precurmass - sc.dictSamples[smpl].listMsms[i].precurmass
+                    ni = (
+                        j.precurmass
+                        - sc.dictSamples[smpl].listMsms[i].precurmass
+                    )
                     niplus1 = (
-                        sc.dictSamples[smpl].listMsms[i + 1].precurmass - j.precurmass
+                        sc.dictSamples[smpl].listMsms[i + 1].precurmass
+                        - j.precurmass
                     )
                     if ni < niplus1:
                         sc.get_SurveyEntry(
@@ -334,7 +349,9 @@ def assignMSMS(sc, smpl):
                     else:
                         sc.get_SurveyEntry(
                             j.precurmass, sc.dictSamples[smpl].polarity
-                        ).assignMSMS(sc.dictSamples[smpl].listMsms[i + 1], smpl)
+                        ).assignMSMS(
+                            sc.dictSamples[smpl].listMsms[i + 1], smpl
+                        )
                     # 	self.dictSamples[smpl].get_Precurmass(j.precurmass).assignMSMS(\
                     # 		self.dictSamples[smpl].listMsms[i])
             else:
@@ -362,7 +379,6 @@ def assignMSMS(sc, smpl):
 
 
 def formatOutputSaira(list):
-
     str = ""
     for i in list:
         str += "%.4f " % i[1]
@@ -458,7 +474,6 @@ def mergeSC(sc1, sc2):
 
 
 def selectSurveyEntries(sc, listArgs):
-
     if listArgs == []:
         raise "parameter list is empty"
 
@@ -468,7 +483,6 @@ def selectSurveyEntries(sc, listArgs):
     samples = float(len(sc.listSamples))
 
     for i in listArgs:
-
         # overwrite standart tolerance
         if "MStolerance" in i:
             MStolerance = 1000000 / i["MStolerance"]
@@ -501,10 +515,11 @@ def selectSurveyEntries(sc, listArgs):
 
         if "sf-constraint" in i:
             for j in sc.listSurveyEntry:
-
                 # test for mass range
-                if massrange[0] <= j.precurmass and j.precurmass <= massrange[1]:
-
+                if (
+                    massrange[0] <= j.precurmass
+                    and j.precurmass <= massrange[1]
+                ):
                     # test for occupation threshold
                     percsum = 0.0
                     for k in sc.listSamples:
@@ -520,20 +535,31 @@ def selectSurveyEntries(sc, listArgs):
                         # find biggest intensity
                         maxInt = 0
                         for k in sc.listSamples:
-                            if k in j.dictIntensity and maxInt < j.dictIntensity[k]:
+                            if (
+                                k in j.dictIntensity
+                                and maxInt < j.dictIntensity[k]
+                            ):
                                 maxInt = j.dictIntensity[k]
 
                         # calc relative intensity
                         for k in sc.listSamples:
                             if k in j.dictIntensity:
-                                dictRelIntensity[k] = j.dictIntensity[k] / maxInt
+                                dictRelIntensity[k] = (
+                                    j.dictIntensity[k] / maxInt
+                                )
 
                         # check for max/minIntensityDelta
                         for k in sc.listSamples:
                             for l in sc.listSamples:
-                                if k in dictRelIntensity and l in dictRelIntensity:
+                                if (
+                                    k in dictRelIntensity
+                                    and l in dictRelIntensity
+                                ):
                                     if (
-                                        abs(dictRelIntensity[k] - dictRelIntensity[l])
+                                        abs(
+                                            dictRelIntensity[k]
+                                            - dictRelIntensity[l]
+                                        )
                                         < minInsD
                                     ):
                                         boolBreak = True
@@ -541,7 +567,8 @@ def selectSurveyEntries(sc, listArgs):
                                     if (
                                         maxInsD
                                         and abs(
-                                            dictRelIntensity[k] - dictRelIntensity[l]
+                                            dictRelIntensity[k]
+                                            - dictRelIntensity[l]
                                         )
                                         > maxInsD
                                     ):
@@ -555,7 +582,10 @@ def selectSurveyEntries(sc, listArgs):
                         )
 
                         # test if sum composition is already there
-                        if newSF != [] and intersect(newSF, j.listPrecurmassSF) == []:
+                        if (
+                            newSF != []
+                            and intersect(newSF, j.listPrecurmassSF) == []
+                        ):
                             j.listPrecurmassSF += newSF
 
     return sc
@@ -563,7 +593,6 @@ def selectSurveyEntries(sc, listArgs):
 
 # "selectSurveyEntriesWithSevenGoldenRules
 def sSEwithSGR(sc, listArgs):
-
     if listArgs == []:
         raise "parameter list is empty"
 
@@ -573,7 +602,6 @@ def sSEwithSGR(sc, listArgs):
     samples = float(len(sc.listSamples))
 
     for i in listArgs:
-
         # overwrite standart tolerance
         if "MStolerance" in i:
             MStolerance = 1000000 / i["MStolerance"]
@@ -594,10 +622,11 @@ def sSEwithSGR(sc, listArgs):
 
         if "sf-constraint" in i:
             for j in sc.listSurveyEntry:
-
                 # test for mass range
-                if massrange[0] <= j.precurmass and j.precurmass <= massrange[1]:
-
+                if (
+                    massrange[0] <= j.precurmass
+                    and j.precurmass <= massrange[1]
+                ):
                     # test for occupation threshold
                     percsum = 0.0
                     for k in sc.listSamples:
@@ -612,7 +641,10 @@ def sSEwithSGR(sc, listArgs):
                         )
 
                         # test if sum composition is already there
-                        if newSF != [] and intersect(newSF, j.listPrecurmassSF) == []:
+                        if (
+                            newSF != []
+                            and intersect(newSF, j.listPrecurmassSF) == []
+                        ):
                             j.listPrecurmassSF += newSF
 
     return sc
@@ -699,7 +731,9 @@ def chargeEstimation(scan, adduct, options):
                 for iso in tid[chg]:
                     isoMass = scan.get_SurveyEntry(i.precurmass + iso, 1, {})
                     if not isoMass:
-                        isoMass = scan.get_SurveyEntry(i.precurmass + iso, -1, {})
+                        isoMass = scan.get_SurveyEntry(
+                            i.precurmass + iso, -1, {}
+                        )
                         if isoMass:
                             err[chg].append(
                                 abs((i.precurmass + iso) - isoMass.precurmass)
@@ -707,7 +741,9 @@ def chargeEstimation(scan, adduct, options):
                         else:
                             err[chg].append(-1.0)
                     else:
-                        err[chg].append(abs((i.precurmass + iso) - isoMass.precurmass))
+                        err[chg].append(
+                            abs((i.precurmass + iso) - isoMass.precurmass)
+                        )
 
             for estCharge in range(len(err) - 1, -1, -1):
                 if err[estCharge][0] != -1.0:
@@ -732,7 +768,8 @@ def sequence(scan, sfconstraint, listDiffs, options, name):
         MSMStolerance = scan.options["MSMStolerance"]
 
     selectSurveyEntries(
-        scan, [{"sf-constraint": sfconstraint, "massrange": options["massrange"]}]
+        scan,
+        [{"sf-constraint": sfconstraint, "massrange": options["massrange"]}],
     )
 
     # mark
@@ -764,7 +801,6 @@ def selectConnectedSurveyEntries(scan, diff, options):
 
 
 def checkWithSevenGoldenRules(scan, se, sfconstraint, tolerance):
-
     t = 1000000 / tolerance
 
     # this is the list of all precursors which are involved in the fragmentation
@@ -777,11 +813,15 @@ def checkWithSevenGoldenRules(scan, se, sfconstraint, tolerance):
     for entrymsms in se.listMSMS:
         # save fragment mass
         listPeaks = [entrymsms.mass]
-        listSumCompositions = [calcSFbyMassSGR(entrymsms.mass, sfconstraint, t)]
+        listSumCompositions = [
+            calcSFbyMassSGR(entrymsms.mass, sfconstraint, t)
+        ]
         for entryse in listEntrySE:
             # calc neutral loss
             listPeaks.append(entryse.precurmass - entrymsms.mass)
             listSumCompositions.append(
-                calcSFbyMassSGR(entryse.precurmass - entrymsms.mass, sfconstraint, t)
+                calcSFbyMassSGR(
+                    entryse.precurmass - entrymsms.mass, sfconstraint, t
+                )
             )
         listMSMSPeaks.append((listPeaks, listSumCompositions))

@@ -43,9 +43,9 @@ class Spectrum:
         s = "BEGIN SPECTRUM\n"
         i = self.md_.items()
         i.sort(key=lambda i: i[0])
-        for (k, v) in i:
+        for k, v in i:
             s += "%s:\t%s\n" % (k, v)
-        for (mz, it) in zip(self.mz_, self.it_):
+        for mz, it in zip(self.mz_, self.it_):
             s += "%f\t%f\n" % (mz, it)
         s += "END SPECTRUM\n"
         return s
@@ -102,17 +102,15 @@ class MzXMLFileReader:
         return self.__next__()
 
     def extract_scan(self, ele):
-
         scan = Spectrum()
 
-        for (k, v) in ele.attrib.items():
+        for k, v in ele.attrib.items():
             scan.set(k, self.typemap.get(k, str)(v))
 
         if scan.get("num") != None:
             scan.set("scan", scan.get("num"))
 
         for peakselt in ele.findall(self.ns + "peaks"):
-
             # wrapper for msconvert file conversion. MSconvert returns empty
             # <peak> contents, while readw puts always a AAAAAAAAAAAA= inside.
             if peakselt.text is None:
@@ -134,7 +132,7 @@ class MzXMLFileReader:
                 # print e
                 if prop in ("precursorMz",):
                     scan.set(prop, self.typemap.get(prop, str)(e.text))
-                for (k, v) in e.attrib.items():
+                for k, v in e.attrib.items():
                     t = "%s.%s" % (prop, k)
                     scan.set(t, self.typemap.get(t, str)(v))
                 break
@@ -149,7 +147,7 @@ class MzXMLFileReader:
         return scan
 
     def __next__(self):
-        for (event, ele) in ET.iterparse(self.handle, ("start", "end")):
+        for event, ele in ET.iterparse(self.handle, ("start", "end")):
             # print event,self.context,ele.tag,ele.attrib
 
             if event == "start":
@@ -159,13 +157,12 @@ class MzXMLFileReader:
                 else:
                     self.context.append(ele.tag)
                 if self.context in (["mzXML"], ["msRun"]):
-                    for (k, v) in ele.attrib.items():
+                    for k, v in ele.attrib.items():
                         if k.endswith("schemaLocation"):
                             self.ns = "{%s}" % (v.split()[0],)
                 continue
 
             if self.context[-2:] == ["msRun", "scan"]:
-
                 # ele is now a DOM like object with everything from
                 # the highest level scan...
 
@@ -344,6 +341,8 @@ class PrecursorSort:
 
     def __next__(self):
         spectra = list(self.input)
-        spectra.sort(key=lambda s: s.get("precursorMz", None), reverse=(not self.asc))
+        spectra.sort(
+            key=lambda s: s.get("precursorMz", None), reverse=(not self.asc)
+        )
         for s in spectra:
             yield s

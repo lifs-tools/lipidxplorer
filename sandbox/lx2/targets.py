@@ -6,7 +6,6 @@ from chemParser import txt2dict
 
 
 class Targets_util:
-
     mass_of = {
         "C": 12,
         "H": 1.0078250321,
@@ -73,7 +72,9 @@ class Targets_util:
     def set_max_daltons(matchesDF, max_daltons=0.01):
         matchesDF["err"] = matchesDF["m"] - matchesDF["target"]
         matchesDF["err"] = matchesDF["err"].abs()
-        matchesDF["min_err"] = matchesDF.groupby(["id", "chem"])["err"].transform("min")
+        matchesDF["min_err"] = matchesDF.groupby(["id", "chem"])[
+            "err"
+        ].transform("min")
         matchesDF = matchesDF.loc[matchesDF["err"] == matchesDF["min_err"]]
         matchesDF.drop("min_err", axis=1, inplace=True)
 
@@ -136,7 +137,9 @@ class Targets_util:
 
         sort_col = columns[1]
         df_summary.sort_values(sort_col, ascending=True, inplace=True)
-        sort_smallest = df_summary[sort_col] <= df_summary[sort_col].quantile(quantile)
+        sort_smallest = df_summary[sort_col] <= df_summary[sort_col].quantile(
+            quantile
+        )
         return df_summary.loc[sort_smallest]
 
     @staticmethod
@@ -177,7 +180,9 @@ class Targets_util:
     def showAll_lollipop(df, prefix="PR_", sample=False):
         groups = df.groupby([prefix + "C", prefix + "dbr"])
         for e, g_df in groups:
-            plt = Targets_util.lollipop_plot(g_df[prefix + "m"], g_df[prefix + "i"])
+            plt = Targets_util.lollipop_plot(
+                g_df[prefix + "m"], g_df[prefix + "i"]
+            )
             plt.title(e)
             plt.xlim([g_df[prefix + "m"].min(), g_df[prefix + "m"].max()])
             plt.show()

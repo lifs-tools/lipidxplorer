@@ -147,7 +147,6 @@ sym2elt = build_dict(_data)
 
 class ConstElement(Element):
     def __init__(self, symbol, name, molweight, count=0):
-
         Element.__init__(self, symbol, name, molweight)
 
         self._count = count
@@ -159,7 +158,9 @@ class ConstElement(Element):
         raise TypeError("Setting a range for ConstElement is not possible")
 
     def set_enum(self, enum):
-        raise TypeError("Setting a enumeration for ConstElement is not possible")
+        raise TypeError(
+            "Setting a enumeration for ConstElement is not possible"
+        )
 
     def get_count(self):
         return self._count
@@ -246,7 +247,6 @@ def diff(n1, n2):
 
 class ElementSequence:
     def __init__(self):
-
         # from lpdxTools import permute2
 
         self.charge = 0
@@ -301,9 +301,7 @@ class ElementSequence:
         return l
 
     def __cmp__(self, elemseq):
-
         if elemseq.__class__ == ElementSequence:
-
             if len(elemseq) == len(self):
                 for elem in list(self._seq.keys()):
                     if elem in elemseq._seq:
@@ -380,7 +378,6 @@ class ElementSequence:
         return None
 
     def __add__(self, elemseq):
-
         # for i in set(self._seq.keys()).union(set(elemseq._seq.keys())):
         # 	if self._seq.has_key(i) and elemseq._seq.has_key(i):
         # 		self._seq[i]._count += elemseq._seq[i]._count
@@ -412,7 +409,6 @@ class ElementSequence:
         return result
 
     def __sub__(self, elemseq):
-
         result = deepcopy(self)
 
         for i in list(elemseq._seq.keys()):
@@ -430,7 +426,6 @@ class ElementSequence:
         return result
 
     def __mul__(self, int):
-
         result = deepcopy(self)
 
         for i in list(result._seq.keys()):
@@ -443,11 +438,9 @@ class ElementSequence:
         return result
 
     def get_DB(self):
-
         # see http://en.wikipedia.org/wiki/Degree_of_unsaturation
 
         if self._db == 0.0:
-
             cRDB = 2
             cRDB += (
                 (self["C"] * 2)
@@ -472,9 +465,7 @@ class ElementSequence:
         return self._db
 
     def getWeight(self, truemz=False):
-
         if self._weight == 0.0:
-
             for thing in list(self._seq.values()):
                 self._weight += float(thing.get_weight())
 
@@ -482,9 +473,9 @@ class ElementSequence:
                 if truemz:
                     self._weight = self._weight + self.charge * -0.00055
                 else:
-                    self._weight = (self._weight + self.charge * -0.00055) / abs(
-                        self.charge
-                    )
+                    self._weight = (
+                        self._weight + self.charge * -0.00055
+                    ) / abs(self.charge)
 
         return self._weight
 
@@ -511,7 +502,6 @@ class ElementSequence:
 
 class SCConstraint(ElementSequence):
     def __init__(self):
-
         ElementSequence.__init__(self)
 
         self.lwBoundDbEq = 0
@@ -526,7 +516,6 @@ class SCConstraint(ElementSequence):
                 raise TypeError("SCConstraint only allows RangeElement")
 
     def getMassRange(self):
-
         minMass = 0
         maxMass = 0
         for i in list(self._seq.keys()):
@@ -545,7 +534,9 @@ class SCConstraint(ElementSequence):
         out: the Element Object or None if it is not in the sequence"""
 
         if elem == "db":
-            raise TypeError("Cannot retrieve the double bonds from a SC constraint")
+            raise TypeError(
+                "Cannot retrieve the double bonds from a SC constraint"
+            )
         else:
             try:
                 return self._seq[elem]._range
@@ -558,7 +549,6 @@ class SCConstraint(ElementSequence):
         """Return sum form in a good readable string"""
         l = ""
         for i in list(self._seq.values()):
-
             if i.isEnum():
                 l = l + i.sym + "["
                 for j in i._range:
@@ -669,7 +659,9 @@ class SCConstraint(ElementSequence):
                                                     elemC = sym2elt_const["C"]
                                                     elemC.set_count(iC)
                                                     for iH in rangeH:
-                                                        elemH = sym2elt_const["H"]
+                                                        elemH = sym2elt_const[
+                                                            "H"
+                                                        ]
                                                         elemH.set_count(iH)
 
                                                         # cRDB = 2.0;
@@ -693,46 +685,117 @@ class SCConstraint(ElementSequence):
                                                         # old version
                                                         # cRDB = iC - (iH + iNa)/2 + 1 + iN/2
                                                         if (
-                                                            self.lwBoundDbEq <= cRDB
-                                                            and cRDB <= self.upBoundDbEq
+                                                            self.lwBoundDbEq
+                                                            <= cRDB
+                                                            and cRDB
+                                                            <= self.upBoundDbEq
                                                         ):
                                                             mass = (
-                                                                sym2elt["C"].mw * iC
-                                                                + sym2elt["H"].mw * iH
-                                                                + sym2elt["O"].mw * iO
-                                                                + sym2elt["P"].mw * iP
-                                                                + sym2elt["N"].mw * iN
-                                                                + sym2elt["S"].mw * iS
-                                                                + sym2elt["Na"].mw * iNa
-                                                                + sym2elt["D"].mw * iD
-                                                                + sym2elt["Ci"].mw * iCi
-                                                                + sym2elt["Cl"].mw * iCl
-                                                                + sym2elt["Li"].mw * iLi
-                                                                + sym2elt["Ni"].mw * iNi
-                                                                + sym2elt["F"].mw * iF
+                                                                sym2elt["C"].mw
+                                                                * iC
+                                                                + sym2elt[
+                                                                    "H"
+                                                                ].mw
+                                                                * iH
+                                                                + sym2elt[
+                                                                    "O"
+                                                                ].mw
+                                                                * iO
+                                                                + sym2elt[
+                                                                    "P"
+                                                                ].mw
+                                                                * iP
+                                                                + sym2elt[
+                                                                    "N"
+                                                                ].mw
+                                                                * iN
+                                                                + sym2elt[
+                                                                    "S"
+                                                                ].mw
+                                                                * iS
+                                                                + sym2elt[
+                                                                    "Na"
+                                                                ].mw
+                                                                * iNa
+                                                                + sym2elt[
+                                                                    "D"
+                                                                ].mw
+                                                                * iD
+                                                                + sym2elt[
+                                                                    "Ci"
+                                                                ].mw
+                                                                * iCi
+                                                                + sym2elt[
+                                                                    "Cl"
+                                                                ].mw
+                                                                * iCl
+                                                                + sym2elt[
+                                                                    "Li"
+                                                                ].mw
+                                                                * iLi
+                                                                + sym2elt[
+                                                                    "Ni"
+                                                                ].mw
+                                                                * iNi
+                                                                + sym2elt[
+                                                                    "F"
+                                                                ].mw
+                                                                * iF
                                                             )
                                                             # if (((iN != 0) and (int(mass) % 2) == ((abs(self.charge) % 2) + (iN % 2)) % 2) or (iN == 0)):
-                                                            if (int(mass) % 2) == (
-                                                                (abs(self.charge) % 2)
+                                                            if (
+                                                                int(mass) % 2
+                                                            ) == (
+                                                                (
+                                                                    abs(
+                                                                        self.charge
+                                                                    )
+                                                                    % 2
+                                                                )
                                                                 + (iN % 2)
                                                             ) % 2:
-
                                                                 elemseq = (
                                                                     ElementSequence()
                                                                 )
-                                                                elemseq.append(elemC)
-                                                                elemseq.append(elemH)
-                                                                elemseq.append(elemP)
-                                                                elemseq.append(elemN)
-                                                                elemseq.append(elemO)
-                                                                elemseq.append(elemS)
-                                                                elemseq.append(elemNa)
-                                                                elemseq.append(elemD)
-                                                                elemseq.append(elemCi)
-                                                                elemseq.append(elemCl)
-                                                                elemseq.append(elemLi)
-                                                                elemseq.append(elemNi)
-                                                                elemseq.append(elemF)
+                                                                elemseq.append(
+                                                                    elemC
+                                                                )
+                                                                elemseq.append(
+                                                                    elemH
+                                                                )
+                                                                elemseq.append(
+                                                                    elemP
+                                                                )
+                                                                elemseq.append(
+                                                                    elemN
+                                                                )
+                                                                elemseq.append(
+                                                                    elemO
+                                                                )
+                                                                elemseq.append(
+                                                                    elemS
+                                                                )
+                                                                elemseq.append(
+                                                                    elemNa
+                                                                )
+                                                                elemseq.append(
+                                                                    elemD
+                                                                )
+                                                                elemseq.append(
+                                                                    elemCi
+                                                                )
+                                                                elemseq.append(
+                                                                    elemCl
+                                                                )
+                                                                elemseq.append(
+                                                                    elemLi
+                                                                )
+                                                                elemseq.append(
+                                                                    elemNi
+                                                                )
+                                                                elemseq.append(
+                                                                    elemF
+                                                                )
 
                                                                 elemseq.set_charge(
                                                                     self.charge
@@ -743,7 +806,9 @@ class SCConstraint(ElementSequence):
                                                                 )
 
                                                                 l.append(
-                                                                    deepcopy(elemseq)
+                                                                    deepcopy(
+                                                                        elemseq
+                                                                    )
                                                                 )
 
         return l
@@ -764,10 +829,15 @@ class SCConstraint(ElementSequence):
             return flagelem
         else:
             if elemseq.__class__ != ElementSequence:
-                raise TypeError("covers() needs an ElementSequence as parameter")
+                raise TypeError(
+                    "covers() needs an ElementSequence as parameter"
+                )
 
             for elem in list(elemseq.keys()):
-                if elem in self._seq and elemseq[elem] in self._seq[elem]._range:
+                if (
+                    elem in self._seq
+                    and elemseq[elem] in self._seq[elem]._range
+                ):
                     pass
                 else:
                     return False
@@ -1026,7 +1096,6 @@ class SCConstraint(ElementSequence):
         )
 
         for i in erg:
-
             # make new ElementSequence
             elemseq = ElementSequence()
 

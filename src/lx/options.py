@@ -214,7 +214,6 @@ class Options:
                 self.options[key] = options[key]
 
     def __repr__(self):
-
         str = "\n"
         for key in sorted(self.options.keys()):
             str += "{0:24s} : {1:10s}\n".format(key, repr(self.options[key]))
@@ -222,7 +221,6 @@ class Options:
         return str
 
     def isEmpty(self, option):
-
         if isinstance(option, type("")):
             if option in list(self.options.keys()):
                 option = self.options[option]
@@ -237,29 +235,37 @@ class Options:
                 return True
 
         return (
-            (option is None) or (option == "") or (option == "()") or (option == "(,)")
+            (option is None)
+            or (option == "")
+            or (option == "()")
+            or (option == "(,)")
         )
 
     def allImportSettingsSet(self):
-
         l = []
         for s in self.importOptions:
-            if self.options[s] == "" or self.options[s] == "0" or not self.options[s]:
+            if (
+                self.options[s] == ""
+                or self.options[s] == "0"
+                or not self.options[s]
+            ):
                 l.append(s)
         return l
 
     def testOptionsRun(self):
-
         if not self.isEmpty("optionalMStolerance"):
             m = re.match(
-                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["optionalMStolerance"]
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)",
+                self.options["optionalMStolerance"],
             )
             if m is None:
                 if (
                     not self.options["optionalMStoleranceType"] is None
                     and not self.options["optionalMStoleranceType"] == ""
                 ):
-                    m = re.match("(\d+|\d+\.\d+)", self.options["optionalMStolerance"])
+                    m = re.match(
+                        "(\d+|\d+\.\d+)", self.options["optionalMStolerance"]
+                    )
                     if not m is None:
                         if float(m.group(1)) < 0.0:
                             raise LipidXException(
@@ -275,11 +281,14 @@ class Options:
                     )
             else:
                 if float(m.group(1)) < 0.0:
-                    raise LipidXException("The tolerance value for MS should be >= 0")
+                    raise LipidXException(
+                        "The tolerance value for MS should be >= 0"
+                    )
 
         if not self.isEmpty("optionalMSMStolerance"):
             m = re.match(
-                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["optionalMSMStolerance"]
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)",
+                self.options["optionalMSMStolerance"],
             )
             if m is None:
                 if (
@@ -357,8 +366,12 @@ class Options:
 
         if not self.isEmpty("MSMSmassrange"):
             MSMSmassrange = (
-                float(self.options["MSMSmassrange"].split(",")[0].strip("() ")),
-                float(self.options["MSMSmassrange"].split(",")[1].strip("() ")),
+                float(
+                    self.options["MSMSmassrange"].split(",")[0].strip("() ")
+                ),
+                float(
+                    self.options["MSMSmassrange"].split(",")[1].strip("() ")
+                ),
             )
             if MSMSmassrange[0] < 0 or MSMSmassrange[1] < 0:
                 raise LipidXException("M/Z range for MS/MS should be >= 0")
@@ -374,7 +387,9 @@ class Options:
         # 	raise LipidXException("The accuracy setting for MS/MS should be >= 0")
 
         if not self.isEmpty("MStolerance"):
-            m = re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MStolerance"])
+            m = re.match(
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MStolerance"]
+            )
             if m is None:
                 if (
                     not self.options["MStoleranceType"] is None
@@ -396,16 +411,22 @@ class Options:
                     )
             else:
                 if float(m.group(1)) < 0.0:
-                    raise LipidXException("The tolerance value for MS should be >= 0")
+                    raise LipidXException(
+                        "The tolerance value for MS should be >= 0"
+                    )
 
         if not self.isEmpty("MSMStolerance"):
-            m = re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MSMStolerance"])
+            m = re.match(
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MSMStolerance"]
+            )
             if m is None:
                 if (
                     not self.options["MSMStoleranceType"] is None
                     and not self.options["MSMStoleranceType"] == ""
                 ):
-                    m = re.match("(\d+|\d+\.\d+)", self.options["MSMStolerance"])
+                    m = re.match(
+                        "(\d+|\d+\.\d+)", self.options["MSMStolerance"]
+                    )
                     if not m is None:
                         if float(m.group(1)) < 0.0:
                             raise LipidXException(
@@ -427,17 +448,23 @@ class Options:
 
         if not self.isEmpty("MSthreshold"):
             if not float(self.options["MSthreshold"]) >= 0:
-                raise LipidXException("The threshold setting for MS should be >= 0")
+                raise LipidXException(
+                    "The threshold setting for MS should be >= 0"
+                )
         if not self.isEmpty("MSMSthreshold"):
             if not float(self.options["MSMSthreshold"]) >= 0:
-                raise LipidXException("The threshold setting for MS/MS should be >= 0")
+                raise LipidXException(
+                    "The threshold setting for MS/MS should be >= 0"
+                )
 
         if not self.isEmpty("MSminOccupation"):
             if (
                 not float(self.options["MSminOccupation"]) >= 0
                 and not float(self.options["MSminOccupation"]) <= 1
             ):
-                raise LipidXException("Min occupation setting for MS should be 0 >= 1.")
+                raise LipidXException(
+                    "Min occupation setting for MS should be 0 >= 1."
+                )
         if not self.isEmpty("MSMSminOccupation"):
             if (
                 not float(self.options["MSMSminOccupation"]) >= 0
@@ -466,9 +493,14 @@ class Options:
 
         if not self.isEmpty("alignmentMethodMS"):
             if not self.options["alignmentMethodMS"] in ["linear", "calctol"]:
-                raise LipidXException("The alignment method for MS is not set properly")
+                raise LipidXException(
+                    "The alignment method for MS is not set properly"
+                )
         if not self.isEmpty("alignmentMethodMSMS"):
-            if not self.options["alignmentMethodMSMS"] in ["linear", "calctol"]:
+            if not self.options["alignmentMethodMSMS"] in [
+                "linear",
+                "calctol",
+            ]:
                 raise LipidXException(
                     "The alignment method for MS/MS is not set properly"
                 )
@@ -476,7 +508,10 @@ class Options:
             not self.options["scanAveragingMethod"] is None
             and not self.options["scanAveragingMethod"] == ""
         ):
-            if not self.options["scanAveragingMethod"] in ["linear", "calctol"]:
+            if not self.options["scanAveragingMethod"] in [
+                "linear",
+                "calctol",
+            ]:
                 raise LipidXException(
                     "The alignment method for the scan averaging is not set properly"
                 )
@@ -495,8 +530,15 @@ class Options:
                 raise LipidXException("The MS/MS resolution must not be < 0")
 
         if not self.isEmpty("importMSMS"):
-            if not self.options["importMSMS"] in ["True", "False", True, False]:
-                raise LipidXException("The 'importMSMS' option has no proper values")
+            if not self.options["importMSMS"] in [
+                "True",
+                "False",
+                True,
+                False,
+            ]:
+                raise LipidXException(
+                    "The 'importMSMS' option has no proper values"
+                )
 
         if not self.isEmpty("MSthresholdType"):
             pass
@@ -543,13 +585,18 @@ class Options:
             self.options_formatted["MScalibration"] = [
                 float(x) for x in o["MScalibration"].split(",")
             ]
-        if not self.isEmpty("MSMScalibration") and len(o["MSMScalibration"]) > 0:
+        if (
+            not self.isEmpty("MSMScalibration")
+            and len(o["MSMScalibration"]) > 0
+        ):
             self.options_formatted["MSMScalibration"] = [
                 float(x) for x in o["MSMScalibration"].split(",")
             ]
 
         if not self.isEmpty("MSresolutionDelta"):
-            self.options_formatted["MSresolutionDelta"] = float(o["MSresolutionDelta"])
+            self.options_formatted["MSresolutionDelta"] = float(
+                o["MSresolutionDelta"]
+            )
         if not self.isEmpty("MSMSresolutionDelta"):
             self.options_formatted["MSMSresolutionDelta"] = float(
                 o["MSMSresolutionDelta"]
@@ -562,11 +609,15 @@ class Options:
 
         # if occupation threshold is not given, we set a standard of 0.0
         if not self.isEmpty("MSminOccupation"):
-            self.options_formatted["MSminOccupation"] = float(o["MSminOccupation"])
+            self.options_formatted["MSminOccupation"] = float(
+                o["MSminOccupation"]
+            )
         else:
             self.options_formatted["MSminOccupation"] = 0.0
         if not self.isEmpty("MSMSminOccupation"):
-            self.options_formatted["MSMSminOccupation"] = float(o["MSMSminOccupation"])
+            self.options_formatted["MSMSminOccupation"] = float(
+                o["MSMSminOccupation"]
+            )
         else:
             self.options_formatted["MSMSminOccupation"] = 0.0
 
@@ -593,13 +644,20 @@ class Options:
             )
 
         if not self.isEmpty("MStolerance"):
-            m = re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MStolerance"])
+            m = re.match(
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MStolerance"]
+            )
             if m is None:
-                if not o["MStoleranceType"] is None and not o["MStoleranceType"] == "":
+                if (
+                    not o["MStoleranceType"] is None
+                    and not o["MStoleranceType"] == ""
+                ):
                     m = re.match("(\d+|\d+\.\d+)", o["MStolerance"])
                     if not m is None:
                         try:
-                            self.options_formatted["MStolerance"] = TypeTolerance(
+                            self.options_formatted[
+                                "MStolerance"
+                            ] = TypeTolerance(
                                 o["MStoleranceType"], float(o["MStolerance"])
                             )
                         except ZeroDivisionError:
@@ -611,7 +669,9 @@ class Options:
                     m.group(3), float(o["MStolerance"])
                 )
         if not self.isEmpty("MSMStolerance"):
-            m = re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MSMStolerance"])
+            m = re.match(
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MSMStolerance"]
+            )
             if m is None:
                 if (
                     not o["MSMStoleranceType"] is None
@@ -619,7 +679,9 @@ class Options:
                 ):
                     m = re.match("(\d+|\d+\.\d+)", o["MSMStolerance"])
                     if not m is None:
-                        self.options_formatted["MSMStolerance"] = TypeTolerance(
+                        self.options_formatted[
+                            "MSMStolerance"
+                        ] = TypeTolerance(
                             o["MSMStoleranceType"], float(o["MSMStolerance"])
                         )
             else:
@@ -630,11 +692,14 @@ class Options:
         if not self.isEmpty("MStoleranceType"):
             self.options_formatted["MStoleranceType"] = o["MStoleranceType"]
         if not self.isEmpty("MSMStoleranceType"):
-            self.options_formatted["MSMStoleranceType"] = o["MSMStoleranceType"]
+            self.options_formatted["MSMStoleranceType"] = o[
+                "MSMStoleranceType"
+            ]
 
         if not self.isEmpty("optionalMStolerance"):
             m = re.match(
-                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["optionalMStolerance"]
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)",
+                self.options["optionalMStolerance"],
             )
             if m is None:
                 if (
@@ -643,7 +708,9 @@ class Options:
                 ):
                     m = re.match("(\d+|\d+\.\d+)", o["optionalMStolerance"])
                     if not m is None:
-                        self.options_formatted["optionalMStolerance"] = TypeTolerance(
+                        self.options_formatted[
+                            "optionalMStolerance"
+                        ] = TypeTolerance(
                             o["optionalMStoleranceType"],
                             float(o["optionalMStolerance"]),
                         )
@@ -653,7 +720,8 @@ class Options:
                 )
         if not self.isEmpty("optionalMSMStolerance"):
             m = re.match(
-                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["optionalMSMStolerance"]
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)",
+                self.options["optionalMSMStolerance"],
             )
             if m is None:
                 if (
@@ -662,12 +730,16 @@ class Options:
                 ):
                     m = re.match("(\d+|\d+\.\d+)", o["optionalMSMStolerance"])
                     if not m is None:
-                        self.options_formatted["optionalMSMStolerance"] = TypeTolerance(
+                        self.options_formatted[
+                            "optionalMSMStolerance"
+                        ] = TypeTolerance(
                             o["optionalMSMStoleranceType"],
                             float(o["optionalMSMStolerance"]),
                         )
             else:
-                self.options_formatted["optionalMSMStolerance"] = TypeTolerance(
+                self.options_formatted[
+                    "optionalMSMStolerance"
+                ] = TypeTolerance(
                     m.group(3), float(o["optionalMSMStolerance"])
                 )
 
@@ -676,21 +748,31 @@ class Options:
                 "optionalMStoleranceType"
             ]
         if not self.isEmpty("optionalMSMStoleranceType"):
-            self.options_formatted["optionalMSMStoleranceType"] = o["MSMStoleranceType"]
+            self.options_formatted["optionalMSMStoleranceType"] = o[
+                "MSMStoleranceType"
+            ]
 
         if not self.isEmpty("alignmentMethodMS"):
-            self.options_formatted["alignmentMethodMS"] = o["alignmentMethodMS"]
+            self.options_formatted["alignmentMethodMS"] = o[
+                "alignmentMethodMS"
+            ]
         if not self.isEmpty("alignmentMethodMSMS"):
-            self.options_formatted["alignmentMethodMSMS"] = o["alignmentMethodMSMS"]
+            self.options_formatted["alignmentMethodMSMS"] = o[
+                "alignmentMethodMSMS"
+            ]
         if not self.isEmpty("scanAveragingMethod"):
-            self.options_formatted["scanAveragingMethod"] = o["scanAveragingMethod"]
+            self.options_formatted["scanAveragingMethod"] = o[
+                "scanAveragingMethod"
+            ]
 
         # this option is not editable
         self.options_formatted["loopNr"] = 3
 
         # the file paths
         if not self.isEmpty("masterScan"):
-            self.options_formatted["masterScanFileImport"] = o["masterScanImport"]
+            self.options_formatted["masterScanFileImport"] = o[
+                "masterScanImport"
+            ]
             self.options_formatted["masterScanFileRun"] = o["masterScanRun"]
         if not self.isEmpty("dumpMasterScan"):
             self.options_formatted["dumpMasterScanFile"] = (
@@ -706,13 +788,21 @@ class Options:
             if not opt in list(self.options_formatted.keys()):
                 self.options_formatted[opt] = self.options[opt]
 
-        self.options_formatted = self.try2apply_calctol(o, self.options_formatted)
-        self.options_formatted['lx2_MSresolution'] = self.options['lx2_MSresolution']
+        self.options_formatted = self.try2apply_calctol(
+            o, self.options_formatted
+        )
+        self.options_formatted["lx2_MSresolution"] = self.options[
+            "lx2_MSresolution"
+        ]
 
     def try2apply_calctol(self, o, options_formatted):
         if o["MSresolution"] == "auto" or o["MSresolution"] == 0:
-            options_formatted["optionalMStolerance"] = TypeTolerance("ppm", 20.0)
-            options_formatted["optionalMSMStolerance"] = TypeTolerance("ppm", 20.0)
+            options_formatted["optionalMStolerance"] = TypeTolerance(
+                "ppm", 20.0
+            )
+            options_formatted["optionalMSMStolerance"] = TypeTolerance(
+                "ppm", 20.0
+            )
             options_formatted["optionalMStoleranceType"] = "ppm"
             options_formatted["optionalMSMStoleranceType"] = "ppm"
 
@@ -745,7 +835,8 @@ class Options:
 
         if not self.options["optionalMStolerance"] is None:
             m = re.match(
-                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["optionalMStolerance"]
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)",
+                self.options["optionalMStolerance"],
             )
             if m is None:
                 if (
@@ -754,7 +845,9 @@ class Options:
                 ):
                     m = re.match("(\d+|\d+\.\d+)", o["optionalMStolerance"])
                     if not m is None:
-                        self.options_formatted["optionalMStolerance"] = TypeTolerance(
+                        self.options_formatted[
+                            "optionalMStolerance"
+                        ] = TypeTolerance(
                             o["optionalMStoleranceType"],
                             float(o["optionalMStolerance"]),
                         )
@@ -764,7 +857,8 @@ class Options:
                 )
         if not self.options["optionalMSMStolerance"] is None:
             m = re.match(
-                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["optionalMSMStolerance"]
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)",
+                self.options["optionalMSMStolerance"],
             )
             if m is None:
                 if (
@@ -773,12 +867,16 @@ class Options:
                 ):
                     m = re.match("(\d+|\d+\.\d+)", o["optionalMSMStolerance"])
                     if not m is None:
-                        self.options_formatted["optionalMSMStolerance"] = TypeTolerance(
+                        self.options_formatted[
+                            "optionalMSMStolerance"
+                        ] = TypeTolerance(
                             o["optionalMSMStoleranceType"],
                             float(o["optionalMSMStolerance"]),
                         )
             else:
-                self.options_formatted["optionalMSMStolerance"] = TypeTolerance(
+                self.options_formatted[
+                    "optionalMSMStolerance"
+                ] = TypeTolerance(
                     m.group(3), float(o["optionalMSMStolerance"])
                 )
 

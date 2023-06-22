@@ -49,9 +49,7 @@ def getMfqlFiles():
     return {mfql.name: mfql.read_text() for mfql in mfqls}
 
 
-@pytest.mark.skip(
-    reason="Make it work in assertion"
-)
+@pytest.mark.skip(reason="Make it work in assertion")
 def test_intermediate_steps(get_options):
     singe = compare_grouping(
         r"tests/resources/benchmark128/spectra/190321_Serum_Lipidextract_368723_01.mzML",
@@ -63,7 +61,9 @@ def test_intermediate_steps(get_options):
 def test_masterscan_manual(get_options, get_masterscan):
     assert get_options["MSresolution"]
     masterscan = get_masterscan
-    with open(r"tests/resources/benchmark128/reference/masterscan_1.pkl", "rb") as f:
+    with open(
+        r"tests/resources/benchmark128/reference/masterscan_1.pkl", "rb"
+    ) as f:
         reference = pickle.load(f)
     assert compareMasterScans(masterscan, reference)
 
@@ -71,24 +71,33 @@ def test_masterscan_manual(get_options, get_masterscan):
 def test_masterescan_automatic(get_no_res_options, get_no_res_masterscan):
     assert not get_no_res_options._data["MSresolution"]
     masterscan = get_no_res_masterscan
-    with open(r"tests/resources/benchmark128/reference/masterscan_2.pkl", "rb") as f:
+    with open(
+        r"tests/resources/benchmark128/reference/masterscan_2.pkl", "rb"
+    ) as f:
         reference = pickle.load(f)
     assert compareMasterScans(masterscan, reference)
 
 
 def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
-    with open(r"tests/resources/benchmark128/reference/result_1.pkl", "rb") as f:
+    with open(
+        r"tests/resources/benchmark128/reference/result_1.pkl", "rb"
+    ) as f:
         reference = pickle.load(f)
-    result = make_MFQL_result(get_masterscan, getMfqlFiles, get_options, log_steps=True)
+    result = make_MFQL_result(
+        get_masterscan, getMfqlFiles, get_options, log_steps=True
+    )
     assert compareResults(result, reference)
 
 
-def test_mfql_automatic(get_no_res_masterscan, get_no_res_options, getMfqlFiles):
-    with open(r"tests/resources/benchmark128/reference/result_2.pkl", "rb") as f:
+def test_mfql_automatic(
+    get_no_res_masterscan, get_no_res_options, getMfqlFiles
+):
+    with open(
+        r"tests/resources/benchmark128/reference/result_2.pkl", "rb"
+    ) as f:
         reference = pickle.load(f)
     result = make_MFQL_result(
         get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True
     )
     # to see results print(makeResultsString(result, get_options))
     assert compareResults(result, reference)
-

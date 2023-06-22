@@ -39,7 +39,6 @@ def formatExceptionInfo(maxTBlevel=8):
 
 
 def excepthook(type, value, tb):
-
     frame = wx.GetApp().frame
     m = "".join(traceback.format_exception(type, value, tb))
     # m = type, value
@@ -52,7 +51,6 @@ def excepthook(type, value, tb):
 
 class TextOutFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-
         # begin wxGlade: LpdxFrame.__init__
         kwds["style"] = (
             wx.MINIMIZE_BOX
@@ -81,10 +79,18 @@ class TextOutFrame(wx.Frame):
         )  # , size = wx.Point(835, 700))
         self.text_ctrl.SetMarginType(0, stc.STC_MARGIN_NUMBER)
         self.text_ctrl.SetMarginWidth(0, 22)
-        self.text_ctrl.StyleSetSpec(stc.STC_STYLE_DEFAULT, "size:10,face:NSimSun")
-        self.text_ctrl.StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
-        self.text_ctrl.SetMinSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
-        self.text_ctrl.SetSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
+        self.text_ctrl.StyleSetSpec(
+            stc.STC_STYLE_DEFAULT, "size:10,face:NSimSun"
+        )
+        self.text_ctrl.StyleSetSpec(
+            stc.STC_STYLE_LINENUMBER, "size:9,face:Arial"
+        )
+        self.text_ctrl.SetMinSize(
+            (self.GetSize()[0] - 40, self.GetSize()[1] - 150)
+        )
+        self.text_ctrl.SetSize(
+            (self.GetSize()[0] - 40, self.GetSize()[1] - 150)
+        )
         self.text_ctrl.SetScrollWidth(3000)
 
         self.button_clear = wx.Button(self, -1, "Clear Buffer")
@@ -114,7 +120,10 @@ class TextOutFrame(wx.Frame):
         self.sizer.Add(
             self.sizer_buttons,
             0,
-            wx.ADJUST_MINSIZE | wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALL,
+            wx.ADJUST_MINSIZE
+            | wx.ALIGN_BOTTOM
+            | wx.ALIGN_CENTER_HORIZONTAL
+            | wx.ALL,
             10,
         )
         self.SetSizer(self.sizer)
@@ -130,7 +139,6 @@ class TextOutFrame(wx.Frame):
         self.listError = []
 
     def write(self, text):
-
         if re.match(".*lpdxUIExceptions.*", text):
             error = re.match(".*lpdxUIExceptions.*:(.*)", text).group(1)
             self.listError.append()
@@ -156,7 +164,6 @@ class InputFileDropTarget(wx.FileDropTarget):
     """This object implements Drop Target functionality for Text"""
 
     def __init__(self, obj, parent):
-
         # Initialize the wx.FileDropTarget Object
         wx.FileDropTarget.__init__(self)
         # Store the Object Reference for dropped files
@@ -168,7 +175,6 @@ class InputFileDropTarget(wx.FileDropTarget):
         """Implement File Drop"""
         # append a list of the file names dropped
         for p in filenames:
-
             if os.path.isdir(p):
                 for root, dirs, files in os.walk(p):
                     for f in files:
@@ -183,12 +189,13 @@ class InputFileDropTarget(wx.FileDropTarget):
                 self.parent.dictInputFiles[l[-1]] = p
 
         # self.parent.list_box_1.Set(sorted(self.parent.dictMFQLScripts.keys()))
-        self.parent.listBox_inputFiles.Set(list(self.parent.dictInputFiles.keys()))
+        self.parent.listBox_inputFiles.Set(
+            list(self.parent.dictInputFiles.keys())
+        )
 
 
 class ChooseColFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-
         # begin wxGlade: LpdxFrame.__init__
         kwds["style"] = (
             wx.MINIMIZE_BOX
@@ -210,7 +217,9 @@ class ChooseColFrame(wx.Frame):
         self.sizer_v = wx.BoxSizer(wx.VERTICAL)
         self.sizer_h = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.label_left = wx.StaticText(self, -1, "All columns of the result files")
+        self.label_left = wx.StaticText(
+            self, -1, "All columns of the result files"
+        )
         self.listBox_left = wx.ListBox(
             self,
             -1,
@@ -225,21 +234,36 @@ class ChooseColFrame(wx.Frame):
             self, -1, "Columns to be in the merging result"
         )
         self.listBox_right = wx.ListBox(
-            self, -1, choices=[], name="", style=wx.LB_EXTENDED, size=(200, 210)
+            self,
+            -1,
+            choices=[],
+            name="",
+            style=wx.LB_EXTENDED,
+            size=(200, 210),
         )
         self.button_ready = wx.Button(self, -1, "      Merge Results     ")
 
         self.sizer_buttons = wx.BoxSizer(wx.VERTICAL)
-        self.sizer_buttons.Add(self.button_toTheRight, 0, wx.ALIGN_CENTER | wx.ALL, 5)
-        self.sizer_buttons.Add(self.button_toTheLeft, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+        self.sizer_buttons.Add(
+            self.button_toTheRight, 0, wx.ALIGN_CENTER | wx.ALL, 5
+        )
+        self.sizer_buttons.Add(
+            self.button_toTheLeft, 0, wx.ALIGN_CENTER | wx.ALL, 5
+        )
 
         self.sizer_leftPart = wx.BoxSizer(wx.VERTICAL)
         self.sizer_leftPart.Add(self.label_left, 0, wx.ALIGN_LEFT | wx.ALL, 4)
-        self.sizer_leftPart.Add(self.listBox_left, 0, wx.ALIGN_LEFT | wx.ALL, 4)
+        self.sizer_leftPart.Add(
+            self.listBox_left, 0, wx.ALIGN_LEFT | wx.ALL, 4
+        )
 
         self.sizer_rightPart = wx.BoxSizer(wx.VERTICAL)
-        self.sizer_rightPart.Add(self.label_right, 0, wx.ALIGN_LEFT | wx.ALL, 4)
-        self.sizer_rightPart.Add(self.listBox_right, 0, wx.ALIGN_LEFT | wx.ALL, 4)
+        self.sizer_rightPart.Add(
+            self.label_right, 0, wx.ALIGN_LEFT | wx.ALL, 4
+        )
+        self.sizer_rightPart.Add(
+            self.listBox_right, 0, wx.ALIGN_LEFT | wx.ALL, 4
+        )
 
         self.sizer_h.Add(self.sizer_leftPart, 0, wx.ALIGN_CENTER | wx.ALL, 10)
         self.sizer_h.Add(self.sizer_buttons, 0, wx.ALIGN_CENTER_VERTICAL)
@@ -256,7 +280,9 @@ class ChooseColFrame(wx.Frame):
         self.Layout()
 
         self.Bind(wx.EVT_SIZE, self.OnSize)
-        self.Bind(wx.EVT_BUTTON, self.OnButtonToTheRight, self.button_toTheRight)
+        self.Bind(
+            wx.EVT_BUTTON, self.OnButtonToTheRight, self.button_toTheRight
+        )
         self.Bind(wx.EVT_BUTTON, self.OnButtonToTheLeft, self.button_toTheLeft)
         self.Bind(wx.EVT_BUTTON, self.OnButtonReady, self.button_ready)
         # self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
@@ -345,7 +371,6 @@ class FileDropTarget(wx.FileDropTarget):
 
 class MyFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-
         ################################################################################
         # standard routines                                                            #
         ################################################################################
@@ -372,7 +397,9 @@ class MyFrame(wx.Frame):
         # set up the menu
         self.menubar = wx.MenuBar()
         self.menu_options = wx.Menu()
-        self.menu_options.AppendItem(wx.MenuItem(self.menu_options, 1, "Output window"))
+        self.menu_options.AppendItem(
+            wx.MenuItem(self.menu_options, 1, "Output window")
+        )
         self.menubar.Append(self.menu_options, "&Options")
         self.SetMenuBar(self.menubar)
 
@@ -409,7 +436,9 @@ class MyFrame(wx.Frame):
         # s2 = "C:\\Users\\earl\\lipidx\\trunk\\scripts\\benchmark\\algorithms\\validation_of_merging_Xcalibur_vs_LipidX\\071011_uniklinik_Xcalibur"
 
         # create buttons and textctrls
-        self.label_inputFiles = wx.StaticText(self, -1, "Insert files to merge")
+        self.label_inputFiles = wx.StaticText(
+            self, -1, "Insert files to merge"
+        )
         self.listBox_inputFiles = wx.ListBox(
             self,
             -1,
@@ -431,7 +460,11 @@ class MyFrame(wx.Frame):
 
         self.label_colsToAlign = wx.StaticText(self, -1, "Cols to align")
         self.text_ctrl_colsToAlign = wx.TextCtrl(
-            self, -1, "SPECIE, CHEMSC", style=wx.TE_PROCESS_ENTER, size=(300, 25)
+            self,
+            -1,
+            "SPECIE, CHEMSC",
+            style=wx.TE_PROCESS_ENTER,
+            size=(300, 25),
         )
 
         self.checkBox_onlyFullOcc = wx.CheckBox(
@@ -439,16 +472,22 @@ class MyFrame(wx.Frame):
         )
 
         # self.button_inputFile_browse.SetBackgroundColour(wx.Colour(140, 250, 140))
-        self.button_start = buttons.GenButton(self, -1, "Start", size=(200, 25))
+        self.button_start = buttons.GenButton(
+            self, -1, "Start", size=(200, 25)
+        )
         self.button_start.SetBackgroundColour(wx.Colour(140, 250, 140))
 
         self.SetBackgroundColour(wx.Colour(210, 210, 210))
 
         # add stuff to the sizers
         self.sizer_inputFile1_h.Add(self.listBox_inputFiles, 0, wx.RIGHT, 5)
-        self.sizer_inputFile1_h.Add(self.button_inputFiles_browse, 0, wx.LEFT, 5)
+        self.sizer_inputFile1_h.Add(
+            self.button_inputFiles_browse, 0, wx.LEFT, 5
+        )
         self.sizer_inputFile2_h.Add(self.text_ctrl_inputFile2, 0, wx.RIGHT, 5)
-        self.sizer_inputFile2_h.Add(self.button_inputFile2_browse, 0, wx.LEFT, 5)
+        self.sizer_inputFile2_h.Add(
+            self.button_inputFile2_browse, 0, wx.LEFT, 5
+        )
         self.sizer3_v.Add(self.label_inputFiles, 0, wx.ALL, 5)
         self.sizer3_v.Add(self.sizer_inputFile1_h, 0, wx.ALL, 5)
         self.sizer3_v.Add(self.label_colsToAlign, 0, wx.ALL, 5)
@@ -475,18 +514,21 @@ class MyFrame(wx.Frame):
         self.listBox_inputFiles.Bind(
             wx.EVT_KEY_DOWN, self.OnListEvtKeyDown
         )  # , self.listBox_inputFiles)
-        self.Bind(wx.EVT_KEY_DOWN, self.OnListEvtKeyDown)  # , self.listBox_inputFiles)
+        self.Bind(
+            wx.EVT_KEY_DOWN, self.OnListEvtKeyDown
+        )  # , self.listBox_inputFiles)
 
         self.Bind(wx.EVT_BUTTON, self.OnBrowse, self.button_inputFiles_browse)
         self.Bind(wx.EVT_BUTTON, self.OnBrowse2, self.button_inputFile2_browse)
-        self.Bind(wx.EVT_CHECKBOX, self.OnCheckOnlyFullOcc, self.checkBox_onlyFullOcc)
+        self.Bind(
+            wx.EVT_CHECKBOX, self.OnCheckOnlyFullOcc, self.checkBox_onlyFullOcc
+        )
         self.Bind(wx.EVT_BUTTON, self.OnStart, self.button_start)
 
         # initialize used variables
         self.inputFilePath = None
 
     def OnMenuOutputWin(self, evt):
-
         if not self.winOpen:
             # self.debug.Center()
             self.output.Show(True)
@@ -496,7 +538,6 @@ class MyFrame(wx.Frame):
             self.winOpen = False
 
     def OnListEvtKeyDown(self, evt):
-
         keycode = evt.GetKeyCode()
 
         if keycode == wx.WXK_DELETE:
@@ -511,7 +552,9 @@ class MyFrame(wx.Frame):
 
     def OnBrowse1(self, evt):
         dlg = wx.FileDialog(
-            self, "Xcalibur spectra directory", style=wx.DD_DEFAULT_STYLE | wx.FD_SAVE
+            self,
+            "Xcalibur spectra directory",
+            style=wx.DD_DEFAULT_STYLE | wx.FD_SAVE,
         )
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -533,7 +576,6 @@ class MyFrame(wx.Frame):
         dlg.Destroy()
 
         for p in inputFilePath:
-
             if os.path.isdir(p):
                 for root, dirs, files in os.walk(p):
                     for f in files:
@@ -561,14 +603,12 @@ class MyFrame(wx.Frame):
         self.text_ctrl_inputFile2.SetValue(inputFilePath)
 
     def OnCheckOnlyFullOcc(self, evt):
-
         if self.checkBox_onlyFullOcc.GetValue():
             self.onlyFullOccupation = True
         else:
             self.onlyFullOccupation = False
 
     def OnStart(self, evt):
-
         # initialize some variables
         self.dictOutput = odict()
 
@@ -594,7 +634,6 @@ class MyFrame(wx.Frame):
                 return None
 
         for file in list(self.dictInputFiles.keys()):
-
             csvInputFiles[file] = csv.DictReader(
                 open(self.dictInputFiles[file], "rb"), delimiter=","
             )
@@ -607,7 +646,6 @@ class MyFrame(wx.Frame):
 
             # get the horizontal entry of the thing to be aligned
             for row in csvInputFiles[file]:
-
                 # sort the rows
                 row_sorted = odict()
                 for key in sorted(row.keys()):
@@ -667,10 +705,11 @@ class MyFrame(wx.Frame):
             self, -1, "Choose the colums you like to have in the output"
         )
         self.win_chooseCols.Show(True)
-        self.win_chooseCols.fillRightWindow(nonIntensityKeys + intensityKeysAbbr)
+        self.win_chooseCols.fillRightWindow(
+            nonIntensityKeys + intensityKeysAbbr
+        )
 
     def StartAlignment(self):
-
         col_m = re.compile(".*:")
 
         print(" *** Preparing the output format *** ")
@@ -705,13 +744,14 @@ class MyFrame(wx.Frame):
         # count = 0
         # samples = []
         for entry in list(self.dictOutput.keys()):
-
             for file in filenames:
                 count = 0
                 samples = []
                 if self.dictOutput[entry][file] != {}:
                     for col in columnsChoosenIntensity:
-                        for sample in list(self.dictOutput[entry][file].keys()):
+                        for sample in list(
+                            self.dictOutput[entry][file].keys()
+                        ):
                             if re.match("%s.*" % col, sample):
                                 if not sample in colIntensitiesSamples:
                                     colIntensitiesSamples.append(sample)
@@ -736,15 +776,20 @@ class MyFrame(wx.Frame):
                 dictOutputSamples[entry][file] = odict()
                 for sample in list(self.dictOutput[entry][file].keys()):
                     if sample not in dictOutputSamples:
-                        dictOutputSamples[entry][file][sample] = self.dictOutput[entry][
-                            file
-                        ][sample]
+                        dictOutputSamples[entry][file][
+                            sample
+                        ] = self.dictOutput[entry][file][sample]
                     else:
                         dictOutputSamples[entry][file][
                             "%s-%s" % (sample, file)
                         ] = self.dictOutput[entry][file][sample]
-                        if "%s-%s" % (sample, file) not in colIntensitiesSamples:
-                            colIntensitiesSamples.append("%s-%s" % (sample, file))
+                        if (
+                            "%s-%s" % (sample, file)
+                            not in colIntensitiesSamples
+                        ):
+                            colIntensitiesSamples.append(
+                                "%s-%s" % (sample, file)
+                            )
 
         print(" *** Start the alignment *** ")
 
@@ -794,7 +839,6 @@ class MyFrame(wx.Frame):
         f_output.write(outputCSV.getvalue())
 
         for entry in sorted(self.dictOutput.keys()):
-
             ### write the non intensity columns ###
 
             countEntries += 1
@@ -825,7 +869,6 @@ class MyFrame(wx.Frame):
                 cont = True
 
             if cont:
-
                 if countEntries % 10 == 0:
                     print(
                         "\n%d done - %d to go"
@@ -846,7 +889,9 @@ class MyFrame(wx.Frame):
                             csvOut += "%s," % self.dictOutput[entry][file][col]
                         elif col in dictOutputSamples[entry][file]:
                             # outputCSV.write('%s,' % dictOutputSamples[entry][file][col])
-                            csvOut += "%s," % dictOutputSamples[entry][file][col]
+                            csvOut += (
+                                "%s," % dictOutputSamples[entry][file][col]
+                            )
                         else:
                             # outputCSV.write(',')
                             csvOut += "0,"

@@ -103,7 +103,9 @@ df["m_diff"] = df.groupby("scanNum")["m"].diff()
 # as in https://en.wikipedia.org/wiki/Resolution_(mass_spectrometry)
 # https://en.wikipedia.org/wiki/Full_width_at_half_maximum 2.63
 # df['est_r'] = df['m']/df['m_diff']
-df["est_r"] = df["m"].min() / df["m_diff"]  # not sure why its one magnitude lower
+df["est_r"] = (
+    df["m"].min() / df["m_diff"]
+)  # not sure why its one magnitude lower
 
 
 # In[27]:
@@ -131,7 +133,9 @@ q95 = df.iloc[idxmax1.values].est_r.quantile(0.95)  # to remove outliers
 # In[74]:
 
 
-q95df = df.iloc[idxmax1.values].where(df.est_r.lt(q95))  # this is dirty need to improve
+q95df = df.iloc[idxmax1.values].where(
+    df.est_r.lt(q95)
+)  # this is dirty need to improve
 
 
 # In[75]:

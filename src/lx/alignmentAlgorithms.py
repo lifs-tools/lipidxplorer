@@ -147,7 +147,9 @@ def linearAlignment(
                 )
             except IndexError:
                 if mass:
-                    cluster[sample] = specEntry(mass=mass, content=None, charge=None)
+                    cluster[sample] = specEntry(
+                        mass=mass, content=None, charge=None
+                    )
                 else:
                     for s in listSamples:
                         try:
@@ -186,7 +188,6 @@ def linearAlignment(
     listResult[0].sort()
 
     for count in range(numLoops):
-
         current = 0
 
         if not current < (len(listResult[count]) - 1):
@@ -194,7 +195,6 @@ def linearAlignment(
             break
 
         while current < (len(listResult[count]) - 1):
-
             # routine for collecting all masses which are in partialRes
             index = 1
             svIndex = 0
@@ -209,7 +209,8 @@ def linearAlignment(
                     if deltaRes:
                         tmp = (
                             tolerance.tolerance
-                            + (listResult[count][current][0] - minMass) * deltaRes
+                            + (listResult[count][current][0] - minMass)
+                            * deltaRes
                         )
                     else:
                         tmp = tolerance.tolerance
@@ -218,7 +219,6 @@ def linearAlignment(
             lastEntry = None
 
             while listResult[count][current + index][0] - bin[0][0] < res:
-
                 bin.append(listResult[count][current + index])
 
                 if (current + index) < (len(listResult[count]) - 1):
@@ -247,7 +247,9 @@ def linearAlignment(
                 avg = 0
                 for i in bin:
                     for specentry in i[1]:
-                        sumMass += specentry.mass * specentry.content["intensity"]
+                        sumMass += (
+                            specentry.mass * specentry.content["intensity"]
+                        )
                         sumIntensity += specentry.content["intensity"]
                         cnt += 1
                 if sumIntensity == 0:
@@ -268,7 +270,10 @@ def linearAlignment(
             if listResult[count][current] == listResult[count][-1]:
                 if not listResult[count][current] in bin:
                     listResult[count + 1].append(
-                        [listResult[count][current][0], listResult[count][current][1]]
+                        [
+                            listResult[count][current][0],
+                            listResult[count][current][1],
+                        ]
                     )
 
     ##################
@@ -276,7 +281,6 @@ def linearAlignment(
 
     listOutput = []
     for entry in listResult[-1]:
-
         cluster = {}
         clusterToMerge = {}
         mass = None
@@ -295,7 +299,6 @@ def linearAlignment(
                     ]  # collect the entries for a maybe merging
 
             else:  # the sample has already an entry, so we have to merge
-
                 if merge:  # ...but only if merge is switched on
                     clusterToMerge[i.content["sample"]].append(
                         i

@@ -56,7 +56,9 @@ def make_lx2_masterscan(options) -> MasterScan:
     ms2_df = pd.concat(
         (
             agg_ms2_spectra_df(
-                df, occupancy=occup_between_ms2_scans, calibration=ms2_calibration
+                df,
+                occupancy=occup_between_ms2_scans,
+                calibration=ms2_calibration,
             )
             for df in spectra_dfs
         )
@@ -75,13 +77,16 @@ def make_lx2_masterscan(options) -> MasterScan:
     scan = MasterScan(options)
     scan.listSurveyEntry = listSurveyEntry
     scan.listSurveyEntry[0].massWindow = 0.01  # to avoid bug
-    scan.sampleOccThr["MS"] = [(0.0, [])]  # to avoid bug at def checkOccupation
+    scan.sampleOccThr["MS"] = [
+        (0.0, [])
+    ]  # to avoid bug at def checkOccupation
     scan.sampleOccThr["MSMS"] = [(0.0, [])]
 
     # for printing we need
     scan.listSamples = samples
 
     return scan
+
 
 def spectra_2_df_single(mzml, options):
     time_range = options["timerange"]
@@ -94,15 +99,21 @@ def spectra_2_df_single(mzml, options):
     include_text = options._data.get("lx2_include_text", None)
     exclude_text = options._data.get("lx2_exclude_text", None)
 
-    spectra_df = path2df(mzml, *time_range, *ms1_mass_range, *ms2_mass_range, polarity)
+    spectra_df = path2df(
+        mzml, *time_range, *ms1_mass_range, *ms2_mass_range, polarity
+    )
     if drop_fuzzy:
         spectra_df = drop_fuzzy(spectra_df)
 
     if include_text:
-        spectra_df = spectra_df.loc[spectra_df.filter_string.str.contains(exclude_text)]
+        spectra_df = spectra_df.loc[
+            spectra_df.filter_string.str.contains(exclude_text)
+        ]
 
     if exclude_text:
-        spectra_df = spectra_df.loc[~spectra_df.filter_string.str.contains(exclude_text)]
+        spectra_df = spectra_df.loc[
+            ~spectra_df.filter_string.str.contains(exclude_text)
+        ]
 
     return spectra_df
 
@@ -116,15 +127,20 @@ def spectra_2_df(options):
 def drop_fuzzy(spectra_df):
     fraction_of_average_intensity = 0.1
     spectras_sum_inty = (
-        spectra_df.loc[spectra_df.precursor_id.isna()].groupby("scan_id")["inty"].sum()
+        spectra_df.loc[spectra_df.precursor_id.isna()]
+        .groupby("scan_id")["inty"]
+        .sum()
     )
     sum_inty_mean = spectras_sum_inty.mean()
     spectras_sum_inty = spectras_sum_inty.to_dict()
 
     to_drop = []
-    for scan_id in spectra_df.scan_id.drop_duplicates():  # this maintains order
+    for (
+        scan_id
+    ) in spectra_df.scan_id.drop_duplicates():  # this maintains order
         if (
-            spectras_sum_inty[scan_id] < sum_inty_mean * fraction_of_average_intensity
+            spectras_sum_inty[scan_id]
+            < sum_inty_mean * fraction_of_average_intensity
         ):  # one order
             to_drop.append(scan_id)
         else:
@@ -167,7 +183,9 @@ def recalibrate_mzs(mzs, cals):
 
 
 def find_msmslist(precurmass, precurs, msmslists, tol=0.5):  # tol in daltons
-    dist, closest = min((abs(e - precurmass), idx) for idx, e in enumerate(precurs))
+    dist, closest = min(
+        (abs(e - precurmass), idx) for idx, e in enumerate(precurs)
+    )
     if dist > tol:
         return []
     return msmslists[closest]
@@ -183,7 +201,9 @@ def precur_msmslists_from(ms2_df, samples, occupancy=1):
         precurs.append(idx)
         msms_list = [
             ms2entry_factory(mass, dictIntensity, samples, polarity)
-            for mass, dictIntensity, polarity in mass_inty_generator_prec_ms2(g_df)
+            for mass, dictIntensity, polarity in mass_inty_generator_prec_ms2(
+                g_df
+            )
         ]
         msmslists.append(msms_list)
     return precurs, msmslists
@@ -193,14 +213,16 @@ def add_group_no_ms2_df(ms2_df, occupancy=1):
     # TODO try add group **after** groupby precursor
     # TODO make generic with add_group_no
     window_size = int(ms2_df.stem_first.nunique())
-    ms2_df.set_index(pd.RangeIndex(0, ms2_df.shape[0]), append=True, inplace=True)
+    ms2_df.set_index(
+        pd.RangeIndex(0, ms2_df.shape[0]), append=True, inplace=True
+    )
     ms2_df.reset_index(level=1, drop=True, inplace=True)
     ms2_df.sort_values(
         "mz_mean", ascending=False, inplace=True
     )  # decending because interpeak distance is going to zero
-    ms2_df["mz_diff"] = ms2_df.sort_values("mz_mean", ascending=False)["mz_mean"].diff(
-        -1
-    )
+    ms2_df["mz_diff"] = ms2_df.sort_values("mz_mean", ascending=False)[
+        "mz_mean"
+    ].diff(-1)
     ms2_df["cummin"] = (
         ms2_df[ms2_df["mz_diff"] > 0]["mz_diff"]
         .rolling(window_size)
@@ -339,7 +361,9 @@ def add_group_no(ms1_peaks, occupancy=0, cleanup_cols=True):
     ms1_peaks.sort_values(
         "mz", ascending=False, inplace=True
     )  # decending because interpeak distance is going to zero
-    ms1_peaks["mz_diff"] = ms1_peaks.sort_values("mz", ascending=False)["mz"].diff(-1)
+    ms1_peaks["mz_diff"] = ms1_peaks.sort_values("mz", ascending=False)[
+        "mz"
+    ].diff(-1)
     ms1_peaks["cummin"] = (
         ms1_peaks[ms1_peaks["mz_diff"] > 0]["mz_diff"]
         .rolling(window_size)
@@ -365,7 +389,9 @@ def add_group_no(ms1_peaks, occupancy=0, cleanup_cols=True):
         inplace=True,
     )
     if cleanup_cols:
-        ms1_peaks.drop("mz_diff cummin with_next".split(), axis=1, inplace=True)
+        ms1_peaks.drop(
+            "mz_diff cummin with_next".split(), axis=1, inplace=True
+        )
     ms1_peaks.reset_index(level=1, inplace=True)
 
     return None
@@ -381,9 +407,9 @@ def add_group_no_ms1_df(ms1_df, occupancy=1):
     ms1_df.sort_values(
         "mz_mean", ascending=False, inplace=True
     )  # decending because interpeak distance is going to zero
-    ms1_df["mz_diff"] = ms1_df.sort_values("mz_mean", ascending=False)["mz_mean"].diff(
-        -1
-    )
+    ms1_df["mz_diff"] = ms1_df.sort_values("mz_mean", ascending=False)[
+        "mz_mean"
+    ].diff(-1)
     ms1_df["cummin"] = (
         ms1_df[ms1_df["mz_diff"] > 0]["mz_diff"]
         .rolling(window_size)
@@ -463,7 +489,8 @@ def agg_ms2_spectra_df(df, occupancy=0, calibration=None):
     ]
     ms2_agg_peaks.drop(
         ms2_agg_peaks[
-            ms2_agg_peaks.mz_count < ms2_agg_peaks.scan_id_nunique_first * occupancy
+            ms2_agg_peaks.mz_count
+            < ms2_agg_peaks.scan_id_nunique_first * occupancy
         ].index,
         inplace=True,
     )
@@ -508,7 +535,9 @@ def se_factory(msmass, dictIntensity, samples, polarity, massWindow=0):
 def mass_inty_generator_prec_ms2(g_df):
     for _, inner_gdf in g_df.groupby("group_no"):
         mass = float(inner_gdf.mz_mean.mean())
-        dictIntensity = inner_gdf.set_index("stem_first")["inty_mean"].to_dict()
+        dictIntensity = inner_gdf.set_index("stem_first")[
+            "inty_mean"
+        ].to_dict()
         polarity = inner_gdf.polarity_first.to_list()[0]
         yield mass, dictIntensity, polarity
 

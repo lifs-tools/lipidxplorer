@@ -17,7 +17,6 @@ expected_lx2ms_path = r"tests/resources/small_test/small_test_LX2.sc"
 
 
 def read_options(project_path, make_msresolution_auto=False):
-
     project = Project()
     project.load(project_path)
     if make_msresolution_auto:
@@ -45,7 +44,7 @@ def make_masterscan(options, **kwargs):
         options["alignmentMethodMSMS"],
         options["scanAveragingMethod"],
         options["importMSMS"],
-        **kwargs
+        **kwargs,
     )
     return scan
 
@@ -63,6 +62,7 @@ def compareMasterScans(created, reference):
 
     return same
 
+
 def compareResults(created, reference):
     # col_headers = reference.listHead
     same = True
@@ -71,12 +71,11 @@ def compareResults(created, reference):
         reference_q = reference.dictQuery[k]
 
         for col_header in reference_q.dataMatrix:
-            for idx,val in enumerate(reference_q.dataMatrix[col_header]):
+            for idx, val in enumerate(reference_q.dataMatrix[col_header]):
                 if created_q.dataMatrix[col_header][idx] != val:
-                    same =False
+                    same = False
                     break
     return same
-
 
 
 # ================= mfql
@@ -88,11 +87,11 @@ def getMfqlFiles(root_mfql_dir):
     return {mfql.name: mfql.read_text() for mfql in mfqls}
 
 
-def makeResultsString(result, options)->str:
+def makeResultsString(result, options) -> str:
     # result = mfqlObj.result
     outputSeperator = ","
     # as in lxmain
-    strResult = ''
+    strResult = ""
     if result.mfqlOutput:
         strHead = ""
         if not options["noHead"]:
@@ -115,7 +114,9 @@ def makeResultsString(result, options)->str:
     return strResult
 
 
-def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = False, callback = None):
+def make_MFQL_result(
+    masterscan, mfqlFiles, options, log_steps=False, callback=None
+):
     mfqlObj = TypeMFQL(masterScan=masterscan)
     mfqlObj.options = options
     mfqlObj.outputSeperator = ","
@@ -131,22 +132,22 @@ def make_MFQL_result(masterscan, mfqlFiles, options, log_steps = False, callback
         progressCount=0,
         generateStatistics=options["statistics"],
         log_steps=log_steps,
-        callback=callback
+        callback=callback,
     )
 
     return mfqlObj.result
 
 
-def masterscan_2_df(masterscan_or_list, add_ids = False, add_og_intensity = False):
+def masterscan_2_df(masterscan_or_list, add_ids=False, add_og_intensity=False):
     def se_2_dict(se):
         res = dict(se.dictIntensity)
-        res['precurmass'] = se.precurmass
-        res['massWindow'] = se.massWindow
+        res["precurmass"] = se.precurmass
+        res["massWindow"] = se.massWindow
         if add_ids:
-            res['listMark'] = ','.join(map(str,se.listMark))
+            res["listMark"] = ",".join(map(str, se.listMark))
         if add_og_intensity:
             og_intensity = dict(se.dictBeforeIsocoIntensity)
-            og_intensity = {f"og_{k}":v for k,v in og_intensity.items()}
+            og_intensity = {f"og_{k}": v for k, v in og_intensity.items()}
             res.update(og_intensity)
 
         return res
@@ -157,5 +158,3 @@ def masterscan_2_df(masterscan_or_list, add_ids = False, add_og_intensity = Fals
         listSurveyEntry = masterscan_or_list.listSurveyEntry
 
     return pd.DataFrame((se_2_dict(se) for se in listSurveyEntry))
-
-

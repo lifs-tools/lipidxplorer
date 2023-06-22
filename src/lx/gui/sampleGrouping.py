@@ -33,7 +33,9 @@ class DragList(wx.ListCtrl):
         self.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
 
         info = wx.ListItem()
-        info.m_mask = wx.LIST_MASK_TEXT | wx.LIST_MASK_IMAGE | wx.LIST_MASK_FORMAT
+        info.m_mask = (
+            wx.LIST_MASK_TEXT | wx.LIST_MASK_IMAGE | wx.LIST_MASK_FORMAT
+        )
         info.m_image = -1
         info.m_format = 0
         info.m_text = ""
@@ -58,7 +60,9 @@ class DragList(wx.ListCtrl):
         l = []
         idx = -1
         while True:  # find all the selected items and put them in a list
-            idx = self.GetNextItem(idx, wx.LIST_NEXT_ALL, wx.LIST_STATE_SELECTED)
+            idx = self.GetNextItem(
+                idx, wx.LIST_NEXT_ALL, wx.LIST_STATE_SELECTED
+            )
             if idx == -1:
                 break
             l.append(self.getItemInfo(idx))
@@ -97,7 +101,9 @@ class DragList(wx.ListCtrl):
 
         if index == wx.NOT_FOUND:  # not clicked on an item
             if flags & (
-                wx.LIST_HITTEST_NOWHERE | wx.LIST_HITTEST_ABOVE | wx.LIST_HITTEST_BELOW
+                wx.LIST_HITTEST_NOWHERE
+                | wx.LIST_HITTEST_ABOVE
+                | wx.LIST_HITTEST_BELOW
             ):  # empty list or below last item
                 index = self.GetItemCount()  # append to end of list
             elif self.GetItemCount() > 0:
@@ -153,7 +159,6 @@ class ListDrop(wx.PyDropTarget):
     # Called when OnDrop returns True.  We need to get the data and
     # do something with it.
     def OnData(self, x, y, d):
-
         # copy the data from the drag source to our data object
         if self.GetData():
             # convert it back to a list and give it to the viewer
@@ -200,7 +205,9 @@ class DragTree(wx.TreeCtrl):
 
         self.treeroot = self.AddRoot("Groups")
         self.SetItemImage(self.treeroot, self.fldridx, wx.TreeItemIcon_Normal)
-        self.SetItemImage(self.treeroot, self.fldropenidx, wx.TreeItemIcon_Expanded)
+        self.SetItemImage(
+            self.treeroot, self.fldropenidx, wx.TreeItemIcon_Expanded
+        )
 
     def getItemInfo(self, idx):
         """Collect all relevant data of a listitem, and put it in a list"""
@@ -219,12 +226,10 @@ class DragTree(wx.TreeCtrl):
 
         selectedGroups = self.GetSelections()
         for item in selectedGroups:
-
             label = self.GetItemText(item)
             m = re.compile("^Group_[0-9]+")
 
             if m.match(label):
-
                 treeItems = []
                 groupItems = []
 
@@ -267,7 +272,6 @@ class DragTree(wx.TreeCtrl):
                 self.Delete(item)
 
             else:
-
                 i = self.GetItemText(item)
                 # treeItems = []
                 # groupItems = []
@@ -333,34 +337,29 @@ class DragTree(wx.TreeCtrl):
         # 		index += 1
 
         if isinstance(seq, list):  # comes from the left listctrl
-
             if not index.IsOk():  # index has no dropping goal
-
                 g = self.parent.OnAddGroup(None)
                 self.Expand(g)
 
             else:  # not self.GetItemText(index) == 'Groups':
-
                 if m.match(self.GetItemText(index)):
-
                     for i in seq:  # insert the item data
                         idx = self.AppendItem(index, i[2])
-                        self.SetItemImage(idx, self.fileidx, wx.TreeItemIcon_Normal)
+                        self.SetItemImage(
+                            idx, self.fileidx, wx.TreeItemIcon_Normal
+                        )
                     self.Expand(index)
 
                 else:
                     pass  # do nothing
 
         else:  # comes from the right treectrl
-
             if not index.IsOk():
-
                 g = self.parent.OnAddGroup(None)
                 if g:
                     self.Expand(g)
 
             elif m.match(self.GetItemText(index)):
-
                 idx = self.AppendItem(index, seq)
                 self.SetItemImage(idx, self.fileidx, wx.TreeItemIcon_Normal)
                 self.Expand(index)
@@ -378,7 +377,6 @@ class DragTree(wx.TreeCtrl):
                 # index += 1
 
     def AddGroup(self, label, items):
-
         r = self.GetRootItem()
         g = self.AppendItem(r, label)
         self.SetItemImage(g, self.fldridx, wx.TreeItemIcon_Normal)
@@ -415,7 +413,6 @@ class TreeDrop(wx.PyDropTarget):
     # Called when OnDrop returns True.  We need to get the data and
     # do something with it.
     def OnData(self, x, y, d):
-
         # Find insertion point.
         index, flags = self.dv.HitTest((x, y))
         m = re.compile("^Group_[0-9]+")
@@ -445,7 +442,6 @@ class TreeDrop(wx.PyDropTarget):
 
 class ChooseGroupsFrame(wx.Dialog):
     def __init__(self, *args, **kwds1):
-
         kwds = {}
         kwds["title"] = kwds1["title"]
 
@@ -495,7 +491,9 @@ class ChooseGroupsFrame(wx.Dialog):
         # for i in self.columnsToChoose:
         # 	self.listBox_left.InsertStringItem(1, i)
 
-        self.button_addGroup = buttons.GenButton(self, -1, "-> Add to a group ->")
+        self.button_addGroup = buttons.GenButton(
+            self, -1, "-> Add to a group ->"
+        )
         self.button_removeGroup = buttons.GenButton(self, -1, "<- Remove <-")
         self.button_addGroup.SetBackgroundColour(wx.Colour(200, 200, 200))
         self.button_removeGroup.SetBackgroundColour(wx.Colour(200, 200, 200))
@@ -524,12 +522,20 @@ class ChooseGroupsFrame(wx.Dialog):
 
         self.sizer_leftPart = wx.BoxSizer(wx.VERTICAL)
         self.sizer_leftPart.Add(self.label_left, 0, wx.ALIGN_LEFT | wx.ALL, 4)
-        self.sizer_leftPart.Add(self.dragList_left, 0, wx.ALIGN_LEFT | wx.ALL, 4)
-        self.sizer_leftPart.Add(self.button_addGroup, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+        self.sizer_leftPart.Add(
+            self.dragList_left, 0, wx.ALIGN_LEFT | wx.ALL, 4
+        )
+        self.sizer_leftPart.Add(
+            self.button_addGroup, 0, wx.ALIGN_CENTER | wx.ALL, 5
+        )
 
         self.sizer_rightPart = wx.BoxSizer(wx.VERTICAL)
-        self.sizer_rightPart.Add(self.label_right, 0, wx.ALIGN_LEFT | wx.ALL, 4)
-        self.sizer_rightPart.Add(self.dragList_right, 0, wx.ALIGN_LEFT | wx.ALL, 4)
+        self.sizer_rightPart.Add(
+            self.label_right, 0, wx.ALIGN_LEFT | wx.ALL, 4
+        )
+        self.sizer_rightPart.Add(
+            self.dragList_right, 0, wx.ALIGN_LEFT | wx.ALL, 4
+        )
         self.sizer_rightPart.Add(
             self.button_removeGroup, 0, wx.ALIGN_CENTER | wx.ALL, 5
         )
@@ -556,7 +562,6 @@ class ChooseGroupsFrame(wx.Dialog):
         self.Layout()
 
     def traverse(self, parent=None):
-
         if parent is None:
             parent = self.treeroot
         nc = self.dragList_right.GetChildrenCount(parent, False)
@@ -572,11 +577,9 @@ class ChooseGroupsFrame(wx.Dialog):
             yield child
 
     def OnAddGroup(self, evt, item=None):
-
         i1 = self.dragList_left.GetFirstSelected()
 
         if i1 >= 0:
-
             items = []
             itemsToGroup = []
             while i1 >= 0:
@@ -590,10 +593,11 @@ class ChooseGroupsFrame(wx.Dialog):
                 self.dragList_left.DeleteItem(item)
 
             self.groupCount += 1
-            g = self.dragList_right.AddGroup("Group_%d" % self.groupCount, itemsToGroup)
+            g = self.dragList_right.AddGroup(
+                "Group_%d" % self.groupCount, itemsToGroup
+            )
 
         elif self.dragList_right.GetSelections() != []:
-
             i1 = self.dragList_right.GetSelections()
 
             items = []
@@ -609,30 +613,33 @@ class ChooseGroupsFrame(wx.Dialog):
                 self.dragList_right.Delete(item)
 
             self.groupCount += 1
-            g = self.dragList_right.AddGroup("Group_%d" % self.groupCount, itemsToGroup)
+            g = self.dragList_right.AddGroup(
+                "Group_%d" % self.groupCount, itemsToGroup
+            )
 
         return g
 
     def OnRemoveGroup(self, evt):
-
         m = re.compile("^Group_[0-9]+")
         selectedGroups = self.dragList_right.GetSelections()
 
         for item in selectedGroups:
-
             if m.match(self.dragList_right.GetItemText(item)):
-
                 treeItems = []
                 groupItems = []
 
                 first, cookie = self.dragList_right.GetFirstChild(item)
 
                 if first.IsOk():  # are there childrens?
-                    treeItems.append((first, self.dragList_right.GetItemText(first)))
+                    treeItems.append(
+                        (first, self.dragList_right.GetItemText(first))
+                    )
                     i, cookie = self.dragList_right.GetNextChild(first, cookie)
 
                     while i.IsOk():
-                        treeItems.append((i, self.dragList_right.GetItemText(i)))
+                        treeItems.append(
+                            (i, self.dragList_right.GetItemText(i))
+                        )
                         i, cookie = self.dragList_right.GetNextChild(i, cookie)
 
                     for i in treeItems:
@@ -655,7 +662,6 @@ class ChooseGroupsFrame(wx.Dialog):
                 self.dragList_right.Delete(item)
 
     def OnOK(self, evt):
-
         # empty the group variable
         self.groups = []
 
@@ -679,7 +685,6 @@ class ChooseGroupsFrame(wx.Dialog):
         self.Destroy()
 
     def exportGroups(self):
-
         if self.groups != []:
             str = ""
             for g in self.groups:

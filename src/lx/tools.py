@@ -184,7 +184,6 @@ def op(operator, left, right):
 
 
 def removePermutations(listVariables):
-
     for i in listVariables:
         i.sort(cmp=peakMarking.TypeMark.cmpMassPermutation)
         # i.sort()
@@ -195,7 +194,6 @@ def removePermutations(listVariables):
         for j in listOut:
             same = True
             for index in range(len(i)):
-
                 # compare chemical sum compositions, to see, if the fragments are the same
                 if i[index].chemsc != j[index].chemsc:
                     same = False
@@ -302,7 +300,7 @@ def print_exc_plus():
 
 
 def printDict(di, format="%-25s %s"):
-    for (key, val) in list(di.items()):
+    for key, val in list(di.items()):
         print(format % (str(key) + ":", val))
 
 
@@ -372,7 +370,9 @@ def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
             attr, MethodWrapperType
         ):
             builtins.append(slot)
-        elif isinstance(attr, types.MethodType) or isinstance(attr, types.FunctionType):
+        elif isinstance(attr, types.MethodType) or isinstance(
+            attr, types.FunctionType
+        ):
             methods.append((slot, attr))
         elif isinstance(attr, type):
             classes.append((slot, attr))
@@ -417,7 +417,9 @@ def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
     print()
     print(
         prettyPrintCols(
-            ("Documentation string:", truncstring(objdoc, maxspew)), normalwidths, " "
+            ("Documentation string:", truncstring(objdoc, maxspew)),
+            normalwidths,
+            " ",
         )
     )
 
@@ -427,7 +429,9 @@ def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
         print()
         print(
             prettyPrintCols(
-                ("Built-in Methods:", truncstring(bi_str, maxspew)), normalwidths, ", "
+                ("Built-in Methods:", truncstring(bi_str, maxspew)),
+                normalwidths,
+                ", ",
             )
         )
 
@@ -435,11 +439,13 @@ def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
     if classes:
         print()
         print("Classes:")
-    for (classname, classtype) in classes:
+    for classname, classtype in classes:
         classdoc = getattr(classtype, "__doc__", None) or "<No documentation>"
         print(
             prettyPrintCols(
-                ("", classname, truncstring(classdoc, maxspew)), tabbedwidths, " "
+                ("", classname, truncstring(classdoc, maxspew)),
+                tabbedwidths,
+                " ",
             )
         )
 
@@ -447,11 +453,13 @@ def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
     if methods:
         print()
         print("Methods:")
-    for (methodname, method) in methods:
+    for methodname, method in methods:
         methoddoc = getattr(method, "__doc__", None) or "<No documentation>"
         print(
             prettyPrintCols(
-                ("", methodname, truncstring(methoddoc, maxspew)), tabbedwidths, " "
+                ("", methodname, truncstring(methoddoc, maxspew)),
+                tabbedwidths,
+                " ",
             )
         )
 
@@ -459,7 +467,7 @@ def dumpObj(obj, maxlen=77, lindent=24, maxspew=600):
     if attrs:
         print()
         print("Attributes:")
-    for (attr, val) in attrs:
+    for attr, val in attrs:
         print(
             prettyPrintCols(
                 ("", attr, truncstring(str(val), maxspew)), tabbedwidths, " "
@@ -554,7 +562,9 @@ class Browser:
             if len(info) > 80:
                 # it's a big list, or dict etc.
                 info = info[:80] + "..."
-        _piter = self.treestore.append(piter, [name, type(value).__name__, info])
+        _piter = self.treestore.append(
+            piter, [name, type(value).__name__, info]
+        )
         return _piter
 
     def make_instance(self, value, piter):
@@ -648,7 +658,6 @@ def reportout(text):
 
 
 def strToBool(s):
-
     if isinstance(s, type(True)):
         return s
 
@@ -701,13 +710,15 @@ def tidy_float(s):
 def number_shaver(
     ch,
     regx=re.compile(
-        "(?<![\d.])0*(?:" "(\d+)\.?|\.(0)" "|(\.\d+?)|(\d+\.\d+?)" ")0*(?![\d.])"
+        "(?<![\d.])0*(?:"
+        "(\d+)\.?|\.(0)"
+        "|(\.\d+?)|(\d+\.\d+?)"
+        ")0*(?![\d.])"
     ),
     repl=lambda mat: mat.group(mat.lastindex)
     if mat.lastindex != 3
     else "0" + mat.group(3),
 ):
-
     return regx.sub(repl, ch)
 
 
@@ -870,7 +881,6 @@ def unionSF(seq1, seq2, newTag):
 
 
 def log(str):
-
     print("[", sys._getframe(1).f_code.co_name, "]\n", str)
     print("")
 

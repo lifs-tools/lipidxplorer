@@ -38,7 +38,9 @@ import pickle
 # import mzTools
 
 MZ_EXT = (".raw", ".wiff", ".mzml", ".mzml.gz")
-MZ_EXT_2 = MZ_EXT + tuple((e + ".lnk") for e in MZ_EXT)  # with shortcuts included
+MZ_EXT_2 = MZ_EXT + tuple(
+    (e + ".lnk") for e in MZ_EXT
+)  # with shortcuts included
 
 MZ_WILDCARD = "MS Data Files (%s)|%s" % (
     "; ".join(("*" + e) for e in MZ_EXT),
@@ -242,7 +244,7 @@ def make_info_file(data_file, **kwargs):
         my_file.close()
 
         info_list = []
-        for (time, mz, scan_name, scan_type, scan_mode) in scan_list:
+        for time, mz, scan_name, scan_type, scan_mode in scan_list:
             my_dict = {
                 "time": time,
                 "mz": mz,
@@ -287,7 +289,9 @@ class mzInfoFile(tuple):
         else:
             return list(self)
 
-    def filter(self, list_key=None, value_list=None, value_range=None, sort_field=None):
+    def filter(
+        self, list_key=None, value_list=None, value_range=None, sort_field=None
+    ):
         """All purpose extract data function
 
         list_key provides the key used to exctract data
@@ -303,11 +307,15 @@ class mzInfoFile(tuple):
         temp_list = self.sort_by_field(field=list_key)
         if value_list != None:
             value_list = set(value_list)
-            extracted_list = [i for i in temp_list if i[list_key] in value_list]
+            extracted_list = [
+                i for i in temp_list if i[list_key] in value_list
+            ]
         elif value_range != None:
             (start_value, stop_value) = sorted(value_range)
             extracted_list = [
-                i for i in temp_list if start_value <= i[list_key] <= stop_value
+                i
+                for i in temp_list
+                if start_value <= i[list_key] <= stop_value
             ]
         else:
             extracted_list = temp_list
@@ -366,12 +374,16 @@ class mzFile(object):
             import lx.fileReader.mzAPI.mzURL
 
             self.__class__ = lx.fileReader.mzAPI.mzURL.mzFile
-            lx.fileReader.mzAPI.mzURL.mzFile.__init__(self, data_file, **kwargs)
+            lx.fileReader.mzAPI.mzURL.mzFile.__init__(
+                self, data_file, **kwargs
+            )
         elif data_file.lower().endswith(".wiff"):
             import lx.fileReader.lx.fileReader.mzAPI.mzWiff
 
             self.__class__ = lx.fileReader.mzAPI.mzWiff.mzFile
-            lx.fileReader.mzAPI.mzWiff.mzFile.__init__(self, data_file, **kwargs)
+            lx.fileReader.mzAPI.mzWiff.mzFile.__init__(
+                self, data_file, **kwargs
+            )
         elif data_file.lower().endswith(".raw"):
             import lx.fileReader.mzAPI.raw
 
@@ -400,7 +412,9 @@ class mzFile(object):
         """
         raise NotImplementedError("Subclasses must implement this method")
 
-    def scan_list(self, start_time=None, stop_time=None, start_mz=0, stop_mz=99999):
+    def scan_list(
+        self, start_time=None, stop_time=None, start_mz=0, stop_mz=99999
+    ):
         """Gets a list of [(time,mz)] in the time and mz range provided
 
         All full MS scans that fall within the time range are included.

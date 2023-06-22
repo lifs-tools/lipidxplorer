@@ -14,12 +14,17 @@ from lx.exceptions import LipidXException
 from math import sqrt
 from statistics import mean
 
+
 # peakCluster for merging peaks
 class peakCluster:
     def __init__(
-        self, mass=None, dictIntensity=None, polarity=None, charge=None, dictScans=None
+        self,
+        mass=None,
+        dictIntensity=None,
+        polarity=None,
+        charge=None,
+        dictScans=None,
     ):
-
         self.mass = mass
         self.dictIntensity = dictIntensity
         self.charge = charge
@@ -159,7 +164,9 @@ def printClusters(keys, listClusters):
                     # str +=  "  %.4f  " % cl[sample].content['intensity']
                 else:
                     try:
-                        str += " /{0:>9.4f} - {1:>12}/ ".format(cl[sample].mass, "")
+                        str += " /{0:>9.4f} - {1:>12}/ ".format(
+                            cl[sample].mass, ""
+                        )
                     except TypeError:
                         print("TypeError:", cl[sample].mass)
             else:
@@ -168,7 +175,6 @@ def printClusters(keys, listClusters):
 
 
 def avgPrecursor(content):
-
     precurmass = 0
     msms = []
     entries = []
@@ -182,13 +188,14 @@ def avgPrecursor(content):
     avgPrecurmass = precurmass / len(content)
 
     # def __init__(self, mass, retentionTime, charge, polarity, fileName, MSMSthreshold = None, table = None):
-    output = MSMS(avgPrecurmass, 0.0, None, content[0].polarity, content[0].fileName)
+    output = MSMS(
+        avgPrecurmass, 0.0, None, content[0].polarity, content[0].fileName
+    )
 
     return output
 
 
 def avgMSMSFragment(content):
-
     intensity = 0
     for entry in content:
         intensity += entry["intensity"]
@@ -271,11 +278,9 @@ def mkSurveyHeuristic(
     sc.dictBasePeakIntensity_MS = dictBasePeakIntensity_MS
 
     for charge in listPolarity:
-
         dictSpecEntry = {}
 
         for sample in sc.listSamples:
-
             # generate a list of specEntry elements
             dictSpecEntry[sample] = []
             for i in sorted(sc.dictSamples[sample].listPrecurmass):
@@ -294,7 +299,6 @@ def mkSurveyHeuristic(
 
         # generate MSMSEntry
         for i in listClusters:
-
             dictScans = {}.fromkeys(sc.listSamples)
             numOccSmpl = 0
             isEmpty = True
@@ -305,7 +309,9 @@ def mkSurveyHeuristic(
                     if i[sample].content:
                         numOccSmpl += 1
                         dictIntensity[sample] = i[sample].content
-                        peakList.append([i[sample].mass, {sample: i[sample].content}])
+                        peakList.append(
+                            [i[sample].mass, {sample: i[sample].content}]
+                        )
                         isEmpty = False
                     else:
                         dictIntensity[sample] = 0.0
@@ -316,7 +322,6 @@ def mkSurveyHeuristic(
                 dictScans[sample] = 1
 
             if not isEmpty:
-
                 if checkoccupation:
                     checkOcc = False
                     checkOcc = sc.checkOccupation(
@@ -407,7 +412,6 @@ def mkSurveyLinear(
     # return None
 
     for polarity in listPolarity:
-
         ### this stores the precursors as tab-separated file ###
         # for key in sc.listSamples:
         # 	f = open('pr-' + key[:-6] + '.txt', 'w')
@@ -445,7 +449,6 @@ def mkSurveyLinear(
             continue
 
         if len(listMSSpec[0]) == 1:
-
             entry = listMSSpec[0][0]
 
             for k in sc.listSamples:
@@ -532,18 +535,17 @@ def mkSurveyLinear(
         # TODO: do alignment according to sorted list by intensity
 
         for count in range(numLoops):
-
             current = 0
             lnext = []
             binres = binres_og if bin_res else None
 
             while current < (len(listMSSpec[count]) - 1):
-
                 # calc mass window for cluster
                 if sc.options["MSresolution"].kind != "Da":
                     res = (
                         sc.options["MSresolution"].tolerance
-                        + (listMSSpec[count][current].mass - minMass) * deltaRes
+                        + (listMSSpec[count][current].mass - minMass)
+                        * deltaRes
                     )
                     # res = sc.options['MSresolution'].getTinDA(listMSSpec[count][current].mass
                 else:
@@ -564,7 +566,9 @@ def mkSurveyLinear(
                 lastEntry = None
 
                 if bin_res:
-                    if binres == binres_og and newres1:  # for when the loop restart
+                    if (
+                        binres == binres_og and newres1
+                    ):  # for when the loop restart
                         binres = newres1
                         # bin_at_mass = lrsltMSMS[0].mass  to reduce  just based on mass
                     partialRes = binres  # * (lrsltMSMS[0].mass/bin_at_mass)  to reduce  just based on mass
@@ -577,7 +581,8 @@ def mkSurveyLinear(
                         bin_res
                         and binsize > 1
                         and bin_res
-                        and len(listMSSpec[count][current].peakList) >= binsize * 0.95
+                        and len(listMSSpec[count][current].peakList)
+                        >= binsize * 0.95
                     ):
                         break
                     lrsltMSMS.append(listMSSpec[count][current])
@@ -634,7 +639,6 @@ def mkSurveyLinear(
                 dictScans = {}
                 for i in lrsltMSMS:
                     for k in list(i.dictIntensity.keys()):
-
                         if k not in countIntensity:
                             countIntensity[k] = 1
                         else:
@@ -658,7 +662,6 @@ def mkSurveyLinear(
 
                 # is it not the last round?
                 if count != numLoops - 1:
-
                     # store list for a maybe second round
                     # for intensKey in dictIntensity.keys():
                     listMSSpec[count + 1].append(
@@ -672,9 +675,9 @@ def mkSurveyLinear(
                     )
                     for e in lrsltMSMS:
                         for p in e.peakList:
-                            if len(list(p[1].keys())) < 2 and not listMSSpec[count + 1][
-                                -1
-                            ].findPeak(key=list(p[1].keys())[0]):
+                            if len(list(p[1].keys())) < 2 and not listMSSpec[
+                                count + 1
+                            ][-1].findPeak(key=list(p[1].keys())[0]):
                                 listMSSpec[count + 1][-1].peakList.append(p)
 
                     # if current == len(listMSSpec[count]) - 1:
@@ -692,15 +695,23 @@ def mkSurveyLinear(
                                     dictScans=lastEntry.dictScans,
                                 )
                             )
-                            listMSSpec[count + 1][-1].peakList = lastEntry.peakList
+                            listMSSpec[count + 1][
+                                -1
+                            ].peakList = lastEntry.peakList
 
                     else:
                         for e in lrsltMSMS:
                             for p in e.peakList:
-                                if len(list(p[1].keys())) < 2 and not listMSSpec[
-                                    count + 1
-                                ][-1].findPeak(key=list(p[1].keys())[0]):
-                                    listMSSpec[count + 1][-1].peakList.append(p)
+                                if len(
+                                    list(p[1].keys())
+                                ) < 2 and not listMSSpec[count + 1][
+                                    -1
+                                ].findPeak(
+                                    key=list(p[1].keys())[0]
+                                ):
+                                    listMSSpec[count + 1][-1].peakList.append(
+                                        p
+                                    )
 
                 # it is the last round
                 else:
@@ -717,9 +728,9 @@ def mkSurveyLinear(
                     for e in lrsltMSMS:
                         for p in e.peakList:
                             # only add peaks which are not aligned
-                            if len(list(p[1].keys())) < 2 and not listMSSpec[count + 1][
-                                -1
-                            ].findPeak(key=list(p[1].keys())[0]):
+                            if len(list(p[1].keys())) < 2 and not listMSSpec[
+                                count + 1
+                            ][-1].findPeak(key=list(p[1].keys())[0]):
                                 listMSSpec[count + 1][-1].peakList.append(p)
 
                     if current == len(listMSSpec[count]) - 1:
@@ -738,20 +749,28 @@ def mkSurveyLinear(
                                         ].dictIntensity,
                                         charge=None,
                                         polarity=polarity,
-                                        dictScans=listMSSpec[count][-1].dictScans,
+                                        dictScans=listMSSpec[count][
+                                            -1
+                                        ].dictScans,
                                     )
                                 )
-                                listMSSpec[count + 1][-1].peakList = listMSSpec[count][
+                                listMSSpec[count + 1][
                                     -1
-                                ].peakList
+                                ].peakList = listMSSpec[count][-1].peakList
 
                     else:
                         for e in lrsltMSMS:
                             for p in e.peakList:
-                                if len(list(p[1].keys())) < 2 and not listMSSpec[
-                                    count + 1
-                                ][-1].findPeak(key=list(p[1].keys())[0]):
-                                    listMSSpec[count + 1][-1].peakList.append(p)
+                                if len(
+                                    list(p[1].keys())
+                                ) < 2 and not listMSSpec[count + 1][
+                                    -1
+                                ].findPeak(
+                                    key=list(p[1].keys())[0]
+                                ):
+                                    listMSSpec[count + 1][-1].peakList.append(
+                                        p
+                                    )
 
                     # assert that every peak has the right distance to its predesessor
                     # if len(listMSSpec[count + 1]) > 1:
@@ -760,7 +779,6 @@ def mkSurveyLinear(
         ### check if minimum occupation is fullfilled ###
         listMSSpec[-1] = reversed(listMSSpec[-1])
         for entry in listMSSpec[-1]:
-
             for k in sc.listSamples:
                 if not k in entry.dictIntensity:
                     entry.dictIntensity[k] = 0.0
@@ -853,7 +871,6 @@ def mkMSMSEntriesLinear_new(
     bin_res=False,
     collapse=False,
 ):
-
     ################################################################
     ###	merge MS/MS experiments if there are more than one for a ###
     ### precursor mass                                           ###
@@ -897,15 +914,20 @@ def mkMSMSEntriesLinear_new(
 
     # double check if the MSMSresolution was set
     if msmsThere:
-        if not scan.options["MSMSresolution"] or scan.options["MSMSresolution"] == 0:
+        if (
+            not scan.options["MSMSresolution"]
+            or scan.options["MSMSresolution"] == 0
+        ):
             raise LipidXException("no resolution setting given for MS/MS.")
 
-        if not scan.options["selectionWindow"] or scan.options["selectionWindow"] == 0:
+        if (
+            not scan.options["selectionWindow"]
+            or scan.options["selectionWindow"] == 0
+        ):
             raise LipidXException("no selection window given.")
 
     ### go seperately for the polarity ###
     for polarity in listPolarity:
-
         ############################################################
         ### Cluster the precursor masses and average MS/MS scans ###
 
@@ -914,21 +936,19 @@ def mkMSMSEntriesLinear_new(
 
         dictSpecEntry = {}
         for sample in scan.listSamples:
-
             if msmsThere:
-
                 # generate a list of specEntry elements
                 dictSpecEntry[sample] = []
                 scan.dictSamples[sample].listMsms.sort()
                 for i in scan.dictSamples[sample].listMsms:
                     dictSpecEntry[sample].append(
                         specEntry(
-                            mass=i.precurmass, content={"sample": sample, "MSMS": i}
+                            mass=i.precurmass,
+                            content={"sample": sample, "MSMS": i},
                         )
                     )
 
         if msmsThere:
-
             listClusters = linearAlignment(
                 list(dictSpecEntry.keys()),
                 dictSpecEntry,
@@ -937,7 +957,8 @@ def mkMSMSEntriesLinear_new(
                 mergeTolerance=scan.options["MSMSresolution"],
                 mergeDeltaRes=scan.options["MSMSresolutionDelta"],
                 bintolerance=scan.options["MSMStolerance"],
-                res_by_fullbin=scan.options["alignmentMethodMSMS"] == "calctol",
+                res_by_fullbin=scan.options["alignmentMethodMSMS"]
+                == "calctol",
             )
 
             # listClusters = r_linearAlignment(
@@ -1005,28 +1026,43 @@ def mkMSMSEntriesLinear_new(
                             p = cl[sample].content["MSMS"].polarity
 
                             # find base peak
-                            for msmsEntry in cl[sample].content["MSMS"].entries:
-                                if msmsEntry[1] > dictBasePeakIntensity[sample]:
-                                    dictBasePeakIntensity[sample] = msmsEntry[1]
+                            for msmsEntry in (
+                                cl[sample].content["MSMS"].entries
+                            ):
+                                if (
+                                    msmsEntry[1]
+                                    > dictBasePeakIntensity[sample]
+                                ):
+                                    dictBasePeakIntensity[sample] = msmsEntry[
+                                        1
+                                    ]
 
                             # collect MS/MS entries for specEntry
-                            for msmsEntry in cl[sample].content["MSMS"].entries:
-
+                            for msmsEntry in (
+                                cl[sample].content["MSMS"].entries
+                            ):
                                 # check if the threshold setting fits encompassing the scanCount
                                 # this is the first check for the threshold. Later when the MS/MS
                                 # were aligned and should be put into MSMSEntries, we'll check
                                 # the threshold again combined with the occupation threshold
                                 aboveThreshold = False
-                                if scan.options["MSMSthresholdType"] == "relative":
+                                if (
+                                    scan.options["MSMSthresholdType"]
+                                    == "relative"
+                                ):
                                     if msmsEntry[1] >= (
                                         dictBasePeakIntensity[sample]
                                         * scan.options["MSMSthreshold"]
-                                    ) / sqrt(cl[sample].content["MSMS"].scanCount):
+                                    ) / sqrt(
+                                        cl[sample].content["MSMS"].scanCount
+                                    ):
                                         aboveThreshold = True
                                 else:
                                     if msmsEntry[1] >= scan.options[
                                         "MSMSthreshold"
-                                    ] / sqrt(cl[sample].content["MSMS"].scanCount):
+                                    ] / sqrt(
+                                        cl[sample].content["MSMS"].scanCount
+                                    ):
                                         aboveThreshold = True
 
                                 if aboveThreshold:
@@ -1054,7 +1090,8 @@ def mkMSMSEntriesLinear_new(
                         deltaRes=scan.options["MSMSresolutionDelta"],
                         minMass=scan.options["MSMSmassrange"][0],
                         bintolerance=scan.options["MSMStolerance"],
-                        res_by_fullbin=scan.options["alignmentMethodMSMS"] == "calctol",
+                        res_by_fullbin=scan.options["alignmentMethodMSMS"]
+                        == "calctol",
                     )
                     if collapse:
                         cluster = collape_join_adjecent_clusters_msms(cluster)
@@ -1090,7 +1127,6 @@ def mkMSMSEntriesLinear_new(
                     # generate MSMSEntry with the dedicated intensities
                     if cluster:
                         for i in cluster:
-
                             # check for the occupation of every fragment
                             numSmpl = len(scan.listSamples)
                             numOccSmpl = 0
@@ -1104,12 +1140,12 @@ def mkMSMSEntriesLinear_new(
                                 try:
                                     if i[sample].content:
                                         numOccSmpl += 1
-                                        dictIntensity[sample] = i[sample].content[
-                                            "intensity"
-                                        ]
-                                        dictScanCount[sample] = i[sample].content[
-                                            "scanCount"
-                                        ]
+                                        dictIntensity[sample] = i[
+                                            sample
+                                        ].content["intensity"]
+                                        dictScanCount[sample] = i[
+                                            sample
+                                        ].content["scanCount"]
                                         peakList.append(
                                             [
                                                 i[sample].mass,
@@ -1140,13 +1176,21 @@ def mkMSMSEntriesLinear_new(
                                     mode="MSMS",
                                     dictBasePeakIntensity=dictBasePeakIntensity,
                                     threshold=scan.options["MSMSthreshold"],
-                                    threshold_type=scan.options["MSMSthresholdType"],
+                                    threshold_type=scan.options[
+                                        "MSMSthresholdType"
+                                    ],
                                 ):
+                                    if (
+                                        "%.6f" % avgPrecursorMass
+                                        not in msmsLists
+                                    ):
+                                        msmsLists[
+                                            "%.6f" % avgPrecursorMass
+                                        ] = []
 
-                                    if "%.6f" % avgPrecursorMass not in msmsLists:
-                                        msmsLists["%.6f" % avgPrecursorMass] = []
-
-                                    msmsLists["%.6f" % avgPrecursorMass].append(
+                                    msmsLists[
+                                        "%.6f" % avgPrecursorMass
+                                    ].append(
                                         MSMSEntry(
                                             mass=avgMass,
                                             dictIntensity=dictIntensity,
@@ -1166,7 +1210,6 @@ def mkMSMSEntriesLinear_new(
             ###################################
             ### Start association algorithm ###
             if msmsLists != {}:
-
                 print(
                     "Associate MSMSEntry objects to the according SurveyEntry objects (precursor masses)"
                 )
@@ -1180,7 +1223,6 @@ def mkMSMSEntriesLinear_new(
                         listSECharge.append(se)
 
                 if listSECharge != []:
-
                     listSurveyEntry = listSECharge
 
                     iterEntry = sorted(
@@ -1207,20 +1249,22 @@ def mkMSMSEntriesLinear_new(
                         onlyOneMSMS = True
 
                     if not onlyOneMSMS:
-
                         while iterListAvg:
-
                             # calc window if a PIS is given
                             if isPIS:
                                 window = tolerance.getTinDA(float(currentAvg))
 
                             # is the following precursor mass overlapping with the current?
-                            if float(currentAvg) + window > float(nextAvg):  # - window:
+                            if float(currentAvg) + window > float(
+                                nextAvg
+                            ):  # - window:
                                 listSE = []
                                 for se in listSurveyEntry:
                                     if (
-                                        float(currentAvg) - window < se.precurmass
-                                        and se.precurmass < float(nextAvg) + window
+                                        float(currentAvg) - window
+                                        < se.precurmass
+                                        and se.precurmass
+                                        < float(nextAvg) + window
                                     ):
                                         listSE.append(se)
 
@@ -1229,11 +1273,17 @@ def mkMSMSEntriesLinear_new(
                                         break
 
                                 for j in range(len(listSE)):
-                                    ni = abs(listSE[j].precurmass - float(currentAvg))
-                                    niplus1 = abs(listSE[j].precurmass - float(nextAvg))
+                                    ni = abs(
+                                        listSE[j].precurmass
+                                        - float(currentAvg)
+                                    )
+                                    niplus1 = abs(
+                                        listSE[j].precurmass - float(nextAvg)
+                                    )
                                     if ni < niplus1:
                                         for se in scan.get_SurveyEntry(
-                                            listSE[j].precurmass, listSE[j].polarity
+                                            listSE[j].precurmass,
+                                            listSE[j].polarity,
                                         ):
                                             se.listMSMS = msmsLists[currentAvg]
                                             for msmsentry in se.listMSMS:
@@ -1248,7 +1298,8 @@ def mkMSMSEntriesLinear_new(
                                                     exit(0)
                                     else:
                                         for se in scan.get_SurveyEntry(
-                                            listSE[j].precurmass, listSE[j].polarity
+                                            listSE[j].precurmass,
+                                            listSE[j].polarity,
                                         ):
                                             se.listMSMS = msmsLists[nextAvg]
                                             for msmsentry in se.listMSMS:
@@ -1265,8 +1316,10 @@ def mkMSMSEntriesLinear_new(
                             else:
                                 for se in listSurveyEntry:
                                     if (
-                                        float(currentAvg) - window < se.precurmass
-                                        and se.precurmass < float(currentAvg) + window
+                                        float(currentAvg) - window
+                                        < se.precurmass
+                                        and se.precurmass
+                                        < float(currentAvg) + window
                                     ):
                                         se.listMSMS = msmsLists[currentAvg]
                                         for msmsentry in se.listMSMS:
@@ -1290,8 +1343,10 @@ def mkMSMSEntriesLinear_new(
                             except StopIteration:
                                 for se in listSurveyEntry:
                                     if (
-                                        float(currentAvg) - window < se.precurmass
-                                        and se.precurmass < float(currentAvg) + window
+                                        float(currentAvg) - window
+                                        < se.precurmass
+                                        and se.precurmass
+                                        < float(currentAvg) + window
                                     ):
                                         se.listMSMS = msmsLists[currentAvg]
                                         for msmsentry in se.listMSMS:
@@ -1339,7 +1394,9 @@ def mass_close_enough(c, current):
     dist_mass_c = max(mass_c) - min(mass_c)
     dist_mass_curr = max(mass_curr) - min(mass_curr)
 
-    dist_mass_max = max(dist_mass_c, dist_mass_curr)  # to deal with one being zero
+    dist_mass_max = max(
+        dist_mass_c, dist_mass_curr
+    )  # to deal with one being zero
 
     mean_mass_c = sum(mass_c) / len(mass_c)
     mean_mass_curr = sum(mass_curr) / len(mass_curr)
@@ -1355,7 +1412,9 @@ def intensity_far_enough_on(c, current):
     intensities_c = [v.content["intensity"] for k, v in c.items() if v.content]
     mid_c_i = (max(intensities_c) + min(intensities_c)) / 2
 
-    intensities_curr = [v.content["intensity"] for k, v in current.items() if v.content]
+    intensities_curr = [
+        v.content["intensity"] for k, v in current.items() if v.content
+    ]
     mid_curr_i = (max(intensities_curr) + min(intensities_curr)) / 2
 
     mean_i = (mid_c_i + mid_curr_i) / 2
@@ -1364,15 +1423,19 @@ def intensity_far_enough_on(c, current):
     mid_scans_c = {
         k
         for k, v in c.items()
-        if v.content and mean_i - diff_i <= v.content["intensity"] <= mean_i + diff_i
+        if v.content
+        and mean_i - diff_i <= v.content["intensity"] <= mean_i + diff_i
     }
     mid_scans_curr = {
         k
         for k, v in current.items()
-        if v.content and mean_i - diff_i <= v.content["intensity"] <= mean_i + diff_i
+        if v.content
+        and mean_i - diff_i <= v.content["intensity"] <= mean_i + diff_i
     }
 
-    if mid_scans_c or mid_scans_curr:  # cant clearly distinguish high and low clusters
+    if (
+        mid_scans_c or mid_scans_curr
+    ):  # cant clearly distinguish high and low clusters
         return None
     else:
         return mean_i
@@ -1432,7 +1495,9 @@ def collape_join_adjecent_clusters_msms(cluster):
 
         # rearange the clusters
         high_cluster = {
-            k: v for k, v in c.items() if v.content and v.content["intensity"] > split_i
+            k: v
+            for k, v in c.items()
+            if v.content and v.content["intensity"] > split_i
         }
         high_cluster.update(
             {
@@ -1493,7 +1558,6 @@ def collape_join_adjecent_clusters(
     current = survey_entries[0]
     collapsing = False
     for c in survey_entries[1:]:
-
         if abs(c.peakMean - current.peakMean) > max_dist:
             res.append(current)
             current = c
@@ -1501,7 +1565,9 @@ def collape_join_adjecent_clusters(
             continue
 
         c_spectras = {k for k, v in c.dictIntensity.items() if v > 0}
-        current_spectras = {k for k, v in current.dictIntensity.items() if v > 0}
+        current_spectras = {
+            k for k, v in current.dictIntensity.items() if v > 0
+        }
 
         # update mac_dist
         if len(c_spectras) > 0.7 * len(c.dictIntensity):
@@ -1522,7 +1588,9 @@ def collape_join_adjecent_clusters(
             {k: v for k, v in c.dictIntensity.items() if v > 0}
         )
         current.peaks.extend(c.peaks)
-        current.dictScans.update({k: v for k, v in c.dictScans.items() if v > 1})
+        current.dictScans.update(
+            {k: v for k, v in c.dictScans.items() if v > 1}
+        )
 
         entry = SurveyEntry(
             msmass=sum([x[0] for x in current.peaks]) / len(current.peaks),
@@ -1546,7 +1614,6 @@ def collape_join_adjecent_clusters(
 def mkMSMSEntriesHeuristic_new(
     scan, listPolarity, numLoops=None, isPIS=False, relative=None
 ):
-
     ################################################################
     ###	merge MS/MS experiments if there are more than one for a ###
     ### precursor mass                                           ###
@@ -1584,15 +1651,20 @@ def mkMSMSEntriesHeuristic_new(
 
     # double check if the MSMSresolution was set
     if msmsThere:
-        if not scan.options["MSMSresolution"] or scan.options["MSMSresolution"] == 0:
+        if (
+            not scan.options["MSMSresolution"]
+            or scan.options["MSMSresolution"] == 0
+        ):
             raise LipidXException("no resolution setting given for MS/MS.")
 
-        if not scan.options["selectionWindow"] or scan.options["selectionWindow"] == 0:
+        if (
+            not scan.options["selectionWindow"]
+            or scan.options["selectionWindow"] == 0
+        ):
             raise LipidXException("no selection window given.")
 
     ### go seperately for the polarity ###
     for polarity in listPolarity:
-
         ############################################################
         ### Cluster the precursor masses and average MS/MS scans ###
 
@@ -1602,21 +1674,19 @@ def mkMSMSEntriesHeuristic_new(
         dictSpecEntry = {}
 
         for sample in scan.listSamples:
-
             if msmsThere:
-
                 # generate a list of specEntry elements
                 dictSpecEntry[sample] = []
                 scan.dictSamples[sample].listMsms.sort()
                 for i in scan.dictSamples[sample].listMsms:
                     dictSpecEntry[sample].append(
                         specEntry(
-                            mass=i.precurmass, content={"sample": sample, "MSMS": i}
+                            mass=i.precurmass,
+                            content={"sample": sample, "MSMS": i},
                         )
                     )
 
         if msmsThere:
-
             listClusters = heuristicAlignment(
                 list(dictSpecEntry.keys()), dictSpecEntry, tolerance
             )  # ,
@@ -1678,28 +1748,43 @@ def mkMSMSEntriesHeuristic_new(
                             p = cl[sample].content["MSMS"].polarity
 
                             # find base peak
-                            for msmsEntry in cl[sample].content["MSMS"].entries:
-                                if msmsEntry[1] > dictBasePeakIntensity[sample]:
-                                    dictBasePeakIntensity[sample] = msmsEntry[1]
+                            for msmsEntry in (
+                                cl[sample].content["MSMS"].entries
+                            ):
+                                if (
+                                    msmsEntry[1]
+                                    > dictBasePeakIntensity[sample]
+                                ):
+                                    dictBasePeakIntensity[sample] = msmsEntry[
+                                        1
+                                    ]
 
                             # collect MS/MS entries for specEntry
-                            for msmsEntry in cl[sample].content["MSMS"].entries:
-
+                            for msmsEntry in (
+                                cl[sample].content["MSMS"].entries
+                            ):
                                 # check if the threshold setting fits encompassing the scanCount
                                 # this is the first check for the threshold. Later when the MS/MS
                                 # were aligned and should be put into MSMSEntries, we'll check
                                 # the threshold again combined with the occupation threshold
                                 aboveThreshold = False
-                                if scan.options["MSMSthresholdType"] == "relative":
+                                if (
+                                    scan.options["MSMSthresholdType"]
+                                    == "relative"
+                                ):
                                     if msmsEntry[1] >= (
                                         dictBasePeakIntensity[sample]
                                         * scan.options["MSMSthreshold"]
-                                    ) / sqrt(cl[sample].content["MSMS"].scanCount):
+                                    ) / sqrt(
+                                        cl[sample].content["MSMS"].scanCount
+                                    ):
                                         aboveThreshold = True
                                 else:
                                     if msmsEntry[1] >= scan.options[
                                         "MSMSthreshold"
-                                    ] / sqrt(cl[sample].content["MSMS"].scanCount):
+                                    ] / sqrt(
+                                        cl[sample].content["MSMS"].scanCount
+                                    ):
                                         aboveThreshold = True
 
                                 if aboveThreshold:
@@ -1759,7 +1844,6 @@ def mkMSMSEntriesHeuristic_new(
                     # generate MSMSEntry with the dedicated intensities
                     if cluster:
                         for i in cluster:
-
                             # check for the occupation of every fragment
                             numSmpl = len(scan.listSamples)
                             numOccSmpl = 0
@@ -1773,12 +1857,12 @@ def mkMSMSEntriesHeuristic_new(
                                 try:
                                     if i[sample].content:
                                         numOccSmpl += 1
-                                        dictIntensity[sample] = i[sample].content[
-                                            "intensity"
-                                        ]
-                                        dictScanCount[sample] = i[sample].content[
-                                            "scanCount"
-                                        ]
+                                        dictIntensity[sample] = i[
+                                            sample
+                                        ].content["intensity"]
+                                        dictScanCount[sample] = i[
+                                            sample
+                                        ].content["scanCount"]
                                         peakList.append(
                                             [
                                                 i[sample].mass,
@@ -1812,13 +1896,21 @@ def mkMSMSEntriesHeuristic_new(
                                     mode="MSMS",
                                     dictBasePeakIntensity=dictBasePeakIntensity,
                                     threshold=scan.options["MSMSthreshold"],
-                                    threshold_type=scan.options["MSMSthresholdType"],
+                                    threshold_type=scan.options[
+                                        "MSMSthresholdType"
+                                    ],
                                 ):
+                                    if (
+                                        "%.6f" % avgPrecursorMass
+                                        not in msmsLists
+                                    ):
+                                        msmsLists[
+                                            "%.6f" % avgPrecursorMass
+                                        ] = []
 
-                                    if "%.6f" % avgPrecursorMass not in msmsLists:
-                                        msmsLists["%.6f" % avgPrecursorMass] = []
-
-                                    msmsLists["%.6f" % avgPrecursorMass].append(
+                                    msmsLists[
+                                        "%.6f" % avgPrecursorMass
+                                    ].append(
                                         MSMSEntry(
                                             mass=avgMass,
                                             dictIntensity=dictIntensity,
@@ -1839,7 +1931,6 @@ def mkMSMSEntriesHeuristic_new(
             ### Start association algorithm ###
 
             if msmsLists != {}:
-
                 print(
                     "Associate MSMSEntry objects to the according SurveyEntry objects (precursor masses)"
                 )
@@ -1853,11 +1944,11 @@ def mkMSMSEntriesHeuristic_new(
                         listSECharge.append(se)
 
                 if listSECharge != []:
-
                     listSurveyEntry = listSECharge
 
                     iterEntry = sorted(
-                        listSECharge, lambda x, y: cmp(x.precurmass, y.precurmass)
+                        listSECharge,
+                        lambda x, y: cmp(x.precurmass, y.precurmass),
                     ).__iter__()
 
                     iterListAvg = sortDictKeys(
@@ -1880,20 +1971,22 @@ def mkMSMSEntriesHeuristic_new(
                         onlyOneMSMS = True
 
                     if not onlyOneMSMS:
-
                         while iterListAvg:
-
                             # calc window if a PIS is given
                             if isPIS:
                                 window = tolerance.getTinDA(float(currentAvg))
 
                             # is the following precursor mass overlapping with the current?
-                            if float(currentAvg) + window > float(nextAvg):  # - window:
+                            if float(currentAvg) + window > float(
+                                nextAvg
+                            ):  # - window:
                                 listSE = []
                                 for se in listSurveyEntry:
                                     if (
-                                        float(currentAvg) - window < se.precurmass
-                                        and se.precurmass < float(nextAvg) + window
+                                        float(currentAvg) - window
+                                        < se.precurmass
+                                        and se.precurmass
+                                        < float(nextAvg) + window
                                     ):
                                         listSE.append(se)
 
@@ -1902,11 +1995,17 @@ def mkMSMSEntriesHeuristic_new(
                                         break
 
                                 for j in range(len(listSE)):
-                                    ni = abs(listSE[j].precurmass - float(currentAvg))
-                                    niplus1 = abs(listSE[j].precurmass - float(nextAvg))
+                                    ni = abs(
+                                        listSE[j].precurmass
+                                        - float(currentAvg)
+                                    )
+                                    niplus1 = abs(
+                                        listSE[j].precurmass - float(nextAvg)
+                                    )
                                     if ni < niplus1:
                                         for se in scan.get_SurveyEntry(
-                                            listSE[j].precurmass, listSE[j].polarity
+                                            listSE[j].precurmass,
+                                            listSE[j].polarity,
                                         ):
                                             se.listMSMS = msmsLists[currentAvg]
                                             for msmsentry in se.listMSMS:
@@ -1921,7 +2020,8 @@ def mkMSMSEntriesHeuristic_new(
                                                     exit(0)
                                     else:
                                         for se in scan.get_SurveyEntry(
-                                            listSE[j].precurmass, listSE[j].polarity
+                                            listSE[j].precurmass,
+                                            listSE[j].polarity,
                                         ):
                                             se.listMSMS = msmsLists[nextAvg]
                                             for msmsentry in se.listMSMS:
@@ -1938,8 +2038,10 @@ def mkMSMSEntriesHeuristic_new(
                             else:
                                 for se in listSurveyEntry:
                                     if (
-                                        float(currentAvg) - window < se.precurmass
-                                        and se.precurmass < float(currentAvg) + window
+                                        float(currentAvg) - window
+                                        < se.precurmass
+                                        and se.precurmass
+                                        < float(currentAvg) + window
                                     ):
                                         se.listMSMS = msmsLists[currentAvg]
                                         for msmsentry in se.listMSMS:
@@ -1963,8 +2065,10 @@ def mkMSMSEntriesHeuristic_new(
                             except StopIteration:
                                 for se in listSurveyEntry:
                                     if (
-                                        float(currentAvg) - window < se.precurmass
-                                        and se.precurmass < float(currentAvg) + window
+                                        float(currentAvg) - window
+                                        < se.precurmass
+                                        and se.precurmass
+                                        < float(currentAvg) + window
                                     ):
                                         se.listMSMS = msmsLists[currentAvg]
                                         for msmsentry in se.listMSMS:
@@ -2009,7 +2113,6 @@ def mkMSMSEntriesHeuristic_new(
 def mkMSMSEntriesHeuristic(
     scan, listPolarity, numLoops=None, isPIS=False, relative=None
 ):
-
     ################################################################
     ###	merge MS/MS experiments if there are more than one for a ###
     ### precursor mass                                           ###
@@ -2035,7 +2138,6 @@ def mkMSMSEntriesHeuristic(
             listPolarity.append(scan.dictSamples[k].polarity)
 
     for charge in listPolarity:
-
         msmsThere = False
         dictMSMS = {}
         listAt = []
@@ -2047,13 +2149,13 @@ def mkMSMSEntriesHeuristic(
                 msmsThere = True
 
             if msmsThere:
-
                 # generate a list of specEntry elements
                 dictSpecEntry[sample] = []
                 for i in scan.dictSamples[sample].listMsms:
                     dictSpecEntry[sample].append(
                         specEntry(
-                            mass=i.precurmass, content={"sample": sample, "MSMS": i}
+                            mass=i.precurmass,
+                            content={"sample": sample, "MSMS": i},
                         )
                     )
 
@@ -2073,7 +2175,9 @@ def mkMSMSEntriesHeuristic(
 
         if msmsThere:
             listClusters = heuristicAlignment(
-                list(dictSpecEntry.keys()), dictSpecEntry, TypeTolerance("Da", window)
+                list(dictSpecEntry.keys()),
+                dictSpecEntry,
+                TypeTolerance("Da", window),
             )
             # tolerance)
             # merge = mergeListMsms,
@@ -2085,7 +2189,6 @@ def mkMSMSEntriesHeuristic(
 
         # check again with this debugging output!
         if listClusters:
-
             # for cl in listClusters:
             # 	str = ''
             # 	for sample in dictSpecEntry.keys():#cl.keys():
@@ -2119,31 +2222,45 @@ def mkMSMSEntriesHeuristic(
 
                         # if an entrie is there
                         if cl[sample].content:
-
-                            for msmsEntry in cl[sample].content["MSMS"].entries:
-
+                            for msmsEntry in (
+                                cl[sample].content["MSMS"].entries
+                            ):
                                 # collect base peak intensities
-                                if msmsEntry[1] > dictBasePeakIntensity[sample]:
-                                    dictBasePeakIntensity[sample] = msmsEntry[1]
+                                if (
+                                    msmsEntry[1]
+                                    > dictBasePeakIntensity[sample]
+                                ):
+                                    dictBasePeakIntensity[sample] = msmsEntry[
+                                        1
+                                    ]
 
                                 p = cl[sample].content["MSMS"].polarity
 
                                 # check if the threshold setting fits encompassing the scanCount
-                                scanCount = cl[sample].content["MSMS"].scanCount
+                                scanCount = (
+                                    cl[sample].content["MSMS"].scanCount
+                                )
                                 if isPIS:
-                                    threshold = cl[sample].content["MSMS"].threshold
+                                    threshold = (
+                                        cl[sample].content["MSMS"].threshold
+                                    )
                                 else:
                                     threshold = scan.options["MSMSthreshold"]
 
                                 aboveThreshold = False
-                                if scan.options["MSMSthresholdType"] == "relative":
+                                if (
+                                    scan.options["MSMSthresholdType"]
+                                    == "relative"
+                                ):
                                     if msmsEntry[1] >= (
                                         (dictBasePeakIntensity[sample] / 100)
                                         * threshold
                                     ) / sqrt(scanCount):
                                         aboveThreshold = True
                                 else:
-                                    if msmsEntry[1] >= threshold / sqrt(scanCount):
+                                    if msmsEntry[1] >= threshold / sqrt(
+                                        scanCount
+                                    ):
                                         aboveThreshold = True
 
                                 if msmsEntry[1] >= cl[sample].content[
@@ -2177,7 +2294,6 @@ def mkMSMSEntriesHeuristic(
 
                     # generate MSMSEntry
                     if cluster:
-
                         # 	str = "\n>>> %f \n" % avgPrecursorMass
                         # 	for cl in cluster:
                         # 		for sample in dictSpecEntry.keys():#cl.keys():
@@ -2195,7 +2311,6 @@ def mkMSMSEntriesHeuristic(
                         # 		dbgfile.write(str)
 
                         for i in cluster:
-
                             numSmpl = len(scan.listSamples)
                             numOccSmpl = 0
                             isEmpty = True
@@ -2206,12 +2321,12 @@ def mkMSMSEntriesHeuristic(
                                 try:
                                     if i[sample].content:
                                         numOccSmpl += 1
-                                        dictIntensity[sample] = i[sample].content[
-                                            "intensity"
-                                        ]
-                                        dictScanCount[sample] = i[sample].content[
-                                            "scanCount"
-                                        ]
+                                        dictIntensity[sample] = i[
+                                            sample
+                                        ].content["intensity"]
+                                        dictScanCount[sample] = i[
+                                            sample
+                                        ].content["scanCount"]
                                         peakList.append(
                                             [
                                                 i[sample].mass,
@@ -2233,24 +2348,33 @@ def mkMSMSEntriesHeuristic(
                                     dictScanCount[sample] = 1
 
                             if not isEmpty:
-
                                 if isPIS:
                                     if scan.checkOccupation(
                                         dictIntensity,
                                         dictScanCount,
                                         mode="MSMS",
-                                        occThr=scan.options["MSMSminOccupation"],
-                                        threshold=scan.options["MSMSthreshold"],
+                                        occThr=scan.options[
+                                            "MSMSminOccupation"
+                                        ],
+                                        threshold=scan.options[
+                                            "MSMSthreshold"
+                                        ],
                                         threshold_type=scan.options[
                                             "MSMSthresholdType"
                                         ],
                                         dictBasePeakIntensity=dictBasePeakIntensity,
                                     ):
+                                        if (
+                                            "%.6f" % avgPrecursorMass
+                                            not in msmsLists
+                                        ):
+                                            msmsLists[
+                                                "%.6f" % avgPrecursorMass
+                                            ] = []
 
-                                        if "%.6f" % avgPrecursorMass not in msmsLists:
-                                            msmsLists["%.6f" % avgPrecursorMass] = []
-
-                                        msmsLists["%.6f" % avgPrecursorMass].append(
+                                        msmsLists[
+                                            "%.6f" % avgPrecursorMass
+                                        ].append(
                                             MSMSEntry(
                                                 mass=i[sample].mass,
                                                 dictIntensity=dictIntensity,
@@ -2267,19 +2391,29 @@ def mkMSMSEntriesHeuristic(
                                     if scan.checkOccupation(
                                         dictIntensity,
                                         dictScanCount,
-                                        occThrs=scan.options["MSMSminOccupation"],
-                                        threshold=scan.options["MSMSthreshold"],
+                                        occThrs=scan.options[
+                                            "MSMSminOccupation"
+                                        ],
+                                        threshold=scan.options[
+                                            "MSMSthreshold"
+                                        ],
                                         threshold_type=scan.options[
                                             "MSMSthresholdType"
                                         ],
                                         dictBasePeakIntensity=dictBasePeakIntensity,
                                         mode="MSMS",
                                     ):
+                                        if (
+                                            "%.6f" % avgPrecursorMass
+                                            not in msmsLists
+                                        ):
+                                            msmsLists[
+                                                "%.6f" % avgPrecursorMass
+                                            ] = []
 
-                                        if "%.6f" % avgPrecursorMass not in msmsLists:
-                                            msmsLists["%.6f" % avgPrecursorMass] = []
-
-                                        msmsLists["%.6f" % avgPrecursorMass].append(
+                                        msmsLists[
+                                            "%.6f" % avgPrecursorMass
+                                        ].append(
                                             MSMSEntry(
                                                 mass=i[sample].mass,
                                                 dictIntensity=dictIntensity,
@@ -2312,14 +2446,15 @@ def mkMSMSEntriesHeuristic(
                     listSECharge.append(se)
 
             if listSECharge != []:
-
                 listSurveyEntry = listSECharge
 
                 iterEntry = sorted(
                     listSECharge, lambda x, y: cmp(x.precurmass, y.precurmass)
                 ).__iter__()
 
-                iterListAvg = sortDictKeys(adict=msmsLists, compare="float").__iter__()
+                iterListAvg = sortDictKeys(
+                    adict=msmsLists, compare="float"
+                ).__iter__()
 
                 listSEcurrentAvg = []
                 listSEnextAvg = []
@@ -2327,14 +2462,14 @@ def mkMSMSEntriesHeuristic(
                 currentAvg = next(iterListAvg)
                 nextAvg = next(iterListAvg)
                 while iterListAvg:
-
                     # calc window if a PIS is given
                     if isPIS:
                         window = tolerance.getTinDA(float(currentAvg))
 
                     # is the following precursor mass overlapping with the current?
-                    if float(currentAvg) + window > float(nextAvg):  # - window:
-
+                    if float(currentAvg) + window > float(
+                        nextAvg
+                    ):  # - window:
                         listSE = []
                         for se in listSurveyEntry:
                             if (
@@ -2349,7 +2484,9 @@ def mkMSMSEntriesHeuristic(
 
                         for j in range(len(listSE)):
                             ni = abs(listSE[j].precurmass - float(currentAvg))
-                            niplus1 = abs(listSE[j].precurmass - float(nextAvg))
+                            niplus1 = abs(
+                                listSE[j].precurmass - float(nextAvg)
+                            )
                             if ni < niplus1:
                                 for se in scan.get_SurveyEntry(
                                     listSE[j].precurmass, listSE[j].polarity
@@ -2496,13 +2633,21 @@ def r_linearAlignment(
                 yield up_to
 
     df = pd.DataFrame(
-        ({"mass": e.mass, **e.content} for s in dictSamples.values() for e in s)
+        (
+            {"mass": e.mass, **e.content}
+            for s in dictSamples.values()
+            for e in s
+        )
     )
     df.sort_values("mass", inplace=True)
     # NOTE do it 3 times as per lx1...
     df["bins1"] = list(bin_generator(df.mass))
-    df["bins2"] = list(bin_generator(df.groupby("bins1")["mass"].transform("mean")))
-    df["bins3"] = list(bin_generator(df.groupby("bins2")["mass"].transform("mean")))
+    df["bins2"] = list(
+        bin_generator(df.groupby("bins1")["mass"].transform("mean"))
+    )
+    df["bins3"] = list(
+        bin_generator(df.groupby("bins2")["mass"].transform("mean"))
+    )
     # cluster to merge, if multiple peaks from same sample
     g = df.groupby(["bins3", "sample"])
     df["sample_count"] = g.cumcount()
@@ -2603,7 +2748,9 @@ def linearAlignment(
                 )
             except IndexError:
                 if mass:
-                    cluster[sample] = specEntry(mass=mass, content=None, charge=None)
+                    cluster[sample] = specEntry(
+                        mass=mass, content=None, charge=None
+                    )
                 else:
                     for s in listSamples:
                         try:
@@ -2674,7 +2821,6 @@ def linearAlignment(
         binres_og = binres
 
     for count in range(numLoops):
-
         current = 0
         binres = binres_og if res_by_fullbin else None
 
@@ -2687,7 +2833,6 @@ def linearAlignment(
             break
 
         while current < (len(listResult[count]) - 1):
-
             # routine for collecting all masses which are in partialRes
             index = 1
             bin = [listResult[count][current]]
@@ -2700,7 +2845,8 @@ def linearAlignment(
                     if deltaRes:
                         tmp = (
                             tolerance.tolerance
-                            + (listResult[count][current][0] - minMass) * deltaRes
+                            + (listResult[count][current][0] - minMass)
+                            * deltaRes
                         )
                     else:
                         tmp = tolerance.tolerance
@@ -2715,7 +2861,9 @@ def linearAlignment(
                     res = listResult[count][current][0] / tmp
 
             else:
-                raise LipidXException("The given tolerance is not of TypeTolerance()")
+                raise LipidXException(
+                    "The given tolerance is not of TypeTolerance()"
+                )
 
             # override resolution
             if (
@@ -2738,16 +2886,15 @@ def linearAlignment(
                 if binres == binres_og and newres1 is not None:
                     # bin_at_mass = bin[0][0] to reduce  just based on mass
                     binres = newres1
-                res = (
-                    binres  # * (bin[0][0] / bin_at_mass) to reduce  just based on mass
-                )
+                res = binres  # * (bin[0][0] / bin_at_mass) to reduce  just based on mass
 
             while abs(listResult[count][current + index][0] - bin[0][0]) < res:
                 if (
                     res_by_fullbin
                     and binsize > 1
                     and res_by_fullbin
-                    and len(listResult[count][current + index][1]) >= binsize * 0.95
+                    and len(listResult[count][current + index][1])
+                    >= binsize * 0.95
                 ):  # there is more than one bin (its just a merge) and the element is not already full
                     break  # bin is already full
 
@@ -2789,7 +2936,9 @@ def linearAlignment(
                 avg = 0
                 for i in bin:
                     for specentry in i[1]:
-                        sumMass += specentry.mass * specentry.content["intensity"]
+                        sumMass += (
+                            specentry.mass * specentry.content["intensity"]
+                        )
                         sumIntensity += specentry.content["intensity"]
                         cnt += 1
                 if sumIntensity == 0:
@@ -2820,7 +2969,10 @@ def linearAlignment(
             if listResult[count][current] == listResult[count][-1]:
                 if not listResult[count][current] in bin:
                     listResult[count + 1].append(
-                        [listResult[count][current][0], listResult[count][current][1]]
+                        [
+                            listResult[count][current][0],
+                            listResult[count][current][1],
+                        ]
                     )
 
     ##################
@@ -2828,7 +2980,6 @@ def linearAlignment(
 
     listOutput = []
     for entry in listResult[-1]:
-
         cluster = {}
         clusterToMerge = {}
         mass = None
@@ -2847,7 +2998,6 @@ def linearAlignment(
                     ]  # collect the entries for a maybe merging
 
             else:  # the sample has already an entry, so we have to merge
-
                 if merge:  # ...but only if merge is switched on
                     clusterToMerge[i.content["sample"]].append(
                         i
@@ -2910,7 +3060,6 @@ def sparseHierarchicalAlignment(
     msThreshold=None,
     minMass=None,
 ):
-
     # get max length of peak in the spectra
     speclen = 0
     for k in list(dictSamples.keys()):
@@ -2975,7 +3124,6 @@ def sparseHierarchicalAlignment(
 
     results = []
     while spectrum != []:  # circle throught the merged peak list
-
         ### get the window size from the first peak of the spectrum ###
         if isinstance(tolerance, TypeTolerance):
             if tolerance.kind == "Da":
@@ -2983,7 +3131,8 @@ def sparseHierarchicalAlignment(
             else:
                 if deltaRes:
                     tmp = (
-                        tolerance.tolerance + (spectrum[0][0].mass - minMass) * deltaRes
+                        tolerance.tolerance
+                        + (spectrum[0][0].mass - minMass) * deltaRes
                     )
                 else:
                     tmp = tolerance.tolerance
@@ -3007,7 +3156,9 @@ def sparseHierarchicalAlignment(
 
         ### cluster the bin ###
         cl = HierarchicalClustering(
-            toCluster, lambda x, y: abs(x[0].mass - y[0].mass), linkage="complete"
+            toCluster,
+            lambda x, y: abs(x[0].mass - y[0].mass),
+            linkage="complete",
         )
 
         # get all clusters which are at the level of the resolution
@@ -3025,7 +3176,6 @@ def sparseHierarchicalAlignment(
                 if append:
                     curtain.append(i)
         else:
-
             append = True
             for tc in toCluster:
                 if c[0][1] == tc[1]:
@@ -3163,11 +3313,8 @@ def heuristicAlignment(
     # read in the next value for A[smallest]
     mass = None
     for sample in listSamples:
-
         if sample == pivotSample:
-
             try:
-
                 peakIndex[sample] += 1
 
                 mass = dictSamples[sample][peakIndex[sample]].mass
@@ -3186,9 +3333,7 @@ def heuristicAlignment(
                     A[sample] = [mass, None]
 
         else:
-
             if abs(smallest[1] - A[sample][0]) < res:
-
                 BA.append([sample] + deepcopy(A[sample]))
 
                 try:
@@ -3198,10 +3343,11 @@ def heuristicAlignment(
                     mass = dictSamples[sample][peakIndex[sample]].mass
 
                     A[sample][0] = dictSamples[sample][peakIndex[sample]].mass
-                    A[sample][1] = dictSamples[sample][peakIndex[sample]].content
+                    A[sample][1] = dictSamples[sample][
+                        peakIndex[sample]
+                    ].content
 
                 except IndexError:
-
                     if mass:
                         A[sample] = [mass, None]
                     else:
@@ -3228,7 +3374,6 @@ def heuristicAlignment(
         endTrigger[sample] = 0
 
     while isNotAtTheEndOfTheSpectrum:
-
         ### repeat the steps above
 
         # find the smallest mass in dictA:
@@ -3252,14 +3397,14 @@ def heuristicAlignment(
         mass = None
         # read in the next value for A[smallest]
         for sample in listSamples:
-
             if sample == pivotSample:
-
                 peakIndex[sample] += 1
                 try:
                     mass = dictSamples[sample][peakIndex[sample]].mass
                     A[sample][0] = dictSamples[sample][peakIndex[sample]].mass
-                    A[sample][1] = dictSamples[sample][peakIndex[sample]].content
+                    A[sample][1] = dictSamples[sample][
+                        peakIndex[sample]
+                    ].content
 
                 except IndexError:
                     # peakIndex[sample] -= 1
@@ -3276,17 +3421,19 @@ def heuristicAlignment(
                         A[sample] = [mass, None]
 
             else:
-
                 if abs(smallest[1] - A[sample][0]) < res:
-
                     BB.append([sample] + deepcopy(A[sample]))
 
                     # get next entry for A
                     peakIndex[sample] += 1
                     try:
                         mass = dictSamples[sample][peakIndex[sample]].mass
-                        A[sample][0] = dictSamples[sample][peakIndex[sample]].mass
-                        A[sample][1] = dictSamples[sample][peakIndex[sample]].content
+                        A[sample][0] = dictSamples[sample][
+                            peakIndex[sample]
+                        ].mass
+                        A[sample][1] = dictSamples[sample][
+                            peakIndex[sample]
+                        ].content
 
                     except IndexError:
                         # peakIndex[sample] -= 1
@@ -3346,7 +3493,6 @@ def heuristicAlignment(
                     break
 
             if withinRange:
-
                 # repeat the clustering step
                 cl = HierarchicalClustering(
                     BA, lambda x, y: abs(x[1] - y[1]), linkage="complete"
@@ -3412,7 +3558,6 @@ def heuristicAlignment(
     ### put the output in a specEntry list ###
     listMSSpec = []
     for index in range(len(output)):
-
         cluster = {}
         for cl in output[index][1]:
             if cl[0] in listSamples:
@@ -3429,7 +3574,6 @@ def heuristicAlignment(
 
     index = 0
     while index < len(listMSSpec):
-
         # check for empty entries
         mass = None
         noMassFound = False
@@ -3439,12 +3583,17 @@ def heuristicAlignment(
                     mass = listMSSpec[index][sample].mass
                     content = listMSSpec[index][sample].content
 
-                    listMSSpec[index][sample] = specEntry(mass=mass, content=content)
+                    listMSSpec[index][sample] = specEntry(
+                        mass=mass, content=content
+                    )
 
                 else:
                     if not mass:
                         for s in listSamples:
-                            if s in listMSSpec[index] and listMSSpec[index][s].mass:
+                            if (
+                                s in listMSSpec[index]
+                                and listMSSpec[index][s].mass
+                            ):
                                 mass = listMSSpec[index][s].mass
                                 break
 
@@ -3452,11 +3601,16 @@ def heuristicAlignment(
                         noMassFound = True
 
                     if mass:
-                        listMSSpec[index][sample] = specEntry(mass=mass, content=None)
+                        listMSSpec[index][sample] = specEntry(
+                            mass=mass, content=None
+                        )
             else:
                 if not mass:
                     for s in listSamples:
-                        if s in listMSSpec[index] and listMSSpec[index][s].mass:
+                        if (
+                            s in listMSSpec[index]
+                            and listMSSpec[index][s].mass
+                        ):
                             mass = listMSSpec[index][s].mass
                             break
 
@@ -3464,7 +3618,9 @@ def heuristicAlignment(
                     noMassFound = True
 
                 if mass:
-                    listMSSpec[index][sample] = specEntry(mass=mass, content=None)
+                    listMSSpec[index][sample] = specEntry(
+                        mass=mass, content=None
+                    )
 
         if noMassFound:
             del listMSSpec[index]
@@ -3561,7 +3717,6 @@ def mergeListMsms(
 
     fadi_percentageMSMS = readSpectra.fadi_percentageMSMS
     if dictSpecEntries["one"] != []:
-
         listClusters = align(
             ["one"],
             dictSpecEntries,
@@ -3622,7 +3777,8 @@ def mergeSumIntensity(
     res_by_fullbin=False,
 ):  # bintolerance , res_by_fullbin unuse but needed for the arg signature
     """This function calculates the average intensity (average over the given
-    peaks and not from all scans) and the average weighted m/z for the peak mass."""
+    peaks and not from all scans) and the average weighted m/z for the peak mass.
+    """
 
     out = listSpecEntries[0]
 
@@ -3673,7 +3829,6 @@ def mergeListMsms_noContainer(
     sumEntries = []
     sumScanCount = 0
     for entry in listSpecEntries:
-
         sumMass += entry.mass
 
         e = entry.content["entries"]
@@ -3733,7 +3888,12 @@ def mergeListMsms_noContainer(
 
 
 def alignPIS(
-    sc, listPolarity, numLoops=None, deltaRes=0, minocc=None, alignmentMS="linear"
+    sc,
+    listPolarity,
+    numLoops=None,
+    deltaRes=0,
+    minocc=None,
+    alignmentMS="linear",
 ):
     """Align the MS spectra."""
 
@@ -3749,7 +3909,6 @@ def alignPIS(
     listSample = []
     listMSmass = []
     for key in sc.listSamples:
-
         polarity = sc.dictSamples[key].polarity
 
         # generate list of all sample names belonging to the polarity
@@ -3770,20 +3929,19 @@ def alignPIS(
         for mass in sorted(
             list(dictScans.keys()), cmp=lambda x, y: cmp(float(x), float(y))
         ):
-
             dictMassEntry[mass] = []
             dictSpecEntry = {}
 
             count = 1
             for entry in dictScans[mass]:
-
                 mKey = "%s%d" % (mass, count)
                 dictSpecEntry[mKey] = []
 
                 for e in entry.entries:
                     dictSpecEntry[mKey].append(
                         specEntry(
-                            mass=e[0], content={"sample": mKey, "intensity": e[1]}
+                            mass=e[0],
+                            content={"sample": mKey, "intensity": e[1]},
                         )
                     )
                 count += 1
@@ -3821,7 +3979,6 @@ def alignPIS(
             # 	print str
 
             for cl in listClusters:
-
                 ### calculate intensity weigthed mass average ###
 
                 # get maximum intensity
@@ -3842,14 +3999,15 @@ def alignPIS(
                         numEntries += 1
                         sumMass += cl[sample].mass
                         sumIntensity += cl[sample].content["intensity"]
-                        sumIntensityW += cl[sample].content["intensity"] / maxIntensity
+                        sumIntensityW += (
+                            cl[sample].content["intensity"] / maxIntensity
+                        )
                         sumIntensityWMass += (
                             cl[sample].content["intensity"] / maxIntensity
                         ) * cl[sample].mass
 
                 # if the peak is there, append it on the result list
                 if sumIntensityWMass > 0.0:
-
                     avgMass = sumIntensityWMass / sumIntensityW
                     ### end calculate intensity weigthed mass average ###
 
@@ -3880,7 +4038,9 @@ def alignPIS(
             )
         elif alignmentMS == "heuristic":
             listClusters = heuristicAlignment(
-                list(dictSpecEntry.keys()), dictSpecEntry, sc.options["MSMSresolution"]
+                list(dictSpecEntry.keys()),
+                dictSpecEntry,
+                sc.options["MSMSresolution"],
             )
 
         # for cl in listClusters:
@@ -4018,7 +4178,6 @@ def mergePIS(sample, listSpecEntries, align, mergeTolerance, mergeDeltaRes):
 
 
 def doClusterMSMS(res, msms):
-
     retMsms = MSMS(
         mass=msms.precurmass,
         retentionTime=None,
@@ -4041,7 +4200,6 @@ def doClusterMSMS(res, msms):
         return msms
 
     while iterEntry:
-
         # set lookaheadFlag. It is important for the last entry
         lookaheadFlag = False
 
@@ -4116,7 +4274,6 @@ def doClusterMSMS(res, msms):
 
 
 def doClusterSample(res, sample):
-
     """lpdxCluster algorithm
     see p.1.b
     Go through the masses, mass by mass, and look if there are masses in the
@@ -4149,7 +4306,6 @@ def doClusterSample(res, sample):
         return sample
 
     while itersampl:
-
         # get first mass
         precurmasslist = []
         precurmasslist.append(deepcopy(pivot))

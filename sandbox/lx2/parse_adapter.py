@@ -1,6 +1,13 @@
 import warnings
 from collections import namedtuple
-from data_structs import Obj, ElementSeq, Evaluable, Func, ReportItem, ReportCol
+from data_structs import (
+    Obj,
+    ElementSeq,
+    Evaluable,
+    Func,
+    ReportItem,
+    ReportCol,
+)
 from chemParser import txt2dict
 from targets import Targets_util
 import pandas as pd
@@ -114,7 +121,6 @@ def reportCols2DF(reportCols, df):
 
 
 if __name__ == "__main__":
-
     filename = "test_resources\\small_test\\170213_CE_pos_MSMS.mfql"
     from mfql_Parser import fromFile
 

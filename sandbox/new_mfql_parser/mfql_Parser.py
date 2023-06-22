@@ -2,7 +2,15 @@ import warnings
 
 import ply.yacc as yacc
 
-from data_structs import mfql_dict, Var, Obj, ElementSeq, Evaluable, ReportItem, Func
+from data_structs import (
+    mfql_dict,
+    Var,
+    Obj,
+    ElementSeq,
+    Evaluable,
+    ReportItem,
+    Func,
+)
 from mfql_lexer import tokens, lexer
 
 tokens = tokens  # for linting
@@ -509,15 +517,15 @@ if __name__ == "__main__":
         PRERR = "%2.2f" % "(pr.errppm)";
         PRI = pr.intensity;
 
-        FA1M = FA2.mass; 
+        FA1M = FA2.mass;
         FA1C = "%d" % "((FA2.chemsc)[C])";
-        FA1DB = "%d" % "((FA2.chemsc)[db] - 1.5)"; 
+        FA1DB = "%d" % "((FA2.chemsc)[db] - 1.5)";
         FA1ERR = "%2.2f" % "(FA2.errppm)";
         FA1I = FA2.intensity;
 
-        FA2M = FA1.mass; 
+        FA2M = FA1.mass;
         FA2C = "%d" % "((FA1.chemsc)[C])";
-        FA2DB = "%d" % "((FA1.chemsc)[db] - 1.5)"; 
+        FA2DB = "%d" % "((FA1.chemsc)[db] - 1.5)";
         FA2ERR = "%2.2f" % "(FA1.errppm)";
         FA2I = FA1.intensity;
         ;

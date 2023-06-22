@@ -42,22 +42,30 @@ from lx.options import Options, optionsDict
 
 
 def lpdxImportCLI(projpath=None):
-
     ######################################################
     ###              collect the options               ###
 
     confParse = configparser.ConfigParser()
 
-    optParser = OptionParser(usage="\nlpdxCLI.py [options] [experiment/] [output.sc]\n")
+    optParser = OptionParser(
+        usage="\nlpdxCLI.py [options] [experiment/] [output.sc]\n"
+    )
 
     # import part
     optParser.add_option(
-        "-p", "--prj", dest="prj", help="path of the project file", metavar="FILE"
+        "-p",
+        "--prj",
+        dest="prj",
+        help="path of the project file",
+        metavar="FILE",
     )
     # optParser.add_option("-i", "--ini", dest="ini",
     # 				 help="path of the *.ini FILE if different from './lpdxImportSettings.ini'", metavar = "FILE")
     optParser.add_option(
-        "-s", "--setting", dest="setting", help="section of a setting from *.ini file"
+        "-s",
+        "--setting",
+        dest="setting",
+        help="section of a setting from *.ini file",
     )
 
     optParser.add_option(
@@ -331,9 +339,14 @@ def lpdxImportCLI(projpath=None):
         project.options["masterScan"] = project.options["masterScanImport"]
     elif cliOptions.masterScan is None:
         try:
-            project.options["masterScan"] = args[1]  # cliOptions.masterScanFile
+            project.options["masterScan"] = args[
+                1
+            ]  # cliOptions.masterScanFile
         except IndexError:
-            print("ERROR: The masterscan file was not specified. Use the ", end=" ")
+            print(
+                "ERROR: The masterscan file was not specified. Use the ",
+                end=" ",
+            )
             print("option -m")
 
     if projpath is not None:

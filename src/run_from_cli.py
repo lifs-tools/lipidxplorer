@@ -27,7 +27,9 @@ def direct(project_path):
     options_og = project.getOptions()
     options = generateOptions.fromFullOptions(options_og)
     # options = generateOptions.setOptions2likelyDefault(options)
-    options = generateOptions.setOptions_fromImputPaths(input_files_dir, root_mfql_dir)
+    options = generateOptions.setOptions_fromImputPaths(
+        input_files_dir, root_mfql_dir
+    )
 
     # lxmain
     scan = doImport(  # note lpdxImportDEF_new is used when with gui

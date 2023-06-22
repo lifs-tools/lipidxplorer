@@ -8,8 +8,9 @@ from math import *
 
 
 class TypeBooleanTerm:
-    def __init__(self, sign, rightSide, leftSide, boolOp, mfqlObj, environment):
-
+    def __init__(
+        self, sign, rightSide, leftSide, boolOp, mfqlObj, environment
+    ):
         self.leftSide = leftSide
         self.rightSide = rightSide
         self.boolOp = boolOp
@@ -17,15 +18,17 @@ class TypeBooleanTerm:
         self.mfqlObj = mfqlObj
         self.environment = environment
 
-    def evaluate(self, scane=None, mode=None, vars=None, queryName=None, sc=None):
-
+    def evaluate(
+        self, scane=None, mode=None, vars=None, queryName=None, sc=None
+    ):
         # for log
         func = {"func": "BoolTrm.eval"}
 
         result = []
 
-        if isinstance(self.rightSide, TypeExpr) and isinstance(self.leftSide, TypeExpr):
-
+        if isinstance(self.rightSide, TypeExpr) and isinstance(
+            self.leftSide, TypeExpr
+        ):
             # log.debug(" * scanEntry: %s * ", scane, extra = func)
 
             leftResult = self.leftSide.evaluate(
@@ -50,7 +53,6 @@ class TypeBooleanTerm:
         elif isinstance(self.rightSide, TypeBooleanTerm) and isinstance(
             self.leftSide, TypeBooleanTerm
         ):
-
             # initiate computation mode for evaluation
             self.mfqlObj.computationMode = "sc"
 
@@ -74,7 +76,6 @@ class TypeBooleanTerm:
             isinstance(self.rightSide, TypeExpr)
             or isinstance(self.rightSide, TypeBooleanTerm)
         ) and not self.leftSide:
-
             rightResult = self.rightSide.evaluate(
                 scane, mode="sc", vars=vars, queryName=queryName
             )
@@ -109,8 +110,9 @@ class TypeBooleanTerm:
 
 
 class TypeExpr:
-    def __init__(self, leftSide, rightSide, cmpOp, mfqlObj, options, environment):
-
+    def __init__(
+        self, leftSide, rightSide, cmpOp, mfqlObj, options, environment
+    ):
         self.leftSide = leftSide
         self.rightSide = rightSide
         self.cmpOp = cmpOp
@@ -121,8 +123,9 @@ class TypeExpr:
             for opt in options:
                 self.options[opt[0]] = opt[1]
 
-    def evaluate(self, scane=None, mode=None, vars=None, queryName=None, sc=None):
-
+    def evaluate(
+        self, scane=None, mode=None, vars=None, queryName=None, sc=None
+    ):
         # for log
         func = {"func": "Expr.eval"}
 
@@ -235,7 +238,6 @@ class TypeExpr:
             # rightResult = self.rightSide.evaluate()
 
         if rightResult and leftResult:
-
             result = []
 
             boolResult = False
@@ -287,7 +289,10 @@ class TypeExpr:
                 ):
                     boolResult = True
                     for key in list(leftResult.dictIntensity.keys()):
-                        if float(leftResult.dictIntensity[key]) != rightResult.float:
+                        if (
+                            float(leftResult.dictIntensity[key])
+                            != rightResult.float
+                        ):
                             boolResult = False
 
                 elif (leftResult.float == 0 and rightResult.dictIntensity) or (
@@ -295,17 +300,21 @@ class TypeExpr:
                 ):
                     boolResult = True
                     for key in list(rightResult.dictIntensity.keys()):
-                        if float(rightResult.dictIntensity[key]) != leftResult.float:
+                        if (
+                            float(rightResult.dictIntensity[key])
+                            != leftResult.float
+                        ):
                             boolResult = False
 
             # perform '>'
             if self.cmpOp == ">":
                 if leftResult.chemsc and rightResult.chemsc:
-
-                    if isinstance(leftResult.chemsc, SCConstraint) and isinstance(
-                        rightResult.chemsc, ElementSequence
-                    ):
-                        boolResult = leftResult.chemsc.covers(rightResult.chemsc)
+                    if isinstance(
+                        leftResult.chemsc, SCConstraint
+                    ) and isinstance(rightResult.chemsc, ElementSequence):
+                        boolResult = leftResult.chemsc.covers(
+                            rightResult.chemsc
+                        )
 
                     else:
                         boolResult = False
@@ -321,7 +330,10 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(leftResult.chemsc.getWeight(), rightResult.float),
+                            max(
+                                leftResult.chemsc.getWeight(),
+                                rightResult.float,
+                            ),
                             leftResult.chemsc.getWeight(),
                         ):
                             boolResult = True
@@ -335,7 +347,10 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(rigthResult.chemsc.getWeight(), leftResult.float),
+                            max(
+                                rigthResult.chemsc.getWeight(),
+                                leftResult.float,
+                            ),
                             rightResult.chemsc.getWeight(),
                         ):
                             boolResult = True
@@ -352,7 +367,8 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(leftResult.float, rightResult.float), leftResult.float
+                            max(leftResult.float, rightResult.float),
+                            leftResult.float,
                         ):
                             boolResult = True
                     else:
@@ -383,7 +399,10 @@ class TypeExpr:
                 ):
                     boolResult = True
                     for rkey in rightResult.dictIntensity:
-                        if not leftResult.float > rightResult.dictIntensity[rkey]:
+                        if (
+                            not leftResult.float
+                            > rightResult.dictIntensity[rkey]
+                        ):
                             boolResult = False
                             break
 
@@ -392,18 +411,22 @@ class TypeExpr:
                 ):
                     boolResult = True
                     for lkey in leftResult.dictIntensity:
-                        if not leftResult.dictIntensity[lkey] > rightResult.float:
+                        if (
+                            not leftResult.dictIntensity[lkey]
+                            > rightResult.float
+                        ):
                             boolResult = False
                             break
 
             # perform '>='
             if self.cmpOp == ">=":
                 if leftResult.chemsc and rightResult.chemsc:
-
-                    if isinstance(leftResult.chemsc, SCConstraint) and isinstance(
-                        rightResult.chemsc, ElementSequence
-                    ):
-                        boolResult = leftResult.chemsc.covers(rightResult.chemsc)
+                    if isinstance(
+                        leftResult.chemsc, SCConstraint
+                    ) and isinstance(rightResult.chemsc, ElementSequence):
+                        boolResult = leftResult.chemsc.covers(
+                            rightResult.chemsc
+                        )
                     else:
                         boolResult = False
                         if (
@@ -418,7 +441,10 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(leftResult.chemsc.getWeight(), rightResult.float),
+                            max(
+                                leftResult.chemsc.getWeight(),
+                                rightResult.float,
+                            ),
                             leftResult.chemsc.getWeight(),
                         ):
                             boolResult = True
@@ -432,7 +458,10 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(rigthResult.chemsc.getWeight(), leftResult.float),
+                            max(
+                                rigthResult.chemsc.getWeight(),
+                                leftResult.float,
+                            ),
                             rightResult.chemsc.getWeight(),
                         ):
                             boolResult = True
@@ -449,7 +478,8 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(leftResult.float, rightResult.float), leftResult.float
+                            max(leftResult.float, rightResult.float),
+                            leftResult.float,
                         ):
                             boolResult = True
                     else:
@@ -481,7 +511,10 @@ class TypeExpr:
                 ):
                     boolResult = True
                     for rkey in rightResult.dictIntensity:
-                        if not leftResult.float >= rightResult.dictIntensity[lkey]:
+                        if (
+                            not leftResult.float
+                            >= rightResult.dictIntensity[lkey]
+                        ):
                             boolResult = False
                             break
 
@@ -490,34 +523,38 @@ class TypeExpr:
                 ):
                     boolResult = True
                     for lkey in leftResult.dictIntensity:
-                        if not leftResult.dictIntensity[lkey] >= rightResult.float:
+                        if (
+                            not leftResult.dictIntensity[lkey]
+                            >= rightResult.float
+                        ):
                             boolResult = False
                             break
 
             # perform 'is contained in'
             if self.cmpOp == "<~":
-
                 if leftResult.chemsc and rightResult.chemsc:
                     boolResult = False
                     if (
                         rightResult.type == TYPE_SC_CONSTRAINT
                         and leftResult.type == TYPE_CHEMSC
                     ):
-                        boolResult = rightResult.chemsc.covers(leftResult.chemsc)
+                        boolResult = rightResult.chemsc.covers(
+                            leftResult.chemsc
+                        )
 
             if self.cmpOp == "~>":
-
                 if leftResult.chemsc and rightResult.chemsc:
                     boolResult = False
                     if (
                         leftResult.type == TYPE_SC_CONSTRAINT
                         and rightResult.type == TYPE_CHEMSC
                     ):
-                        boolResult = leftResult.chemsc.covers(rightResult.chemsc)
+                        boolResult = leftResult.chemsc.covers(
+                            rightResult.chemsc
+                        )
 
             # perform '<'
             if self.cmpOp == "<":
-
                 if leftResult.chemsc and rightResult.chemsc:
                     if (
                         rightResult.type == TYPE_CHEMSC
@@ -536,7 +573,10 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(leftResult.chemsc.getWeight(), rightResult.float),
+                            max(
+                                leftResult.chemsc.getWeight(),
+                                rightResult.float,
+                            ),
                             rightResult.chemsc.getWeight(),
                         ):
                             boolResult = True
@@ -550,7 +590,10 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(rigthResult.chemsc.getWeight(), leftResult.float),
+                            max(
+                                rigthResult.chemsc.getWeight(),
+                                leftResult.float,
+                            ),
                             leftResult.chemsc.getWeight(),
                         ):
                             boolResult = True
@@ -568,7 +611,8 @@ class TypeExpr:
 
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(leftResult.float, rightResult.float), rightResult.float
+                            max(leftResult.float, rightResult.float),
+                            rightResult.float,
                         ):
                             boolResult = True
                     else:
@@ -600,7 +644,10 @@ class TypeExpr:
                 ):
                     boolResult = True
                     for rkey in rightResult.dictIntensity:
-                        if not leftResult.float < rightResult.dictIntensity[lkey]:
+                        if (
+                            not leftResult.float
+                            < rightResult.dictIntensity[lkey]
+                        ):
                             boolResult = False
                             break
 
@@ -609,18 +656,22 @@ class TypeExpr:
                 ):
                     boolResult = True
                     for lkey in leftResult.dictIntensity:
-                        if not leftResult.dictIntensity[lkey] < rightResult.float:
+                        if (
+                            not leftResult.dictIntensity[lkey]
+                            < rightResult.float
+                        ):
                             boolResult = False
                             break
 
             # perform '<='
             if self.cmpOp == "<=":
                 if leftResult.chemsc and rightResult.chemsc:
-
-                    if isinstance(rightResult.chemsc, SCConstraint) and isinstance(
-                        leftResult.chemsc, ElementSequence
-                    ):
-                        boolResult = rightResult.chemsc.covers(leftResult.chemsc)
+                    if isinstance(
+                        rightResult.chemsc, SCConstraint
+                    ) and isinstance(leftResult.chemsc, ElementSequence):
+                        boolResult = rightResult.chemsc.covers(
+                            leftResult.chemsc
+                        )
                     else:
                         boolResult = False
                         if (
@@ -635,7 +686,10 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(leftResult.chemsc.getWeight(), rightResult.float),
+                            max(
+                                leftResult.chemsc.getWeight(),
+                                rightResult.float,
+                            ),
                             rightResult.chemsc.getWeight(),
                         ):
                             boolResult = True
@@ -649,7 +703,10 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(rigthResult.chemsc.getWeight(), leftResult.float),
+                            max(
+                                rigthResult.chemsc.getWeight(),
+                                leftResult.float,
+                            ),
                             leftResult.chemsc.getWeight(),
                         ):
                             boolResult = True
@@ -666,7 +723,8 @@ class TypeExpr:
                     boolResult = False
                     if "tolerance" in self.options:
                         if self.options["tolerance"].fitIn(
-                            max(leftResult.float, rightResult.float), rightResult.float
+                            max(leftResult.float, rightResult.float),
+                            rightResult.float,
                         ):
                             boolResult = True
                     else:
@@ -698,7 +756,10 @@ class TypeExpr:
                 ):
                     boolResult = True
                     for rkey in rightResult.dictIntensity:
-                        if not leftResult.float <= rightResult.dictIntensity[lkey]:
+                        if (
+                            not leftResult.float
+                            <= rightResult.dictIntensity[lkey]
+                        ):
                             boolResult = False
                             break
 
@@ -707,7 +768,10 @@ class TypeExpr:
                 ):
                     boolResult = True
                     for lkey in leftResult.dictIntensity:
-                        if not leftResult.dictIntensity[lkey] <= rightResult.float:
+                        if (
+                            not leftResult.dictIntensity[lkey]
+                            <= rightResult.float
+                        ):
                             boolResult = False
                             break
 
@@ -734,7 +798,6 @@ class TypeExpression:
         attribute=None,
         item=None,
     ):
-
         self.leftSide = leftSide
         self.rightSide = rightSide
         self.isSingleton = isSingleton
@@ -748,9 +811,14 @@ class TypeExpression:
         self.noOfSymbols = 0
 
     def evaluate(
-        self, scane=None, mode=None, vars=None, queryName=None, sc=None, varname=""
+        self,
+        scane=None,
+        mode=None,
+        vars=None,
+        queryName=None,
+        sc=None,
+        varname="",
     ):
-
         vars = self.mfqlObj.currVars
 
         queryName = self.mfqlObj.queryName
@@ -770,13 +838,17 @@ class TypeExpression:
         leftSide = []
 
         if isinstance(self.leftSide, TypeVariable):
-
             # add namespace
             namespacedVariable = (
-                queryName + self.mfqlObj.namespaceConnector + self.leftSide.variable
+                queryName
+                + self.mfqlObj.namespaceConnector
+                + self.leftSide.variable
             )
 
-            if namespacedVariable not in self.mfqlObj.dictDefinitionTable[queryName]:
+            if (
+                namespacedVariable
+                not in self.mfqlObj.dictDefinitionTable[queryName]
+            ):
                 raise LipidXException(
                     "The variable %s is not defined with DEFINE."
                     % self.leftSide.variable,
@@ -786,7 +858,6 @@ class TypeExpression:
 
             # if not (vars.has_key(namespacedVariable) and vars[namespacedVariable]):
             if namespacedVariable in vars and vars[namespacedVariable]:
-
                 # see, if left side is equipped with a attribute
                 if self.leftSide.attribute:
                     if vars[namespacedVariable].encodedName != "None":
@@ -896,7 +967,6 @@ class TypeExpression:
                                 )
 
                             elif attribute.lower() == "intensity":
-
                                 if not self.leftSide.item:
                                     leftSide = TypeTmpResult(
                                         options=None,
@@ -909,11 +979,14 @@ class TypeExpression:
                                     )
                                 else:
                                     if isinstance(self.leftSide.item, str):
-
                                         dictIntensity = {}
-                                        strSample = self.leftSide.item.strip('"')
+                                        strSample = self.leftSide.item.strip(
+                                            '"'
+                                        )
                                         matchFound = False
-                                        for key in vars[namespacedVariable].intensity:
+                                        for key in vars[
+                                            namespacedVariable
+                                        ].intensity:
                                             if fnmatch(key, strSample):
                                                 matchFound = True
                                                 dictIntensity[key] = vars[
@@ -937,9 +1010,9 @@ class TypeExpression:
                                     else:
                                         leftSide = TypeTmpResult(
                                             options=None,
-                                            float=vars[namespacedVariable].intensity[
-                                                self.leftSide.item
-                                            ],
+                                            float=vars[
+                                                namespacedVariable
+                                            ].intensity[self.leftSide.item],
                                             dictIntensity=None,
                                             chemsc=None,
                                             type=TYPE_FLOAT,
@@ -1008,7 +1081,6 @@ class TypeExpression:
                                 )
 
                             elif attribute.lower() == "frsc":
-
                                 if not self.leftSide.item:
                                     leftSide = TypeTmpResult(
                                         options=None,
@@ -1031,7 +1103,6 @@ class TypeExpression:
                                     )
 
                             elif attribute.lower() == "frmass":
-
                                 leftSide = TypeTmpResult(
                                     options=None,
                                     float=vars[namespacedVariable].frmass,
@@ -1041,7 +1112,6 @@ class TypeExpression:
                                 )
 
                             elif attribute.lower() == "isobaric":
-
                                 leftSide = TypeTmpResult(
                                     options=None,
                                     float=None,
@@ -1054,7 +1124,6 @@ class TypeExpression:
                                 )
 
                             elif attribute.lower() == "name":
-
                                 leftSide = TypeTmpResult(
                                     options=None,
                                     float=None,
@@ -1070,7 +1139,9 @@ class TypeExpression:
                                         options=None,
                                         float=None,
                                         dictIntensity=None,
-                                        chemsc=vars[namespacedVariable].scconst,
+                                        chemsc=vars[
+                                            namespacedVariable
+                                        ].scconst,
                                         type=TYPE_SC_CONSTRAINT,
                                     )
                                 else:
@@ -1102,7 +1173,6 @@ class TypeExpression:
                         )
 
                 else:  # no attribute given, the standard is the chemical sum composition
-
                     if not self.leftSide.item:
                         leftSide = TypeTmpResult(
                             options=None,
@@ -1115,7 +1185,9 @@ class TypeExpression:
                         leftSide = TypeTmpResult(
                             options=None,
                             float=float(
-                                vars[namespacedVariable].chemsc[self.leftSide.item]
+                                vars[namespacedVariable].chemsc[
+                                    self.leftSide.item
+                                ]
                             ),
                             dictIntensity=None,
                             chemsc=None,
@@ -1136,9 +1208,9 @@ class TypeExpression:
             if not self.attribute:
                 leftSide = self.leftSide.evaluate(scane, mode, vars, queryName)
             elif self.attribute:
-                leftSide = self.leftSide.evaluate(scane, mode, vars, queryName)[
-                    self.attribute
-                ]
+                leftSide = self.leftSide.evaluate(
+                    scane, mode, vars, queryName
+                )[self.attribute]
 
         # left side is the result of a former TypeExpression
         elif isinstance(self.leftSide, TypeTmpResult):
@@ -1149,7 +1221,6 @@ class TypeExpression:
 
         # left side is an ElementSequence
         elif isinstance(self.leftSide, TypeElementSequence):
-
             if not hasattr(self.leftSide, "item"):
                 leftSide = TypeTmpResult(
                     options=None,
@@ -1178,7 +1249,9 @@ class TypeExpression:
             )
 
         elif isinstance(self.leftSide, TypeFunction):
-            funResult = self.leftSide.evaluate(scane, vars, self.environment, queryName)
+            funResult = self.leftSide.evaluate(
+                scane, vars, self.environment, queryName
+            )
 
             if isinstance(funResult, TypeTmpResult):
                 leftSide = funResult
@@ -1243,13 +1316,17 @@ class TypeExpression:
         # right side is a variable
         rightSide = []
         if isinstance(self.rightSide, TypeVariable):
-
             # add namespace
             namespacedVariable = (
-                queryName + self.mfqlObj.namespaceConnector + self.rightSide.variable
+                queryName
+                + self.mfqlObj.namespaceConnector
+                + self.rightSide.variable
             )
 
-            if namespacedVariable not in self.mfqlObj.dictDefinitionTable[queryName]:
+            if (
+                namespacedVariable
+                not in self.mfqlObj.dictDefinitionTable[queryName]
+            ):
                 raise SyntaxErrorException(
                     "The variable %s is not defined with DEFINE."
                     % self.rightSide.variable,
@@ -1358,9 +1435,13 @@ class TypeExpression:
                                 else:
                                     if isinstance(self.rightSide.item, str):
                                         dictIntensity = {}
-                                        strSample = self.rightSide.item.strip('"')
+                                        strSample = self.rightSide.item.strip(
+                                            '"'
+                                        )
                                         matchFound = False
-                                        for key in vars[namespacedVariable].intensity:
+                                        for key in vars[
+                                            namespacedVariable
+                                        ].intensity:
                                             if fnmatch(key, strSample):
                                                 dictIntensity[key] = vars[
                                                     namespacedVariable
@@ -1382,9 +1463,9 @@ class TypeExpression:
                                     else:
                                         rightSide = TypeTmpResult(
                                             options=None,
-                                            float=vars[namespacedVariable].intensity[
-                                                self.rightSide.item
-                                            ],
+                                            float=vars[
+                                                namespacedVariable
+                                            ].intensity[self.rightSide.item],
                                             dictIntensity=None,
                                             chemsc=None,
                                             type=TYPE_FLOAT,
@@ -1427,7 +1508,9 @@ class TypeExpression:
                                         options=None,
                                         float=None,
                                         dictIntensity=None,
-                                        chemsc=vars[namespacedVariable].scconst,
+                                        chemsc=vars[
+                                            namespacedVariable
+                                        ].scconst,
                                         type=TYPE_SC_CONSTRAINT,
                                     )
                                 else:
@@ -1437,7 +1520,6 @@ class TypeExpression:
                                     )
 
                             elif attribute.lower() == "nlsc":
-
                                 if not self.rightSide.item:
                                     rightSide = TypeTmpResult(
                                         options=None,
@@ -1460,7 +1542,6 @@ class TypeExpression:
                                     )
 
                             elif attribute.lower() == "nlmass":
-
                                 rightSide = TypeTmpResult(
                                     options=None,
                                     float=vars[namespacedVariable].nlmass,
@@ -1470,7 +1551,6 @@ class TypeExpression:
                                 )
 
                             elif attribute.lower() == "frsc":
-
                                 if not self.rightSide.item:
                                     rightSide = TypeTmpResult(
                                         options=None,
@@ -1493,7 +1573,6 @@ class TypeExpression:
                                     )
 
                             elif attribute.lower() == "frmass":
-
                                 rightSide = TypeTmpResult(
                                     options=None,
                                     float=vars[namespacedVariable].frmass,
@@ -1503,7 +1582,6 @@ class TypeExpression:
                                 )
 
                             elif attribute.lower() == "isobaric":
-
                                 rightSide = TypeTmpResult(
                                     options=None,
                                     float=None,
@@ -1516,7 +1594,6 @@ class TypeExpression:
                                 )
 
                             elif attribute.lower() == "name":
-
                                 rightSide = TypeTmpResult(
                                     options=None,
                                     float=None,
@@ -1549,7 +1626,6 @@ class TypeExpression:
                         )
 
                 else:  # no attribute given, the standard is the chemical sum composition
-
                     if not self.rightSide.item:
                         rightSide = TypeTmpResult(
                             options=None,
@@ -1562,7 +1638,9 @@ class TypeExpression:
                         rightSide = TypeTmpResult(
                             options=None,
                             float=float(
-                                vars[namespacedVariable].chemsc[self.rightSide.item]
+                                vars[namespacedVariable].chemsc[
+                                    self.rightSide.item
+                                ]
                             ),
                             dictIntensity=None,
                             chemsc=None,
@@ -1578,15 +1656,16 @@ class TypeExpression:
         # right side is the result of a former TypeExpression
         elif isinstance(self.rightSide, TypeExpression):
             if not self.attribute:
-                rightSide = self.rightSide.evaluate(scane, mode, vars, queryName)
+                rightSide = self.rightSide.evaluate(
+                    scane, mode, vars, queryName
+                )
             else:
-                rightSide = self.rightSide.evaluate(scane, mode, vars, queryName)[
-                    self.attribute
-                ]
+                rightSide = self.rightSide.evaluate(
+                    scane, mode, vars, queryName
+                )[self.attribute]
 
         # right side is an ElementSequence
         elif isinstance(self.rightSide, TypeElementSequence):
-
             if not hasattr(self.rightSide, "item"):
                 rightSide = TypeTmpResult(
                     options=None,
@@ -1713,11 +1792,12 @@ class TypeExpression:
             tmpResult = []
 
             if leftSide.isType(TYPE_CHEMSC) and rightSide.isType(TYPE_CHEMSC):
-
                 if not self.operator == "*" and not self.operator == "/":
                     result = TypeTmpResult(
                         options=None,
-                        chemsc=op(self.operator, leftSide.chemsc, rightSide.chemsc),
+                        chemsc=op(
+                            self.operator, leftSide.chemsc, rightSide.chemsc
+                        ),
                         float=None,
                         dictIntensity=None,
                         type=TYPE_CHEMSC,
@@ -1732,31 +1812,32 @@ class TypeExpression:
                     )
 
             elif leftSide.isType(TYPE_CHEMSC) and rightSide.isType(TYPE_FLOAT):
-
                 result = TypeTmpResult(
                     options=None,
                     chemsc=None,
                     float=op(
-                        self.operator, leftSide.chemsc.getWeight(), rightSide.float
+                        self.operator,
+                        leftSide.chemsc.getWeight(),
+                        rightSide.float,
                     ),
                     dictIntensity=None,
                     type=TYPE_FLOAT,
                 )
 
             elif leftSide.isType(TYPE_FLOAT) and rightSide.isType(TYPE_CHEMSC):
-
                 result = TypeTmpResult(
                     options=None,
                     chemsc=None,
                     float=op(
-                        self.operator, leftSide.float, rightSide.chemsc.getWeight()
+                        self.operator,
+                        leftSide.float,
+                        rightSide.chemsc.getWeight(),
                     ),
                     dictIntensity=None,
                     type=TYPE_FLOAT,
                 )
 
             elif leftSide.isType(TYPE_FLOAT) and rightSide.isType(TYPE_FLOAT):
-
                 result = TypeTmpResult(
                     options=None,
                     chemsc=None,
@@ -1768,7 +1849,6 @@ class TypeExpression:
             elif leftSide.isType(TYPE_DICT_INTENS) and rightSide.isType(
                 TYPE_DICT_INTENS
             ):
-
                 dictIntensityResult = {}
                 for lkey in list(leftSide.dictIntensity.keys()):
                     dictIntensityResult[lkey] = op(
@@ -1785,12 +1865,15 @@ class TypeExpression:
                     type=TYPE_DICT_INTENS,
                 )
 
-            elif leftSide.isType(TYPE_DICT_INTENS) and rightSide.isType(TYPE_FLOAT):
-
+            elif leftSide.isType(TYPE_DICT_INTENS) and rightSide.isType(
+                TYPE_FLOAT
+            ):
                 dictIntensityResult = {}
                 for lkey in list(leftSide.dictIntensity.keys()):
                     dictIntensityResult[lkey] = op(
-                        self.operator, leftSide.dictIntensity[lkey], rightSide.float
+                        self.operator,
+                        leftSide.dictIntensity[lkey],
+                        rightSide.float,
                     )
 
                 result = TypeTmpResult(
@@ -1801,12 +1884,15 @@ class TypeExpression:
                     type=TYPE_DICT_INTENS,
                 )
 
-            elif leftSide.isType(TYPE_FLOAT) and rightSide.isType(TYPE_DICT_INTENS):
-
+            elif leftSide.isType(TYPE_FLOAT) and rightSide.isType(
+                TYPE_DICT_INTENS
+            ):
                 dictIntensityResult = {}
                 for lkey in list(rightSide.dictIntensity.keys()):
                     dictIntensityResult[lkey] = op(
-                        self.operator, leftSide.float, rightSide.dictIntensity[lkey]
+                        self.operator,
+                        leftSide.float,
+                        rightSide.dictIntensity[lkey],
                     )
 
                 result = TypeTmpResult(
@@ -1818,7 +1904,6 @@ class TypeExpression:
                 )
 
         if self.item:
-
             if result.isType(TYPE_CHEMSC):
                 result = TypeTmpResult(
                     options=None,
@@ -1842,7 +1927,6 @@ class TypeExpression:
 
 class TypeMarkTerm:
     def __init__(self, leftSide, rightSide, boolOp, mfqlObj):
-
         self.leftSide = leftSide
         self.rightSide = rightSide
         self.operator = boolOp
@@ -1852,7 +1936,6 @@ class TypeMarkTerm:
         self.noOfSymbols = 0
 
     def evaluate(self, callback):
-
         leftResult = False
         rightResult = False
 
@@ -1972,7 +2055,6 @@ class TypeMarkTerm:
         return l
 
     def evaluateStepwise(self, res):
-
         list = self.listBool()
 
         return list
@@ -1980,7 +2062,6 @@ class TypeMarkTerm:
 
 class TypeElementSequence:
     def __init__(self, elementSequence, options):
-
         self.elementSequence = elementSequence
         self.options = options
         self.precursor = None
@@ -1988,12 +2069,10 @@ class TypeElementSequence:
         self.listMarks = None
 
     def evaluate(self):
-
         if self.scan:
             self.listMarks = self.scan.evaluate()
 
     def addOptions(self, listOptions):
-
         for op in listOptions:
             if op[0] == "chg":
                 self.elementSequence.polarity = op[1]
@@ -2006,7 +2085,6 @@ class TypeElementSequence:
 
 class TypeSFConstraint:
     def __init__(self, elementSequence):
-
         self.elementSequence = elementSequence
 
         self.varcontent = None
@@ -2018,7 +2096,6 @@ class TypeSFConstraint:
         self.listMarks = None
 
     def addOptions(self, listOptions):
-
         dbChanged = False
         for op in listOptions:
             if op[0] == "dbr":
@@ -2045,14 +2122,12 @@ class TypeSFConstraint:
             )
 
     def evaluate(self):
-
         if self.scan:
             self.listMarks = self.scan.evaluate()
 
 
 class TypeList:
     def __init__(self, list=None):
-
         self.listElementSequence = list
 
         self.varcontent = None
@@ -2070,7 +2145,6 @@ class TypeList:
         return iter(self.listElementSequence)
 
     def nameList(self):
-
         for es in self.listElementSequence:
             es.name = self.name
 
@@ -2078,7 +2152,6 @@ class TypeList:
         self.listNames.append(name)
 
     def addOptions(self, listOptions):
-
         for op in listOptions:
             if op[0] == "chg":
                 for es in self.listElementSequence:
@@ -2088,16 +2161,20 @@ class TypeList:
             self.options[op[0]] = op[1]
 
     def evaluate(self):
-
         if self.scan:
             self.listMarks = self.scan.evaluate()
 
 
 class TypeTmpResult:
     def __init__(
-        self, options, type, chemsc=None, float=0.0, dictIntensity=None, string=""
+        self,
+        options,
+        type,
+        chemsc=None,
+        float=0.0,
+        dictIntensity=None,
+        string="",
     ):  # , type = TYPE_NONE):
-
         assert not type is None
 
         self.options = options
@@ -2109,7 +2186,6 @@ class TypeTmpResult:
         self.type = type
 
     def __repr__(self):
-
         str = ""
         if self.chemsc:
             str += "%s" % self.chemsc
@@ -2139,7 +2215,6 @@ class TypeTmpResult:
 
 class TypeVariable:
     def __init__(self, variable=None, attribute=None, item=None):
-
         # init
         self.variable = variable
         self.name = variable
@@ -2157,7 +2232,6 @@ class TypeVariable:
 
 class TypeFunction:
     def __init__(self, name=None, arguments=None, mfqlObj=None, vars=None):
-
         # init
         self.name = name
         self.arguments = arguments
@@ -2167,12 +2241,10 @@ class TypeFunction:
         self.attribute = None
 
     def evaluate(self, scane, vars, env, queryName, sc=None):
-
         # from math import *
         if self.name in self.funs.listFuns:
             return self.funs.startFun(self.name, self.arguments, vars)
         else:
-
             strEval = "%s(" % self.name
             for arg in self.arguments:
                 if isinstance(arg, TypeFloat):
@@ -2180,7 +2252,6 @@ class TypeFunction:
                 elif isinstance(arg, TypeString):
                     strEval += "%s," % arg.string
                 elif isinstance(arg, TypeVariable):
-
                     # correct namespace
                     # arg.variable = self.mfqlObj.queryName + self.mfqlObj.namespaceConnector + arg.variable
                     namespacedVariable = (
@@ -2190,112 +2261,158 @@ class TypeFunction:
                     )
 
                     if namespacedVariable in vars and vars[namespacedVariable]:
-
                         # see, if left side is equipped with a attribute
                         if arg.attribute:
                             attribute = arg.attribute
                             try:
                                 if attribute.lower() == "error":
-                                    strEval += "%f," % vars[namespacedVariable].errppm
+                                    strEval += (
+                                        "%f," % vars[namespacedVariable].errppm
+                                    )
 
                                 if attribute.lower() == "errppm":
-                                    strEval += "%f," % vars[namespacedVariable].errppm
+                                    strEval += (
+                                        "%f," % vars[namespacedVariable].errppm
+                                    )
 
                                 if attribute.lower() == "errda":
-                                    strEval += "%f," % vars[namespacedVariable].errda
+                                    strEval += (
+                                        "%f," % vars[namespacedVariable].errda
+                                    )
 
                                 if attribute.lower() == "errres":
-                                    strEval += "%f," % vars[namespacedVariable].errres
+                                    strEval += (
+                                        "%f," % vars[namespacedVariable].errres
+                                    )
 
                                 elif attribute.lower() == "intensity":
                                     strEval += (
-                                        "%s," % vars[namespacedVariable].intensity
+                                        "%s,"
+                                        % vars[namespacedVariable].intensity
                                     )
 
                                 elif attribute.lower() == "mass":
-                                    strEval += "%f," % vars[namespacedVariable].mass
+                                    strEval += (
+                                        "%f," % vars[namespacedVariable].mass
+                                    )
 
                                 elif attribute.lower() == "occ":
-                                    strEval += "%f," % vars[namespacedVariable].occ
+                                    strEval += (
+                                        "%f," % vars[namespacedVariable].occ
+                                    )
 
                                 elif attribute.lower() == "binsize":
-                                    strEval += "%f," % vars[namespacedVariable].binsize
+                                    strEval += (
+                                        "%f,"
+                                        % vars[namespacedVariable].binsize
+                                    )
 
                                 elif attribute.lower() == "charge":
-                                    strEval += "%f," % vars[namespacedVariable].charge
+                                    strEval += (
+                                        "%f," % vars[namespacedVariable].charge
+                                    )
 
                                 elif attribute.lower() == "aresolution":
                                     strEval += (
-                                        "%f," % vars[namespacedVariable].aresolution
+                                        "%f,"
+                                        % vars[namespacedVariable].aresolution
                                     )
 
                                 elif attribute.lower() == "anoise":
-                                    strEval += "%f," % vars[namespacedVariable].anoise
+                                    strEval += (
+                                        "%f," % vars[namespacedVariable].anoise
+                                    )
 
                                 elif attribute.lower() == "chemsc":
                                     if not arg.item:
                                         strDict = "deepcopy(ElementSequence({"
-                                        for sym in vars[namespacedVariable].chemsc.seq:
+                                        for sym in vars[
+                                            namespacedVariable
+                                        ].chemsc.seq:
                                             strDict += "'%s' : %d, " % (
                                                 sym.sym,
-                                                vars[namespacedVariable].chemsc[
-                                                    sym.sym
-                                                ],
+                                                vars[
+                                                    namespacedVariable
+                                                ].chemsc[sym.sym],
                                             )
                                         strDict += (
                                             "'chg' : %d}))"
-                                            % vars[namespacedVariable].chemsc.charge
+                                            % vars[
+                                                namespacedVariable
+                                            ].chemsc.charge
                                         )
                                         strEval += "%s," % strDict
                                     else:
                                         strEval += (
                                             "%f,"
-                                            % vars[namespacedVariable].chemsc[arg.item]
+                                            % vars[namespacedVariable].chemsc[
+                                                arg.item
+                                            ]
                                         )
 
                                 elif attribute.lower() == "nlsc":
                                     if not arg.item:
                                         strDict = "deepcopy(ElementSequence({"
-                                        for sym in vars[namespacedVariable].nlsc.seq:
+                                        for sym in vars[
+                                            namespacedVariable
+                                        ].nlsc.seq:
                                             strDict += "'%s' : %d, " % (
                                                 sym.sym,
-                                                vars[namespacedVariable].nlsc[sym.sym],
+                                                vars[namespacedVariable].nlsc[
+                                                    sym.sym
+                                                ],
                                             )
                                         strDict += (
                                             "'chg' : %d}))"
-                                            % vars[namespacedVariable].nlsc.charge
+                                            % vars[
+                                                namespacedVariable
+                                            ].nlsc.charge
                                         )
                                         strEval += "%s," % strDict
                                     else:
                                         strEval += (
                                             "%f,"
-                                            % vars[namespacedVariable].nlsc[arg.item]
+                                            % vars[namespacedVariable].nlsc[
+                                                arg.item
+                                            ]
                                         )
 
                                 elif attribute.lower() == "nlmass":
-                                    strEval += "%f," % vars[namespacedVariable].nlmass
+                                    strEval += (
+                                        "%f," % vars[namespacedVariable].nlmass
+                                    )
 
                                 elif attribute.lower() == "frsc":
                                     if not arg.item:
                                         strDict = "deepcopy(ElementSequence({"
-                                        for sym in vars[namespacedVariable].frsc.seq:
+                                        for sym in vars[
+                                            namespacedVariable
+                                        ].frsc.seq:
                                             strDict += "'%s' : %d, " % (
                                                 sym.sym,
-                                                vars[namespacedVariable].frsc[sym.sym],
+                                                vars[namespacedVariable].frsc[
+                                                    sym.sym
+                                                ],
                                             )
                                         strDict += (
                                             "'chg' : %d}))"
-                                            % vars[namespacedVariable].frsc.charge
+                                            % vars[
+                                                namespacedVariable
+                                            ].frsc.charge
                                         )
                                         strEval += "%s," % strDict
                                     else:
                                         strEval += (
                                             "%f,"
-                                            % vars[namespacedVariable].frsc[arg.item]
+                                            % vars[namespacedVariable].frsc[
+                                                arg.item
+                                            ]
                                         )
 
                                 elif attribute.lower() == "frmass":
-                                    strEval += "%f," % vars[namespacedVariable].frmass
+                                    strEval += (
+                                        "%f," % vars[namespacedVariable].frmass
+                                    )
 
                             except AttributeError:
                                 print("\nAttributeError:", details)
@@ -2373,7 +2490,6 @@ class TypeFloat:
         self.elementSequence = None
 
     def addOptions(self, listOptions):
-
         for op in listOptions:
             if op[0] == "chg":
                 self.polarity = op[1]
@@ -2446,9 +2562,10 @@ class TypeTolerance:
         return self.ppm
 
     def getTinDA(self, mass):
-
         if self.kind == "res":
-            return mass / ((mass - self.smallestMass) * self.delta + self.tolerance)
+            return mass / (
+                (mass - self.smallestMass) * self.delta + self.tolerance
+            )
         elif self.kind == "ppm":
             return mass / self.tolerance
         else:
@@ -2502,7 +2619,7 @@ class TypeTolerance:
 
 # all functions below are for the use withing a query
 def func(float):
-    return float ** 2
+    return float**2
 
 
 def isEven(float):
@@ -2540,7 +2657,6 @@ def sub(sc1, sc2):
 
 
 def sumIntensity(*input):
-
     result = ""
     return input
 
@@ -2565,13 +2681,11 @@ class InternFunctions:
 
     # def startFun(self, fun, args, vars):
     def startFun(self, fun, args, vars):
-
         currArguments = copy(args)
 
         ### if it is a postFunction, redirect it to pospostFunction() ###
 
         if fun == "isStandard" and len(currArguments) == 3:
-
             # collect arguments
             varName = (
                 self.mfqlObj.queryName
@@ -2592,12 +2706,13 @@ class InternFunctions:
 
             # direct function call to post functions
             if self.mfqlObj.queryName not in self.mfqlObj.dictPostFuns:
-                self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {funName: funArgs}
+                self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {
+                    funName: funArgs
+                }
 
             return True
 
         if fun == "isStandard" and len(currArguments) == 2:
-
             # collect arguments
             varName = (
                 self.mfqlObj.queryName
@@ -2616,7 +2731,9 @@ class InternFunctions:
 
             # direct function call to post functions
             if self.mfqlObj.queryName not in self.mfqlObj.dictPostFuns:
-                self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {funName: funArgs}
+                self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {
+                    funName: funArgs
+                }
 
             return True
 
@@ -2664,7 +2781,10 @@ class InternFunctions:
                 elif isinstance(currArguments[index], TypeFunction):
                     boolEvaluated = False
                     currArguments[index] = currArguments[index].evaluate(
-                        scane, self.mfqlObj.currVars, self.environment, queryName
+                        scane,
+                        self.mfqlObj.currVars,
+                        self.environment,
+                        queryName,
                     )
                 elif isinstance(currArguments[index], type(0.0)):
                     boolEvaluated = False
@@ -2676,11 +2796,9 @@ class InternFunctions:
                         chemsc=None,
                     )
         if currArguments[0]:
-
             ### process functions ###
 
             if fun == "nbsmpls":
-
                 # generate the result as TypeTmpResult
                 result = TypeTmpResult(
                     options=None,
@@ -2692,9 +2810,7 @@ class InternFunctions:
                 )
 
             if fun == "score":
-
                 if self.mfqlObj.sc.options["MSMSaccuracy"].ppm:
-
                     # collect the intensities, get rid of double entries
                     # first argument is the intensity dictionary
                     sum = 0
@@ -2710,7 +2826,6 @@ class InternFunctions:
                     )
 
                 elif self.mfqlObj.sc.options["MSMSaccuracy"].da:
-
                     # collect the intensities, get rid of double entries
                     # first argument is the intensity dictionary
                     sum = 0
@@ -2736,11 +2851,8 @@ class InternFunctions:
                 )
 
             if fun == "avg":
-
                 if len(currArguments) == 1:
-
                     if currArguments[0].dictIntensity:
-
                         # collect the intensities, get rid of double entries
                         # first argument is the intensity dictionary
                         sum = 0
@@ -2749,7 +2861,9 @@ class InternFunctions:
                                 sum += currArguments[0].dictIntensity[key]
                             else:
                                 sum += 0
-                        avg = sum / len(list(currArguments[0].dictIntensity.keys()))
+                        avg = sum / len(
+                            list(currArguments[0].dictIntensity.keys())
+                        )
 
                         # generate the result as TypeTmpResult
                         result = TypeTmpResult(
@@ -2761,7 +2875,6 @@ class InternFunctions:
                         )
 
                 else:
-
                     # collect the intensities, get rid of double entries
                     # first argument is the intensity dictionary
                     sum = 0
@@ -2782,11 +2895,8 @@ class InternFunctions:
                     )
 
             if fun == "medianU":  # median - take lower median if list is even
-
                 if len(currArguments) == 1:
-
                     if currArguments[0].dictIntensity:
-
                         d = sorted(currArguments[0].dictIntensity.values())
                         dl = len(d)
 
@@ -2805,7 +2915,6 @@ class InternFunctions:
                         )
 
                 else:
-
                     # collect the intensities, get rid of double entries
                     # first argument is the intensity dictionary
 
@@ -2827,11 +2936,8 @@ class InternFunctions:
                     )
 
             if fun == "medianL":  # median - take lower median if list is even
-
                 if len(currArguments) == 1:
-
                     if currArguments[0].dictIntensity:
-
                         d = sorted(currArguments[0].dictIntensity.values())
                         dl = len(d)
 
@@ -2850,7 +2956,6 @@ class InternFunctions:
                         )
 
                 else:
-
                     # collect the intensities, get rid of double entries
                     # first argument is the intensity dictionary
 
@@ -2872,11 +2977,8 @@ class InternFunctions:
                     )
 
             if fun == "abs":
-
                 if len(currArguments) == 1:
-
                     if currArguments[0].dictIntensity:
-
                         # collect the intensities, get rid of double entries
                         # first argument is the intensity dictionary
                         sum = 0
@@ -2896,7 +2998,6 @@ class InternFunctions:
                         )
 
                     else:
-
                         if currArguments[0].float < 0.0:
                             absolute = 0 - currArguments[0].float
                         else:
@@ -2916,7 +3017,6 @@ class InternFunctions:
                     )
 
             if fun == "sumIntensity":
-
                 ### sum the given intensities iff the peaks are different ###
 
                 # try:
@@ -2958,7 +3058,10 @@ class InternFunctions:
                     for j in toSum:
                         # if i.mass == j.mass:
                         for sample in samples:
-                            if i.dictIntensity[sample] != j.dictIntensity[sample]:
+                            if (
+                                i.dictIntensity[sample]
+                                != j.dictIntensity[sample]
+                            ):
                                 isIn = True
 
                     if isIn:
@@ -2970,7 +3073,6 @@ class InternFunctions:
                     isotopeMode = True
                     for k in samples:
                         if k in dictIntensityResult:
-
                             if i.dictIntensity[k] >= 0.0:
                                 isotopeMode = False
 
@@ -2980,7 +3082,9 @@ class InternFunctions:
                                 if i.dictIntensity[k] <= 0.0:
                                     pass
                                 else:
-                                    dictIntensityResult[k] += i.dictIntensity[k]
+                                    dictIntensityResult[k] += i.dictIntensity[
+                                        k
+                                    ]
 
                         else:
                             dictIntensityResult[k] = i.dictIntensity[k]
@@ -2995,7 +3099,6 @@ class InternFunctions:
                 )
 
             if fun == "column":
-
                 ### return the intensities of the samples specified with a regular expression ###
 
                 import re
@@ -3058,7 +3161,9 @@ class TypeObject:
             self.sumComposition = argv["sumComposition"]
 
         if "elementSequence" in argv:
-            self.elementSequence = lpdxParser.parseElemSeq(argv["elementSequence"])
+            self.elementSequence = lpdxParser.parseElemSeq(
+                argv["elementSequence"]
+            )
             # self.elementSequence = argv['elementSequence']
         else:
             self.elementSequence = lpdxChemsf.ElementSequence()

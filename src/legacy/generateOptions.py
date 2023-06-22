@@ -61,7 +61,9 @@ def fromFullOptions(options_og):
 def setOptions2likelyDefault(options_og):
     """replaces options values with some likely defaults"""
     options = options_og
-    options["dataType"] = options_og["spectraFormat"]  # TODO why is this duplicated?
+    options["dataType"] = options_og[
+        "spectraFormat"
+    ]  # TODO why is this duplicated?
     # options['MStolerance'] = options_og['MStolerance']
     # options['MSMStolerance'] = options_og['MSMStolerance']
     # options['importDir'] = options_og['importDir']
@@ -152,7 +154,9 @@ def getMinMaxMFQLMass(root_mfql_dir, forMS2=False):
     for file in mfqlFiles.values():
         regex = r"\sDEFINE.*?=.*?\'(.*?)\'"
         m = re.findall(regex, file)
-        if not forMS2:  # we assume that the first deifinition in an MFQL is for the MS1
+        if (
+            not forMS2
+        ):  # we assume that the first deifinition in an MFQL is for the MS1
             defs.update([m[0]])
         else:
             defs.update(m[1:])
@@ -170,7 +174,9 @@ def getMinMaxMFQLMass(root_mfql_dir, forMS2=False):
     minMass = float("inf")
     maxMass = 0
     for definition in defs:
-        defMin, defMax = getDefMinMax(definition)  # TODO maybe use numpy arange
+        defMin, defMax = getDefMinMax(
+            definition
+        )  # TODO maybe use numpy arange
         defMin = math.floor(defMin)
         defMax = math.ceil(defMax)  # some premature optimization :)
 
@@ -245,7 +251,9 @@ def setOptions_fromImputPaths(input_files_dir, root_mfql_dir):
     """see https://wiki.mpi-cbg.de/lipidx/LipidXplorer_Reference"""
     resolutionDeltas = getResolutionDeltas(input_files_dir)
     options = {}
-    options["dataType"] = inputFileType(input_files_dir)  # TODO why is this duplicated?
+    options["dataType"] = inputFileType(
+        input_files_dir
+    )  # TODO why is this duplicated?
     options["spectraFormat"] = inputFileType(input_files_dir)
     options["MStolerance"] = getTolerance()
     options["MSMStolerance"] = getTolerance()
@@ -262,7 +270,9 @@ def setOptions_fromImputPaths(input_files_dir, root_mfql_dir):
         0,
         getMinMaxMFQLMass(root_mfql_dir)[1],
     )  # TODO handle neutral loss neutral charege takes a fragement
-    options["MSthresholdType"] = "relative"  # TODO replace this with jaco filter?
+    options[
+        "MSthresholdType"
+    ] = "relative"  # TODO replace this with jaco filter?
     options["MSMSthresholdType"] = "relative"
     options["pisSpectra"] = False
     # after the import
@@ -278,7 +288,9 @@ def setOptions_fromImputPaths(input_files_dir, root_mfql_dir):
         "MScalibration"
     ] = ""  # options_og['MScalibration'] #todo find most intense peak and use that?... should actually use a standard
     options["MSMScalibration"] = None
-    options["selectionWindow"] = 0.5  # TODO why does this affect the results so much
+    options[
+        "selectionWindow"
+    ] = 0.5  # TODO why does this affect the results so much
     options["MSMSresolution"] = getTolerance(
         11.11
     )  # todo why this malkes different results

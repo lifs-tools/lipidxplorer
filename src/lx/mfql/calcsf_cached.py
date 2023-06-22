@@ -110,94 +110,87 @@ def calcsf(args):
     listOutSeq = []
 
     while jTi < upBndI:
-
         jW = lwBndW
         WBuf = jW * W
 
         while jW < upBndW:
-
             jAl = lwBndAl
             AlBuf = jAl * AL
 
             while jAl < upBndAl:
-
                 jAg = lwBndAg
                 AgBuf = jAg * AG
 
                 while jAg < upBndAg:
-
                     jI = lwBndI
                     IBuf = jI * I
 
                     while jI < upBndI:
-
                         jF = lwBndF
                         FBuf = jF * FL
 
                         while jF < upBndF:
-
                             jCl = lwBndCl
                             ClBuf = jCl * CL
 
                             while jCl < upBndCl:
-
                                 jLi = lwBndLi
                                 LiBuf = jLi * LI
 
                                 while jLi < upBndLi:
-
                                     jNi = lwBndNi
                                     NiBuf = jNi * NI
 
                                     while jNi < upBndNi:
-
                                         jCi = lwBndCi
                                         CiBuf = jCi * CI
 
                                         while jCi < upBndCi:
-
                                             jD = lwBndD
                                             DBuf = jD * D
 
                                             while jD < upBndD:
-
                                                 jP = lwBndP
                                                 PBuf = jP * P
 
                                                 while jP < upBndP:
-
                                                     jS = lwBndS
                                                     SBuf = jS * S
 
                                                     while jS < upBndS:
-
                                                         jNa = lwBndNa
                                                         NaBuf = jNa * NA
 
                                                         while jNa < upBndNa:
-
                                                             jN = lwBndN
                                                             NBuf = jN * N
 
                                                             while jN < upBndN:
-
                                                                 jO = lwBndO
                                                                 OBuf = jO * O
 
-                                                                while jO < upBndO:
-
+                                                                while (
+                                                                    jO < upBndO
+                                                                ):
                                                                     jC = lwBndC
-                                                                    CBuf = jC * C
+                                                                    CBuf = (
+                                                                        jC * C
+                                                                    )
 
-                                                                    while jC < upBndC:
-
+                                                                    while (
+                                                                        jC
+                                                                        < upBndC
+                                                                    ):
                                                                         jH = lwBndH
-                                                                        HBuf = jH * H
+                                                                        HBuf = (
+                                                                            jH
+                                                                            * H
+                                                                        )
 
                                                                         while (
-                                                                            jH <= upBndH
+                                                                            jH
+                                                                            <= upBndH
                                                                         ):
-
                                                                             # double bound equivalence
                                                                             cRDB = (
                                                                                 2.0
@@ -263,7 +256,6 @@ def calcsf(args):
                                                                                 cRDB
                                                                                 <= dbUpperBound
                                                                             ):
-
                                                                                 # check if it is the right mass
                                                                                 massSum = (
                                                                                     CBuf
@@ -314,7 +306,6 @@ def calcsf(args):
                                                                                             + tolerance
                                                                                         )
                                                                                     ):
-
                                                                                         #                                                                                         print(">>> m/z: {} theor.: {}".format( m, massSum))
 
                                                                                         # is only valid for charge == [-1, 0, 1]
@@ -372,7 +363,6 @@ def calcsf(args):
                                                                                                 > 0
                                                                                             )
                                                                                         ):  # /* || (jN == 0))*/{
-
                                                                                             # printf("\nreturn: %d count:%d", i, count)
 
                                                                                             # if (((jN % 2 != (int)(abs(massSum)) % 2) && abs(charge) % 2 == 1) ||
@@ -448,7 +438,9 @@ def calcsf(args):
                                                                             jH += 1
                                                                             HBuf += H
                                                                         jC += 1
-                                                                        CBuf += C
+                                                                        CBuf += (
+                                                                            C
+                                                                        )
                                                                     jO += 1
                                                                     OBuf += O
                                                                 jN += 1

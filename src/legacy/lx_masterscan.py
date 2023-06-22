@@ -68,8 +68,8 @@ class lx2_spectra:
         return Path(self.spectra_path).stem
 
     def dump(self, pkl_path):
-        with open(pkl_path, 'wb') as handle:
-            pickle.dump(self,handle)
+        with open(pkl_path, "wb") as handle:
+            pickle.dump(self, handle)
 
     def _get_reader(self):
         reader = MSFileLoader(self.spectra_path)
@@ -101,19 +101,27 @@ class lx2_spectra:
 
             if scan.ms_level == 1:
                 self.ms1_scans.append(scan)
-                mz_mask = (scan.arrays.mz > ms1_start) & (scan.arrays.mz < ms1_end)
+                mz_mask = (scan.arrays.mz > ms1_start) & (
+                    scan.arrays.mz < ms1_end
+                )
                 inty_mask = scan.arrays.intensity > 0
                 mask = mz_mask & inty_mask
                 self.ms1_peaks.append(
-                    Peak_arrays(scan.arrays.mz[mask], scan.arrays.intensity[mask])
+                    Peak_arrays(
+                        scan.arrays.mz[mask], scan.arrays.intensity[mask]
+                    )
                 )
             else:
                 self.ms2_scans.append(scan)
-                mz_mask = (scan.arrays.mz > ms2_start) & (scan.arrays.mz < ms2_end)
+                mz_mask = (scan.arrays.mz > ms2_start) & (
+                    scan.arrays.mz < ms2_end
+                )
                 inty_mask = scan.arrays.intensity > 0
                 mask = mz_mask & inty_mask
                 self.ms2_peaks.append(
-                    Peak_arrays(scan.arrays.mz[mask], scan.arrays.intensity[mask])
+                    Peak_arrays(
+                        scan.arrays.mz[mask], scan.arrays.intensity[mask]
+                    )
                 )
 
         return None
@@ -122,8 +130,12 @@ class lx2_spectra:
         scan_count = len(self.ms1_peaks)
         if scan_count < 2:
             log.error("not enough scans for delta resolution calculatinos")
-            raise ValueError("not enough scans for delta resolution calculatinos")
-        mz_array = np.concatenate([peak_arrays.mz for peak_arrays in self.ms1_peaks])
+            raise ValueError(
+                "not enough scans for delta resolution calculatinos"
+            )
+        mz_array = np.concatenate(
+            [peak_arrays.mz for peak_arrays in self.ms1_peaks]
+        )
         df = pd.DataFrame({"mz": mz_array})
         df["mz_diff"] = df["mz"].diff()
         df = df.sort_values("mz", ascending=False)
@@ -166,4 +178,3 @@ class lx2_spectra:
         # merge within spectra
         # recalibrate
         pass
-

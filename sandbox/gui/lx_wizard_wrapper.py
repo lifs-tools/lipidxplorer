@@ -29,7 +29,9 @@ class Controller:
     def update_m(self):
         self.lx_model.input_dir = self.lx_wizard.m_dirPicker_input.GetPath()
         self.lx_model.input_files = self.getSpectraFiles(self.getInput())
-        self.lx_model.mfql_dir = self.lx_wizard.m_dirPicker_rootMFQLdir.GetPath()
+        self.lx_model.mfql_dir = (
+            self.lx_wizard.m_dirPicker_rootMFQLdir.GetPath()
+        )
         self.lx_model.mfql_files = self.getMFQLFiles(self.getMFQLroot())
         self.lx_model.populate_props()
 
@@ -56,7 +58,7 @@ class Controller:
     def getSpectraFiles(self, path):
         # extensions = ['.mzXML', '.mzML','.raw']
         filenames = []
-        for (dirpath, dirnames, filenames) in os.walk(path):
+        for dirpath, dirnames, filenames in os.walk(path):
             filenames = filenames
             break
         f = [
@@ -71,7 +73,7 @@ class Controller:
 
     def getMFQLFiles(self, path):
         f = []
-        for (dirpath, dirnames, filenames) in os.walk(path):
+        for dirpath, dirnames, filenames in os.walk(path):
             f.extend([fn for fn in filenames if fn[-5:] == ".mfql"])
         return f
 

@@ -29,7 +29,9 @@ def mzML2DataFrames(filename, test_sample=False):  # this is with pytheomics
             msLevel = item["ms level"]
             positive_scan = True if "positive scan" in item else False
             if not positive_scan:
-                item["negative scan"]  # raise exceltion if not positive or negative
+                item[
+                    "negative scan"
+                ]  # raise exceltion if not positive or negative
             p_data = item.get("precursorList", None)  # helper
             if p_data and p_data["count"] != 1:
                 raise NotImplementedError(
@@ -39,7 +41,9 @@ def mzML2DataFrames(filename, test_sample=False):  # this is with pytheomics
                 p_data["precursor"][0]["spectrumRef"] if p_data else None
             )  # check if more than one
             target_mz = (
-                p_data["precursor"][0]["isolationWindow"]["isolation window target m/z"]
+                p_data["precursor"][0]["isolationWindow"][
+                    "isolation window target m/z"
+                ]
                 if p_data
                 else None
             )
@@ -131,11 +135,17 @@ class SpectraUtil:
 
     def set_timerange(self, t0, t1):
         print(f"time range in seconds: {t0} to {t1}")
-        self.scansDF = self.scansDF.loc[self.scansDF.time.multiply(60).between(t0, t1)]
+        self.scansDF = self.scansDF.loc[
+            self.scansDF.time.multiply(60).between(t0, t1)
+        ]
 
     def set_mode(self, positive_mode=True):
-        print(f"set mode to positive : {positive_mode}, (false means negative) ")
-        self.scansDF = self.scansDF.loc[self.scansDF.positive_scan == positive_mode]
+        print(
+            f"set mode to positive : {positive_mode}, (false means negative) "
+        )
+        self.scansDF = self.scansDF.loc[
+            self.scansDF.positive_scan == positive_mode
+        ]
 
     def set_ms_level(self, level=1):
         print(f"set ms level to  : {level}")
@@ -178,7 +188,9 @@ class SpectraUtil:
         ]
 
     def get_nearest(self, targetsDF, peaksDF=None, on="m", tol=0.01):
-        print(f"find the nearest Peaks to the target_peaks with a tolerance of {tol}")
+        print(
+            f"find the nearest Peaks to the target_peaks with a tolerance of {tol}"
+        )
         if peaksDF == None:
             peaksDF = self.peaksDF
 

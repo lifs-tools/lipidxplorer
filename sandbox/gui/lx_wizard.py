@@ -40,7 +40,7 @@ class MyWizard1(wx.adv.Wizard):
         self.m_staticText1 = wx.StaticText(
             self.m_wizPage1,
             wx.ID_ANY,
-            u"Folder with Input files",
+            "Folder with Input files",
             wx.DefaultPosition,
             wx.DefaultSize,
             0,
@@ -53,7 +53,7 @@ class MyWizard1(wx.adv.Wizard):
             self.m_wizPage1,
             wx.ID_ANY,
             wx.EmptyString,
-            u"Select a folder",
+            "Select a folder",
             wx.DefaultPosition,
             wx.DefaultSize,
             wx.DIRP_DEFAULT_STYLE,
@@ -71,7 +71,7 @@ class MyWizard1(wx.adv.Wizard):
         self.m_staticText3 = wx.StaticText(
             self.m_wizPage2,
             wx.ID_ANY,
-            u"Input files",
+            "Input files",
             wx.DefaultPosition,
             wx.DefaultSize,
             0,
@@ -102,7 +102,7 @@ class MyWizard1(wx.adv.Wizard):
         self.m_staticText2 = wx.StaticText(
             self.m_wizPage3,
             wx.ID_ANY,
-            u"Root MFQL folder",
+            "Root MFQL folder",
             wx.DefaultPosition,
             wx.DefaultSize,
             0,
@@ -115,7 +115,7 @@ class MyWizard1(wx.adv.Wizard):
             self.m_wizPage3,
             wx.ID_ANY,
             wx.EmptyString,
-            u"Select a folder",
+            "Select a folder",
             wx.DefaultPosition,
             wx.DefaultSize,
             wx.DIRP_DEFAULT_STYLE,
@@ -133,7 +133,7 @@ class MyWizard1(wx.adv.Wizard):
         self.m_staticText4 = wx.StaticText(
             self.m_wizPage4,
             wx.ID_ANY,
-            u"MFQL files",
+            "MFQL files",
             wx.DefaultPosition,
             wx.DefaultSize,
             0,
@@ -164,7 +164,7 @@ class MyWizard1(wx.adv.Wizard):
         self.Autofill_Parameters_label = wx.StaticText(
             self.m_wizPage5,
             wx.ID_ANY,
-            u"Autofill Parameters",
+            "Autofill Parameters",
             wx.DefaultPosition,
             wx.DefaultSize,
             0,
@@ -180,7 +180,9 @@ class MyWizard1(wx.adv.Wizard):
             wx.DefaultSize,
             wx.propgrid.PGMAN_DEFAULT_STYLE,
         )
-        self.m_propertyGridManager_props.SetExtraStyle(wx.propgrid.PG_EX_MODE_BUTTONS)
+        self.m_propertyGridManager_props.SetExtraStyle(
+            wx.propgrid.PG_EX_MODE_BUTTONS
+        )
         bSizer5.Add(self.m_propertyGridManager_props, 1, wx.ALL | wx.EXPAND, 5)
 
         self.m_wizPage5.SetSizer(bSizer5)

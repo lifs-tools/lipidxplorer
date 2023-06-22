@@ -67,6 +67,7 @@ except ImportError:
 # import lpdxSCC
 import platform
 
+
 # for exception forwarding
 def formatExceptionInfo(maxTBlevel=None):
     cla, exc, trbk = sys.exc_info()
@@ -141,7 +142,6 @@ class FileDrawerDropTarget(wx.FileDropTarget):
     """This object implements Drop Target functionality for Files and Directories"""
 
     def __init__(self, obj, callback, fileExt):
-
         # Initialize the wx.FileDropTarget Object
         wx.FileDropTarget.__init__(self)
         # Store the Object Reference for dropped files
@@ -175,7 +175,6 @@ class GeneralFileDrawerDropTarget(FileDrawerDropTarget):
     """This object implements Drop Target functionality for Files and Directories"""
 
     def __init__(self, obj, callback, fileExt):
-
         # Initialize the wx.FileDropTarget Object
         wx.FileDropTarget.__init__(self)
         # Store the Object Reference for dropped files
@@ -212,7 +211,6 @@ class MFQLDropTarget(wx.FileDropTarget):
     """This object implements Drop Target functionality for Text"""
 
     def __init__(self, obj, parent):
-
         # Initialize the wx.FileDropTarget Object
         wx.FileDropTarget.__init__(self)
         # Store the Object Reference for dropped files
@@ -224,7 +222,6 @@ class MFQLDropTarget(wx.FileDropTarget):
         """Implement File Drop"""
         # append a list of the file names dropped
         for p in filenames:
-
             if os.path.isdir(p):
                 for root, dirs, files in os.walk(p):
                     for f in files:
@@ -253,7 +250,6 @@ else:
 
 
 def relativePath(fullpath):
-
     loc = os.getcwd()
     listLoc = loc.split(os.sep)
     listFullPath = fullpath.split(os.sep)
@@ -306,7 +302,6 @@ wxProgressDLG_Update, EVT_PROGRESSDLG_UPDATE = NewEvent()
 
 
 class Worker(threading.Thread):
-
     requestID = 0
 
     def __init__(self, parent, requestQ, resultQ, **kwds):
@@ -324,7 +319,6 @@ class Worker(threading.Thread):
         return Worker.requestID
 
     def run(self):
-
         sys.stdout = SysOutListener()
         print("\n***Debugging Mode!***")
         sys.stderr = SysOutListener()
@@ -391,7 +385,6 @@ class Worker(threading.Thread):
                     dlg.Destroy()
 
             except LipidXException:
-
                 # wx.GetApp().frame.handleLipidXException()
 
                 evt = wxStdOut(text="")  # v.value)
@@ -401,7 +394,10 @@ class Worker(threading.Thread):
 
                 (excName, excArgs, excTb, exc) = formatExceptionInfo()
                 dlg = wx.MessageDialog(
-                    wx.GetApp().frame, "%s" % exc, "ERROR", wx.OK | wx.ICON_ERROR
+                    wx.GetApp().frame,
+                    "%s" % exc,
+                    "ERROR",
+                    wx.OK | wx.ICON_ERROR,
                 )
                 if dlg.ShowModal() == wx.ID_OK:
                     dlg.Destroy()
@@ -414,7 +410,10 @@ class Worker(threading.Thread):
 
                 (excName, excArgs, excTb, exc) = formatExceptionInfo()
                 dlg = wx.MessageDialog(
-                    wx.GetApp().frame, "%s" % exc, "IMPORT ERROR", wx.OK | wx.ICON_ERROR
+                    wx.GetApp().frame,
+                    "%s" % exc,
+                    "IMPORT ERROR",
+                    wx.OK | wx.ICON_ERROR,
                 )
                 if dlg.ShowModal() == wx.ID_OK:
                     dlg.Destroy()
@@ -441,7 +440,6 @@ class Worker(threading.Thread):
                 # dlg = MyErrorDialog(wx.GetApp().frame, -1, "ERROR", 'bla')
                 r = dlg.ShowModal()
                 if r == wx.ID_YES:
-
                     dlg = wx.MessageDialog(
                         wx.GetApp().frame,
                         "Please store the bugReport.html and send it to lifs-support@isas.de",
@@ -471,7 +469,9 @@ class Worker(threading.Thread):
                     dlg = wx.FileDialog(
                         wx.GetApp().frame,
                         "Specify the site for the bugReport.html",
-                        style=wx.DD_DEFAULT_STYLE | wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+                        style=wx.DD_DEFAULT_STYLE
+                        | wx.FD_SAVE
+                        | wx.FD_OVERWRITE_PROMPT,
                         defaultFile="bugReport.html",
                     )
                     dlg.SetWildcard("*.html files|*.html")
@@ -513,7 +513,6 @@ class SysOutListener:
 
 class MyErrorDialog(wx.Dialog):
     def __init__(self, parent, id, title, text):
-
         wx.Dialog.__init__(self, parent, id, title, size=(400, 230))
 
         self.sizer_v1 = wx.BoxSizer(wx.VERTICAL)
@@ -529,7 +528,9 @@ class MyErrorDialog(wx.Dialog):
         self.txt_error.SetSize((380, 150))
 
         self.sizer_v1.Add(self.txt_error, 0, wx.EXPAND | wx.ALL, 5)
-        self.sizer_v1.Add(self.sizer_b1, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+        self.sizer_v1.Add(
+            self.sizer_b1, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5
+        )
 
         self.SetSizer(self.sizer_v1)
         # self.sizer_v1.Fit(self)
@@ -544,7 +545,6 @@ class MyHTMLDialog(wx.Dialog):
 
 class TextOutFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-
         # begin wxGlade: LpdxFrame.__init__
         kwds["style"] = (
             wx.MINIMIZE_BOX
@@ -578,10 +578,18 @@ class TextOutFrame(wx.Frame):
         # 	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.VSCROLL|wx.TE_AUTO_SCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE)#, size = wx.Point(835, 700))
         self.text_ctrl.SetMarginType(0, stc.STC_MARGIN_NUMBER)
         self.text_ctrl.SetMarginWidth(0, 52)
-        self.text_ctrl.StyleSetSpec(stc.STC_STYLE_DEFAULT, "size:10,face:NSimSun")
-        self.text_ctrl.StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
-        self.text_ctrl.SetMinSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
-        self.text_ctrl.SetSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
+        self.text_ctrl.StyleSetSpec(
+            stc.STC_STYLE_DEFAULT, "size:10,face:NSimSun"
+        )
+        self.text_ctrl.StyleSetSpec(
+            stc.STC_STYLE_LINENUMBER, "size:9,face:Arial"
+        )
+        self.text_ctrl.SetMinSize(
+            (self.GetSize()[0] - 40, self.GetSize()[1] - 150)
+        )
+        self.text_ctrl.SetSize(
+            (self.GetSize()[0] - 40, self.GetSize()[1] - 150)
+        )
         self.text_ctrl.SetScrollWidth(3000)
 
         self.button_clear = wx.Button(self, -1, "Clear Buffer")
@@ -606,7 +614,10 @@ class TextOutFrame(wx.Frame):
         self.sizer.Add(
             self.sizer_buttons,
             0,
-            wx.ADJUST_MINSIZE | wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALL,
+            wx.ADJUST_MINSIZE
+            | wx.ALIGN_BOTTOM
+            | wx.ALIGN_CENTER_HORIZONTAL
+            | wx.ALL,
             10,
         )
         self.SetSizer(self.sizer)
@@ -622,7 +633,6 @@ class TextOutFrame(wx.Frame):
         self.listError = []
 
     def write(self, text):
-
         if re.match(".*lpdxUIExceptions.*", text):
             error = re.match(".*lpdxUIExceptions.*:(.*)", text).group(1)
             self.listError.append()
@@ -642,7 +652,6 @@ class TextOutFrame(wx.Frame):
 
 class SetDebugFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-
         # begin wxGlade: LpdxFrame.__init__
         kwds["style"] = (
             wx.MINIMIZE_BOX
@@ -665,7 +674,9 @@ class SetDebugFrame(wx.Frame):
             self, -1, "MS/MS Type II Isotopic Correction debug output"
         )
         self.checkBox_IsotopicCorrection_MSMS.SetToolTip(
-            wx.ToolTip("outputs debug information for MS/MS isotopic correction")
+            wx.ToolTip(
+                "outputs debug information for MS/MS isotopic correction"
+            )
         )
         if Debug("isotopicCorrection"):
             self.checkBox_IsotopicCorrection_MSMS.SetValue(True)
@@ -729,11 +740,19 @@ class SetDebugFrame(wx.Frame):
         else:
             self.checkBox_MemoryLog.SetValue(False)
 
-        self.sizer.Add(self.checkBox_IsotopicCorrection_MSMS, 0, wx.LEFT | wx.TOP, 20)
+        self.sizer.Add(
+            self.checkBox_IsotopicCorrection_MSMS, 0, wx.LEFT | wx.TOP, 20
+        )
         self.sizer.Add(self.checkBox_removeIsotopes, 0, wx.LEFT | wx.TOP, 20)
-        self.sizer.Add(self.checkBox_isotopesInMasterscan, 0, wx.LEFT | wx.TOP, 20)
-        self.sizer.Add(self.checkBox_monoisotopicCorrection, 0, wx.LEFT | wx.TOP, 20)
-        self.sizer.Add(self.checkBox_relativeIntensity, 0, wx.LEFT | wx.TOP, 20)
+        self.sizer.Add(
+            self.checkBox_isotopesInMasterscan, 0, wx.LEFT | wx.TOP, 20
+        )
+        self.sizer.Add(
+            self.checkBox_monoisotopicCorrection, 0, wx.LEFT | wx.TOP, 20
+        )
+        self.sizer.Add(
+            self.checkBox_relativeIntensity, 0, wx.LEFT | wx.TOP, 20
+        )
         self.sizer.Add(self.checkBox_MemoryLog, 0, wx.LEFT | wx.TOP, 20)
         self.SetSizer(self.sizer)
 
@@ -741,14 +760,18 @@ class SetDebugFrame(wx.Frame):
         self.Layout()
 
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
-        self.Bind(wx.EVT_CHECKBOX, self.OnCheckMemoryLog, self.checkBox_MemoryLog)
+        self.Bind(
+            wx.EVT_CHECKBOX, self.OnCheckMemoryLog, self.checkBox_MemoryLog
+        )
         self.Bind(
             wx.EVT_CHECKBOX,
             self.OnCheckIsotopicCorrection_MSMS,
             self.checkBox_IsotopicCorrection_MSMS,
         )
         self.Bind(
-            wx.EVT_CHECKBOX, self.OnCheckRemoveIsotopes, self.checkBox_removeIsotopes
+            wx.EVT_CHECKBOX,
+            self.OnCheckRemoveIsotopes,
+            self.checkBox_removeIsotopes,
         )
         self.Bind(
             wx.EVT_CHECKBOX,
@@ -767,42 +790,36 @@ class SetDebugFrame(wx.Frame):
         )
 
     def OnCheckMemoryLog(self, evt):
-
         if self.checkBox_MemoryLog.GetValue():
             DebugSet("logMemory")
         else:
             DebugUnset("logMemory")
 
     def OnCheckIsotopicCorrection_MSMS(self, evt):
-
         if self.checkBox_IsotopicCorrection_MSMS.GetValue():
             DebugSet("isotopicCorrection")
         else:
             DebugUnset("isotopicCorrection")
 
     def OnCheckRemoveIsotopes(self, evt):
-
         if self.checkBox_removeIsotopes.GetValue():
             DebugUnset("removeIsotopes")
         else:
             DebugSet("removeIsotopes")
 
     def OnCheckIsotopesInMasterScan(self, evt):
-
         if self.checkBox_isotopesInMasterscan.GetValue():
             DebugSet("isotopesInMasterScan")
         else:
             DebugUnset("isotopesInMasterScan")
 
     def OnCheckMonoisotopicCorrection(self, evt):
-
         if self.checkBox_monoisotopicCorrection.GetValue():
             DebugSet("noMonoisotopicCorrection")
         else:
             DebugUnset("noMonoisotopicCorrection")
 
     def OnCheckRelativeIntensity(self, evt):
-
         if self.checkBox_relativeIntensity.GetValue():
             DebugSet("relativeIntensity")
         else:
@@ -814,7 +831,6 @@ class SetDebugFrame(wx.Frame):
 
 class SetAlignmentFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-
         # begin wxGlade: LpdxFrame.__init__
         kwds["style"] = (
             wx.MINIMIZE_BOX
@@ -840,10 +856,19 @@ class SetAlignmentFrame(wx.Frame):
             "linear (standard)",
             "calculated tolerance",
         ]  # , 'hierarchical (experimentell)']
-        self.alignmentMethodsMSMS = ["linear (standard)", "calculated tolerance"]
-        self.scanAveragingMethods = ["linear (standard)", "calculated tolerance"]
+        self.alignmentMethodsMSMS = [
+            "linear (standard)",
+            "calculated tolerance",
+        ]
+        self.scanAveragingMethods = [
+            "linear (standard)",
+            "calculated tolerance",
+        ]
 
-        self.alignmentMethodsMS_intern = ["linear", "calctol"]  # , 'hierarchical']
+        self.alignmentMethodsMS_intern = [
+            "linear",
+            "calctol",
+        ]  # , 'hierarchical']
         self.alignmentMethodsMSMS_intern = ["linear", "calctol"]
         self.scanAveragingMethods_intern = ["linear", "calctol"]
 
@@ -914,16 +939,24 @@ class SetAlignmentFrame(wx.Frame):
         ################################################
 
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
-        self.Bind(wx.EVT_RADIOBOX, self.OnEvtRadioBoxMS, self.radioBox_ms_alignment)
-        self.Bind(wx.EVT_RADIOBOX, self.OnEvtRadioBoxMSMS, self.radioBox_msms_alignment)
         self.Bind(
-            wx.EVT_RADIOBOX, self.OnEvtRadioBoxScanAvg, self.radioBox_scanAveraging
+            wx.EVT_RADIOBOX, self.OnEvtRadioBoxMS, self.radioBox_ms_alignment
+        )
+        self.Bind(
+            wx.EVT_RADIOBOX,
+            self.OnEvtRadioBoxMSMS,
+            self.radioBox_msms_alignment,
+        )
+        self.Bind(
+            wx.EVT_RADIOBOX,
+            self.OnEvtRadioBoxScanAvg,
+            self.radioBox_scanAveraging,
         )
 
     def OnEvtRadioBoxMS(self, evt):
-        self.parent.lpdxOptions["alignmentMethodMS"] = self.alignmentMethodsMS_intern[
-            evt.GetInt()
-        ]
+        self.parent.lpdxOptions[
+            "alignmentMethodMS"
+        ] = self.alignmentMethodsMS_intern[evt.GetInt()]
 
     def OnEvtRadioBoxMSMS(self, evt):
         self.parent.lpdxOptions[
@@ -941,7 +974,6 @@ class SetAlignmentFrame(wx.Frame):
 
 class SetOutputOptionFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-
         # begin wxGlade: LpdxFrame.__init__
         kwds["style"] = (
             wx.MINIMIZE_BOX
@@ -970,9 +1002,13 @@ class SetOutputOptionFrame(wx.Frame):
         )
 
         self.label_precursor = wx.StaticText(self, -1, "precursor prefix")
-        self.text_ctrl_precursor = wx.TextCtrl(self, -1, "", style=wx.TE_PROCESS_ENTER)
+        self.text_ctrl_precursor = wx.TextCtrl(
+            self, -1, "", style=wx.TE_PROCESS_ENTER
+        )
         self.label_fragment = wx.StaticText(self, -1, "fragment prefix")
-        self.text_ctrl_fragment = wx.TextCtrl(self, -1, "", style=wx.TE_PROCESS_ENTER)
+        self.text_ctrl_fragment = wx.TextCtrl(
+            self, -1, "", style=wx.TE_PROCESS_ENTER
+        )
 
         self.sizer_v_correctIntensities.Add(
             self.checkBox_correctIntensities, 0, wx.LEFT | wx.CENTER, 20
@@ -1003,7 +1039,9 @@ class SetOutputOptionFrame(wx.Frame):
         # !Note right now the column containing the lipid species is 'NAME' and the
         # fragment columns is "FRAGINTENS:*"
         self.sizer_v_sumFattyAcids = wx.BoxSizer(wx.HORIZONTAL)
-        self.checkBox_sumFattyAcids = wx.CheckBox(self, -1, "Sum up fatty acids")
+        self.checkBox_sumFattyAcids = wx.CheckBox(
+            self, -1, "Sum up fatty acids"
+        )
         self.checkBox_sumFattyAcids.SetToolTip(
             wx.ToolTip(
                 "!Note right now the column containing the lipid species is 'NAME' and the fragment columns is 'FRAGINTENS:*'"
@@ -1056,7 +1094,12 @@ class CSVViewer(wx.Frame):
         wx.Frame.__init__(self, parent, ID, title, (-1, -1), size)
 
         self.SetFont(
-            wx.Font(9, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+            wx.Font(
+                9,
+                wx.FONTFAMILY_DEFAULT,
+                wx.FONTSTYLE_NORMAL,
+                wx.FONTWEIGHT_NORMAL,
+            )
         )
         self.SetSize((600, 400))
         self.Center()
@@ -1124,7 +1167,10 @@ class CSVViewer(wx.Frame):
             # p = dlg.GetPath().split(os.sep)[-1]
             if not re.match(".*\.csv", p, re.IGNORECASE):
                 dlgError = wx.MessageDialog(
-                    self, "The filename must have '.csv' as ending", "Error", wx.OK
+                    self,
+                    "The filename must have '.csv' as ending",
+                    "Error",
+                    wx.OK,
                 )
 
             with open(self.filename) as fileIn:
@@ -1157,7 +1203,6 @@ class RunSubp(Thread):
 
 
 class RunOptions:
-
     lastSelected = None
     listChoices = ["tolerance", "min occ."]
     listChoices_types = ["ppm", "Da"]
@@ -1181,7 +1226,6 @@ class RunOptions:
 
 class LpdxFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-
         ### some constants ###
 
         self.CONST_THREAD_SUCCESSFUL = 0
@@ -1239,7 +1283,7 @@ class LpdxFrame(wx.Frame):
         self.lipidxplorer = kwds["lipidxplorer"]
 
         # specific LX versions is being used for import and run
-        self.lx_ver = 'LX1'  # 'LX1', 'LX1_refactored', 'LX2'
+        self.lx_ver = "LX1"  # 'LX1', 'LX1_refactored', 'LX2'
 
         # allow import of raw files?
         self.rawimport = kwds["rawimport"]
@@ -1341,7 +1385,9 @@ class LpdxFrame(wx.Frame):
         self.font_units_size = 10
 
         # create the notebook panels
-        self.notebook_1 = wx.Notebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
+        self.notebook_1 = wx.Notebook(
+            self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0
+        )
         self.notebook_1_pane_3 = wx.Panel(self.notebook_1, -1)
         self.notebook_1_pane_2 = wx.Panel(self.notebook_1, -1)
         self.notebook_1_pane_4 = wx.Panel(self.notebook_1, -1)
@@ -1361,33 +1407,49 @@ class LpdxFrame(wx.Frame):
 
         self.menubar = wx.MenuBar()
         self.menu_project = wx.Menu()
-        self.menu_project.Append(wx.MenuItem(self.menu_project, 1, "Load project"))
-        self.menu_project.Append(wx.MenuItem(self.menu_project, 2, "Save project"))
+        self.menu_project.Append(
+            wx.MenuItem(self.menu_project, 1, "Load project")
+        )
+        self.menu_project.Append(
+            wx.MenuItem(self.menu_project, 2, "Save project")
+        )
         self.menu_project.Append(
             wx.MenuItem(self.menu_project, 3, "Save project as ...")
         )
         self.menu_debug = wx.Menu()
         self.menu_debug.Append(wx.MenuItem(self.menu_debug, 4, "Debug window"))
-        self.menu_debug.Append(wx.MenuItem(self.menu_debug, 5, "Set debug levels"))
+        self.menu_debug.Append(
+            wx.MenuItem(self.menu_debug, 5, "Set debug levels")
+        )
         self.menu_options = wx.Menu()
         self.menu_options.Append(
             wx.MenuItem(self.menu_options, 6, "Set alignment method")
         )
-        self.menu_options.Append(wx.MenuItem(self.menu_options, 7, "Output options"))
+        self.menu_options.Append(
+            wx.MenuItem(self.menu_options, 7, "Output options")
+        )
         self.menu_help = wx.Menu()
         self.menu_help.Append(
             wx.MenuItem(self.menu_help, 8, "LipidXplorer Documentation")
         )
         self.menu_help.Append(wx.MenuItem(self.menu_help, 9, "MFQL tutorial"))
-        self.menu_help.Append(wx.MenuItem(self.menu_help, 10, "MFQL reference"))
+        self.menu_help.Append(
+            wx.MenuItem(self.menu_help, 10, "MFQL reference")
+        )
         self.menu_help.AppendSeparator()
         self.menu_help.Append(
             wx.MenuItem(self.menu_help, 11, "Help with 'Import Settings'")
         )
-        self.menu_help.Append(wx.MenuItem(self.menu_help, 12, "Help with 'Run'"))
-        self.menu_help.Append(wx.MenuItem(self.menu_help, 13, "Help with 'MS Tools'"))
+        self.menu_help.Append(
+            wx.MenuItem(self.menu_help, 12, "Help with 'Run'")
+        )
+        self.menu_help.Append(
+            wx.MenuItem(self.menu_help, 13, "Help with 'MS Tools'")
+        )
         self.menu_help.AppendSeparator()
-        self.menu_help.Append(wx.MenuItem(self.menu_help, 14, "About LipidXplorer"))
+        self.menu_help.Append(
+            wx.MenuItem(self.menu_help, 14, "About LipidXplorer")
+        )
         self.menu_about = wx.Menu()
         self.menubar.Append(self.menu_project, "&Project")
         self.menubar.Append(self.menu_debug, "&Debug")
@@ -1416,15 +1478,19 @@ class LpdxFrame(wx.Frame):
 
         ########################
         ### Extra tools pane ###
-        self.m_dump2outButton = wx.Button( self.notebook_1_pane_6, wx.ID_ANY, u"dump2out", wx.DefaultPosition, wx.DefaultSize, 0 )
-
+        self.m_dump2outButton = wx.Button(
+            self.notebook_1_pane_6,
+            wx.ID_ANY,
+            "dump2out",
+            wx.DefaultPosition,
+            wx.DefaultSize,
+            0,
+        )
 
         ##############################
         ### MS tools notebook pane ###
 
-        strFancy = (
-            '<font color="red" weight="bold" size="11">Mass vs. Sum Composition</font>'
-        )
+        strFancy = '<font color="red" weight="bold" size="11">Mass vs. Sum Composition</font>'
         self.label_mstools_InputSection = fancytext.StaticFancyText(
             self.notebook_1_pane_4, -1, strFancy
         )
@@ -1491,7 +1557,9 @@ class LpdxFrame(wx.Frame):
             self.notebook_1_pane_4, -1, "", style=wx.TE_PROCESS_ENTER
         )
         self.text_ctrl_mstools_InputSection_charge.SetToolTip(
-            wx.ToolTip("The charge, if it is an ion. Charge will be 0 otherwise.")
+            wx.ToolTip(
+                "The charge, if it is an ion. Charge will be 0 otherwise."
+            )
         )
         self.text_ctrl_mstools_InputSection_accuracy = wx.TextCtrl(
             self.notebook_1_pane_4, -1, "5", style=wx.TE_PROCESS_ENTER
@@ -1516,13 +1584,14 @@ class LpdxFrame(wx.Frame):
             )
         )
         self.text_ctrl_mstools_OutputSection = wx.TextCtrl(
-            self.notebook_1_pane_4, -1, "", style=wx.TE_MULTILINE | wx.TE_READONLY
+            self.notebook_1_pane_4,
+            -1,
+            "",
+            style=wx.TE_MULTILINE | wx.TE_READONLY,
         )
 
         # second half
-        strFancy = (
-            '<font color="red" weight="bold" size="11">Isotopes of molecules</font>'
-        )
+        strFancy = '<font color="red" weight="bold" size="11">Isotopes of molecules</font>'
         self.label_mstools_Isotopes = fancytext.StaticFancyText(
             self.notebook_1_pane_4, -1, strFancy
         )
@@ -1538,7 +1607,9 @@ class LpdxFrame(wx.Frame):
             self.notebook_1_pane_4, -1, "Ion sum composition                  "
         )
         self.label_mstools_Isotopes_fragment = wx.StaticText(
-            self.notebook_1_pane_4, -1, "Fragment sum composition                  "
+            self.notebook_1_pane_4,
+            -1,
+            "Fragment sum composition                  ",
         )
         self.text_ctrl_mstools_Isotopes_precursor = wx.TextCtrl(
             self.notebook_1_pane_4, -1, "", style=wx.TE_PROCESS_ENTER
@@ -1567,7 +1638,10 @@ class LpdxFrame(wx.Frame):
             self.notebook_1_pane_4, -1, "            "
         )
         self.text_ctrl_mstools_Isotopes_output = wx.TextCtrl(
-            self.notebook_1_pane_4, -1, "", style=wx.TE_MULTILINE | wx.TE_READONLY
+            self.notebook_1_pane_4,
+            -1,
+            "",
+            style=wx.TE_MULTILINE | wx.TE_READONLY,
         )
 
         ### MS tools notebook pane ###
@@ -1577,9 +1651,7 @@ class LpdxFrame(wx.Frame):
         ### RUN notebook pane ###
 
         # mfql Queries
-        strFancy = (
-            '<font color="red" weight="bold" size="11">Select/Add MFQL files</font>'
-        )
+        strFancy = '<font color="red" weight="bold" size="11">Select/Add MFQL files</font>'
         self.label_mfqlQueriesSection = fancytext.StaticFancyText(
             self.notebook_1_pane_3, -1, strFancy
         )
@@ -1610,7 +1682,10 @@ class LpdxFrame(wx.Frame):
             )
         )
         self.button_AddMFQL = buttons.GenButton(
-            self.notebook_1_pane_3, -1, "Add MFQL file", style=wx.BU_TOP | wx.BU_BOTTOM
+            self.notebook_1_pane_3,
+            -1,
+            "Add MFQL file",
+            style=wx.BU_TOP | wx.BU_BOTTOM,
         )
         self.button_AddMFQL.SetToolTip(
             wx.ToolTip("Opens a dialog for selecting a MFQL file.")
@@ -1635,7 +1710,9 @@ class LpdxFrame(wx.Frame):
             self.notebook_1_pane_3, -1, "Edit MFQL Entry"
         )
         self.button_OpenFile.SetToolTip(
-            wx.ToolTip("Opens an list entry for editing and viewing in a new panel.")
+            wx.ToolTip(
+                "Opens an list entry for editing and viewing in a new panel."
+            )
         )
         self.button_RemoveEntry = buttons.GenButton(
             self.notebook_1_pane_3, -1, "Remove MFQL Entry"
@@ -1661,7 +1738,9 @@ class LpdxFrame(wx.Frame):
         self.button_Browse_MasterScan.SetToolTip(
             wx.ToolTip("Opens a dialog for MasterScan specification.")
         )
-        self.button_Browse_MasterScan.SetBackgroundColour(wx.Colour(140, 250, 140))
+        self.button_Browse_MasterScan.SetBackgroundColour(
+            wx.Colour(140, 250, 140)
+        )
         self.button_Browse_MasterScan.SetToolTip(
             wx.ToolTip(
                 "Open a directory with your MasterScan files. All other text fields will be filled automatically."
@@ -1672,7 +1751,9 @@ class LpdxFrame(wx.Frame):
         self.label_OutputSection = wx.StaticText(
             self.notebook_1_pane_3, -1, "Specify output file"
         )
-        self.text_ctrl_OutputSection = wx.TextCtrl(self.notebook_1_pane_3, -1, "")
+        self.text_ctrl_OutputSection = wx.TextCtrl(
+            self.notebook_1_pane_3, -1, ""
+        )
         self.text_ctrl_OutputSection.SetToolTip(
             wx.ToolTip("The ouput is a comma seperated file (*.csv).")
         )
@@ -1696,14 +1777,22 @@ class LpdxFrame(wx.Frame):
         self.label_RunOptions_tolerance = wx.StaticText(
             self.notebook_1_pane_3, -1, "Tolerance	"
         )
-        self.label_RunOptions_MS = wx.StaticText(self.notebook_1_pane_3, -1, "MS	")
-        self.text_ctrl_RunOptions_MS = wx.TextCtrl(self.notebook_1_pane_3, -1, "5")
+        self.label_RunOptions_MS = wx.StaticText(
+            self.notebook_1_pane_3, -1, "MS	"
+        )
+        self.text_ctrl_RunOptions_MS = wx.TextCtrl(
+            self.notebook_1_pane_3, -1, "5"
+        )
         self.choice_RunOptions_MS_type = wx.Choice(
             self.notebook_1_pane_3, -1, choices=self.listChoices_types
         )
         self.choice_RunOptions_MS_type.SetStringSelection("ppm")
-        self.label_RunOptions_MSMS = wx.StaticText(self.notebook_1_pane_3, -1, "MS/MS	")
-        self.text_ctrl_RunOptions_MSMS = wx.TextCtrl(self.notebook_1_pane_3, -1, "5")
+        self.label_RunOptions_MSMS = wx.StaticText(
+            self.notebook_1_pane_3, -1, "MS/MS	"
+        )
+        self.text_ctrl_RunOptions_MSMS = wx.TextCtrl(
+            self.notebook_1_pane_3, -1, "5"
+        )
         self.choice_RunOptions_MSMS_type = wx.Choice(
             self.notebook_1_pane_3, -1, choices=self.listChoices_types
         )
@@ -1721,7 +1810,9 @@ class LpdxFrame(wx.Frame):
         self.checkBox_OptionsSection_isocorrect_ms.SetValue(True)
 
         self.checkBox_OptionsSection_isocorrect_ms.SetToolTip(
-            wx.ToolTip("Isotopic correction of quantitative information in MS spectra")
+            wx.ToolTip(
+                "Isotopic correction of quantitative information in MS spectra"
+            )
         )
         self.checkBox_OptionsSection_isocorrect_msms = wx.CheckBox(
             self.notebook_1_pane_3, -1, "Isotopic Correction MS/MS"
@@ -1744,7 +1835,9 @@ class LpdxFrame(wx.Frame):
             self.notebook_1_pane_3, -1, "Dump MasterScan"
         )
         self.checkBox_OptionsSection_dumpMasterScan.SetToolTip(
-            wx.ToolTip("Generate a dump of the MasterScan to view its content.")
+            wx.ToolTip(
+                "Generate a dump of the MasterScan to view its content."
+            )
         )
         self.checkBox_OptionsSection_tabLimited = wx.CheckBox(
             self.notebook_1_pane_3, -1, "Tab delimited"
@@ -1762,7 +1855,9 @@ class LpdxFrame(wx.Frame):
             self.notebook_1_pane_3, -1, "No head"
         )
         self.checkBox_OptionsSection_nohead.SetToolTip(
-            wx.ToolTip("No output of *.csv file's head with the names of the columns.")
+            wx.ToolTip(
+                "No output of *.csv file's head with the names of the columns."
+            )
         )
         self.checkBox_generateStatistics = wx.CheckBox(
             self.notebook_1_pane_3, -1, "Statistics"
@@ -1910,7 +2005,9 @@ intensity."""
         self.label_SettingsSection_occupationThr_groups.Hide()
 
         # putting the MS/MS checkbox
-        self.checkBox_importMSMS = wx.CheckBox(self.notebook_1_pane_2, -1, "MS only")
+        self.checkBox_importMSMS = wx.CheckBox(
+            self.notebook_1_pane_2, -1, "MS only"
+        )
         self.checkBox_importMSMS.SetToolTip(
             wx.ToolTip("switch off to restrict import to only MS")
         )
@@ -1932,7 +2029,9 @@ intensity."""
             self.notebook_1_pane_2, -1, "Browse"
         )
         self.button_Browse_OutputMasterScanSection.SetToolTip(
-            wx.ToolTip("Opens a dialog box for selection of the MasterScan database.")
+            wx.ToolTip(
+                "Opens a dialog box for selection of the MasterScan database."
+            )
         )
 
         # self.button_SelectSettingSection_edit = buttons.GenButton(self.notebook_1_pane_2, -1, "Edit")
@@ -1950,7 +2049,10 @@ intensity."""
                 -1,
                 self.bmp_LipidX_Logo,
                 (360, 430),
-                (self.bmp_LipidX_Logo.GetWidth(), self.bmp_LipidX_Logo.GetHeight()),
+                (
+                    self.bmp_LipidX_Logo.GetWidth(),
+                    self.bmp_LipidX_Logo.GetHeight(),
+                ),
             )
         except:
             pass
@@ -1962,7 +2064,9 @@ intensity."""
             self.notebook_1_pane_5, -1, "Start import"
         )
         self.button_StartImport.SetToolTip(
-            wx.ToolTip("Starts the import procedure with the selected settings.")
+            wx.ToolTip(
+                "Starts the import procedure with the selected settings."
+            )
         )
         # self.button_StartImport.SetBackgroundColour(wx.Colour(140, 250, 140))
         self.button_StartImport.SetBackgroundColour(wx.Colour(200, 200, 200))
@@ -1992,7 +2096,9 @@ intensity."""
         self.label_LoadIniSection = wx.StaticText(
             self.notebook_1_pane_5, -1, "Select *.ini settings file"
         )
-        self.text_ctrl_LoadIniSection = wx.TextCtrl(self.notebook_1_pane_5, -1, "")
+        self.text_ctrl_LoadIniSection = wx.TextCtrl(
+            self.notebook_1_pane_5, -1, ""
+        )
         self.text_ctrl_LoadIniSection.SetToolTip(
             wx.ToolTip(
                 "The import settings are stored in a special file which can be changed to your own file here."
@@ -2005,7 +2111,12 @@ intensity."""
 
         # line separating settings load and change settings
         self.static_line_LoadIniSection = wx.StaticLine(
-            self.notebook_1_pane_5, -1, (-1, -1), (650, 4), wx.LI_HORIZONTAL, ""
+            self.notebook_1_pane_5,
+            -1,
+            (-1, -1),
+            (650, 4),
+            wx.LI_HORIZONTAL,
+            "",
         )
 
         # set initially *.ini file
@@ -2018,15 +2129,15 @@ intensity."""
             self.notebook_1_pane_5, -1, "Browse"
         )
         self.button_Browse_LoadIniSection.SetToolTip(
-            wx.ToolTip("Opens a dialog for selection an import settings file (*.ini).")
+            wx.ToolTip(
+                "Opens a dialog for selection an import settings file (*.ini)."
+            )
         )
 
         # select setting
         # self.label_SelectSettingSection = wx.StaticText(self.notebook_1_self.notebook_1_pane_5, -1, "Select setting")
         # strFancy = '<font color="$8CFA8C" size="12">Select setting</font>'
-        strFancy = (
-            '<font color="red" weight="bold" size="11">Select a Configuration</font>'
-        )
+        strFancy = '<font color="red" weight="bold" size="11">Select a Configuration</font>'
         self.label_SelectSettingSection = fancytext.StaticFancyText(
             self.notebook_1_pane_5, -1, strFancy
         )
@@ -2046,7 +2157,10 @@ intensity."""
 
         self.listConfigurations = sorted(self.confParse.sections())
         self.choice_SelectSettingSection = wx.Choice(
-            self.notebook_1_pane_5, -1, size=(500, 30), choices=self.listConfigurations
+            self.notebook_1_pane_5,
+            -1,
+            size=(500, 30),
+            choices=self.listConfigurations,
         )
 
         button1_w = 140
@@ -2060,7 +2174,9 @@ intensity."""
             self.notebook_1_pane_5, -1, "Delete"
         )
         self.button_Delete_LoadIniSection.SetToolTip(
-            wx.ToolTip("deletes the selected settings section from the *.ini file.")
+            wx.ToolTip(
+                "deletes the selected settings section from the *.ini file."
+            )
         )
         self.button_Save_LoadIniSection = buttons.GenButton(
             self.notebook_1_pane_5, -1, "Save ..."
@@ -2114,7 +2230,9 @@ intensity."""
         self.choice_SettingsSection_threshold_msms = wx.Choice(
             self.notebook_1_pane_5, -1, choices=["absolute", "relative"]
         )
-        self.choice_SettingsSection_threshold_msms.SetStringSelection("absolute")
+        self.choice_SettingsSection_threshold_msms.SetStringSelection(
+            "absolute"
+        )
         self.store_SettingsSection_threshold_msms = "absolute"
         self.choice_SettingsSection_threshold_msms.SetToolTip(
             wx.ToolTip("Relative intensity in '%'")
@@ -2161,7 +2279,9 @@ intensity."""
             self.notebook_1_pane_5, -1, "selection window"
         )
         self.label_SettingsSection_selectionWindow.SetToolTip(
-            wx.ToolTip("Specify the half-width of the precursor isolation window.")
+            wx.ToolTip(
+                "Specify the half-width of the precursor isolation window."
+            )
         )
         self.label_SettingsSection_selectionWindow_unit = wx.StaticText(
             self.notebook_1_pane_5, -1, "Da"
@@ -2170,7 +2290,9 @@ intensity."""
             self.notebook_1_pane_5, -1, "timerange"
         )
         self.label_SettingsSection_timerange.SetToolTip(
-            wx.ToolTip("Select a timerange from within the spectra should be imported")
+            wx.ToolTip(
+                "Select a timerange from within the spectra should be imported"
+            )
         )
         self.label_SettingsSection_timerange_unit = wx.StaticText(
             self.notebook_1_pane_5, -1, "sec."
@@ -2179,7 +2301,9 @@ intensity."""
             self.notebook_1_pane_5, -1, "m/z range"
         )
         self.label_SettingsSection_massrange.SetToolTip(
-            wx.ToolTip("Select a m/z range from within the spectra should be imported")
+            wx.ToolTip(
+                "Select a m/z range from within the spectra should be imported"
+            )
         )
         self.label_SettingsSection_massrange_ms = wx.StaticText(
             self.notebook_1_pane_5, -1, "MS"
@@ -2393,7 +2517,9 @@ intensity."""
         ### end *.ini ###
 
         self.debug = TextOutFrame(self, -1, "Debugging")
-        self.debug.text_ctrl.AppendText("LipidXplorer version: %s\n" % self.version)
+        self.debug.text_ctrl.AppendText(
+            "LipidXplorer version: %s\n" % self.version
+        )
         self.debug.text_ctrl.AppendText(
             "Python version: "
             + sys.version
@@ -2418,7 +2544,6 @@ intensity."""
         # end wxGlade
 
     def __bind_events(self):
-
         # for Key events
         # self.Bind(wx.EVT_KEY_DOWN, self.OnKeyPressed)
 
@@ -2443,16 +2568,18 @@ intensity."""
         self.Bind(wx.EVT_TEXT, self.OnText)
 
         # extra tools panel buttons
-        self.Bind(
-            wx.EVT_BUTTON, self.OnDump2out, self.m_dump2outButton
-        )
+        self.Bind(wx.EVT_BUTTON, self.OnDump2out, self.m_dump2outButton)
 
         # mstools panel buttons
         self.Bind(
-            wx.EVT_BUTTON, self.OnMassToSumComposition, self.button_massToSumComposition
+            wx.EVT_BUTTON,
+            self.OnMassToSumComposition,
+            self.button_massToSumComposition,
         )
         self.Bind(
-            wx.EVT_BUTTON, self.OnSumCompositionToMass, self.button_sumCompositionToMass
+            wx.EVT_BUTTON,
+            self.OnSumCompositionToMass,
+            self.button_sumCompositionToMass,
         )
         self.Bind(wx.EVT_BUTTON, self.OnCalcIsotopes, self.button_Isotopes)
 
@@ -2468,22 +2595,32 @@ intensity."""
             self.button_Browse_OutputMasterScanSection,
         )
         self.Bind(
-            wx.EVT_BUTTON, self.OnBrowse_LoadIni, self.button_Browse_LoadIniSection
+            wx.EVT_BUTTON,
+            self.OnBrowse_LoadIni,
+            self.button_Browse_LoadIniSection,
         )
         # self.Bind(wx.EVT_BUTTON, self.OnGroupSamples, self.label_SettingsSection_occupationThr_groups)
         self.Bind(wx.EVT_BUTTON, self.OnStartImport, self.button_StartImport)
         self.Bind(
-            wx.EVT_CHOICE, self.OnConfigurationChoice, self.choice_SelectSettingSection
+            wx.EVT_CHOICE,
+            self.OnConfigurationChoice,
+            self.choice_SelectSettingSection,
         )
         # self.Bind(wx.EVT_CHECKBOX, self.OnImportMSMS, self.checkBox_importMSMS)
 
         # import settings panel
-        self.Bind(wx.EVT_BUTTON, self.OnSave_LoadIni, self.button_Save_LoadIniSection)
         self.Bind(
-            wx.EVT_BUTTON, self.OnDelete_LoadIni, self.button_Delete_LoadIniSection
+            wx.EVT_BUTTON, self.OnSave_LoadIni, self.button_Save_LoadIniSection
         )
         self.Bind(
-            wx.EVT_BUTTON, self.OnSaveAs_LoadIni, self.button_SaveAs_LoadIniSection
+            wx.EVT_BUTTON,
+            self.OnDelete_LoadIni,
+            self.button_Delete_LoadIniSection,
+        )
+        self.Bind(
+            wx.EVT_BUTTON,
+            self.OnSaveAs_LoadIni,
+            self.button_SaveAs_LoadIniSection,
         )
         self.Bind(
             wx.EVT_CHOICE,
@@ -2507,7 +2644,9 @@ intensity."""
         )
 
         self.Bind(
-            wx.EVT_CHOICE, self.OnChoice_lx_ver, self.choice_SettingsSection_lx_ver
+            wx.EVT_CHOICE,
+            self.OnChoice_lx_ver,
+            self.choice_SettingsSection_lx_ver,
         )
 
         # run panel buttons
@@ -2517,11 +2656,21 @@ intensity."""
         self.Bind(wx.EVT_BUTTON, self.OnOpenFile, self.button_OpenFile)
         self.Bind(wx.EVT_BUTTON, self.OnNewFile, self.button_NewFile)
         self.Bind(wx.EVT_BUTTON, self.OnAddDir, self.button_AddDir)
-        self.Bind(wx.EVT_BUTTON, self.OnBrowse_Output, self.button_Browse_OutputSection)
-        self.Bind(wx.EVT_BUTTON, self.OnOpen_Output, self.button_Open_OutputSection)
-        self.Bind(wx.EVT_BUTTON, self.OnOpen_Dump, self.button_Open_DumpSection)
         self.Bind(
-            wx.EVT_BUTTON, self.OnBrowse_MasterScan, self.button_Browse_MasterScan
+            wx.EVT_BUTTON,
+            self.OnBrowse_Output,
+            self.button_Browse_OutputSection,
+        )
+        self.Bind(
+            wx.EVT_BUTTON, self.OnOpen_Output, self.button_Open_OutputSection
+        )
+        self.Bind(
+            wx.EVT_BUTTON, self.OnOpen_Dump, self.button_Open_DumpSection
+        )
+        self.Bind(
+            wx.EVT_BUTTON,
+            self.OnBrowse_MasterScan,
+            self.button_Browse_MasterScan,
         )
         self.Bind(wx.EVT_BUTTON, self.OnRunLipidX, self.button_RunLipidX)
 
@@ -2536,9 +2685,13 @@ intensity."""
         self.list_box_1.SetDropTarget(dropTargetMFQLFiles)
 
         dropTargetMasterScanFile = FileDrawerDropTarget(
-            self.text_ctrl_MasterScanSection, self.OnBrowse_MasterScan_Body, "sc"
+            self.text_ctrl_MasterScanSection,
+            self.OnBrowse_MasterScan_Body,
+            "sc",
         )
-        self.text_ctrl_MasterScanSection.SetDropTarget(dropTargetMasterScanFile)
+        self.text_ctrl_MasterScanSection.SetDropTarget(
+            dropTargetMasterScanFile
+        )
 
         dropTargetImportFolder = DrawerDropTarget(
             self.text_ctrl_ImportDataSection, self.OnBrowse_ImportData_Body
@@ -2595,11 +2748,9 @@ intensity."""
         self.debug.progressDialog.Update(evt.value)
 
     def OnKeyPressed(self, evt):
-
         key = evt.GetKeyCode()
 
     def OnMenuProjectSaveAs(self, evt):
-
         project = self.readOptions()
 
         # initialize config parser and fill it with the options
@@ -2617,7 +2768,8 @@ intensity."""
         # offer a filename for the project
         if not project.options["importDir"] is None:
             defaultFileName = (
-                "%s-project.lxp" % project.options["importDir"].split(os.sep)[-1]
+                "%s-project.lxp"
+                % project.options["importDir"].split(os.sep)[-1]
             )
         else:
             defaultFileName = ".lxp"
@@ -2653,7 +2805,6 @@ intensity."""
         dlg.Destroy()
 
     def OnMenuProjectSave(self, evt):
-
         if self.projectFile == "":
             self.OnMenuProjectSaveAs(None)
             return None
@@ -2675,7 +2826,8 @@ intensity."""
         # offer a filename for the project
         if not project.options["importDir"] is None:
             defaultFileName = (
-                "%s-project.lxp" % project.options["importDir"].split(os.sep)[-1]
+                "%s-project.lxp"
+                % project.options["importDir"].split(os.sep)[-1]
             )
         else:
             defaultFileName = ".lxp"
@@ -2684,10 +2836,11 @@ intensity."""
             configParser.write(f)
 
     def readOptions(self):
-
         project = Project()
 
-        project.options["importDir"] = self.text_ctrl_ImportDataSection.GetValue()
+        project.options[
+            "importDir"
+        ] = self.text_ctrl_ImportDataSection.GetValue()
         project.options[
             "masterScanImport"
         ] = (
@@ -2700,9 +2853,13 @@ intensity."""
         )  # in expectation of a project file
         project.options["importMSMS"] = not self.checkBox_importMSMS.GetValue()
         project.options["pisSpectra"] = self.checkBox_pisSpectra.GetValue()
-        project.options["dataType"] = self.combo_ctrl_ImportDataSection.GetValue()
+        project.options[
+            "dataType"
+        ] = self.combo_ctrl_ImportDataSection.GetValue()
         project.options["ini"] = self.text_ctrl_LoadIniSection.GetValue()
-        project.options["setting"] = self.choice_SelectSettingSection.GetSelection()
+        project.options[
+            "setting"
+        ] = self.choice_SelectSettingSection.GetSelection()
         project.options[
             "selectionWindow"
         ] = self.text_ctrl_SettingsSection_selectionWindow.GetValue()
@@ -2845,8 +3002,12 @@ intensity."""
         ] = self.outputOptionSetting.checkBox_settingsPrefix.GetValue()
         project.options[
             "resultFile"
-        ] = self.text_ctrl_OutputSection.GetValue()  # here starts the RUN panel
-        project.options["optionalMStolerance"] = self.text_ctrl_RunOptions_MS.GetValue()
+        ] = (
+            self.text_ctrl_OutputSection.GetValue()
+        )  # here starts the RUN panel
+        project.options[
+            "optionalMStolerance"
+        ] = self.text_ctrl_RunOptions_MS.GetValue()
         project.options[
             "optionalMSMStolerance"
         ] = self.text_ctrl_RunOptions_MSMS.GetValue()
@@ -2869,21 +3030,31 @@ intensity."""
         project.options[
             "complementMasterScan"
         ] = self.checkBox_OptionsSection_complement_sc.GetValue()
-        project.options["noHead"] = self.checkBox_OptionsSection_nohead.GetValue()
-        project.options["compress"] = self.checkBox_OptionsSection_compress.GetValue()
+        project.options[
+            "noHead"
+        ] = self.checkBox_OptionsSection_nohead.GetValue()
+        project.options[
+            "compress"
+        ] = self.checkBox_OptionsSection_compress.GetValue()
         project.options[
             "tabLimited"
         ] = self.checkBox_OptionsSection_tabLimited.GetValue()
         project.options[
             "dumpMasterScan"
         ] = self.checkBox_OptionsSection_dumpMasterScan.GetValue()
-        project.options["statistics"] = self.checkBox_generateStatistics.GetValue()
-        project.options["noPermutations"] = self.checkBox_noPermutations.GetValue()
+        project.options[
+            "statistics"
+        ] = self.checkBox_generateStatistics.GetValue()
+        project.options[
+            "noPermutations"
+        ] = self.checkBox_noPermutations.GetValue()
         project.options[
             "mzXML"
         ] = None  # option key used in lpdxImport.py, substituted by 'dataType'
         # option key used in lpdxImport.py, substituted by 'dataType'
-        project.options["spectraFormat"] = self.combo_ctrl_ImportDataSection.GetValue()
+        project.options[
+            "spectraFormat"
+        ] = self.combo_ctrl_ImportDataSection.GetValue()
 
         for query in list(self.dictMFQLScripts.keys()):
             project.mfql[query] = self.dictMFQLScripts[query]
@@ -2891,7 +3062,6 @@ intensity."""
         return project
 
     def readOptionsRun(self):
-
         project = Project()
 
         project.options[
@@ -2969,8 +3139,12 @@ intensity."""
         ] = self.outputOptionSetting.checkBox_settingsPrefix.GetValue()
         project.options[
             "resultFile"
-        ] = self.text_ctrl_OutputSection.GetValue()  # here starts the RUN panel
-        project.options["optionalMStolerance"] = self.text_ctrl_RunOptions_MS.GetValue()
+        ] = (
+            self.text_ctrl_OutputSection.GetValue()
+        )  # here starts the RUN panel
+        project.options[
+            "optionalMStolerance"
+        ] = self.text_ctrl_RunOptions_MS.GetValue()
         project.options[
             "optionalMSMStolerance"
         ] = self.text_ctrl_RunOptions_MSMS.GetValue()
@@ -2993,21 +3167,31 @@ intensity."""
         project.options[
             "complementMasterScan"
         ] = self.checkBox_OptionsSection_complement_sc.GetValue()
-        project.options["noHead"] = self.checkBox_OptionsSection_nohead.GetValue()
-        project.options["compress"] = self.checkBox_OptionsSection_compress.GetValue()
+        project.options[
+            "noHead"
+        ] = self.checkBox_OptionsSection_nohead.GetValue()
+        project.options[
+            "compress"
+        ] = self.checkBox_OptionsSection_compress.GetValue()
         project.options[
             "tabLimited"
         ] = self.checkBox_OptionsSection_tabLimited.GetValue()
         project.options[
             "dumpMasterScan"
         ] = self.checkBox_OptionsSection_dumpMasterScan.GetValue()
-        project.options["statistics"] = self.checkBox_generateStatistics.GetValue()
-        project.options["noPermutations"] = self.checkBox_noPermutations.GetValue()
+        project.options[
+            "statistics"
+        ] = self.checkBox_generateStatistics.GetValue()
+        project.options[
+            "noPermutations"
+        ] = self.checkBox_noPermutations.GetValue()
         project.options[
             "mzXML"
         ] = None  # option key used in lpdxImport.py, substituted by 'dataType'
         # option key used in lpdxImport.py, substituted by 'dataType'
-        project.options["spectraFormat"] = self.combo_ctrl_ImportDataSection.GetValue()
+        project.options[
+            "spectraFormat"
+        ] = self.combo_ctrl_ImportDataSection.GetValue()
 
         for query in list(self.dictMFQLScripts.keys()):
             project.mfql[query] = self.dictMFQLScripts[query]
@@ -3018,7 +3202,6 @@ intensity."""
         self.OnMenuProjectLoad(None, pFile=filename)
 
     def OnMenuProjectLoad(self, evt, pFile=""):
-
         project = GUIProject()
 
         # load the project file
@@ -3062,22 +3245,32 @@ intensity."""
             self.text_ctrl_MasterScanSection.SetValue(
                 options["masterScanRun"]
             )  # in expectation of a project file(projectoptions['masterScan']
-            self.checkBox_importMSMS.SetValue(not strToBool(options["importMSMS"]))
+            self.checkBox_importMSMS.SetValue(
+                not strToBool(options["importMSMS"])
+            )
             self.checkBox_pisSpectra.SetValue(strToBool(options["pisSpectra"]))
             self.combo_ctrl_ImportDataSection.SetValue(options["dataType"])
             self.text_ctrl_SettingsSection_selectionWindow.SetValue(
                 options["selectionWindow"]
             )
-            self.text_ctrl_SettingsSection_timerange1.SetValue(options["timerange"][0])
-            self.text_ctrl_SettingsSection_timerange2.SetValue(options["timerange"][1])
+            self.text_ctrl_SettingsSection_timerange1.SetValue(
+                options["timerange"][0]
+            )
+            self.text_ctrl_SettingsSection_timerange2.SetValue(
+                options["timerange"][1]
+            )
             self.text_ctrl_SettingsSection_calibration_ms.SetValue(
                 ",".join(options["MScalibration"])
             )
             self.text_ctrl_SettingsSection_calibration_msms.SetValue(
                 ",".join(options["MSMScalibration"])
             )
-            self.text_ctrl_SettingsSection_filter_ms.SetValue(options["MSfilter"])
-            self.text_ctrl_SettingsSection_filter_msms.SetValue(options["MSMSfilter"])
+            self.text_ctrl_SettingsSection_filter_ms.SetValue(
+                options["MSfilter"]
+            )
+            self.text_ctrl_SettingsSection_filter_msms.SetValue(
+                options["MSMSfilter"]
+            )
             self.text_ctrl_SettingsSection_massrange_ms1.SetValue(
                 options["MSmassrange"][0]
             )
@@ -3200,8 +3393,12 @@ intensity."""
 
             # here starts the RUN panel(options['resultFile']
             self.text_ctrl_OutputSection.SetValue(options["resultFile"])
-            self.text_ctrl_RunOptions_MS.SetValue(options["optionalMStolerance"])
-            self.text_ctrl_RunOptions_MSMS.SetValue(options["optionalMSMStolerance"])
+            self.text_ctrl_RunOptions_MS.SetValue(
+                options["optionalMStolerance"]
+            )
+            self.text_ctrl_RunOptions_MSMS.SetValue(
+                options["optionalMSMStolerance"]
+            )
             self.choice_RunOptions_MS_type.GetString(
                 self.choice_RunOptions_MS_type.SetStringSelection(
                     options["optionalMStoleranceType"]
@@ -3221,7 +3418,9 @@ intensity."""
             self.checkBox_OptionsSection_complement_sc.SetValue(
                 strToBool(options["complementMasterScan"])
             )
-            self.checkBox_OptionsSection_nohead.SetValue(strToBool(options["noHead"]))
+            self.checkBox_OptionsSection_nohead.SetValue(
+                strToBool(options["noHead"])
+            )
             self.checkBox_OptionsSection_compress.SetValue(
                 strToBool(options["compress"])
             )
@@ -3231,8 +3430,12 @@ intensity."""
             self.checkBox_OptionsSection_dumpMasterScan.SetValue(
                 strToBool(options["dumpMasterScan"])
             )
-            self.checkBox_generateStatistics.SetValue(strToBool(options["statistics"]))
-            self.checkBox_noPermutations.SetValue(strToBool(options["noPermutations"]))
+            self.checkBox_generateStatistics.SetValue(
+                strToBool(options["statistics"])
+            )
+            self.checkBox_noPermutations.SetValue(
+                strToBool(options["noPermutations"])
+            )
             # project.options['mzXML'] = None # option key used in lpdxImport.py, substituted by 'dataType'
         except TypeError as AttributeError:
             pass
@@ -3255,7 +3458,6 @@ intensity."""
         pass
 
     def OnMenuDebugWin(self, evt):
-
         if not self.debugOpen:
             # self.debug.Center()
             self.debug.Show(True)
@@ -3265,95 +3467,108 @@ intensity."""
             self.debugOpen = False
 
     def OnMenuDebugSet(self, evt):
-
         self.debugSetting.Show(True)
 
     def OnMenuAlignmentSet(self, evt):
-
         self.alignmentSetting.Show(True)
 
     def OnMenuOutputOptions(self, evt):
-
         self.outputOptionSetting.Show(True)
 
     def OnMenuLipidXDocumentation(self, evt):
-
-        webbrowser.open("https://lifs.isas.de/wiki/index.php/LipidX_Documentation")
+        webbrowser.open(
+            "https://lifs.isas.de/wiki/index.php/LipidX_Documentation"
+        )
 
     def OnMenuMFQLTutorial(self, evt):
-
         webbrowser.open(
             "https://lifs.isas.de/wiki/index.php/LipidX_MFQL#A_short_tutorial"
         )
 
     def OnMenuMFQLReference(self, evt):
-
         webbrowser.open(
             "https://lifs.isas.de/wiki/index.php/LipidX_MFQL#The_4_sections_of_a_MFQL_query"
         )
 
     def OnMenuHelpImportSettings(self, evt):
-
         webbrowser.open(
             "https://lifs.isas.de/wiki/index.php/LipidX_Usage#Machine_specific_settings"
         )
 
     def OnMenuHelpRun(self, evt):
-
         webbrowser.open(
             "https://lifs.isas.de/wiki/index.php/LipidX_Usage#Run_queries_on_the_MasterScan"
         )
 
     def OnMenuHelpMSTools(self, evt):
-
         webbrowser.open(
             "https://lifs.isas.de/wiki/index.php/LipidX_Usage#The_MS-Tools_panel"
         )
 
     def OnMenuAbout(self, evt):
-
         webbrowser.open("https://lifs.isas.de/wiki/index.php/LipidX_Preface")
 
     def OnTextEnter(self, evt):
-
         if evt.GetId() == self.text_ctrl_ImportDataSection.GetId():
-            self.OnBrowse_ImportData_Body(self.text_ctrl_ImportDataSection.GetValue())
+            self.OnBrowse_ImportData_Body(
+                self.text_ctrl_ImportDataSection.GetValue()
+            )
         if evt.GetId() == self.text_ctrl_MasterScanSection.GetId():
-            self.OnBrowse_MasterScan_Body(self.text_ctrl_MasterScanSection.GetValue())
+            self.OnBrowse_MasterScan_Body(
+                self.text_ctrl_MasterScanSection.GetValue()
+            )
         if evt.GetId() == self.text_ctrl_OutputMasterScanSection.GetId():
             self.text_ctrl_MasterScanSection.SetValue(
                 self.text_ctrl_OutputMasterScanSection.GetValue()
             )
 
     def OnText(self, evt):
-
         if not self.isChangedAndNotSavedCurrentConfiguration:
             if (
-                evt.GetId() == self.text_ctrl_SettingsSection_timerange1.GetId()
+                evt.GetId()
+                == self.text_ctrl_SettingsSection_timerange1.GetId()
                 or evt.GetId()
                 == self.text_ctrl_SettingsSection_occupationThr_ms.GetId()
                 or evt.GetId()
                 == self.text_ctrl_SettingsSection_occupationThr_msms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_threshold_ms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_threshold_msms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_timerange1.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_timerange2.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_massrange_ms1.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_massrange_ms2.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_massrange_msms1.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_massrange_msms2.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_resolution_ms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_resolution_msms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_resDelta_ms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_resDelta_msms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_calibration_ms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_threshold_ms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_threshold_msms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_timerange1.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_timerange2.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_massrange_ms1.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_massrange_ms2.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_massrange_msms1.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_massrange_msms2.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_resolution_ms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_resolution_msms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_resDelta_ms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_resDelta_msms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_calibration_ms.GetId()
                 or evt.GetId()
                 == self.text_ctrl_SettingsSection_calibration_msms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_filter_ms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_filter_msms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_tolerance_ms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_tolerance_msms.GetId()
-                or evt.GetId() == self.text_ctrl_SettingsSection_selectionWindow.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_filter_ms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_filter_msms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_tolerance_ms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_tolerance_msms.GetId()
+                or evt.GetId()
+                == self.text_ctrl_SettingsSection_selectionWindow.GetId()
                 or evt.GetId()
                 == self.text_ctrl_SettingsSection_precursorMassShift.GetId()
                 or evt.GetId()
@@ -3362,10 +3577,8 @@ intensity."""
                 self.OnSettingsChange()
 
     def OnStcChange(self, evt):
-
         for key in list(self.dict_text_ctrl.keys()):
             if evt.GetId() == self.dict_text_ctrl[key].GetId():
-
                 # find right page
                 for i in range(self.notebook_1.GetPageCount()):
                     if (
@@ -3375,7 +3588,9 @@ intensity."""
                         self.dict_isChangedAndNotSavedMfqlFile[key] = True
                         if key in self.dict_button_save:
                             # this is normal gray: (230, 224, 218, 255)
-                            if not self.dict_button_save[key].GetBackgroundColour() == (
+                            if not self.dict_button_save[
+                                key
+                            ].GetBackgroundColour() == (
                                 250,
                                 80,
                                 80,
@@ -3386,7 +3601,6 @@ intensity."""
                                 )
 
     def OnCloseApp(self, evt):
-
         dialog = wx.MessageDialog(
             self,
             message="Are you sure you want to quit?",
@@ -3421,9 +3635,7 @@ intensity."""
 
         self.Destroy()
 
-
     def handleSyntaxErrorException(self):
-
         evt = wxStdOut(text="")  # v.value)
         if not wx.GetApp().frame.debugOpen:
             wx.GetApp().frame.OnMenuDebugWin(None)
@@ -3469,7 +3681,6 @@ intensity."""
             dlg.Destroy()
 
     def handleLogicErrorExcept(self):
-
         evt = wxStdOut(text="")  # v.value)
         if not wx.GetApp().frame.debugOpen:
             wx.GetApp().frame.OnMenuDebugWin(None)
@@ -3477,13 +3688,15 @@ intensity."""
 
         (excName, excArgs, excTb, exc) = formatExceptionInfo()
         dlg = wx.MessageDialog(
-            wx.GetApp().frame, "%s" % exc, "LOGICAL ERROR", wx.OK | wx.ICON_ERROR
+            wx.GetApp().frame,
+            "%s" % exc,
+            "LOGICAL ERROR",
+            wx.OK | wx.ICON_ERROR,
         )
         if dlg.ShowModal() == wx.ID_OK:
             dlg.Destroy()
 
     def handleLipidXException(self):
-
         evt = wxStdOut(text="")  # v.value)
         if not wx.GetApp().frame.debugOpen:
             wx.GetApp().frame.OnMenuDebugWin(None)
@@ -3520,7 +3733,6 @@ intensity."""
         # 	dlg.Destroy()
 
     def handleImportException(self):
-
         evt = wxStdOut(text="")  # v.value)
         if not wx.GetApp().frame.debugOpen:
             wx.GetApp().frame.OnMenuDebugWin(None)
@@ -3528,13 +3740,15 @@ intensity."""
 
         (excName, excArgs, excTb, exc) = formatExceptionInfo()
         dlg = wx.MessageDialog(
-            wx.GetApp().frame, "%s" % exc, "IMPORT ERROR", wx.OK | wx.ICON_ERROR
+            wx.GetApp().frame,
+            "%s" % exc,
+            "IMPORT ERROR",
+            wx.OK | wx.ICON_ERROR,
         )
         if dlg.ShowModal() == wx.ID_OK:
             dlg.Destroy()
 
     def handleException(self):
-
         traceback.print_tb(sys.exc_info()[2])
         evt = wxStdOut(text="")
         if not wx.GetApp().frame.debugOpen:
@@ -3555,7 +3769,6 @@ intensity."""
         )
         r = dlg.ShowModal()
         if r == wx.ID_YES:
-
             dlg = wx.MessageDialog(
                 wx.GetApp().frame,
                 "Please store the bugReport.html and send it to lifs-support@isas.de",
@@ -3585,7 +3798,9 @@ intensity."""
             dlg = wx.FileDialog(
                 wx.GetApp().frame,
                 "Specify the site for the bugReport.html",
-                style=wx.DD_DEFAULT_STYLE | wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+                style=wx.DD_DEFAULT_STYLE
+                | wx.FD_SAVE
+                | wx.FD_OVERWRITE_PROMPT,
                 defaultFile="bugReport.html",
             )
             dlg.SetWildcard("*.html files|*.html")
@@ -3607,12 +3822,10 @@ intensity."""
         wx.PostEvent(wx.GetApp().frame, evt)
 
     def startConvertWiff(self):
-
         wiffIn = wiffOut = self.filePath_WiffIn
 
         if os.path.exists(wiffIn):
             if os.path.exists(wiffOut):
-
                 # initialize to fail
                 exitCode = -1
 
@@ -3632,7 +3845,6 @@ intensity."""
                 for root, dir, files in os.walk(wiffIn):
                     for f in files:
                         if re.match(".*\.wiff", f, re.IGNORECASE):
-
                             # select msconvert (MC) or ReAdW
                             if self.flagMC:  # msconvert
                                 if self.flagCentroid:
@@ -3650,9 +3862,12 @@ intensity."""
                                     strCentroid = "-c -c1"
                                 else:
                                     strCentroid = ""
-                                strStartWiff = 'mzWiff -FPC1 %s --mzXML "%s"' % (
-                                    strCentroid,
-                                    os.path.join(root, f),
+                                strStartWiff = (
+                                    'mzWiff -FPC1 %s --mzXML "%s"'
+                                    % (
+                                        strCentroid,
+                                        os.path.join(root, f),
+                                    )
                                 )  # s, wiffOut)
 
                             print(strStartWiff)
@@ -3700,12 +3915,10 @@ intensity."""
                 return False
 
     def startConvertRaw(self):
-
         rawIn = rawOut = self.filePath_RawIn
 
         if os.path.exists(rawIn):
             if os.path.exists(rawOut):
-
                 max = 0
                 count = 0
                 for root, dir, files in os.walk(rawIn):
@@ -3744,7 +3957,11 @@ intensity."""
                                     strCentroid = ""
                                 strStartRaw = (
                                     'readw --precursorFromFilterLine --mzXML %s "%s" "%s"'
-                                    % (strCentroid, os.path.join(root, f), fout)
+                                    % (
+                                        strCentroid,
+                                        os.path.join(root, f),
+                                        fout,
+                                    )
                                 )
 
                             print(strStartRaw)
@@ -3791,10 +4008,11 @@ intensity."""
                 return None
 
     def OnBrowse_ImportData(self, evt):
-
         # open directory with *.dta/*mzXML content
         dlg = wx.DirDialog(
-            self, "Choose a directory", style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST
+            self,
+            "Choose a directory",
+            style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
         )
         dlg.SetPath(os.getcwd())
 
@@ -3807,7 +4025,6 @@ intensity."""
         self.OnBrowse_ImportData_Body(self.filePath_ImportData)
 
     def OnBrowse_ImportData_Body(self, filePath):
-
         if not os.path.exists(filePath):
             dlg = wx.MessageDialog(
                 self,
@@ -3820,7 +4037,9 @@ intensity."""
                 return None
 
         strMasterScan = filePath + os.sep + filePath.split(os.sep)[-1] + ".sc"
-        strOutputFile = filePath + os.sep + filePath.split(os.sep)[-1] + "-out.csv"
+        strOutputFile = (
+            filePath + os.sep + filePath.split(os.sep)[-1] + "-out.csv"
+        )
         self.filePath_Dump = (
             filePath + os.sep + filePath.split(os.sep)[-1] + "-dump.csv"
         )
@@ -3830,7 +4049,6 @@ intensity."""
         self.text_ctrl_ImportDataSection.SetValue(filePath)
 
     def OnBrowse_OutputMasterScan(self, evt):
-
         # open directory with *.dta/*mzXML content
         dlg = wx.FileDialog(
             self,
@@ -3852,10 +4070,11 @@ intensity."""
                 self.filePath_MasterScan += "sc"
 
         dlg.Destroy()
-        self.text_ctrl_OutputMasterScanSection.SetValue(self.filePath_MasterScan)
+        self.text_ctrl_OutputMasterScanSection.SetValue(
+            self.filePath_MasterScan
+        )
 
     def OnPaneChanged(self, evt=None):
-
         # redo the layout
         self.Layout()
         self.Fit()
@@ -3867,7 +4086,6 @@ intensity."""
             self.collapsable_pane.SetLabel(self.label1)
 
     def OnBrowse_LoadIni(self, evt):
-
         # open directory with *.dta/*mzXML content
         dlg = wx.FileDialog(
             self,
@@ -3885,7 +4103,6 @@ intensity."""
         dlg.Destroy()
 
     def OnBrowse_LoadIni_Body(self, filePath_LoadIni):
-
         self.text_ctrl_LoadIniSection.SetValue(filePath_LoadIni)
         self.filePath_LoadIni = filePath_LoadIni
 
@@ -3901,7 +4118,6 @@ intensity."""
         self.clearConfiguration()
 
     def OnSave_LoadIni(self, evt):
-
         if self.currentConfiguration != "":
             section = self.currentConfiguration
 
@@ -4020,7 +4236,9 @@ intensity."""
                 self.text_ctrl_SettingsSection_calibration_msms.GetValue(),
             )
             self.confParse.set(
-                section, "MSfilter", self.text_ctrl_SettingsSection_filter_ms.GetValue()
+                section,
+                "MSfilter",
+                self.text_ctrl_SettingsSection_filter_ms.GetValue(),
             )
             self.confParse.set(
                 section,
@@ -4038,7 +4256,6 @@ intensity."""
             self.OnSaveAs_LoadIni(evt)
 
     def OnDelete_LoadIni(self, evt):
-
         self.confParse.remove_section(self.currentConfiguration)
         for index in range(len(self.listConfigurations)):
             if self.listConfigurations[index] == self.currentConfiguration:
@@ -4055,7 +4272,6 @@ intensity."""
             self.confParse.write(fIni)
 
     def OnSaveAs_LoadIni(self, evt):
-
         dlg = wx.TextEntryDialog(self, "Choose a name for the section")
         if dlg.ShowModal() == wx.ID_OK:
             newSection = dlg.GetValue()
@@ -4067,7 +4283,6 @@ intensity."""
 
         # now *.ini load since now
         if not self.confParse:
-
             self.confParse = configparser.ConfigParser()
 
             msgDlg = wx.MessageDialog(
@@ -4086,7 +4301,9 @@ intensity."""
                 dlgFile = wx.FileDialog(
                     self,
                     "Choose a *.ini file with settings",
-                    style=wx.DD_DEFAULT_STYLE | wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+                    style=wx.DD_DEFAULT_STYLE
+                    | wx.FD_SAVE
+                    | wx.FD_OVERWRITE_PROMPT,
                 )
                 if dlgFile.ShowModal() == wx.ID_OK:
                     # self.filePath_LoadIni = relativePath(dlgFile.GetPath())
@@ -4202,7 +4419,9 @@ intensity."""
             self.text_ctrl_SettingsSection_calibration_msms.GetValue(),
         )
         self.confParse.set(
-            newSection, "MSfilter", self.text_ctrl_SettingsSection_filter_ms.GetValue()
+            newSection,
+            "MSfilter",
+            self.text_ctrl_SettingsSection_filter_ms.GetValue(),
         )
         self.confParse.set(
             newSection,
@@ -4290,7 +4509,6 @@ intensity."""
         self.OnSettingsChange()
 
     def OnOpen_Output(self, evt):
-
         curScript = self.text_ctrl_OutputSection.GetValue().split(os.sep)[-1]
         fileName = self.text_ctrl_OutputSection.GetValue()
 
@@ -4310,7 +4528,6 @@ intensity."""
         pass
 
     def OnBrowse_Output(self, evt):
-
         # specify output file
         dlg = wx.FileDialog(
             self,
@@ -4339,10 +4556,11 @@ intensity."""
             print("No output file specified!")
 
     def OnBrowse_MasterScan(self, evt):
-
         # open MasterScanFile
         dlg = wx.FileDialog(
-            self, "Choose a masterScan file", style=wx.DD_DEFAULT_STYLE | wx.FD_OPEN
+            self,
+            "Choose a masterScan file",
+            style=wx.DD_DEFAULT_STYLE | wx.FD_OPEN,
         )
         dlg.SetWildcard("*.sc files|*.sc")
 
@@ -4354,7 +4572,6 @@ intensity."""
         self.OnBrowse_MasterScan_Body(self.filePath_MasterScan)
 
     def OnBrowse_MasterScan_Body(self, filePath):
-
         if not re.match(".*\.sc$", filePath):
             dlg = wx.MessageDialog(
                 self,
@@ -4397,7 +4614,6 @@ intensity."""
         self.filePath_ComplementSC = strComplementSC
 
     def OnBrowse_Dump(self, evt):
-
         # specify a dump file
         dlg = wx.FileDialog(
             self, "Specify a dump file", style=wx.DD_DEFAULT_STYLE | wx.FD_SAVE
@@ -4412,7 +4628,6 @@ intensity."""
         # self.filePath_Dump = self.filePath_MasterScan + os.sep + self.filePath_MasterScan.split(os.sep)[-1] + '-dump.csv'
 
     def OnOpen_Dump(self, evt):
-
         curScript = self.filePath_Dump.split(os.sep)[-1]
         fileName = self.filePath_Dump
 
@@ -4433,21 +4648,20 @@ intensity."""
         return None
 
     def OnSettingsChange(self):
-
         # if not self.button_Save_LoadIniSection.GetBackgroundColour() == (250, 80, 80, 215):
         self.button_Save_LoadIniSection.SetBackgroundColour((250, 80, 80, 215))
         self.isChangedAndNotSavedCurrentConfiguration = True
         self.Refresh()
 
     def OnSettingsSaved(self):
-
         # if not self.button_Save_LoadIniSection.GetBackgroundColour() == (230, 224, 218, 255):
-        self.button_Save_LoadIniSection.SetBackgroundColour((240, 240, 240, 94))
+        self.button_Save_LoadIniSection.SetBackgroundColour(
+            (240, 240, 240, 94)
+        )
         self.isChangedAndNotSavedCurrentConfiguration = False
         self.Refresh()
 
     def OnConfigurationChoice(self, evt):
-
         if self.isChangedAndNotSavedCurrentConfiguration:
             dlg = wx.MessageDialog(
                 self,
@@ -4521,7 +4735,9 @@ intensity."""
                 setting, "MSthresholdType"
             )
         else:
-            self.choice_SettingsSection_threshold_ms.SetStringSelection("absolute")
+            self.choice_SettingsSection_threshold_ms.SetStringSelection(
+                "absolute"
+            )
             self.store_SettingsSection_threshold_ms = "absolute"
 
         if self.confParse.has_option(setting, "MSMSthresholdType"):
@@ -4532,15 +4748,21 @@ intensity."""
                 setting, "MSMSthresholdType"
             )
         else:
-            self.choice_SettingsSection_threshold_msms.SetStringSelection("absolute")
+            self.choice_SettingsSection_threshold_msms.SetStringSelection(
+                "absolute"
+            )
             self.store_SettingsSection_threshold_msms = "absolute"
 
         if self.confParse.has_option(setting, "timerange"):
             strTimerange = self.confParse.get(setting, "timerange")
             m = re.match("\(\s*(\d+)\s*,\s*(\d+)\s*\)", strTimerange)
             if m:
-                self.text_ctrl_SettingsSection_timerange1.ChangeValue(m.group(1))
-                self.text_ctrl_SettingsSection_timerange2.ChangeValue(m.group(2))
+                self.text_ctrl_SettingsSection_timerange1.ChangeValue(
+                    m.group(1)
+                )
+                self.text_ctrl_SettingsSection_timerange2.ChangeValue(
+                    m.group(2)
+                )
             else:
                 self.text_ctrl_SettingsSection_timerange1.ChangeValue("")
                 self.text_ctrl_SettingsSection_timerange2.ChangeValue("")
@@ -4552,8 +4774,12 @@ intensity."""
             strMassrange = self.confParse.get(setting, "MSmassrange")
             m = re.match("\(\s*(\d+)\s*,\s*(\d+)\s*\)", strMassrange)
             if m:
-                self.text_ctrl_SettingsSection_massrange_ms1.ChangeValue(m.group(1))
-                self.text_ctrl_SettingsSection_massrange_ms2.ChangeValue(m.group(2))
+                self.text_ctrl_SettingsSection_massrange_ms1.ChangeValue(
+                    m.group(1)
+                )
+                self.text_ctrl_SettingsSection_massrange_ms2.ChangeValue(
+                    m.group(2)
+                )
             else:
                 self.text_ctrl_SettingsSection_massrange_ms1.ChangeValue("")
                 self.text_ctrl_SettingsSection_massrange_ms2.ChangeValue("")
@@ -4565,8 +4791,12 @@ intensity."""
             strMassrange = self.confParse.get(setting, "MSMSmassrange")
             m = re.match("\(\s*(\d+)\s*,\s*(\d+)\s*\)", strMassrange)
             if m:
-                self.text_ctrl_SettingsSection_massrange_msms1.ChangeValue(m.group(1))
-                self.text_ctrl_SettingsSection_massrange_msms2.ChangeValue(m.group(2))
+                self.text_ctrl_SettingsSection_massrange_msms1.ChangeValue(
+                    m.group(1)
+                )
+                self.text_ctrl_SettingsSection_massrange_msms2.ChangeValue(
+                    m.group(2)
+                )
             else:
                 self.text_ctrl_SettingsSection_massrange_msms1.ChangeValue("")
                 self.text_ctrl_SettingsSection_massrange_msms2.ChangeValue("")
@@ -4635,12 +4865,20 @@ intensity."""
             # if re.match('(.*)!(\s(ppm|Da))', str):
             if re.match("(\d+|\d+\.\d+)$", str):
                 m = re.match("(\d+|\d+\.\d+)", str)
-                self.text_ctrl_SettingsSection_tolerance_ms.ChangeValue(m.group(1))
-                self.choice_SettingsSection_tolerance_ms.SetStringSelection("ppm")
+                self.text_ctrl_SettingsSection_tolerance_ms.ChangeValue(
+                    m.group(1)
+                )
+                self.choice_SettingsSection_tolerance_ms.SetStringSelection(
+                    "ppm"
+                )
             elif re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", str):
                 m = re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", str)
-                self.text_ctrl_SettingsSection_tolerance_ms.ChangeValue(m.group(1))
-                self.choice_SettingsSection_tolerance_ms.SetStringSelection(m.group(3))
+                self.text_ctrl_SettingsSection_tolerance_ms.ChangeValue(
+                    m.group(1)
+                )
+                self.choice_SettingsSection_tolerance_ms.SetStringSelection(
+                    m.group(3)
+                )
             else:
                 dlgError = wx.MessageDialog(
                     self,
@@ -4657,11 +4895,17 @@ intensity."""
             # if re.match('(.*)!(\s(ppm|Da))', str):
             if re.match("(\d+|\d+\.\d+)$", str):
                 m = re.match("(\d+|\d+\.\d+)", str)
-                self.text_ctrl_SettingsSection_tolerance_msms.ChangeValue(m.group(1))
-                self.choice_SettingsSection_tolerance_msms.SetStringSelection("ppm")
+                self.text_ctrl_SettingsSection_tolerance_msms.ChangeValue(
+                    m.group(1)
+                )
+                self.choice_SettingsSection_tolerance_msms.SetStringSelection(
+                    "ppm"
+                )
             elif re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", str):
                 m = re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", str)
-                self.text_ctrl_SettingsSection_tolerance_msms.ChangeValue(m.group(1))
+                self.text_ctrl_SettingsSection_tolerance_msms.ChangeValue(
+                    m.group(1)
+                )
                 self.choice_SettingsSection_tolerance_msms.SetStringSelection(
                     m.group(3)
                 )
@@ -4695,10 +4939,11 @@ intensity."""
                 self.confParse.get(setting, "precursorMassShiftOrbi")
             )
         else:
-            self.text_ctrl_SettingsSection_precursorMassShiftOrbi.ChangeValue("")
+            self.text_ctrl_SettingsSection_precursorMassShiftOrbi.ChangeValue(
+                ""
+            )
 
     def clearConfiguration(self):
-
         # some options
         self.text_ctrl_SettingsSection_occupationThr_ms.ChangeValue("")
         self.text_ctrl_SettingsSection_occupationThr_msms.ChangeValue("")
@@ -4725,7 +4970,6 @@ intensity."""
         self.text_ctrl_SettingsSection_precursorMassShiftOrbi.ChangeValue("")
 
     def OnStartImport(self, evt):
-
         # TODO: @Jacobo: please check the version and change the method accordingly here
         # In this part we setup parameters according to the version as well as method overrides
 
@@ -4795,10 +5039,11 @@ intensity."""
             import logging
             import compare_masterscan
 
-            LX1_masterscan.log.addHandler(logging.StreamHandler(SysOutListener()))
+            LX1_masterscan.log.addHandler(
+                logging.StreamHandler(SysOutListener())
+            )
 
             def make_save_mastersscan(options):
-
                 masterscan = LX1_masterscan.make_lx1_masterscan(options)
                 idp = Path(options["importDir"])
                 # filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
@@ -4838,18 +5083,16 @@ intensity."""
         # TODO: @Jacobo: this is LX1_refactored
         # in LX1_refactored mode
         elif self.lx_ver == "LX1_refactored":
-            print('LX1 Refactored mode')
+            print("LX1 Refactored mode")
 
         # TODO: @Jacobo: this is LX1 which is original
         # in old LX1 mode
         elif self.lx_ver == "LX1":
-            print('LX1 mode')
+            print("LX1 mode")
 
         try:  # generate a new MasterScan and set the import settings
-
             # We can move version check logic here instead
             if self.lipidxplorer:
-
                 if not wx.GetApp().frame.debugOpen:
                     wx.GetApp().frame.OnMenuDebugWin(None)
 
@@ -4872,7 +5115,6 @@ intensity."""
                 runLipoX(options=options, queries=project.mfql, parent=self)
 
         except LipidXException:
-
             # frame.handleLipidXException()
 
             evt = wxStdOut(text="")  # v.value)
@@ -4892,7 +5134,6 @@ intensity."""
             return None
 
         except ImportException:
-
             evt = wxStdOut(text="")  # v.value)
             if not wx.GetApp().frame.debugOpen:
                 wx.GetApp().frame.OnMenuDebugWin(None)
@@ -4910,7 +5151,6 @@ intensity."""
             return None
 
         except Exception:
-
             # hijack the exception
             traceback.print_tb(sys.exc_info()[2])
             evt = wxStdOut(text="")
@@ -4933,7 +5173,6 @@ intensity."""
             # dlg = MyErrorDialog(wx.GetApp().frame, -1, "ERROR", 'bla')
             r = dlg.ShowModal()
             if r == wx.ID_YES:
-
                 dlg = wx.MessageDialog(
                     wx.GetApp().frame,
                     "Please store the bugReport.html and send it to lifs-support@isas.de",
@@ -4963,7 +5202,9 @@ intensity."""
                 dlg = wx.FileDialog(
                     wx.GetApp().frame,
                     "Specify the site for the bugReport.html",
-                    style=wx.DD_DEFAULT_STYLE | wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+                    style=wx.DD_DEFAULT_STYLE
+                    | wx.FD_SAVE
+                    | wx.FD_OVERWRITE_PROMPT,
                     defaultFile="bugReport.html",
                 )
                 dlg.SetWildcard("*.html files|*.html")
@@ -4982,7 +5223,6 @@ intensity."""
             return None
 
     def OnAddMFQL(self, evt):
-
         # open directory with *.dta/*mzXML content
         dlg = wx.FileDialog(
             self,
@@ -5004,7 +5244,6 @@ intensity."""
         dlg.Destroy()
 
     def OnAddDir(self, evt):
-
         # open directory with *.dta/*mzXML content
         dlg = wx.DirDialog(
             self,
@@ -5018,16 +5257,16 @@ intensity."""
 
             for i in os.listdir(self.filePath_MFQLDir):
                 if re.match(".*\.mfql", i):
-                    self.dictMFQLScripts[i] = self.filePath_MFQLDir + os.sep + i
+                    self.dictMFQLScripts[i] = (
+                        self.filePath_MFQLDir + os.sep + i
+                    )
             self.list_box_1.Set(list(self.dictMFQLScripts.keys()))
 
         dlg.Destroy()
 
     def OnSavePanel(self, evt):
-
         for key in list(self.dict_button_save.keys()):
             if evt.GetId() == self.dict_button_save[key].GetId():
-
                 # find right page
                 for i in range(self.notebook_1.GetPageCount()):
                     if (
@@ -5044,12 +5283,10 @@ intensity."""
                             )
 
     def OnNewPanel(self, evt):
-
         self.OnNewFile(evt)
         return None
 
     def OnSaveAsPanel(self, evt):
-
         # open directory with *.dta/*mzXML content
         dlg = wx.FileDialog(
             self,
@@ -5072,7 +5309,6 @@ intensity."""
                     p += "mfql"
 
             if p not in self.dictMFQLScripts:
-
                 self.dictMFQLScripts[p] = ""
                 for i in dlg.GetPath().split(os.sep)[:-1]:
                     self.dictMFQLScripts[p] += i + os.sep
@@ -5080,7 +5316,6 @@ intensity."""
 
                 for key in list(self.dict_button_saveAs.keys()):
                     if evt.GetId() == self.dict_button_saveAs[key].GetId():
-
                         oldText = key
 
                         # find right page
@@ -5089,14 +5324,15 @@ intensity."""
                                 self.notebook_1.GetPage(i)
                                 == self.dict_button_saveAs[key].GetParent()
                             ):
-
                                 with open(self.dictMFQLScripts[p], "w") as f:
                                     f.write(self.dict_text_ctrl[key].GetText())
-                                self.dict_isChangedAndNotSavedMfqlFile[p] = False
+                                self.dict_isChangedAndNotSavedMfqlFile[
+                                    p
+                                ] = False
                                 if key in self.dict_button_save:
-                                    self.dict_button_save[key].SetBackgroundColour(
-                                        (230, 224, 218, 255)
-                                    )
+                                    self.dict_button_save[
+                                        key
+                                    ].SetBackgroundColour((230, 224, 218, 255))
 
                 ### remove entry
                 # sortedKeys = self.dictMFQLScripts.keys()
@@ -5107,19 +5343,25 @@ intensity."""
 
                 # update list_box in Run panel
                 self.list_box_1.Set(list(self.dictMFQLScripts.keys()))
-                self.list_box_1.SetSelection(list(self.dictMFQLScripts.keys()).index(p))
+                self.list_box_1.SetSelection(
+                    list(self.dictMFQLScripts.keys()).index(p)
+                )
                 ### end remove entry
 
                 # fill the changed text with the original one
                 with open(self.dictMFQLScripts[oldText], "r") as o:
                     self.dict_text_ctrl[oldText].SetText(o.read())
                 self.dict_isChangedAndNotSavedMfqlFile[oldText] = False
-                self.dict_button_save[oldText].SetBackgroundColour((230, 224, 218, 255))
+                self.dict_button_save[oldText].SetBackgroundColour(
+                    (230, 224, 218, 255)
+                )
 
                 # self.OnOpenFile(newFile = sorted(self.dictMFQLScripts.keys()).index(p))
                 self.OnOpenFile(newFile=-1)
 
-                self.notebook_1.ChangeSelection(self.notebook_1.GetPageCount() - 1)
+                self.notebook_1.ChangeSelection(
+                    self.notebook_1.GetPageCount() - 1
+                )
 
             else:
                 with open(self.dictMFQLScripts[p], "w") as mfqlFile:
@@ -5127,7 +5369,9 @@ intensity."""
                     mfqlFile.write(self.dict_text_ctrl[p].GetText())
                 self.dict_isChangedAndNotSavedMfqlFile[p] = False
                 if p in self.dict_button_save:
-                    self.dict_button_save[p].SetBackgroundColour((230, 224, 218, 255))
+                    self.dict_button_save[p].SetBackgroundColour(
+                        (230, 224, 218, 255)
+                    )
 
         # self.key_button[i].GetParent().GetParent().RemovePage(n)
         # self.notebook_1.RemovePage(i)
@@ -5136,7 +5380,6 @@ intensity."""
         # self.list_notebook_editor
 
     def OnClosePanel(self, evt, key=None, secureCheck=True):
-
         if (key or key == 0) and key in self.dict_button_close:
             id = self.dict_button_close[key].GetId()
 
@@ -5145,13 +5388,15 @@ intensity."""
                     self.notebook_1.GetPage(i)
                     == self.dict_button_close[key].GetParent()
                 ):
-
                     savedPage = False
 
                     saveIt = False
 
                     # if self.dict_text_ctrl.IsModified():
-                    if self.dict_isChangedAndNotSavedMfqlFile[key] and secureCheck:
+                    if (
+                        self.dict_isChangedAndNotSavedMfqlFile[key]
+                        and secureCheck
+                    ):
                         dlg = wx.MessageDialog(
                             self,
                             "Modified Query '%s' is not saved! Save it?" % key,
@@ -5160,11 +5405,14 @@ intensity."""
                         )
 
                         if dlg.ShowModal() == wx.ID_YES:
-
                             savedPage = True
-                            with open(self.dictMFQLScripts[key], "w") as mfqlFile:
+                            with open(
+                                self.dictMFQLScripts[key], "w"
+                            ) as mfqlFile:
                                 self.dict_mfqlFile[key] = mfqlFile
-                                mfqlFile.write(self.dict_text_ctrl[key].GetText())
+                                mfqlFile.write(
+                                    self.dict_text_ctrl[key].GetText()
+                                )
                             self.dict_isChangedAndNotSavedMfqlFile[key] = False
                             if key in self.dict_button_save:
                                 self.dict_button_save[key].SetBackgroundColour(
@@ -5208,13 +5456,13 @@ intensity."""
                             if self.dict_isChangedAndNotSavedMfqlFile[key]:
                                 dlg = wx.MessageDialog(
                                     self,
-                                    "Modified Query '%s' is not saved! Save it?" % key,
+                                    "Modified Query '%s' is not saved! Save it?"
+                                    % key,
                                     "Ups...",
                                     wx.NO | wx.YES | wx.ICON_HAND,
                                 )
 
                                 if dlg.ShowModal() == wx.ID_YES:
-
                                     savedPage = True
                                     with open(
                                         self.dictMFQLScripts[key], "w"
@@ -5223,9 +5471,13 @@ intensity."""
                                         self.dict_mfqlFile[key].write(
                                             self.dict_text_ctrl[key].GetText()
                                         )
-                                    self.dict_isChangedAndNotSavedMfqlFile[key] = False
+                                    self.dict_isChangedAndNotSavedMfqlFile[
+                                        key
+                                    ] = False
                                     if key in self.dict_button_save:
-                                        self.dict_button_save[key].SetBackgroundColour(
+                                        self.dict_button_save[
+                                            key
+                                        ].SetBackgroundColour(
                                             (230, 224, 218, 255)
                                         )
                                     dlg.Destroy()
@@ -5254,12 +5506,10 @@ intensity."""
         return None
 
     def OnOpenFile(self, evt=None, newFile=None):
-
         sortedKeys = list(self.dictMFQLScripts.keys())
 
         if not newFile:
             for index in self.list_box_1.GetSelections():
-
                 curScript = [sortedKeys[index]][0]
 
                 # add a page to the notebook
@@ -5268,11 +5518,15 @@ intensity."""
                         curScript: wx.Panel(self.notebook_1, -1)
                     }
                 elif curScript not in self.dict_notebook_editor:
-                    self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
+                    self.dict_notebook_editor[curScript] = wx.Panel(
+                        self.notebook_1, -1
+                    )
                 else:
                     return None
 
-                self.notebook_1.AddPage(self.dict_notebook_editor[curScript], curScript)
+                self.notebook_1.AddPage(
+                    self.dict_notebook_editor[curScript], curScript
+                )
 
                 # generate textCtrl window
                 # self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript], -1, "",
@@ -5296,7 +5550,9 @@ intensity."""
                 )
 
                 self.dict_text_ctrl[curScript].SetZoom(2)
-                self.dict_text_ctrl[curScript].SetMarginType(0, stc.STC_MARGIN_NUMBER)
+                self.dict_text_ctrl[curScript].SetMarginType(
+                    0, stc.STC_MARGIN_NUMBER
+                )
                 self.dict_text_ctrl[curScript].SetMarginWidth(0, 22)
                 self.dict_text_ctrl[curScript].StyleSetSpec(
                     stc.STC_STYLE_LINENUMBER, "size:9,face:Arial"
@@ -5322,7 +5578,9 @@ intensity."""
                 )
                 self.dict_button_close[curScript].SetMinSize((140, 34))
                 self.Bind(
-                    wx.EVT_BUTTON, self.OnClosePanel, self.dict_button_close[curScript]
+                    wx.EVT_BUTTON,
+                    self.OnClosePanel,
+                    self.dict_button_close[curScript],
                 )
 
                 # add the save button
@@ -5331,7 +5589,9 @@ intensity."""
                 )
                 self.dict_button_save[curScript].SetMinSize((140, 34))
                 self.Bind(
-                    wx.EVT_BUTTON, self.OnSavePanel, self.dict_button_save[curScript]
+                    wx.EVT_BUTTON,
+                    self.OnSavePanel,
+                    self.dict_button_save[curScript],
                 )
 
                 # add the saveAs button
@@ -5351,13 +5611,19 @@ intensity."""
                 )
                 self.dict_button_new[curScript].SetMinSize((140, 34))
                 self.Bind(
-                    wx.EVT_BUTTON, self.OnNewPanel, self.dict_button_new[curScript]
+                    wx.EVT_BUTTON,
+                    self.OnNewPanel,
+                    self.dict_button_new[curScript],
                 )
 
                 # put all together with a box sizer
                 # self.dict_flex_sizer[curScript] = wx.FlexGridSizer(2,1,3,3)
-                self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(wx.HORIZONTAL)
-                self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(wx.VERTICAL)
+                self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(
+                    wx.HORIZONTAL
+                )
+                self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(
+                    wx.VERTICAL
+                )
                 self.dict_box_sizer_horizontal[curScript].Add(
                     self.dict_button_new[curScript], 0, wx.ALL | wx.EXPAND, 5
                 )
@@ -5365,7 +5631,10 @@ intensity."""
                     self.dict_button_save[curScript], 0, wx.ALL | wx.EXPAND, 5
                 )
                 self.dict_box_sizer_horizontal[curScript].Add(
-                    self.dict_button_saveAs[curScript], 0, wx.ALL | wx.EXPAND, 5
+                    self.dict_button_saveAs[curScript],
+                    0,
+                    wx.ALL | wx.EXPAND,
+                    5,
                 )
                 self.dict_box_sizer_horizontal[curScript].Add(
                     self.dict_button_close[curScript], 0, wx.ALL | wx.EXPAND, 5
@@ -5405,9 +5674,7 @@ intensity."""
             return None
 
         elif False:
-
             for index in self.list_box_1.GetSelections():
-
                 curScript = [sortedKeys[index]][0]
 
                 # add a page to the notebook
@@ -5416,7 +5683,9 @@ intensity."""
                         curScript: wx.Panel(self.notebook_1, -1)
                     }
                 elif curScript not in self.dict_notebook_editor:
-                    self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
+                    self.dict_notebook_editor[curScript] = wx.Panel(
+                        self.notebook_1, -1
+                    )
                 else:
                     return None
 
@@ -5445,7 +5714,9 @@ intensity."""
                 )
                 self.dict_text_ctrl[curScript].SetEOLMode(stc.STC_EOL_CR)
                 self.dict_text_ctrl[curScript].SetZoom(2)
-                self.dict_text_ctrl[curScript].SetMarginType(0, stc.STC_MARGIN_NUMBER)
+                self.dict_text_ctrl[curScript].SetMarginType(
+                    0, stc.STC_MARGIN_NUMBER
+                )
                 self.dict_text_ctrl[curScript].SetMarginWidth(0, 22)
                 self.dict_text_ctrl[curScript].StyleSetSpec(
                     stc.STC_STYLE_LINENUMBER, "size:9,face:Arial"
@@ -5470,7 +5741,9 @@ intensity."""
                 )
                 self.dict_button_close[curScript].SetMinSize((140, 34))
                 self.Bind(
-                    wx.EVT_BUTTON, self.OnClosePanel, self.dict_button_close[curScript]
+                    wx.EVT_BUTTON,
+                    self.OnClosePanel,
+                    self.dict_button_close[curScript],
                 )
 
                 # add the save button
@@ -5479,7 +5752,9 @@ intensity."""
                 )
                 self.dict_button_save[curScript].SetMinSize((140, 34))
                 self.Bind(
-                    wx.EVT_BUTTON, self.OnSavePanel, self.dict_button_save[curScript]
+                    wx.EVT_BUTTON,
+                    self.OnSavePanel,
+                    self.dict_button_save[curScript],
                 )
 
                 # add the saveAs button
@@ -5499,13 +5774,19 @@ intensity."""
                 )
                 self.dict_button_new[curScript].SetMinSize((140, 34))
                 self.Bind(
-                    wx.EVT_BUTTON, self.OnNewPanel, self.dict_button_new[curScript]
+                    wx.EVT_BUTTON,
+                    self.OnNewPanel,
+                    self.dict_button_new[curScript],
                 )
 
                 # put all together with a box sizer
                 # self.dict_flex_sizer[curScript] = wx.FlexGridSizer(2,1,3,3)
-                self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(wx.HORIZONTAL)
-                self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(wx.VERTICAL)
+                self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(
+                    wx.HORIZONTAL
+                )
+                self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(
+                    wx.VERTICAL
+                )
                 self.dict_box_sizer_horizontal[curScript].Add(
                     self.dict_button_new[curScript], 0, wx.ALL | wx.EXPAND, 5
                 )
@@ -5513,7 +5794,10 @@ intensity."""
                     self.dict_button_save[curScript], 0, wx.ALL | wx.EXPAND, 5
                 )
                 self.dict_box_sizer_horizontal[curScript].Add(
-                    self.dict_button_saveAs[curScript], 0, wx.ALL | wx.EXPAND, 5
+                    self.dict_button_saveAs[curScript],
+                    0,
+                    wx.ALL | wx.EXPAND,
+                    5,
                 )
                 self.dict_box_sizer_horizontal[curScript].Add(
                     self.dict_button_close[curScript], 0, wx.ALL | wx.EXPAND, 5
@@ -5550,14 +5834,17 @@ intensity."""
                 # self.SetSize(self.GetSize())
 
         else:
-
             curScript = [sortedKeys[newFile]][0]
 
             # add a page to the notebook
             if self.dict_notebook_editor == {}:
-                self.dict_notebook_editor = {curScript: wx.Panel(self.notebook_1, -1)}
+                self.dict_notebook_editor = {
+                    curScript: wx.Panel(self.notebook_1, -1)
+                }
             elif curScript not in self.dict_notebook_editor:
-                self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
+                self.dict_notebook_editor[curScript] = wx.Panel(
+                    self.notebook_1, -1
+                )
             else:
                 return None
 
@@ -5583,10 +5870,14 @@ intensity."""
             )  # , size = wx.Point(835, 700))
             # line numbers in the margin
 
-            self.dict_text_ctrl[curScript].Bind(stc.EVT_STC_CHANGE, self.OnStcChange)
+            self.dict_text_ctrl[curScript].Bind(
+                stc.EVT_STC_CHANGE, self.OnStcChange
+            )
             self.dict_text_ctrl[curScript].SetEOLMode(stc.STC_EOL_CR)
             self.dict_text_ctrl[curScript].SetZoom(2)
-            self.dict_text_ctrl[curScript].SetMarginType(0, stc.STC_MARGIN_NUMBER)
+            self.dict_text_ctrl[curScript].SetMarginType(
+                0, stc.STC_MARGIN_NUMBER
+            )
             self.dict_text_ctrl[curScript].SetMarginWidth(0, 22)
             self.dict_text_ctrl[curScript].StyleSetSpec(
                 stc.STC_STYLE_LINENUMBER, "size:9,face:Arial"
@@ -5599,7 +5890,9 @@ intensity."""
             )
 
             # open MFQL file
-            self.dict_mfqlFile[curScript] = open(self.dictMFQLScripts[curScript], "r")
+            self.dict_mfqlFile[curScript] = open(
+                self.dictMFQLScripts[curScript], "r"
+            )
             for line in self.dict_mfqlFile[curScript].readlines():
                 self.dict_text_ctrl[curScript].AppendText(line)
             self.dict_mfqlFile[curScript].close()
@@ -5611,7 +5904,9 @@ intensity."""
             )
             self.dict_button_close[curScript].SetMinSize((140, 34))
             self.Bind(
-                wx.EVT_BUTTON, self.OnClosePanel, self.dict_button_close[curScript]
+                wx.EVT_BUTTON,
+                self.OnClosePanel,
+                self.dict_button_close[curScript],
             )
 
             # add the save button
@@ -5619,7 +5914,11 @@ intensity."""
                 self.dict_notebook_editor[curScript], -1, "Save"
             )
             self.dict_button_save[curScript].SetMinSize((140, 34))
-            self.Bind(wx.EVT_BUTTON, self.OnSavePanel, self.dict_button_save[curScript])
+            self.Bind(
+                wx.EVT_BUTTON,
+                self.OnSavePanel,
+                self.dict_button_save[curScript],
+            )
 
             # add the saveAs button
             self.dict_button_saveAs[curScript] = wx.Button(
@@ -5627,7 +5926,9 @@ intensity."""
             )
             self.dict_button_saveAs[curScript].SetMinSize((140, 34))
             self.Bind(
-                wx.EVT_BUTTON, self.OnSaveAsPanel, self.dict_button_saveAs[curScript]
+                wx.EVT_BUTTON,
+                self.OnSaveAsPanel,
+                self.dict_button_saveAs[curScript],
             )
 
             # add the new button
@@ -5635,11 +5936,15 @@ intensity."""
                 self.dict_notebook_editor[curScript], -1, "New"
             )
             self.dict_button_new[curScript].SetMinSize((140, 34))
-            self.Bind(wx.EVT_BUTTON, self.OnNewPanel, self.dict_button_new[curScript])
+            self.Bind(
+                wx.EVT_BUTTON, self.OnNewPanel, self.dict_button_new[curScript]
+            )
 
             # put all together with a box sizer
             # self.dict_flex_sizer[curScript] = wx.FlexGridSizer(2,1,3,3)
-            self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(wx.HORIZONTAL)
+            self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(
+                wx.HORIZONTAL
+            )
             self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(wx.VERTICAL)
             self.dict_box_sizer_horizontal[curScript].Add(
                 self.dict_button_new[curScript], 0, wx.ALL | wx.EXPAND, 5
@@ -5687,7 +5992,6 @@ intensity."""
             return None
 
     def OnNewFile(self, evt):
-
         # open directory with *.dta/*mzXML content
         dlg = wx.FileDialog(
             self,
@@ -5724,14 +6028,15 @@ intensity."""
             f.close()
             self.dict_isChangedAndNotSavedMfqlFile[p] = False
             if p in self.dict_button_save:
-                self.dict_button_save[p].SetBackgroundColour((230, 224, 218, 255))
+                self.dict_button_save[p].SetBackgroundColour(
+                    (230, 224, 218, 255)
+                )
 
             self.OnOpenFile(None)
 
         pass
 
     def OnRemoveEntry(self, evt):
-
         sortedKeys = list(self.dictMFQLScripts.keys())
 
         for index in self.list_box_1.GetSelections():
@@ -5742,7 +6047,6 @@ intensity."""
         self.list_box_1.Set(list(self.dictMFQLScripts.keys()))
 
     def OnRunLipidX(self, evt):
-
         if not self.lipidxplorer:
             self.OnStartImport(evt)
             return None
@@ -5796,7 +6100,6 @@ intensity."""
         # project = Options()
 
         if self.lx_ver == "LX 2":
-
             project.options["optionalMStolerance"] = "20"
             project.options["optionalMSMStolerance"] = "20"
             project.options["optionalMStoleranceType"] = "ppm"
@@ -5807,7 +6110,6 @@ intensity."""
             project.options["alignmentMethodMSMS"] = "calctol"
 
         try:
-
             ## test if all options are correct
             project.testOptionsRun()
 
@@ -5829,11 +6131,13 @@ intensity."""
 
             ### start identification ###
             worker.beginThread(
-                startMFQL, queries=self.dictMFQLScripts, parent=self, options=options
+                startMFQL,
+                queries=self.dictMFQLScripts,
+                parent=self,
+                options=options,
             )
 
         except LipidXException:
-
             # frame.handleLipidXException()
             try:
                 self.debug.progressDialog.Destroy()
@@ -5858,7 +6162,6 @@ intensity."""
             return None
 
         except ImportException:
-
             evt = wxStdOut(text="")  # v.value)
             if not wx.GetApp().frame.debugOpen:
                 wx.GetApp().frame.OnMenuDebugWin(None)
@@ -5876,7 +6179,6 @@ intensity."""
             return None
 
         except Exception:
-
             try:
                 self.debug.progressDialog.Destroy()
             except:
@@ -5904,7 +6206,6 @@ intensity."""
             # dlg = MyErrorDialog(wx.GetApp().frame, -1, "ERROR", 'bla')
             r = dlg.ShowModal()
             if r == wx.ID_YES:
-
                 dlg = wx.MessageDialog(
                     wx.GetApp().frame,
                     "Please store the bugReport.html and send it to lifs-support@isas.de",
@@ -5934,7 +6235,9 @@ intensity."""
                 dlg = wx.FileDialog(
                     wx.GetApp().frame,
                     "Specify the site for the bugReport.html",
-                    style=wx.DD_DEFAULT_STYLE | wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+                    style=wx.DD_DEFAULT_STYLE
+                    | wx.FD_SAVE
+                    | wx.FD_OVERWRITE_PROMPT,
                     defaultFile="bugReport.html",
                 )
                 dlg.SetWildcard("*.html files|*.html")
@@ -5954,17 +6257,18 @@ intensity."""
             self.isRunning = False
             return None
 
-
     def OnDump2out(self, event):
         from tools.dump2out.dump2_out_app import openDump2_out
+
         openDump2_out(self)
 
-
     def OnMassToSumComposition(self, evt):
-
         if self.text_ctrl_mstools_InputSection_mz.IsEmpty():
             dlg = wx.MessageDialog(
-                self, "You have to give a m/z value!", "Attention", wx.OK | wx.ICON_HAND
+                self,
+                "You have to give a m/z value!",
+                "Attention",
+                wx.OK | wx.ICON_HAND,
             )
             if dlg.ShowModal() == wx.ID_OK:
                 dlg.Destroy()
@@ -5998,7 +6302,9 @@ intensity."""
                 dlg.Destroy()
                 return None
         else:
-            lowerDB = self.text_ctrl_mstools_InputSection_doubleBond_1.GetValue()
+            lowerDB = (
+                self.text_ctrl_mstools_InputSection_doubleBond_1.GetValue()
+            )
 
         if self.text_ctrl_mstools_InputSection_doubleBond_2.IsEmpty():
             dlg = wx.MessageDialog(
@@ -6011,12 +6317,17 @@ intensity."""
                 dlg.Destroy()
                 return None
         else:
-            higherDB = self.text_ctrl_mstools_InputSection_doubleBond_2.GetValue()
+            higherDB = (
+                self.text_ctrl_mstools_InputSection_doubleBond_2.GetValue()
+            )
 
         if self.text_ctrl_mstools_InputSection_charge.IsEmpty():
             charge = " chg(0)"
         else:
-            charge = " chg(%s)" % self.text_ctrl_mstools_InputSection_charge.GetValue()
+            charge = (
+                " chg(%s)"
+                % self.text_ctrl_mstools_InputSection_charge.GetValue()
+            )
 
         if self.text_ctrl_mstools_InputSection_accuracy.IsEmpty():
             accuracy = "5"
@@ -6046,7 +6357,6 @@ intensity."""
         self.text_ctrl_mstools_OutputSection.SetValue(outtext)
 
     def OnSumCompositionToMass(self, evt):
-
         strAccuracy = ""
 
         if (
@@ -6071,7 +6381,10 @@ intensity."""
         if self.text_ctrl_mstools_InputSection_charge.IsEmpty():
             charge = " chg(0)"
         else:
-            charge = " chg(%s)" % self.text_ctrl_mstools_InputSection_charge.GetValue()
+            charge = (
+                " chg(%s)"
+                % self.text_ctrl_mstools_InputSection_charge.GetValue()
+            )
 
         elemSeq = parseElemSeq(sf_constraint + charge)
 
@@ -6086,7 +6399,6 @@ intensity."""
         pass
 
     def OnCalcIsotopes(self, evt):
-
         if self.text_ctrl_mstools_Isotopes_precursor.IsEmpty():
             dlg = wx.MessageDialog(
                 self,
@@ -6098,7 +6410,9 @@ intensity."""
                 dlg.Destroy()
                 return None
         else:
-            sumComp = parseElemSeq(self.text_ctrl_mstools_Isotopes_precursor.GetValue())
+            sumComp = parseElemSeq(
+                self.text_ctrl_mstools_Isotopes_precursor.GetValue()
+            )
 
         if self.text_ctrl_mstools_Isotopes_fragment.IsEmpty():
             sumCompFrg = None
@@ -6137,11 +6451,14 @@ intensity."""
                     Mtx[1][1],
                     Mtx[2][0],
                 )
-                str += "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n" % (
-                    Mtx[0][3],
-                    Mtx[1][2],
-                    Mtx[2][1],
-                    Mtx[3][0],
+                str += (
+                    "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n"
+                    % (
+                        Mtx[0][3],
+                        Mtx[1][2],
+                        Mtx[2][1],
+                        Mtx[3][0],
+                    )
                 )
                 str += (
                     "     F0N4: %.4f, F1N3: %.4f, F2N2: %.4f, F3N1: %.4f, F4N0: %.4f\n"
@@ -6180,11 +6497,14 @@ intensity."""
                     Mtx[1][1],
                     Mtx[2][0],
                 )
-                str += "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n" % (
-                    Mtx[0][3],
-                    Mtx[1][2],
-                    Mtx[2][1],
-                    Mtx[3][0],
+                str += (
+                    "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n"
+                    % (
+                        Mtx[0][3],
+                        Mtx[1][2],
+                        Mtx[2][1],
+                        Mtx[3][0],
+                    )
                 )
                 str += (
                     "     F0N4: %.4f, F1N3: %.4f, F2N2: %.4f, F3N1: %.4f, F4N0: %.4f\n"
@@ -6194,7 +6514,6 @@ intensity."""
                 self.text_ctrl_mstools_Isotopes_output.SetValue(str)
                 pass
         else:
-
             (mz, intens, monoisotopic) = isotopicValues(
                 sumComp["C"],
                 sumComp["H"],
@@ -6217,7 +6536,6 @@ intensity."""
         pass
 
     def collectSettings(self, setting):
-
         # some options
         self.opts = {}
         self.optsImport = {}
@@ -6316,7 +6634,9 @@ intensity."""
                 self.optsImport["MScalibration"] = ""
 
             if self.confParse.has_option(setting, "MSfilter"):
-                self.optsImport["MSfilter"] = self.confParse.get(setting, "MSfilter")
+                self.optsImport["MSfilter"] = self.confParse.get(
+                    setting, "MSfilter"
+                )
             else:
                 self.optsImport["MSfilter"] = ""
 
@@ -6338,10 +6658,16 @@ intensity."""
                 # if re.match('(.*)!(\s(ppm|Da))', str):
                 if re.match("(\d+|\d+\.\d+)$", str):
                     m = re.match("(\d+|\d+\.\d+)", str)
-                    self.optsImport["MStolernace"] = "%s %s" % (m.group(1), "ppm")
+                    self.optsImport["MStolernace"] = "%s %s" % (
+                        m.group(1),
+                        "ppm",
+                    )
                 elif re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", str):
                     m = re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", str)
-                    self.optsImport["MStolernace"] = "%s %s" % (m.group(1), m.group(3))
+                    self.optsImport["MStolernace"] = "%s %s" % (
+                        m.group(1),
+                        m.group(3),
+                    )
                 else:
                     dlgError = wx.MessageDialog(
                         self,
@@ -6358,7 +6684,10 @@ intensity."""
                 # if re.match('(.*)!(\s(ppm|Da))', str):
                 if re.match("(\d+|\d+\.\d+)$", str):
                     m = re.match("(\d+|\d+\.\d+)", str)
-                    self.optsImport["MSMStolerance"] = "%s %s" % (m.group(1), "ppm")
+                    self.optsImport["MSMStolerance"] = "%s %s" % (
+                        m.group(1),
+                        "ppm",
+                    )
                 elif re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", str):
                     m = re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", str)
                     self.optsImport["MSMStolerance"] = "%s %s" % (
@@ -6403,7 +6732,6 @@ intensity."""
             pass
 
     def getMasterScanInfo(self):
-
         # Run Panel
         masterScan = self.text_ctrl_MasterScanSection.GetValue()
 
@@ -6453,8 +6781,9 @@ intensity."""
         strOut += "<tr><td>MS resolution gradient:</td><td>%s</td></tr>\n" % (
             repr(masterscan.options["MSminOccupation"])
         )
-        strOut += "<tr><td>MS/MS resolution gradient:</td><td>%s</td></tr>\n" % (
-            repr(masterscan.options["MSMSminOccupation"])
+        strOut += (
+            "<tr><td>MS/MS resolution gradient:</td><td>%s</td></tr>\n"
+            % (repr(masterscan.options["MSMSminOccupation"]))
         )
         strOut += "<tr><td>MS threshold:</td><td>%s%s</td></tr>\n" % (
             repr(masterscan.options["MSthreshold"]),
@@ -6464,24 +6793,26 @@ intensity."""
             repr(masterscan.options["MSMSthreshold"]),
             MSMSthresholdType,
         )
-        strOut += "<tr><td>MS minimum occupation:</td><td>+/- %s</td></tr>\n" % (
-            repr(masterscan.options["MSminOccupation"])
+        strOut += (
+            "<tr><td>MS minimum occupation:</td><td>+/- %s</td></tr>\n"
+            % (repr(masterscan.options["MSminOccupation"]))
         )
-        strOut += "<tr><td>MS/MS minimum occupation:</td><td>+/- %s</td></tr>\n" % (
-            repr(masterscan.options["MSMSminOccupation"])
+        strOut += (
+            "<tr><td>MS/MS minimum occupation:</td><td>+/- %s</td></tr>\n"
+            % (repr(masterscan.options["MSMSminOccupation"]))
         )
         strOut += "<tr><td>MS frequency filter:</td><td>+/- %s</td></tr>\n" % (
             repr(masterscan.options["MSfilter"])
         )
-        strOut += "<tr><td>MS/MS frequency filter:</td><td>+/- %s</td></tr>\n" % (
-            repr(masterscan.options["MSMSfilter"])
+        strOut += (
+            "<tr><td>MS/MS frequency filter:</td><td>+/- %s</td></tr>\n"
+            % (repr(masterscan.options["MSMSfilter"]))
         )
         strOut += "</table>\n\n"
 
         return strOut
 
     def genBugReportHTML(self, options={}):
-
         if options == {}:
             self.collectSettings(self.currentConfiguration)
             # options = self.optsRun + self.optsImport
@@ -6494,7 +6825,10 @@ intensity."""
 
         strBugReport += "<table>\n"
         for k in list(options.keys()):
-            strBugReport += "<tr><td>%s:</td><td>%s</td></tr>\n" % (k, options[k])
+            strBugReport += "<tr><td>%s:</td><td>%s</td></tr>\n" % (
+                k,
+                options[k],
+            )
         strBugReport += "</table><br>\n"
 
         # strBugReport += "<h3>MFQL Panel</h3>\n"
@@ -6523,7 +6857,6 @@ intensity."""
         return strBugReport
 
     def genBugReport(self):
-
         self.collectSettings(self.currentConfiguration)
         self.optsRun["mfqlFiles"] = self.dictMFQLScripts
 
@@ -6547,7 +6880,6 @@ intensity."""
         return strBugReport
 
     def __set_properties(self):
-
         button1_w = 140
         button1_h = 24
         button1_small_w = button1_w / 2 - 5
@@ -6590,7 +6922,9 @@ intensity."""
         self.text_ctrl_mstools_InputSection_accuracy.SetMinSize(
             (textCtrl_small_w - 60, textCtrl_small_h)
         )
-        self.text_ctrl_mstools_OutputSection.SetMinSize((660, textCtrl_small_h * 6))
+        self.text_ctrl_mstools_OutputSection.SetMinSize(
+            (660, textCtrl_small_h * 6)
+        )
 
         self.text_ctrl_mstools_InputSection_mz.SetMaxSize(
             (textCtrl_small_w - 20, textCtrl_small_h)
@@ -6610,7 +6944,9 @@ intensity."""
         self.text_ctrl_mstools_InputSection_accuracy.SetMaxSize(
             (textCtrl_small_w - 60, textCtrl_small_h)
         )
-        self.text_ctrl_mstools_OutputSection.SetMaxSize((660, textCtrl_small_h * 6))
+        self.text_ctrl_mstools_OutputSection.SetMaxSize(
+            (660, textCtrl_small_h * 6)
+        )
 
         self.button_AddMFQL.SetMinSize((button1_w, button1_h))
         self.button_RemoveEntry.SetMinSize((button1_w, button1_h))
@@ -6619,14 +6955,20 @@ intensity."""
         self.button_AddDir.SetMinSize((button1_w, button1_h))
 
         self.button_Browse_MasterScan.SetMinSize((button1_w, button1_h))
-        self.button_Browse_OutputSection.SetMinSize((button1_small_w, button1_h))
+        self.button_Browse_OutputSection.SetMinSize(
+            (button1_small_w, button1_h)
+        )
         self.button_Open_OutputSection.SetMinSize((button1_small_w, button1_h))
         # self.button_Browse_DumpSection.SetMinSize((button1_w, button1_h))
         self.button_Open_DumpSection.SetMinSize((button1_w, button1_h))
         self.button_RunLipidX.SetMinSize((button2_w, button2_h))
         self.button_StartImport.SetMinSize((button2_w, button2_h))
-        self.button_Browse_ImportDataSection.SetMinSize((button1_small_w, button1_h))
-        self.button_Browse_OutputMasterScanSection.SetMinSize((button1_w, button1_h))
+        self.button_Browse_ImportDataSection.SetMinSize(
+            (button1_small_w, button1_h)
+        )
+        self.button_Browse_OutputMasterScanSection.SetMinSize(
+            (button1_w, button1_h)
+        )
         self.button_Browse_LoadIniSection.SetMinSize((button1_w, button1_h))
         self.label_SettingsSection_occupationThr_groups.SetMinSize(
             (button1_w, button1_h)
@@ -6635,17 +6977,23 @@ intensity."""
         # self.button_SelectSettingSection_new.SetMinSize((button1_w, button1_h))
         # self.button_SelectSettingSection_remove.SetMinSize((button1_w, button1_h))
 
-        self.text_ctrl_OutputSection.SetMinSize((textCtrl_big_w, textCtrl_big_h))
+        self.text_ctrl_OutputSection.SetMinSize(
+            (textCtrl_big_w, textCtrl_big_h)
+        )
         self.text_ctrl_RunOptions_MS.SetMinSize((button1_small_w, button1_h))
         self.text_ctrl_RunOptions_MSMS.SetMinSize((button1_small_w, button1_h))
-        self.text_ctrl_MasterScanSection.SetMinSize((textCtrl_big_w, textCtrl_big_h))
+        self.text_ctrl_MasterScanSection.SetMinSize(
+            (textCtrl_big_w, textCtrl_big_h)
+        )
         self.text_ctrl_OutputMasterScanSection.SetMinSize(
             (textCtrl_big_w, textCtrl_big_h)
         )
         self.text_ctrl_ImportDataSection.SetMinSize(
             (textCtrl_big_w / 2 + 200, textCtrl_big_h)
         )
-        self.text_ctrl_LoadIniSection.SetMinSize((textCtrl_big_w, textCtrl_big_h))
+        self.text_ctrl_LoadIniSection.SetMinSize(
+            (textCtrl_big_w, textCtrl_big_h)
+        )
 
         self.text_ctrl_SettingsSection_precursorMassShift.SetMinSize(
             (textCtrl_small_w, textCtrl_small_h)
@@ -6807,7 +7155,6 @@ intensity."""
         # end wxGlade
 
     def __do_layout(self):
-
         border_labels = 4
 
         ### TOOL pane ###
@@ -6818,7 +7165,10 @@ intensity."""
         # sizer_toolPane.Add((10,10))
         sizer_toolPane_3 = wx.BoxSizer(wx.VERTICAL)
         sizer_toolPane_3.Add(
-            self.label_mstools_InputSection_mz, 0, wx.ALIGN_LEFT | wx.EXPAND | wx.ALL, 5
+            self.label_mstools_InputSection_mz,
+            0,
+            wx.ALIGN_LEFT | wx.EXPAND | wx.ALL,
+            5,
         )
         sizer_toolPane_3.Add(
             self.text_ctrl_mstools_InputSection_mz,
@@ -6934,7 +7284,9 @@ intensity."""
         )
 
         # second half
-        sizer_toolPane.Add(self.label_mstools_Isotopes, 0, wx.ALIGN_LEFT | wx.ALL, 10)
+        sizer_toolPane.Add(
+            self.label_mstools_Isotopes, 0, wx.ALIGN_LEFT | wx.ALL, 10
+        )
         sizer_toolPane_10 = wx.BoxSizer(wx.VERTICAL)
         sizer_toolPane_10.Add(
             self.label_mstools_Isotopes_precursor,
@@ -6966,10 +7318,16 @@ intensity."""
         sizer_toolPane_12.Add(sizer_toolPane_11)
         sizer_toolPane_14 = wx.BoxSizer(wx.VERTICAL)
         sizer_toolPane_14.Add(
-            self.label_mstools_Isotopes_blank, 0, wx.ALIGN_LEFT | wx.EXPAND | wx.ALL, 5
+            self.label_mstools_Isotopes_blank,
+            0,
+            wx.ALIGN_LEFT | wx.EXPAND | wx.ALL,
+            5,
         )
         sizer_toolPane_14.Add(
-            self.checkBox_mstools_Isotopes_nl, 0, wx.ALIGN_RIGHT | wx.EXPAND | wx.ALL, 5
+            self.checkBox_mstools_Isotopes_nl,
+            0,
+            wx.ALIGN_RIGHT | wx.EXPAND | wx.ALL,
+            5,
         )
         sizer_toolPane_12.Add(sizer_toolPane_14)
         sizer_toolPane.Add(
@@ -6979,7 +7337,9 @@ intensity."""
             10,
         )
         sizer_toolPane_13 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_toolPane_13.Add(self.button_Isotopes, 0, wx.ALIGN_LEFT | wx.ALL, 10)
+        sizer_toolPane_13.Add(
+            self.button_Isotopes, 0, wx.ALIGN_LEFT | wx.ALL, 10
+        )
         sizer_toolPane.Add(sizer_toolPane_13)
         sizer_toolPane.Add(
             self.text_ctrl_mstools_Isotopes_output,
@@ -7005,11 +7365,18 @@ intensity."""
         # mfql Queries
         grid_sizer_1_RunCard.Add((10, 10))
         grid_sizer_1_RunCard.Add(
-            self.label_mfqlQueriesSection, 0, wx.LEFT | wx.EXPAND, border_labels
+            self.label_mfqlQueriesSection,
+            0,
+            wx.LEFT | wx.EXPAND,
+            border_labels,
         )
         grid_sizer_5_listBox = wx.GridBagSizer(7, 1)
         grid_sizer_5_listBox.Add(
-            self.list_box_1, (0, 0), (6, 1), wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND, 10
+            self.list_box_1,
+            (0, 0),
+            (6, 1),
+            wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND,
+            10,
         )
         grid_sizer_5_listBox.Add((20, 55), (0, 1), wx.DefaultSpan, wx.ALL, 0)
         # grid_sizer_5_listBox.Add((80, 10), (1,1), wx.DefaultSpan, wx.ALL, 0)
@@ -7050,23 +7417,40 @@ intensity."""
         grid_sizer_8_MasterScanSection.Add(
             self.text_ctrl_MasterScanSection, 0, wx.ALL, 10
         )
-        grid_sizer_8_MasterScanSection.Add(self.button_Browse_MasterScan, 0, wx.ALL, 5)
-        grid_sizer_7_textBrowse_V.Add(grid_sizer_8_MasterScanSection, 1, wx.EXPAND, 0)
+        grid_sizer_8_MasterScanSection.Add(
+            self.button_Browse_MasterScan, 0, wx.ALL, 5
+        )
+        grid_sizer_7_textBrowse_V.Add(
+            grid_sizer_8_MasterScanSection, 1, wx.EXPAND, 0
+        )
         grid_sizer_1_RunCard.Add(grid_sizer_7_textBrowse_V, 0, 0, 0)
 
         # output
-        grid_sizer_1_RunCard.Add(self.label_OutputSection, 0, wx.LEFT, border_labels)
+        grid_sizer_1_RunCard.Add(
+            self.label_OutputSection, 0, wx.LEFT, border_labels
+        )
         grid_sizer_9_OutputSection = wx.BoxSizer(wx.HORIZONTAL)
-        grid_sizer_9_OutputSection.Add(self.text_ctrl_OutputSection, 0, wx.ALL, 10)
-        grid_sizer_9_OutputSection.Add(self.button_Browse_OutputSection, 0, wx.ALL, 5)
-        grid_sizer_9_OutputSection.Add(self.button_Open_OutputSection, 0, wx.ALL, 5)
+        grid_sizer_9_OutputSection.Add(
+            self.text_ctrl_OutputSection, 0, wx.ALL, 10
+        )
+        grid_sizer_9_OutputSection.Add(
+            self.button_Browse_OutputSection, 0, wx.ALL, 5
+        )
+        grid_sizer_9_OutputSection.Add(
+            self.button_Open_OutputSection, 0, wx.ALL, 5
+        )
         grid_sizer_10_textBrowse_V = wx.BoxSizer(wx.VERTICAL)
-        grid_sizer_10_textBrowse_V.Add(grid_sizer_9_OutputSection, 1, wx.EXPAND, 0)
+        grid_sizer_10_textBrowse_V.Add(
+            grid_sizer_9_OutputSection, 1, wx.EXPAND, 0
+        )
         grid_sizer_1_RunCard.Add(grid_sizer_10_textBrowse_V, 0, 0, 0)
 
         # options
         grid_sizer_1_RunCard.Add(
-            self.label_RunOptions, 0, wx.LEFT | wx.BOTTOM | wx.EXPAND, border_labels
+            self.label_RunOptions,
+            0,
+            wx.LEFT | wx.BOTTOM | wx.EXPAND,
+            border_labels,
         )
 
         grid_sizer_29_OptionsSection = wx.GridBagSizer(1, 6)
@@ -7078,10 +7462,18 @@ intensity."""
             2,
         )
         grid_sizer_29_OptionsSection.Add(
-            self.label_RunOptions_MS, (0, 1), wx.DefaultSpan, wx.ALL | wx.EXPAND, 2
+            self.label_RunOptions_MS,
+            (0, 1),
+            wx.DefaultSpan,
+            wx.ALL | wx.EXPAND,
+            2,
         )
         grid_sizer_29_OptionsSection.Add(
-            self.text_ctrl_RunOptions_MS, (0, 2), wx.DefaultSpan, wx.ALL | wx.EXPAND, 2
+            self.text_ctrl_RunOptions_MS,
+            (0, 2),
+            wx.DefaultSpan,
+            wx.ALL | wx.EXPAND,
+            2,
         )
         grid_sizer_29_OptionsSection.Add(
             self.choice_RunOptions_MS_type,
@@ -7091,7 +7483,11 @@ intensity."""
             2,
         )
         grid_sizer_29_OptionsSection.Add(
-            self.label_RunOptions_MSMS, (0, 4), wx.DefaultSpan, wx.ALL | wx.EXPAND, 2
+            self.label_RunOptions_MSMS,
+            (0, 4),
+            wx.DefaultSpan,
+            wx.ALL | wx.EXPAND,
+            2,
         )
         grid_sizer_29_OptionsSection.Add(
             self.text_ctrl_RunOptions_MSMS,
@@ -7122,17 +7518,29 @@ intensity."""
         grid_sizer_24_OptionsSection = wx.BoxSizer(wx.HORIZONTAL)
         grid_sizer_11_OptionsSection = wx.BoxSizer(wx.VERTICAL)
         grid_sizer_11_OptionsSection.Add(
-            self.checkBox_OptionsSection_isocorrect_ms, 0, wx.LEFT | wx.EXPAND, 10
+            self.checkBox_OptionsSection_isocorrect_ms,
+            0,
+            wx.LEFT | wx.EXPAND,
+            10,
         )
         grid_sizer_11_OptionsSection.Add(
-            self.checkBox_OptionsSection_isocorrect_msms, 0, wx.LEFT | wx.EXPAND, 10
+            self.checkBox_OptionsSection_isocorrect_msms,
+            0,
+            wx.LEFT | wx.EXPAND,
+            10,
         )
         grid_sizer_11_OptionsSection.Add(
-            self.checkBox_OptionsSection_complement_sc, 0, wx.LEFT | wx.EXPAND, 10
+            self.checkBox_OptionsSection_complement_sc,
+            0,
+            wx.LEFT | wx.EXPAND,
+            10,
         )
         grid_sizer_26_OptionsSection = wx.BoxSizer(wx.VERTICAL)
         grid_sizer_26_OptionsSection.Add(
-            self.checkBox_OptionsSection_dumpMasterScan, 0, wx.LEFT | wx.EXPAND, 10
+            self.checkBox_OptionsSection_dumpMasterScan,
+            0,
+            wx.LEFT | wx.EXPAND,
+            10,
         )
         grid_sizer_13_DumpSection = wx.BoxSizer(wx.VERTICAL)
         grid_sizer_13_DumpSection.Add(
@@ -7158,16 +7566,26 @@ intensity."""
         grid_sizer_31_OptionsSection.Add(
             self.checkBox_noPermutations, 0, wx.LEFT | wx.EXPAND, 10
         )
-        grid_sizer_24_OptionsSection.Add(grid_sizer_11_OptionsSection, 0, wx.EXPAND, 0)
-        grid_sizer_24_OptionsSection.Add(grid_sizer_25_OptionsSection, 0, wx.EXPAND, 0)
-        grid_sizer_24_OptionsSection.Add(grid_sizer_31_OptionsSection, 0, wx.EXPAND, 0)
-        grid_sizer_24_OptionsSection.Add(grid_sizer_26_OptionsSection, 0, wx.EXPAND, 0)
+        grid_sizer_24_OptionsSection.Add(
+            grid_sizer_11_OptionsSection, 0, wx.EXPAND, 0
+        )
+        grid_sizer_24_OptionsSection.Add(
+            grid_sizer_25_OptionsSection, 0, wx.EXPAND, 0
+        )
+        grid_sizer_24_OptionsSection.Add(
+            grid_sizer_31_OptionsSection, 0, wx.EXPAND, 0
+        )
+        grid_sizer_24_OptionsSection.Add(
+            grid_sizer_26_OptionsSection, 0, wx.EXPAND, 0
+        )
         grid_sizer_1_RunCard.Add(grid_sizer_24_OptionsSection, 0, wx.EXPAND, 0)
 
         # run
         grid_sizer_13_RunButton = wx.BoxSizer(wx.VERTICAL)
         grid_sizer_13_RunButton.Add(self.button_RunLipidX, 0, wx.ALL, 5)
-        grid_sizer_1_RunCard.Add(grid_sizer_13_RunButton, 0, wx.ALIGN_CENTER, 0)
+        grid_sizer_1_RunCard.Add(
+            grid_sizer_13_RunButton, 0, wx.ALIGN_CENTER, 0
+        )
 
         self.notebook_1_pane_3.SetSizer(grid_sizer_1_RunCard_0)
 
@@ -7214,7 +7632,9 @@ intensity."""
             wx.ALIGN_CENTER | wx.EXPAND | wx.TOP,
             15,
         )
-        grid_sizer_14_textBrowse_V.Add(grid_sizer_15_ImportDataSection, 0, wx.EXPAND, 0)
+        grid_sizer_14_textBrowse_V.Add(
+            grid_sizer_15_ImportDataSection, 0, wx.EXPAND, 0
+        )
         grid_sizer_14_textBrowse_V.Add(
             grid_sizer_30_ImportDataSection_GroupSamples, 0, wx.ALIGN_RIGHT, 0
         )
@@ -7258,11 +7678,15 @@ intensity."""
 
         grid_sizer_16_textBrowse_V = wx.BoxSizer(wx.VERTICAL)
         grid_sizer_17_LoadIniSection = wx.BoxSizer(wx.HORIZONTAL)
-        grid_sizer_17_LoadIniSection.Add(self.text_ctrl_LoadIniSection, 0, wx.ALL, 10)
+        grid_sizer_17_LoadIniSection.Add(
+            self.text_ctrl_LoadIniSection, 0, wx.ALL, 10
+        )
         grid_sizer_17_LoadIniSection.Add(
             self.button_Browse_LoadIniSection, 0, wx.ALL, 5
         )
-        grid_sizer_16_textBrowse_V.Add(grid_sizer_17_LoadIniSection, 1, wx.EXPAND, 0)
+        grid_sizer_16_textBrowse_V.Add(
+            grid_sizer_17_LoadIniSection, 1, wx.EXPAND, 0
+        )
 
         box_sizer_ImportSettings.Add(
             grid_sizer_16_textBrowse_V, 0, wx.ALIGN_CENTER_HORIZONTAL, 0
@@ -7317,9 +7741,15 @@ intensity."""
 
         box_sizer_SettingsSection_buttons = wx.BoxSizer(wx.HORIZONTAL)
         box_sizer_SettingsSection_buttons.Add(self.button_Save_LoadIniSection)
-        box_sizer_SettingsSection_buttons.Add(self.button_SaveAs_LoadIniSection)
-        box_sizer_SettingsSection_buttons.Add(self.button_Delete_LoadIniSection)
-        box_sizer_SettingsSection_buttons.Add(self.choice_SettingsSection_lx_ver)
+        box_sizer_SettingsSection_buttons.Add(
+            self.button_SaveAs_LoadIniSection
+        )
+        box_sizer_SettingsSection_buttons.Add(
+            self.button_Delete_LoadIniSection
+        )
+        box_sizer_SettingsSection_buttons.Add(
+            self.choice_SettingsSection_lx_ver
+        )
         grid_sizer_19_SettingsSection_gridBag.Add(
             box_sizer_SettingsSection_buttons, (0, 6), (2, 3), 0, 0
         )
@@ -7390,13 +7820,21 @@ intensity."""
         )
 
         box_sizer_massrange_ms = wx.BoxSizer(wx.HORIZONTAL)
-        box_sizer_massrange_ms.Add(self.text_ctrl_SettingsSection_massrange_ms1)
+        box_sizer_massrange_ms.Add(
+            self.text_ctrl_SettingsSection_massrange_ms1
+        )
         # box_sizer_massrange_ms.Add(wx.StaticText(self, -1, " , "))
-        box_sizer_massrange_ms.Add(self.text_ctrl_SettingsSection_massrange_ms2)
+        box_sizer_massrange_ms.Add(
+            self.text_ctrl_SettingsSection_massrange_ms2
+        )
         box_sizer_massrange_msms = wx.BoxSizer(wx.HORIZONTAL)
-        box_sizer_massrange_msms.Add(self.text_ctrl_SettingsSection_massrange_msms1)
+        box_sizer_massrange_msms.Add(
+            self.text_ctrl_SettingsSection_massrange_msms1
+        )
         # box_sizer_massrange_msms.Add(wx.StaticText(self, -1, " , "))
-        box_sizer_massrange_msms.Add(self.text_ctrl_SettingsSection_massrange_msms2)
+        box_sizer_massrange_msms.Add(
+            self.text_ctrl_SettingsSection_massrange_msms2
+        )
         grid_sizer_19_SettingsSection_gridBag.Add(
             self.label_SettingsSection_massrange,
             (3, 1),
@@ -7838,13 +8276,24 @@ intensity."""
         self.counterNotebookPages += 1
         self.dictNotebookPages["ExtraTools"] = self.counterNotebookPages
 
-        m_radio_box_version_choices = [ u"LX1", u"LX1_refactored", u"LX2" ]
-        self.m_radioBoxVersions = wx.RadioBox( self, wx.ID_ANY, u"Select LX versions:", wx.DefaultPosition, wx.DefaultSize, m_radio_box_version_choices, 1, wx.RA_SPECIFY_ROWS )
-        self.m_radioBoxVersions.SetSelection( 0 )
-        self.m_radioBoxVersions.Bind( wx.EVT_RADIOBOX, self.m_radioBoxOnVersionChanged )
+        m_radio_box_version_choices = ["LX1", "LX1_refactored", "LX2"]
+        self.m_radioBoxVersions = wx.RadioBox(
+            self,
+            wx.ID_ANY,
+            "Select LX versions:",
+            wx.DefaultPosition,
+            wx.DefaultSize,
+            m_radio_box_version_choices,
+            1,
+            wx.RA_SPECIFY_ROWS,
+        )
+        self.m_radioBoxVersions.SetSelection(0)
+        self.m_radioBoxVersions.Bind(
+            wx.EVT_RADIOBOX, self.m_radioBoxOnVersionChanged
+        )
 
-        sizer_2.Add( self.m_radioBoxVersions, 0, wx.ALL, 5 )
-        sizer_2.Add( self.notebook_1, 1, wx.EXPAND |wx.ALL, 5 )
+        sizer_2.Add(self.m_radioBoxVersions, 0, wx.ALL, 5)
+        sizer_2.Add(self.notebook_1, 1, wx.EXPAND | wx.ALL, 5)
 
         self.counterNotebookPages += 1
         self.dictNotebookPages["Import"] = self.counterNotebookPages
@@ -7855,12 +8304,11 @@ intensity."""
         # end wxGlade
 
     # Virtual event handlers, overide them in your derived class
-    def m_radioBoxOnVersionChanged( self, event ):
+    def m_radioBoxOnVersionChanged(self, event):
         self.lx_ver = self.m_radioBoxVersions.GetStringSelection()
-        print(f'Mode is changed to {self.lx_ver}')
+        print(f"Mode is changed to {self.lx_ver}")
 
     def writeOutput(self, destination, content):
-
         if os.path.exists(destination):
             dlgError = wx.MessageDialog(
                 self,
@@ -7907,7 +8355,6 @@ class MyApp(wx.App):
 
 
 def main():
-
     app = MyApp(0)
     app.MainLoop()
     ## end of the software

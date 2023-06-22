@@ -35,20 +35,15 @@ stages:          # List of stages for jobs, and their order of execution
 
 # Windows image should be used in the Windows server based docker
 # Try this after the computer department starts the service
-#.windows_template_job:
-#  image: mcr.microsoft.com/windows-cssc/python3.7windows:ltsc2019
-#  before_script:
-#    - python3 -V
-#    - pip install -r requirements.txt
-#  script:
-#    - echo $env:Path
-#    - python3 --version
-#    - systeminfo /fo csv | ConvertFrom-Csv | select OS* | Format-List
-#    - echo $env:Path
-#    - Set-Variable -Name "time" -Value (date -Format "%H:%m")
-#    - echo ${time}
-#    - echo "started by ${GITLAB_USER_NAME}"
-#    - python ./src/LipidXplorer.py
+.windows_template_job:
+  #  image: mcr.microsoft.com/windows-cssc/python3.7windows:ltsc2019
+  tags:
+    - win11
+  before_script:
+    - echo $env:Path
+    - dir C:\
+    - python -V
+    - pip install -r requirements.txt
 
 # Window build
 #build-job:       # This job runs in the build stage, which runs first.
@@ -72,31 +67,54 @@ stages:          # List of stages for jobs, and their order of execution
 #    - python ./src/LipidXplorer.py
 
 
-unit-test-job:   # This job runs in the test stage.
+test-job:   # This job runs in the test stage.
   extends: [ '.template_job' ]
   stage: test    # It only starts when the job in the build stage completes successfully.
   script:
     - echo "Running unit tests..."
     - python3 -m pytest tests
 
-lint-test-job:   # This job also runs in the test stage.
+lint-job:
+  stage: test
   image: python:3.7-slim-buster
-  allow_failure: true
-  stage: test    # It can run at the same time as unit-test-job (in parallel).
+  before_script:
+    - pip install pylint pylint-exit anybadge
   script:
-    - apt-get update -qy
-    - apt-get -y install git
-    - chmod +x lint.sh
-    - echo "Linting code... This will take about 10 seconds."
-    - ./lint.sh
-    - echo "No lint issues found."
+    - mkdir pylint
+    - pylint --exit-zero --output-format=text src/ | tee ./pylint/pylint.log || pylint-exit $?
+    - PYLINT_SCORE=$(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' ./pylint/pylint.log)
+    - anybadge --label=$CI_JOB_NAME --file=pylint/pylint.svg --value=$PYLINT_SCORE 2=red 4=orange 8=yellow 10=green
+    - echo "Pylint score is $PYLINT_SCORE"
+  artifacts:
+    paths:
+      - pylint
 
-deploy-job:      # This job runs in the deploy stage.
-#  extends: [ '.windows_template_job' ]
-  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+pages:
+  stage: deploy
+  image: alpine:latest
   script:
-    - echo "Deploying application..."
-    - echo "Application successfully deployed."
+    - echo
+  artifacts:
+    paths:
+      - pylint
+  only:
+    refs:
+      - dev
+
+#deploy-job:      # This job runs in the deploy stage.
+#  extends: [ '.windows_template_job' ]
+#  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+#  script:
+#    - echo "Deploying application..."
+#    - echo $env:Path
+#    - python3 --version
+#    - systeminfo /fo csv | ConvertFrom-Csv | select OS* | Format-List
+#    - echo $env:Path
+#    - Set-Variable -Name "time" -Value (date -Format "%H:%m")
+#    - echo ${time}
+#    - echo "started by ${GITLAB_USER_NAME}"
+#    - pyinstaller src/LipidXplorer.spec
+#    - echo "Application successfully deployed."
 
 #branch-pipeline-job:
 #  rules:

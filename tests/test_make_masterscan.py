@@ -20,7 +20,7 @@ from LX1_masterscan import make_lx1_masterscan
 
 
 def test_make_masterscan():
-    '''this tests lx1 it has intermediate results
+    """this tests lx1 it has intermediate results
      file (eg. *.mzml) has a spectra
      a spectra has multiple scans
      scans can be ms1 or ms2
@@ -45,26 +45,28 @@ def test_make_masterscan():
 
     for ms2 there is a similar operation, of grouping, averaging and aligning
 
-     '''
+    """
 
     options = read_options(proy_path)
-    masterscan = make_masterscan(options, make_intermediate_output = False)  # original lx1
+    masterscan = make_masterscan(
+        options, make_intermediate_output=False
+    )  # original lx1
     expected = loadSC(expected_ms_path)
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
     masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]
     assert compareMasterScans(masterscan, expected)
 
+
 def test_compare_ms2s():
     expected_lx1 = loadSC(expected_ms_path)
     expected_lx2_manual = loadSC(expected_lx2ms_path)
     df1 = masterscan_2_df(expected_lx1)
-    df2 = masterscan_2_df(expected_lx2_manual) # missing ms2 data
-    print('compare ms2')
+    df2 = masterscan_2_df(expected_lx2_manual)  # missing ms2 data
+    print("compare ms2")
+
 
 # TODO: @Jacobo
-@pytest.mark.skip(
-    reason="assert False"
-)
+@pytest.mark.skip(reason="assert False")
 def test_make_lx2_masterscan():
     options = read_options(proy_path)
     masterscan = make_lx2_masterscan(options)
@@ -81,4 +83,3 @@ def test_make_lx1_masterscan():
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
     masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]
     assert compareMasterScans(masterscan, expected)
-

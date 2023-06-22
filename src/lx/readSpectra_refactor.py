@@ -9,7 +9,6 @@ from lx.alignment import specEntry, linearAlignment
 
 
 def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
-
     make_a_masterscan(specFile, options)
 
     specName = specFile
@@ -44,7 +43,9 @@ def make_a_masterscan(mzml_file, options):
     scans_ms1 = scansDF.loc[scansDF.msLevel == 1]
     scans_ms2 = scansDF.loc[scansDF.msLevel == 2]
 
-    scans_timerange = scansDF.loc[scansDF.time.multiply(60).between(*timerange)]
+    scans_timerange = scansDF.loc[
+        scansDF.time.multiply(60).between(*timerange)
+    ]
     peaks_MS1massrange = peaksDF.loc[peaksDF.m.between(*MS1massrange)]
     peaks_MS2massrange = peaksDF.loc[peaksDF.m.between(*MS2massrange)]
 
@@ -104,7 +105,15 @@ def make_a_masterscan(mzml_file, options):
         scan_peaks = spectra2DF.loc[scan_tuple.Index]
         if type(scan_peaks) is pd.Series:  # only One entry
             scan_processed = [
-                (scan_peaks["m"], scan_peaks["i"], scan_peaks["rel_i"], 0, 0, 0, 0)
+                (
+                    scan_peaks["m"],
+                    scan_peaks["i"],
+                    scan_peaks["rel_i"],
+                    0,
+                    0,
+                    0,
+                    0,
+                )
             ]
         else:
             scan_processed = [
@@ -133,7 +142,12 @@ def make_a_masterscan(mzml_file, options):
         # specEntry(mass, content={})
         dictSpecEntry[id] = [
             specEntry(
-                peak.m, {"sample": id, "intensity": peak.i, "intensity_rel": peak.rel_i}
+                peak.m,
+                {
+                    "sample": id,
+                    "intensity": peak.i,
+                    "intensity_rel": peak.rel_i,
+                },
             )
             for peak in scan_peaks.itertuples()
         ]
@@ -168,9 +182,13 @@ def mzML2DataFrames(filename):  # TODO move this to input2dataframe
             msLevel = item["ms level"]
             positive_scan = True if "positive scan" in item else False
             if not positive_scan:
-                item["negative scan"]  # raise exceltion if not positive or negative
+                item[
+                    "negative scan"
+                ]  # raise exceltion if not positive or negative
             p_data = item.get("precursorList", None)  # helper
-            precursor_id = p_data["precursor"][0]["spectrumRef"] if p_data else None
+            precursor_id = (
+                p_data["precursor"][0]["spectrumRef"] if p_data else None
+            )
             max_i = item["base peak intensity"]
             tic = item["total ion current"]
 

@@ -110,17 +110,20 @@ class Project(Options):
             self.mfql[m] = dictMfql[m]
 
     def writeOptionsToIni(self):
-
         self.testConfiguration()
 
         # write all settings
-        self.confParse.set(configuration, "selectionWindow", o["selectionWindow"])
+        self.confParse.set(
+            configuration, "selectionWindow", o["selectionWindow"]
+        )
         self.confParse.set(
             configuration,
             "timerange",
             "(%f,%f)" % (o["timerange"][0], o["timerange"][1]),
         )
-        self.confParse.set(configuration, "selectionWindow", o["selectionWindow"])
+        self.confParse.set(
+            configuration, "selectionWindow", o["selectionWindow"]
+        )
         str = ""
         for m in o["MScalibration"]:
             str += "%.4f," % m
@@ -139,27 +142,41 @@ class Project(Options):
             "MSMSmassrange",
             "(%f,%f)" % (o["MSMSmassrange"][0], o["MSMSmassrange"][1]),
         )
-        self.confParse.set(configuration, "MSresolution", o["MSresolution"].tolerance)
+        self.confParse.set(
+            configuration, "MSresolution", o["MSresolution"].tolerance
+        )
         self.confParse.set(
             configuration, "MSMSresolution", o["MSMSresolution"].tolerance
         )
         self.confParse.set(configuration, "MStolerance", o["MStolerance"])
         self.confParse.set(configuration, "MSMStolerance", o["MSMStolerance"])
         self.confParse.set(configuration, "MSthreshold", str(o["MSthreshold"]))
-        self.confParse.set(configuration, "MSMSthreshold", str(o["MSMSthreshold"]))
+        self.confParse.set(
+            configuration, "MSMSthreshold", str(o["MSMSthreshold"])
+        )
         self.confParse.set(
             configuration, "MSresolutionDelta", str(o["MSresolutionDelta"])
         )
         self.confParse.set(
             configuration, "MSMSresolutionDelta", str(o["MSMSresolutionDelta"])
         )
-        self.confParse.set(configuration, "MSminOccupation", o["MSminOccupation"])
-        self.confParse.set(configuration, "MSMSminOccupation", o["MSMSminOccupation"])
-        self.confParse.set(configuration, "precursorMassShift", o["precursorMassShift"])
         self.confParse.set(
-            configuration, "precursorMassShiftOrbi", o["precursorMassShiftOrbi"]
+            configuration, "MSminOccupation", o["MSminOccupation"]
         )
-        self.confParse.set(configuration, "alignmentMethodMS", o["alignmentMethodMS"])
+        self.confParse.set(
+            configuration, "MSMSminOccupation", o["MSMSminOccupation"]
+        )
+        self.confParse.set(
+            configuration, "precursorMassShift", o["precursorMassShift"]
+        )
+        self.confParse.set(
+            configuration,
+            "precursorMassShiftOrbi",
+            o["precursorMassShiftOrbi"],
+        )
+        self.confParse.set(
+            configuration, "alignmentMethodMS", o["alignmentMethodMS"]
+        )
         self.confParse.set(
             configuration, "alignmentMethodMSMS", o["alignmentMethodMSMS"]
         )
@@ -193,9 +210,13 @@ class GUIProject(Project):
             )
 
         if len(o["MScalibration"]) > 0:
-            self.options_formatted["MScalibration"] = o["MScalibration"].split(",")
+            self.options_formatted["MScalibration"] = o["MScalibration"].split(
+                ","
+            )
         if len(o["MSMScalibration"]) > 0:
-            self.options_formatted["MSMScalibration"] = o["MSMScalibration"].split(",")
+            self.options_formatted["MSMScalibration"] = o[
+                "MSMScalibration"
+            ].split(",")
 
         if not o["MSmassrange"] is None:
             self.options_formatted["MSmassrange"] = (
@@ -214,16 +235,25 @@ class GUIProject(Project):
             self.options_formatted["MSMSresolution"] = o["MSMSresolution"]
 
         if not self.options["MStolerance"] is None:
-            m = re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MStolerance"])
+            m = re.match(
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MStolerance"]
+            )
             if m is None:
-                if not o["MStoleranceType"] is None and not o["MStoleranceType"] == "":
+                if (
+                    not o["MStoleranceType"] is None
+                    and not o["MStoleranceType"] == ""
+                ):
                     m = re.match("(\d+|\d+\.\d+)", o["MStolerance"])
                     if not m is None:
-                        self.options_formatted["MStolerance"] = o["MStolerance"]
+                        self.options_formatted["MStolerance"] = o[
+                            "MStolerance"
+                        ]
             else:
                 self.options_formatted["MStolerance"] = o["MStolerance"]
         if not self.options["MSMStolerance"] is None:
-            m = re.match("(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MSMStolerance"])
+            m = re.match(
+                "(\d+|\d+\.\d+)(\s)*(ppm|Da)", self.options["MSMStolerance"]
+            )
             if m is None:
                 if (
                     not o["MSMStoleranceType"] is None
@@ -231,7 +261,9 @@ class GUIProject(Project):
                 ):
                     m = re.match("(\d+|\d+\.\d+)", o["MSMStolerance"])
                     if not m is None:
-                        self.options_formatted["MSMStolerance"] = o["MSMStolerance"]
+                        self.options_formatted["MSMStolerance"] = o[
+                            "MSMStolerance"
+                        ]
             else:
                 self.options_formatted["MSMStolerance"] = o["MSMStolerance"]
 

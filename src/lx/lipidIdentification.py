@@ -14,7 +14,6 @@ from lx.options import Options
 
 
 def syntaxCheck(queries=None, masterscan=None, parent=None):
-
     opts = {}
     opts["queries"] = queries
 
@@ -32,7 +31,6 @@ def syntaxCheck(queries=None, masterscan=None, parent=None):
 
 
 def startFromGUI(parent=None, queries=None, options={}):
-
     progressCount = 0
 
     # collect all mfql scripts
@@ -149,7 +147,6 @@ def startFromGUI(parent=None, queries=None, options={}):
 
     # may dump the masterscan
     if options["dumpMasterScan"]:
-
         if not options["masterScanInSQL"]:
             masterscan.dump(options["dumpMasterScanFile"])
         else:
@@ -176,13 +173,15 @@ def writeReport(file="", options={}, queries={}):
 
 
 def genReportHTML(options={}, queries={}):
-
     strBugReport = "<h3>Options</h3>\n"
 
     strBugReport += "<table>\n"
     for k in sorted(options.keys()):
         if not options.isEmpty(k):
-            strBugReport += "<tr><td>%s:</td><td>%s</td></tr>\n" % (k, options[k])
+            strBugReport += "<tr><td>%s:</td><td>%s</td></tr>\n" % (
+                k,
+                options[k],
+            )
     strBugReport += "</table><br>\n"
 
     strBugReport += "<h3>MFQL queries</h3><tt>\n"

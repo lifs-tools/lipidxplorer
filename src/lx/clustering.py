@@ -38,7 +38,8 @@ def flatten(L):
 def median(numbers):
     """Return the median of the list of numbers.
 
-    found at: http://mail.python.org/pipermail/python-list/2004-December/253517.html"""
+    found at: http://mail.python.org/pipermail/python-list/2004-December/253517.html
+    """
     # Sort the list and take the middle element.
     n = len(numbers)
     copy = numbers[:]  # So that "numbers" keeps its original order
@@ -52,7 +53,8 @@ def median(numbers):
 def mean(numbers):
     """Returns the arithmetic mean of a numeric list.
 
-    found at: http://mail.python.org/pipermail/python-list/2004-December/253517.html"""
+    found at: http://mail.python.org/pipermail/python-list/2004-December/253517.html
+    """
     return float(sum(numbers)) / float(len(numbers))
 
 
@@ -149,7 +151,7 @@ def magnitude(a):
 
     sum = 0
     for coord in a:
-        sum += coord ** 2
+        sum += coord**2
     return sqrt(sum)
 
 
@@ -596,7 +598,6 @@ class HierarchicalClustering(BaseClusterMethod):
 
         # if the matrix only has two rows left, we are done
         while len(matrix) > 2 or matrix == []:
-
             matrix = genmatrix(self._data, self.linkage, True, 0)
 
             smallestpair = None
@@ -703,7 +704,11 @@ class KMeansClustering:
                         "was out of line!",
                     )
         # now check if we need and have a distance function
-        if len(data) > 1 and not isinstance(data[0], tuple) and distance is None:
+        if (
+            len(data) > 1
+            and not isinstance(data[0], tuple)
+            and distance is None
+        ):
             raise ValueError(
                 "You supplied non-standard items but no distance function! We cannot continue!"
             )
@@ -728,7 +733,11 @@ class KMeansClustering:
             )
 
         # return the data straight away if there is nothing to cluster
-        if self.__data == [] or len(self.__data) == 1 or n == self.__initial_length:
+        if (
+            self.__data == []
+            or len(self.__data) == 1
+            or n == self.__initial_length
+        ):
             return self.__data
 
         # It makes no sense to ask for more clusters than data-items available
@@ -876,10 +885,8 @@ def hclusterHeuristic(listSamples, dictSamples, resolution, distance=L1dist):
         # loop through every pair looking for the smallest distance
         for i in range(len(clust)):
             for j in range(i + 1, len(clust)):
-
                 # distances is the cache of distance calculations
                 if (clust[i].id, clust[j].id) not in distances:
-
                     # res = clust[i].mass / resolution
                     dist = distance(clust[i].mass, clust[j].mass)
 

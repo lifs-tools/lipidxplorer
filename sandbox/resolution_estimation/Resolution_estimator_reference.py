@@ -240,7 +240,10 @@ sel_df = df.loc[
 # sel_df['mean_max_calc_r'] = df.groupby('round_m')['max_calc_r'].transform('mean')
 # sel_df.plot.scatter(x='mean_r', y='mean_max_calc_r' )
 plt.scatter(
-    x=sel_df["mean_r"], y=sel_df["max_calc_r"], c=sel_df["m"] / 10, s=sel_df["i"] / 100
+    x=sel_df["mean_r"],
+    y=sel_df["max_calc_r"],
+    c=sel_df["m"] / 10,
+    s=sel_df["i"] / 100,
 )
 # plt.scatter(x=sel_df['m']*100, y=sel_df['r'])
 # plt.scatter(x=sel_df['r'], y=sel_df['i']*10)
@@ -319,7 +322,9 @@ def func(x, a, b, c):
 popt_calc, pcov_calc = curve_fit(
     func, sel_df.m, sel_df.max_calc_r, bounds=(0, [1.0, 1.0, 1.0])
 )
-popt, pcov = curve_fit(func, sel_df.m, sel_df.mean_r, bounds=(0, [1.0, 1.0, 1.0]))
+popt, pcov = curve_fit(
+    func, sel_df.m, sel_df.mean_r, bounds=(0, [1.0, 1.0, 1.0])
+)
 
 
 # In[ ]:
@@ -463,7 +468,7 @@ import numpy as np
 
 
 def func(x, a, b, c):
-    return a * (x ** -b) + c  # this does not work a*np.exp(-b*x)+c
+    return a * (x**-b) + c  # this does not work a*np.exp(-b*x)+c
 
 
 x = sel_df.m
@@ -480,7 +485,12 @@ print(popt_calc)
 
 plt.scatter(x, y, label="Data")
 plt.scatter(x, y_calc, label="Data_calc")
-plt.plot(x, func(x, *popt), "g--", label="fit: a=%5.3f, b=%5.3f, c=%5.3f" % tuple(popt))
+plt.plot(
+    x,
+    func(x, *popt),
+    "g--",
+    label="fit: a=%5.3f, b=%5.3f, c=%5.3f" % tuple(popt),
+)
 plt.plot(
     x,
     func(x, *popt_calc),
@@ -523,7 +533,8 @@ def plot(ax, t, y, noisy_y, fit_y, orig_parms, fit_parms):
         t,
         y,
         "k--",
-        label="Actual Function:\n $y = %0.2f e^{%0.2f t} + %0.2f$" % (A0, K0, C0),
+        label="Actual Function:\n $y = %0.2f e^{%0.2f t} + %0.2f$"
+        % (A0, K0, C0),
     )
     ax.plot(
         t,
