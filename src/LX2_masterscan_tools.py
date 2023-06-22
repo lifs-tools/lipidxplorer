@@ -16,6 +16,8 @@ log = logging.getLogger(Path(__file__).stem)
 from ms_deisotope import MSFileLoader
 from lx.spectraContainer import SurveyEntry, MSMSEntry
 
+from LX1_masterscan import make_lx_masterscan
+
 
 # ========================
 
