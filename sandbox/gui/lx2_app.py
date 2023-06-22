@@ -56,11 +56,12 @@ class lx2_gui_controler(Lx2_gui):
         def proj_t2str(item, index, default=""):
             """helper for tuples"""
             return str(
-                self.project.options_formatted.get(item, (default, default))[index]
+                self.project.options_formatted.get(item, (default, default))[
+                    index
+                ]
             )
 
         for k, v in model_map.items():
-
             if v.index is None:
                 value = self.project.options.get(v.name, v.default)
             else:
@@ -82,7 +83,9 @@ class lx2_gui_controler(Lx2_gui):
                 idx = 0 if v == "absolute" else 1
                 widget.SetSelection(idx)
                 continue
-            elif k == "ms1_tolerance_type_choise" or k == "ms2_tol_type_choise":
+            elif (
+                k == "ms1_tolerance_type_choise" or k == "ms2_tol_type_choise"
+            ):
                 widget = getattr(self, k)
                 idx = 0 if v == "ppm" else 1
                 widget.SetSelection(idx)

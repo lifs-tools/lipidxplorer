@@ -61,7 +61,6 @@ def make_MFQL_result(masterscan, mfqlFiles, options):
 
 
 def make_resultDF(result, resultFile=None):
-
     dfs = []
     for k in result.dictQuery:
         dataDict = result.dictQuery[k].dataMatrix
@@ -88,6 +87,8 @@ if __name__ == "__main__":
     resultStr = makeResultsString(result, options)
     # resultDF = make_resultDF(result)
     mztabstr = as_mztab(result)
-    reference = Path(r"test_resources\small_test\small_test-out.csv").read_text()
+    reference = Path(
+        r"test_resources\small_test\small_test-out.csv"
+    ).read_text()
     print(resultStr)
     print(f"are same {resultStr == reference}")

@@ -28,7 +28,9 @@ try:
     import comtypes
     from comtypes.client import GetModule, CreateObject
 except (ImportError, NameError) as e:
-    sys.exit("Please install comtypes >= 0.6.2 : http://pypi.python.org/pypi/comtypes/")
+    sys.exit(
+        "Please install comtypes >= 0.6.2 : http://pypi.python.org/pypi/comtypes/"
+    )
 
 try:
     from comtypes.gen import MSFileReaderLib
@@ -36,19 +38,21 @@ except ImportError:
     XRawfile2_dll_loaded = False
     XRawfile2_dll_path = []
     XRawfile2_dll_path.append(
-        os.path.dirname(os.path.abspath(__file__)) + os.sep + "XRawfile2_x64.dll"
+        os.path.dirname(os.path.abspath(__file__))
+        + os.sep
+        + "XRawfile2_x64.dll"
     )  # 64bits msFileReader aside raw.py
     XRawfile2_dll_path.append(
-        u"C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2_x64.dll"
+        "C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2_x64.dll"
     )  # 64bits msFileReader with 64bits system
     XRawfile2_dll_path.append(
         os.path.dirname(os.path.abspath(__file__)) + os.sep + "XRawfile2.dll"
     )  # 32bits msFileReader aside raw.py
     XRawfile2_dll_path.append(
-        u"C:\\Program Files (x86)\\Thermo\\MSFileReader\\XRawfile2.dll"
+        "C:\\Program Files (x86)\\Thermo\\MSFileReader\\XRawfile2.dll"
     )  # 32bits msFileReader with 64bits system
     XRawfile2_dll_path.append(
-        u"C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2.dll"
+        "C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2.dll"
     )  # 32bits msFileReader with 32bits system
     XRawfile2_dll_path_0 = copy.deepcopy(XRawfile2_dll_path)
     while not XRawfile2_dll_loaded:
@@ -58,7 +62,9 @@ except ImportError:
             #  -> http://osdir.com/ml/python.comtypes.user/2008-07/msg00045.html messages 42-46 talk about it
             XRawfile2_dll_filename = XRawfile2_dll_path.pop(0)
             log.debug(
-                "Trying comtypes.client.GetModule " + XRawfile2_dll_filename + " ..."
+                "Trying comtypes.client.GetModule "
+                + XRawfile2_dll_filename
+                + " ..."
             )
             GetModule(XRawfile2_dll_filename)  # -> generation
         except IndexError:
@@ -90,7 +96,6 @@ except NameError:
 
 
 class ThermoRawfile(object):
-
     # static class members
 
     sampleType = {
@@ -330,7 +335,8 @@ class ThermoRawfile(object):
 
     def IsThereMSData(self):
         """This function checks to see if there is MS data in the raw file. A return value of TRUE means
-        that the raw file contains MS data. You must open the raw file before performing this check."""
+        that the raw file contains MS data. You must open the raw file before performing this check.
+        """
         pbMSData = c_long()
         error = self.source.IsThereMSData(byref(pbMSData))
         if error:
@@ -386,7 +392,8 @@ class ThermoRawfile(object):
     def RefreshViewOfFile(self):
         """Refreshes the view of a file currently being acquired. This function provides a more efficient
         mechanism for gaining access to new data in a raw file during acquisition without closing and
-        reopening the raw file. This function has no effect with files that are not being acquired."""
+        reopening the raw file. This function has no effect with files that are not being acquired.
+        """
         error = self.source.RefreshViewOfFile()
         if error:
             raise IOError("RefreshViewOfFile error :", error)
@@ -395,7 +402,8 @@ class ThermoRawfile(object):
     def GetNumberOfControllers(self):
         """Returns the number of registered device controllers in the raw file. A device controller
         represents an acquisition stream such as MS data, UV data, and so on. Devices that do not
-        acquire data, such as autosamplers, are not registered with the raw file during acquisition."""
+        acquire data, such as autosamplers, are not registered with the raw file during acquisition.
+        """
         pnNumControllers = c_long()
         error = self.source.GetNumberOfControllers(byref(pnNumControllers))
         if error:
@@ -475,7 +483,9 @@ class ThermoRawfile(object):
         supported for MS device controllers and are used to store instrument specific information for
         each scan if used."""
         pnNumberOfTrailerExtraEntries = c_long()
-        error = self.source.GetNumTrailerExtra(byref(pnNumberOfTrailerExtraEntries))
+        error = self.source.GetNumTrailerExtra(
+            byref(pnNumberOfTrailerExtraEntries)
+        )
         if error:
             raise IOError("GetNumTrailerExtra error :", error)
         return pnNumberOfTrailerExtraEntries.value
@@ -484,7 +494,9 @@ class ThermoRawfile(object):
         """Gets the highest integrated intensity of all the scans for the current controller. This value is
         only relevant to MS device controllers."""
         pdMaxIntegIntensity = c_double()
-        error = self.source.GetMaxIntegratedIntensity(byref(pdMaxIntegIntensity))
+        error = self.source.GetMaxIntegratedIntensity(
+            byref(pdMaxIntegIntensity)
+        )
         if error:
             raise IOError("GetMaxIntegratedIntensity error :", error)
         return pdMaxIntegIntensity.value
@@ -577,7 +589,9 @@ class ThermoRawfile(object):
         pvarFilterArray."""
         pvarFilterArray = comtypes.automation.VARIANT()
         pnArraySize = c_long()
-        error = self.source.GetFilters(byref(pvarFilterArray), byref(pnArraySize))
+        error = self.source.GetFilters(
+            byref(pvarFilterArray), byref(pnArraySize)
+        )
         if error:
             raise IOError("GetFilters error :", error)
         return pvarFilterArray.value
@@ -621,7 +635,9 @@ class ThermoRawfile(object):
         """Returns the instrument description field for the current controller. This value is typically only
         set for raw files converted from other file formats."""
         pbstrInstrumentDescription = comtypes.automation.BSTR(None)
-        error = self.source.GetInstrumentDescription(byref(pbstrInstrumentDescription))
+        error = self.source.GetInstrumentDescription(
+            byref(pbstrInstrumentDescription)
+        )
         if error:
             raise IOError("GetInstrumentDescription error :", error)
         return pbstrInstrumentDescription.value
@@ -695,7 +711,9 @@ class ThermoRawfile(object):
         number of channel labels, if labels are available, is the same as the number of configured
         channels for the current controller."""
         pnInstNumChannelLabels = c_long()
-        error = self.source.GetInstNumChannelLabels(byref(pnInstNumChannelLabels))
+        error = self.source.GetInstNumChannelLabels(
+            byref(pnInstNumChannelLabels)
+        )
         if error:
             raise IOError("GetInstNumChannelLabels error :", error)
         return pnInstNumChannelLabels.value
@@ -755,61 +773,80 @@ class ThermoRawfile(object):
 
     def GetAValueFromScanNum(self, scanNumber):
         """This function gets the A parameter value in the scan event. The value returned is either 0, 1,
-        or 2 for parameter A off, parameter A on, or accept any parameter A, respectively."""
+        or 2 for parameter A off, parameter A on, or accept any parameter A, respectively.
+        """
         pnXValue = c_long()
-        error = self.source.GetAValueFromScanNum(c_long(scanNumber), byref(pnXValue))
+        error = self.source.GetAValueFromScanNum(
+            c_long(scanNumber), byref(pnXValue)
+        )
         if error:
             raise IOError("GetAValueFromScanNum error :", error)
         return pnXValue.value
 
     def GetBValueFromScanNum(self, scanNumber):
         """This function gets the B parameter value in the scan event. The value returned will be either
-        0, 1, or 2 for parameter B off, parameter B on, or accept any parameter B, respectively."""
+        0, 1, or 2 for parameter B off, parameter B on, or accept any parameter B, respectively.
+        """
         pnXValue = c_long()
-        error = self.source.GetBValueFromScanNum(c_long(scanNumber), byref(pnXValue))
+        error = self.source.GetBValueFromScanNum(
+            c_long(scanNumber), byref(pnXValue)
+        )
         if error:
             raise IOError("GetBValueFromScanNum error :", error)
         return pnXValue.value
 
     def GetFValueFromScanNum(self, scanNumber):
         """This function gets the F parameter value in the scan event. The value returned is either 0, 1,
-        or 2 for parameter F off, parameter F on, or accept any parameter F, respectively."""
+        or 2 for parameter F off, parameter F on, or accept any parameter F, respectively.
+        """
         pnXValue = c_long()
-        error = self.source.GetFValueFromScanNum(c_long(scanNumber), byref(pnXValue))
+        error = self.source.GetFValueFromScanNum(
+            c_long(scanNumber), byref(pnXValue)
+        )
         if error:
             raise IOError("GetFValueFromScanNum error :", error)
         return pnXValue.value
 
     def GetKValueFromScanNum(self, scanNumber):
         """This function gets the K parameter value in the scan event. The value returned is either 0, 1,
-        or 2 for parameter K off, parameter K on, or accept any parameter K, respectively."""
+        or 2 for parameter K off, parameter K on, or accept any parameter K, respectively.
+        """
         pnXValue = c_long()
-        error = self.source.GetKValueFromScanNum(c_long(scanNumber), byref(pnXValue))
+        error = self.source.GetKValueFromScanNum(
+            c_long(scanNumber), byref(pnXValue)
+        )
         if error:
             raise IOError("GetKValueFromScanNum error :", error)
         return pnXValue.value
 
     def GetRValueFromScanNum(self, scanNumber):
         """This function gets the R parameter value in the scan event. The value returned is either 0, 1,
-        or 2 for parameter R off, parameter R on, or accept any parameter R, respectively."""
+        or 2 for parameter R off, parameter R on, or accept any parameter R, respectively.
+        """
         pnXValue = c_long()
-        error = self.source.GetRValueFromScanNum(c_long(scanNumber), byref(pnXValue))
+        error = self.source.GetRValueFromScanNum(
+            c_long(scanNumber), byref(pnXValue)
+        )
         if error:
             raise IOError("GetRValueFromScanNum error :", error)
         return pnXValue.value
 
     def GetVValueFromScanNum(self, scanNumber):
         """This function gets the V parameter value in the scan event. The value returned is either 0, 1,
-        or 2 for parameter V off, parameter V on, or accept any parameter V, respectively."""
+        or 2 for parameter V off, parameter V on, or accept any parameter V, respectively.
+        """
         pnXValue = c_long()
-        error = self.source.GetVValueFromScanNum(c_long(scanNumber), byref(pnXValue))
+        error = self.source.GetVValueFromScanNum(
+            c_long(scanNumber), byref(pnXValue)
+        )
         if error:
             raise IOError("GetVValueFromScanNum error :", error)
         return pnXValue.value
 
     def GetMSXMultiplexValueFromScanNum(self, scanNumber):
         """This function gets the msx-multiplex parameter value in the scan event. The value returned is
-        either 0, 1, or 2 for multiplex off, multiplex on, or accept any multiplex, respectively."""
+        either 0, 1, or 2 for multiplex off, multiplex on, or accept any multiplex, respectively.
+        """
         pnMSXValue = c_long()
         error = self.source.GetMSXMultiplexValueFromScanNum(
             c_long(scanNumber), byref(pnMSXValue)
@@ -851,10 +888,14 @@ class ThermoRawfile(object):
             c_long(scanNumber), byref(result)
         )
         if error:
-            raise IOError("GetNumberOfSourceFragmentsFromScanNum error :", error)
+            raise IOError(
+                "GetNumberOfSourceFragmentsFromScanNum error :", error
+            )
         return result.value
 
-    def GetSourceFragmentValueFromScanNum(self, scanNumber, sourceFragmentIndex):
+    def GetSourceFragmentValueFromScanNum(
+        self, scanNumber, sourceFragmentIndex
+    ):
         """This function retrieves information about one of the source fragment values of a scan. It is
         also the same value as the compensation voltage. You can find the count of source fragments
         for the scan by calling GetNumberOfSourceFragmentsFromScanNum ()."""
@@ -871,12 +912,15 @@ class ThermoRawfile(object):
     def GetNumberOfSourceFragmentationMassRangesFromScanNum(self, scanNumber):
         """This function gets the number of source fragmentation mass ranges in the scan."""
         result = c_long()
-        error = self.source.GetNumberOfSourceFragmentationMassRangesFromScanNum(
-            c_long(scanNumber), byref(result)
+        error = (
+            self.source.GetNumberOfSourceFragmentationMassRangesFromScanNum(
+                c_long(scanNumber), byref(result)
+            )
         )
         if error:
             raise IOError(
-                "GetNumberOfSourceFragmentationMassRangesFromScanNum error :", error
+                "GetNumberOfSourceFragmentationMassRangesFromScanNum error :",
+                error,
             )
         return result.value
 
@@ -895,12 +939,18 @@ class ThermoRawfile(object):
             byref(pdSourceFragmentRangeHighValue),
         )
         if error:
-            raise IOError("GetSourceFragmentationMassRangeFromScanNum error :", error)
-        return pdSourceFragmentRangeLowValue.value, pdSourceFragmentRangeHighValue.value
+            raise IOError(
+                "GetSourceFragmentationMassRangeFromScanNum error :", error
+            )
+        return (
+            pdSourceFragmentRangeLowValue.value,
+            pdSourceFragmentRangeHighValue.value,
+        )
 
     def GetIsolationWidthForScanNum(self, scanNumber, MSOrder):
         """This function returns the isolation width for the scan specified by scanNumber and the
-        transition specified by MSOrder from the scan event structure in the raw file."""
+        transition specified by MSOrder from the scan event structure in the raw file.
+        """
         result = c_double()
         error = self.source.GetIsolationWidthForScanNum(
             c_long(scanNumber), c_long(MSOrder), byref(result)
@@ -911,7 +961,8 @@ class ThermoRawfile(object):
 
     def GetCollisionEnergyForScanNum(self, scanNumber, MSOrder):
         """This function returns the collision energy for the scan specified by scanNumber and the
-        transition specified by MSOrder from the scan event structure in the raw file."""
+        transition specified by MSOrder from the scan event structure in the raw file.
+        """
         result = c_double()
         error = self.source.GetCollisionEnergyForScanNum(
             c_long(scanNumber), c_long(MSOrder), byref(result)
@@ -977,7 +1028,9 @@ class ThermoRawfile(object):
         ETD  2
         HCD  3"""
         result = c_long()
-        error = self.source.GetDetectorTypeForScanNum(c_long(scanNumber), byref(result))
+        error = self.source.GetDetectorTypeForScanNum(
+            c_long(scanNumber), byref(result)
+        )
         if error:
             raise IOError("GetDetectorTypeForScanNum error :", error)
         return ThermoRawfile.detectorType[result.value]
@@ -991,7 +1044,9 @@ class ThermoRawfile(object):
         ScanTypeZoom  2
         ScanTypeSRM  3"""
         result = c_long()
-        error = self.source.GetScanTypeForScanNum(c_long(scanNumber), byref(result))
+        error = self.source.GetScanTypeForScanNum(
+            c_long(scanNumber), byref(result)
+        )
         if error:
             raise IOError("GetScanTypeForScanNum error :", error)
         return ThermoRawfile.scanType[result.value]
@@ -1003,10 +1058,14 @@ class ThermoRawfile(object):
             c_long(scanNumber), byref(result)
         )
         if error:
-            raise IOError("GetNumberOfMassCalibratorsFromScanNum error :", error)
+            raise IOError(
+                "GetNumberOfMassCalibratorsFromScanNum error :", error
+            )
         return result.value
 
-    def GetMassCalibrationValueFromScanNum(self, scanNumber, massCalibrationIndex):
+    def GetMassCalibrationValueFromScanNum(
+        self, scanNumber, massCalibrationIndex
+    ):
         """This function retrieves information about one of the mass calibration data values of a scan.
         You can find the count of mass calibrations for the scan by calling
         GetNumberOfMassCalibratorsFromScanNum()."""
@@ -1036,7 +1095,8 @@ class ThermoRawfile(object):
         returned.
 
         The format of the mass list returned is an array of double-precision
-        values in the order of intensity, mass, accuracy in MMU, accuracy in PPM, and resolution."""
+        values in the order of intensity, mass, accuracy in MMU, accuracy in PPM, and resolution.
+        """
         pnArraySize = c_long()
         result = comtypes.automation.VARIANT()
         error = self.source.GetMassPrecisionEstimate(
@@ -1133,7 +1193,8 @@ class ThermoRawfile(object):
         """Returns the closest matching scan number that corresponds to RT for the current controller.
         For non-scanning devices, such as UV, the closest reading number is returned. The value of
         RT must be within the acquisition run time for the current controller. The acquisition run
-        time for the current controller may be obtained by calling GetStartTime and GetEndTime."""
+        time for the current controller may be obtained by calling GetStartTime and GetEndTime.
+        """
         pnScanNumber = c_long()
         error = self.source.ScanNumFromRT(c_double(RT), byref(pnScanNumber))
         if error:
@@ -1151,7 +1212,9 @@ class ThermoRawfile(object):
         error = self.source.RTFromScanNum(c_long(scanNumber), byref(pdRT))
         if error:
             raise IOError(
-                "scan {}, RTFromScanNum error : {}".format(scanNumber, str(error))
+                "scan {}, RTFromScanNum error : {}".format(
+                    scanNumber, str(error)
+                )
             )
         else:
             return pdRT.value
@@ -1187,7 +1250,9 @@ class ThermoRawfile(object):
         error = self.source.GetFilterForScanNum(scanNumber, byref(pbstrFilter))
         if error:
             raise IOError(
-                "scan {}, GetFilterForScanNum error : {}".format(scanNumber, str(error))
+                "scan {}, GetFilterForScanNum error : {}".format(
+                    scanNumber, str(error)
+                )
             )
         else:
             return pbstrFilter.value
@@ -1281,7 +1346,8 @@ class ThermoRawfile(object):
         The pvarPeakFlags variable is currently not used. This variable is reserved for future use to
         return flag information, such as saturation, about each mass intensity pair.
 
-        NOTE: same as GetMassListFromScanNum but is able to filter on a m/z range."""
+        NOTE: same as GetMassListFromScanNum but is able to filter on a m/z range.
+        """
         if not massRange:
             massRange = "{}-{}".format(self.LowMass, self.HighMass)
         peakList = comtypes.automation.VARIANT()
@@ -1341,7 +1407,8 @@ class ThermoRawfile(object):
         contains the mass range for each segment. The nSegments variable contains the number of
         segments.
 
-        NOTE: same as GetMassListFromScanNum but is able to filter on a m/z range."""
+        NOTE: same as GetMassListFromScanNum but is able to filter on a m/z range.
+        """
         peakList = comtypes.automation.VARIANT()
         peakFlags = comtypes.automation.VARIANT()
         pnArraySize = c_long()
@@ -1365,7 +1432,12 @@ class ThermoRawfile(object):
         )
         if error:
             raise IOError("GetSegmentedMassListFromScanNum error :", error)
-        return peakList.value, peakFlags.value, pvarSegments.value, pnNumSegments.value
+        return (
+            peakList.value,
+            peakFlags.value,
+            pvarSegments.value,
+            pnNumSegments.value,
+        )
 
     def GetAverageMassList(
         self,
@@ -1559,10 +1631,14 @@ class ThermoRawfile(object):
         """
         pvarLabels = comtypes.automation.VARIANT()
         pvarFlags = comtypes.automation.VARIANT()
-        error = self.source.GetLabelData(pvarLabels, pvarFlags, c_long(scanNumber))
+        error = self.source.GetLabelData(
+            pvarLabels, pvarFlags, c_long(scanNumber)
+        )
         if error:
             raise IOError("GetLabelData error :", error)
-        Labels = namedtuple("Labels", "mass intensity resolution baseline noise charge")
+        Labels = namedtuple(
+            "Labels", "mass intensity resolution baseline noise charge"
+        )
         Flags = namedtuple(
             "Flags", "saturated fragmented merged exception reference modified"
         )
@@ -1623,7 +1699,9 @@ class ThermoRawfile(object):
         error = self.source.GetAllMSOrderData(
             scanNumber, pvarLabels, pvarFlags, byref(pnNumberOfMSOrders)
         )
-        Labels = namedtuple("Labels", "mass intensity resolution baseline noise charge")
+        Labels = namedtuple(
+            "Labels", "mass intensity resolution baseline noise charge"
+        )
         Flags = namedtuple("Flags", "activation_type is_precursor_range_valid")
         return (
             Labels(*pvarLabels.value),
@@ -1653,12 +1731,16 @@ class ThermoRawfile(object):
             scanNumber, MSOrder, byref(pvarFullMSOrderPrecursorInfo)
         )
         if error:
-            raise IOError("GetFullMSOrderPrecursorDataFromScanNum error :", error)
+            raise IOError(
+                "GetFullMSOrderPrecursorDataFromScanNum error :", error
+            )
         FullMSOrderPrecursorData = namedtuple(
             "FullMSOrderPrecursorData",
             "precursorMass isolationWidth collisionEnergy collisionEnergyValid rangeIsValid firstPrecursorMass lastPrecursorMass isolationWidthOffset",
         )
-        return FullMSOrderPrecursorData(*pvarFullMSOrderPrecursorInfo.value[:8])
+        return FullMSOrderPrecursorData(
+            *pvarFullMSOrderPrecursorInfo.value[:8]
+        )
 
     def GetMSOrderForScanNum(self, scanNumber):
         """This function returns the MS order for the scan specified by scanNumber from the scan
@@ -1679,10 +1761,14 @@ class ThermoRawfile(object):
         MS9  9
         """
         MSOrder = c_long()
-        error = self.source.GetMSOrderForScanNum(c_long(scanNumber), byref(MSOrder))
+        error = self.source.GetMSOrderForScanNum(
+            c_long(scanNumber), byref(MSOrder)
+        )
         if error:
             raise IOError(
-                "scan {} : GetMSOrderForScanNum error : {}".format(scanNumber, error)
+                "scan {} : GetMSOrderForScanNum error : {}".format(
+                    scanNumber, error
+                )
             )
         return MSOrder.value
 
@@ -1736,7 +1822,8 @@ class ThermoRawfile(object):
             )  # SAFEARRAY of long
             nChargeState, nScanNumber = variant.value[4:6]
             PrecursorInfo = namedtuple(
-                "PrecursorInfo", "isolationMass monoIsoMass chargeState scanNumber"
+                "PrecursorInfo",
+                "isolationMass monoIsoMass chargeState scanNumber",
             )
             return PrecursorInfo(
                 isolationMass=dIsolationMass,
@@ -1749,7 +1836,8 @@ class ThermoRawfile(object):
 
     def GetPrecursorMassForScanNum(self, scanNumber, MSOrder):
         """This function returns the precursor mass for the scan specified by scanNumber and the
-        transition specified by MSOrder from the scan event structure in the RAW file."""
+        transition specified by MSOrder from the scan event structure in the RAW file.
+        """
         precursorMass = c_double()
         error = self.source.GetPrecursorMassForScanNum(
             scanNumber, MSOrder, byref(precursorMass)
@@ -1785,7 +1873,9 @@ class ThermoRawfile(object):
     # # # # # # # # # # # # # PRECURSOR END
 
     ############################################### XCALIBUR INTERFACE BEGIN
-    def GetScanHeaderInfoForScanNum(self, scanNumber):  # "View/Scan header", upper part
+    def GetScanHeaderInfoForScanNum(
+        self, scanNumber
+    ):  # "View/Scan header", upper part
         """For a given scan number, this function returns information from the scan header for the
         current controller.
 
@@ -1828,7 +1918,9 @@ class ThermoRawfile(object):
             header[k] = header[k].value
         return header
 
-    def GetTrailerExtraForScanNum(self, scanNumber):  # "View/Scan header", lower part
+    def GetTrailerExtraForScanNum(
+        self, scanNumber
+    ):  # "View/Scan header", lower part
         """Returns the recorded trailer extra entry labels and values for the current controller. This
         function is only valid for MS controllers.
 
@@ -1843,7 +1935,10 @@ class ThermoRawfile(object):
         if error:
             raise IOError("GetTrailerExtraForScanNum error :", error)
         return OrderedDict(
-            zip(map(lambda x: str(x[:-1]), labels.value), map(_to_float, values.value))
+            zip(
+                map(lambda x: str(x[:-1]), labels.value),
+                map(_to_float, values.value),
+            )
         )
 
     def GetNumTuneData(self):
@@ -1885,14 +1980,17 @@ class ThermoRawfile(object):
     def GetNumInstMethods(self):
         """Returns the number of instrument methods contained in the raw file. Each instrument used
         in the acquisition with a method that was created in Instrument Setup (for example,
-        autosampler, LC, MS, PDA) has its instrument method contained in the raw file."""
+        autosampler, LC, MS, PDA) has its instrument method contained in the raw file.
+        """
         pnNumInstMethods = c_long()
         error = self.source.GetNumInstMethods(byref(pnNumInstMethods))
         if error:
             raise IOError("GetNumInstMethods error : ", error)
         return pnNumInstMethods.value
 
-    def GetInstMethod(self, instMethodItem=0):  # "View/Report/Instrument Method"
+    def GetInstMethod(
+        self, instMethodItem=0
+    ):  # "View/Report/Instrument Method"
         """Returns the channel label, if available, at the specified index for the current controller. This
         field is only relevant to channel devices such as UV detectors, A/D cards, and Analog inputs.
         Channel labels indices are numbered starting at 0.
@@ -1906,7 +2004,9 @@ class ThermoRawfile(object):
         NOTE : XCALIBUR INTERFACE "View/Report/Instrument Method"
         """
         strInstMethod = comtypes.automation.BSTR()
-        error = self.source.GetInstMethod(c_long(instMethodItem), byref(strInstMethod))
+        error = self.source.GetInstMethod(
+            c_long(instMethodItem), byref(strInstMethod)
+        )
         if error:
             raise IOError("GetInstMethod error :", error)
         if sys.version_info.major == 2:
@@ -1919,7 +2019,9 @@ class ThermoRawfile(object):
         controller."""
         pnArraySize = c_long(0)
         pvarNames = comtypes.automation.VARIANT()
-        error = self.source.GetInstMethodNames(byref(pnArraySize), byref(pvarNames))
+        error = self.source.GetInstMethodNames(
+            byref(pnArraySize), byref(pvarNames)
+        )
         if error:
             raise IOError("GetInstMethodNames error :", error)
         return pvarNames.value
@@ -2282,7 +2384,10 @@ class ThermoRawfile(object):
         return (
             pdStatusLogRT.value,
             list(
-                zip([label.rstrip(":") for label in pvarLabels.value], pvarValues.value)
+                zip(
+                    [label.rstrip(":") for label in pvarLabels.value],
+                    pvarValues.value,
+                )
             ),
         )
 
@@ -2294,7 +2399,10 @@ class ThermoRawfile(object):
         pvarValues = comtypes.automation.VARIANT()
         pnArraySize = c_long()
         error = self.source.GetStatusLogForPos(
-            c_long(position), byref(pvarRT), byref(pvarValues), byref(pnArraySize)
+            c_long(position),
+            byref(pvarRT),
+            byref(pvarValues),
+            byref(pnArraySize),
         )
         if error:
             raise IOError("GetStatusLogForPos error :", error)
@@ -2503,19 +2611,27 @@ class ThermoRawfile(object):
     def _GetStatusLogForRT(self):  # REDUNDANT with GetStatusLogForScanNum
         pass
 
-    def _GetStatusLogLabelsForScanNum(self):  # REDUNDANT with GetStatusLogForScanNum
+    def _GetStatusLogLabelsForScanNum(
+        self,
+    ):  # REDUNDANT with GetStatusLogForScanNum
         pass
 
-    def _GetStatusLogLabelsForRT(self):  # REDUNDANT with GetStatusLogForScanNum
+    def _GetStatusLogLabelsForRT(
+        self,
+    ):  # REDUNDANT with GetStatusLogForScanNum
         pass
 
-    def _GetStatusLogValueForScanNum(self):  # REDUNDANT with GetStatusLogForScanNum
+    def _GetStatusLogValueForScanNum(
+        self,
+    ):  # REDUNDANT with GetStatusLogForScanNum
         pass
 
     def _GetStatusLogValueForRT(self):  # REDUNDANT with GetStatusLogForScanNum
         pass
 
-    def _GetTrailerExtraForRT(self):  # REDUNDANT with GetTrailerExtraForScanNum
+    def _GetTrailerExtraForRT(
+        self,
+    ):  # REDUNDANT with GetTrailerExtraForScanNum
         pass
 
     def _GetTrailerExtraLabelsForScanNum(
@@ -2523,7 +2639,9 @@ class ThermoRawfile(object):
     ):  # REDUNDANT with GetTrailerExtraForScanNum
         pass
 
-    def _GetTrailerExtraLabelsForRT(self):  # REDUNDANT with GetTrailerExtraForScanNum
+    def _GetTrailerExtraLabelsForRT(
+        self,
+    ):  # REDUNDANT with GetTrailerExtraForScanNum
         pass
 
     def _GetTrailerExtraValueForScanNum(
@@ -2531,7 +2649,9 @@ class ThermoRawfile(object):
     ):  # REDUNDANT with GetTrailerExtraForScanNum
         pass
 
-    def _GetTrailerExtraValueForRT(self):  # REDUNDANT with GetTrailerExtraForScanNum
+    def _GetTrailerExtraValueForRT(
+        self,
+    ):  # REDUNDANT with GetTrailerExtraForScanNum
         pass
 
     def _GetTuneDataValue(self):  # REDUNDANT with GetTuneData
@@ -2545,7 +2665,9 @@ class ThermoRawfile(object):
     ):  # REDUNDANT with GetMassListRangeFromScanNum
         pass
 
-    def _GetMassListRangeFromRT(self):  # REDUNDANT with GetMassListRangeFromScanNum
+    def _GetMassListRangeFromRT(
+        self,
+    ):  # REDUNDANT with GetMassListRangeFromScanNum
         pass
 
     def _GetNextMassListRangeFromScanNum(
@@ -2556,10 +2678,14 @@ class ThermoRawfile(object):
     def _GetMassListFromRT(self):  # REDUNDANT with GetMassListFromScanNum
         pass
 
-    def _GetNextMassListFromScanNum(self):  # REDUNDANT with GetMassListFromScanNum
+    def _GetNextMassListFromScanNum(
+        self,
+    ):  # REDUNDANT with GetMassListFromScanNum
         pass
 
-    def _GetPrevMassListFromScanNum(self):  # REDUNDANT with GetMassListFromScanNum
+    def _GetPrevMassListFromScanNum(
+        self,
+    ):  # REDUNDANT with GetMassListFromScanNum
         pass
 
     def _GetFilterForScanRT(self):  # REDUNDANT with GetFilterForScanNum
@@ -2594,12 +2720,30 @@ if __name__ == "__main__":
     print("GetWarningMessage", rawfile.GetWarningMessage())
     print("RefreshViewOfFile", rawfile.RefreshViewOfFile())
     print("GetNumberOfControllers", rawfile.GetNumberOfControllers())
-    print("GetNumberOfControllersOfType(-1)", rawfile.GetNumberOfControllersOfType(-1))
-    print("GetNumberOfControllersOfType(0)", rawfile.GetNumberOfControllersOfType(0))
-    print("GetNumberOfControllersOfType(1)", rawfile.GetNumberOfControllersOfType(1))
-    print("GetNumberOfControllersOfType(2)", rawfile.GetNumberOfControllersOfType(2))
-    print("GetNumberOfControllersOfType(3)", rawfile.GetNumberOfControllersOfType(3))
-    print("GetNumberOfControllersOfType(4)", rawfile.GetNumberOfControllersOfType(4))
+    print(
+        "GetNumberOfControllersOfType(-1)",
+        rawfile.GetNumberOfControllersOfType(-1),
+    )
+    print(
+        "GetNumberOfControllersOfType(0)",
+        rawfile.GetNumberOfControllersOfType(0),
+    )
+    print(
+        "GetNumberOfControllersOfType(1)",
+        rawfile.GetNumberOfControllersOfType(1),
+    )
+    print(
+        "GetNumberOfControllersOfType(2)",
+        rawfile.GetNumberOfControllersOfType(2),
+    )
+    print(
+        "GetNumberOfControllersOfType(3)",
+        rawfile.GetNumberOfControllersOfType(3),
+    )
+    print(
+        "GetNumberOfControllersOfType(4)",
+        rawfile.GetNumberOfControllersOfType(4),
+    )
     print("GetControllerType(0)", rawfile.GetControllerType(0))
     # print( 'GetControllerType(1)',  rawfile.GetControllerType(1) )
 
@@ -2628,12 +2772,16 @@ if __name__ == "__main__":
 
     print(
         "rawfile.SetMassTolerance(userDefined=True, massTolerance=555.0, units=2)",
-        rawfile.SetMassTolerance(userDefined=True, massTolerance=555.0, units=2),
+        rawfile.SetMassTolerance(
+            userDefined=True, massTolerance=555.0, units=2
+        ),
     )
     print("GetMassTolerance()", rawfile.GetMassTolerance())
     print(
         "rawfile.SetMassTolerance(userDefined=False, massTolerance=500.0, units=0)",
-        rawfile.SetMassTolerance(userDefined=False, massTolerance=500.0, units=0),
+        rawfile.SetMassTolerance(
+            userDefined=False, massTolerance=500.0, units=0
+        ),
     )
     print("GetMassResolution", rawfile.GetMassResolution())
     print("GetNumTrailerExtra", rawfile.GetNumTrailerExtra())
@@ -2664,15 +2812,21 @@ if __name__ == "__main__":
     print("############################################## INSTRUMENT END")
 
     scanNumber = 1
-    print("############################################## XCALIBUR INTERFACE BEGIN")
     print(
-        "GetScanHeaderInfoForScanNum", rawfile.GetScanHeaderInfoForScanNum(scanNumber)
+        "############################################## XCALIBUR INTERFACE BEGIN"
+    )
+    print(
+        "GetScanHeaderInfoForScanNum",
+        rawfile.GetScanHeaderInfoForScanNum(scanNumber),
     )  # "View/Scan header", upper part
     print(
-        "GetTrailerExtraForScanNum", rawfile.GetTrailerExtraForScanNum(scanNumber)
+        "GetTrailerExtraForScanNum",
+        rawfile.GetTrailerExtraForScanNum(scanNumber),
     )  # "View/Scan header", lower part
     print("GetNumTuneData", rawfile.GetNumTuneData())
-    print("GetTuneData(0)", rawfile.GetTuneData(0))  # "View/Report/Tune Method"
+    print(
+        "GetTuneData(0)", rawfile.GetTuneData(0)
+    )  # "View/Report/Tune Method"
     print("GetNumInstMethods", rawfile.GetNumInstMethods())
     print("GetInstMethodNames", rawfile.GetInstMethodNames())
     for i in range(rawfile.GetNumInstMethods()):
@@ -2734,8 +2888,14 @@ if __name__ == "__main__":
     print("GetNumStatusLog", rawfile.GetNumStatusLog())
     print("GetStatusLogForScanNum")  # "View/Report/Status Log"
     pprint(rawfile.GetStatusLogForScanNum(scanNumber))
-    print("GetStatusLogForPos(position=0)", rawfile.GetStatusLogForPos(position=0))
-    print("GetStatusLogForPos(position=1)", rawfile.GetStatusLogForPos(position=1))
+    print(
+        "GetStatusLogForPos(position=0)",
+        rawfile.GetStatusLogForPos(position=0),
+    )
+    print(
+        "GetStatusLogForPos(position=1)",
+        rawfile.GetStatusLogForPos(position=1),
+    )
     print("GetStatusLogPlottableIndex()", rawfile.GetStatusLogPlottableIndex())
 
     print("GetNumErrorLog", rawfile.GetNumErrorLog())
@@ -2743,29 +2903,41 @@ if __name__ == "__main__":
         print(
             "GetErrorLogItem", i, rawfile.GetErrorLogItem(i)
         )  # "View/Report/Error Log"
-    print("############################################## XCALIBUR INTERFACE END")
+    print(
+        "############################################## XCALIBUR INTERFACE END"
+    )
 
     print("GetMassListFromScanNum", rawfile.GetMassListFromScanNum(scanNumber))
     print(
-        "GetMassListRangeFromScanNum", rawfile.GetMassListRangeFromScanNum(scanNumber)
+        "GetMassListRangeFromScanNum",
+        rawfile.GetMassListRangeFromScanNum(scanNumber),
     )
     print(
         "GetSegmentedMassListFromScanNum",
         rawfile.GetSegmentedMassListFromScanNum(scanNumber),
     )
-    print("GetAverageMassList", rawfile.GetAverageMassList(scanNumber, scanNumber + 10))
+    print(
+        "GetAverageMassList",
+        rawfile.GetAverageMassList(scanNumber, scanNumber + 10),
+    )
     print(
         "GetAveragedMassSpectrum",
-        rawfile.GetAveragedMassSpectrum([scanNumber, scanNumber + 5, scanNumber + 10]),
+        rawfile.GetAveragedMassSpectrum(
+            [scanNumber, scanNumber + 5, scanNumber + 10]
+        ),
     )
     print(
         "GetSummedMassSpectrum",
-        rawfile.GetSummedMassSpectrum([scanNumber, scanNumber + 5, scanNumber + 10]),
+        rawfile.GetSummedMassSpectrum(
+            [scanNumber, scanNumber + 5, scanNumber + 10]
+        ),
     )
     print("GetLabelData", rawfile.GetLabelData(scanNumber))
     print(
         "GetAveragedLabelData",
-        rawfile.GetAveragedLabelData([scanNumber, scanNumber + 5, scanNumber + 10]),
+        rawfile.GetAveragedLabelData(
+            [scanNumber, scanNumber + 5, scanNumber + 10]
+        ),
     )
     print("GetAllMSOrderData", rawfile.GetAllMSOrderData(scanNumber))
     print(
@@ -2839,7 +3011,9 @@ if __name__ == "__main__":
             file=f,
         )
 
-        for i in range(rawfile.FirstSpectrumNumber, rawfile.LastSpectrumNumber + 1):
+        for i in range(
+            rawfile.FirstSpectrumNumber, rawfile.LastSpectrumNumber + 1
+        ):
             print(
                 "\t".join(
                     map(

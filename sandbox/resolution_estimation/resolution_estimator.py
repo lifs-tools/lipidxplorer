@@ -6,7 +6,17 @@ import matplotlib.pyplot as plt
 
 def estimate(file, bins=50):
     df = pd.read_csv(file)
-    df.columns = ["scanNum", "filterLine", "retTime", "m", "i", "r", "x", "y", "z"]
+    df.columns = [
+        "scanNum",
+        "filterLine",
+        "retTime",
+        "m",
+        "i",
+        "r",
+        "x",
+        "y",
+        "z",
+    ]
     # category instead? df['filterLine'] = df['filterLine'].asType('category')
     # this works better with all th data instead of a seperate one for ms2+
 

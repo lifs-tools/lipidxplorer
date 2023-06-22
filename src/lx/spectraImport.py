@@ -63,7 +63,10 @@ def lpdxImportDEF_new(parent, options=None):
                     # scan.sampleOccThr['MS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
                     # scan.sampleOccThr['MSMS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
                     scan.sampleOccThr["MS"].append(
-                        (options["MSminOccupation"], [x.strip() for x in i.split(",")])
+                        (
+                            options["MSminOccupation"],
+                            [x.strip() for x in i.split(",")],
+                        )
                     )
                     scan.sampleOccThr["MSMS"].append(
                         (
@@ -73,7 +76,9 @@ def lpdxImportDEF_new(parent, options=None):
                     )
             else:
                 scan.sampleOccThr["MS"] = [(options["MSminOccupation"], [])]
-                scan.sampleOccThr["MSMS"] = [(options["MSMSminOccupation"], [])]
+                scan.sampleOccThr["MSMS"] = [
+                    (options["MSMSminOccupation"], [])
+                ]
     else:
         scan.sampleOccThr["MS"] = [(options["MSminOccupation"], [])]
         scan.sampleOccThr["MSMS"] = [(options["MSMSminOccupation"], [])]
@@ -127,7 +132,6 @@ def lpdxImportDEF(
     configuration=None,
     iniFile=None,
 ):
-
     options = {}
 
     if forcesinglecharge and forcesinglecharge != "0":
@@ -224,7 +228,9 @@ def lpdxImportDEF(
 
     if MStolerance and MStolerance != "0":
         if MStoleranceType and MStoleranceType != "":
-            options["MStolerance"] = TypeTolerance(MStoleranceType, float(MStolerance))
+            options["MStolerance"] = TypeTolerance(
+                MStoleranceType, float(MStolerance)
+            )
             options["MStoleranceType"] = MStoleranceType
         else:
             options["MStolerance"] = TypeTolerance("ppm", float(MStolerance))
@@ -238,7 +244,9 @@ def lpdxImportDEF(
             )
             options["MSMStoleranceType"] = MSMStoleranceType
         else:
-            options["MSMStolerance"] = TypeTolerance("ppm", float(MSMStolerance))
+            options["MSMStolerance"] = TypeTolerance(
+                "ppm", float(MSMStolerance)
+            )
     else:
         options["MSMStolerance"] = None
 
@@ -270,17 +278,25 @@ def lpdxImportDEF(
 
     if MSminOccupation and MSminOccupation != "0":
         options["MSminOccupation"] = float(MSminOccupation)
-        if (0.0 > options["MSminOccupation"]) or (1.0 < options["MSminOccupation"]):
+        if (0.0 > options["MSminOccupation"]) or (
+            1.0 < options["MSminOccupation"]
+        ):
             # log.critical("MSminOccupation should be a value between 0 and 1")
-            raise LipidXException("MSminOccupation should be a value between 0 and 1")
+            raise LipidXException(
+                "MSminOccupation should be a value between 0 and 1"
+            )
     else:
         options["MSminOccupation"] = 0.0
 
     if MSMSminOccupation and MSMSminOccupation != "0":
         options["MSMSminOccupation"] = float(MSMSminOccupation)
-        if (0.0 > options["MSMSminOccupation"]) or (1.0 < options["MSMSminOccupation"]):
+        if (0.0 > options["MSMSminOccupation"]) or (
+            1.0 < options["MSMSminOccupation"]
+        ):
             # log.critical("MSMSminOccupation should be a value between 0 and 1")
-            raise LipidXException("MSMSminOccupation should be a value between 0 and 1")
+            raise LipidXException(
+                "MSMSminOccupation should be a value between 0 and 1"
+            )
     else:
         options["MSMSminOccupation"] = 0.0
 
@@ -356,7 +372,10 @@ def lpdxImportDEF(
                     # scan.sampleOccThr['MS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
                     # scan.sampleOccThr['MSMS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
                     scan.sampleOccThr["MS"].append(
-                        (options["MSminOccupation"], [x.strip() for x in i.split(",")])
+                        (
+                            options["MSminOccupation"],
+                            [x.strip() for x in i.split(",")],
+                        )
                     )
                     scan.sampleOccThr["MSMS"].append(
                         (
@@ -366,7 +385,9 @@ def lpdxImportDEF(
                     )
             else:
                 scan.sampleOccThr["MS"] = [(options["MSminOccupation"], [])]
-                scan.sampleOccThr["MSMS"] = [(options["MSMSminOccupation"], [])]
+                scan.sampleOccThr["MSMS"] = [
+                    (options["MSMSminOccupation"], [])
+                ]
     else:
         scan.sampleOccThr["MS"] = [(options["MSminOccupation"], [])]
         scan.sampleOccThr["MSMS"] = [(options["MSMSminOccupation"], [])]
@@ -375,11 +396,19 @@ def lpdxImportDEF(
 
     scan.listFiles = listFiles
 
-    return (options, scan, importDir, output, parent, listFiles, isTaken, isGroup)
+    return (
+        options,
+        scan,
+        importDir,
+        output,
+        parent,
+        listFiles,
+        isTaken,
+        isGroup,
+    )
 
 
 def getInputFiles(importDir, options):
-
     if not os.path.exists(importDir):
         raise LipidXException("Sample data '%s' folder not found." % importDir)
 
@@ -392,12 +421,10 @@ def getInputFiles(importDir, options):
     isTaken = False
 
     for root, dirs, files in os.walk(importDir):
-
         # import XML without having groups
         if not (re.match("(^\.\w+).*|.*\.svn.*", root)) and options[
             "spectraFormat"
         ] in ["mzML", "mzXML", "raw", "rawA"]:
-
             if options["spectraFormat"] == "rawA":
                 ext = "raw"
             else:
@@ -438,7 +465,8 @@ def getInputFiles(importDir, options):
 
     if listFiles == []:
         raise LipidXException(
-            "No spectra files with the format *.%s found." % options["spectraFormat"]
+            "No spectra files with the format *.%s found."
+            % options["spectraFormat"]
         )
 
     return (listFiles, isTaken, isGroup)
@@ -458,9 +486,8 @@ def doImport(
     scanAvg,
     importMSMS=True,
     saveScan=True,
-    ** kwargs
+    **kwargs,
 ):
-
     # some statistics
     nb_ms_scans = []
     nb_ms_peaks = []
@@ -481,13 +508,12 @@ def doImport(
     # MSmass and MSMS classes taken from mzXML files.
     # After loading the cleaning algorithm is applied.
     peaks_df_list = None
-    if kwargs.get('make_intermediate_output', False):
+    if kwargs.get("make_intermediate_output", False):
         peaks_df_list = []
     if listFiles != []:
         listFiles.sort()
 
         for i in listFiles:
-
             if (
                 options["spectraFormat"] == "mzXML"
             ):  # old mzXML import. I don't wanna touch this
@@ -505,8 +531,9 @@ def doImport(
                     MSMSthresholdType=scan.options["MSMSthresholdType"],
                 )
 
-            elif options["spectraFormat"] == "mzML":  # the new import routine, :-)
-
+            elif (
+                options["spectraFormat"] == "mzML"
+            ):  # the new import routine, :-)
                 ret = add_Sample(
                     scan,
                     i[0],
@@ -536,14 +563,16 @@ def doImport(
                 print(f" File {i[0]} contains 0 peaks after alignment")
 
             if nb_ms_peaks[-1] == 0:
-                raise ValueError(f" File {i[0]} contains 0 MS1 peaks after alignment")
+                raise ValueError(
+                    f" File {i[0]} contains 0 MS1 peaks after alignment"
+                )
             elif nb_msms_peaks[-1] == 0:
                 print(f" File {i[0]} contains 0 MS2 peaks after alignment")
 
     import pandas as pd
 
     # intermediate output
-    if kwargs.get('make_intermediate_output', False):
+    if kwargs.get("make_intermediate_output", False):
         df = pd.concat(peaks_df_list)
 
         df.to_pickle("lx1_bins_v1.pkl")
@@ -568,8 +597,12 @@ def doImport(
         "precursorMassShiftOrbi"
     ]:
         if scan.options["precursorMassShiftOrbi"] != 0:
-            print("Applying precursor mass shift for Scanline error on Orbitrap data.")
-            scan.shiftPrecursorsInRawFilterLine(scan.options["precursorMassShiftOrbi"])
+            print(
+                "Applying precursor mass shift for Scanline error on Orbitrap data."
+            )
+            scan.shiftPrecursorsInRawFilterLine(
+                scan.options["precursorMassShiftOrbi"]
+            )
 
     scan.listSamples.sort()
 
@@ -712,7 +745,9 @@ def alignment_ranking(listSurveyEntry, count=10):
     vals = (idx, scan_ratio, non0_avg_rel_i, non0_avg_abs_i)
     vals = list(zip(*vals))
     vals = sorted(vals, key=lambda x: x[1] + x[2], reverse=True)
-    nt = namedtuple("rank_data", "idx scan_ratio non0_avg_rel_i non0_avg_abs_i")
+    nt = namedtuple(
+        "rank_data", "idx scan_ratio non0_avg_rel_i non0_avg_abs_i"
+    )
     vals = [nt(*v) for v in vals]
     return vals
 
@@ -807,14 +842,12 @@ def doImport_alt(
                     index += 1
 
         for chunk in listOfListFiles:
-
             scan = MasterScan(scan_original.options)
             scan.options = scan_original.options
             # listSamples = []
             # dictSamples = {}
 
             for i in chunk:
-
                 if (
                     options["spectraFormat"] == "mzXML"
                 ):  # old mzXML import. I don't wanna touch this
@@ -867,16 +900,16 @@ def doImport_alt(
             # 	print "ML> spectra for one chunk loaded:", memory_logging.pythonMemory()
             # 	print "MLh> ", hpy().heap()
 
-            if (not scan.options.isEmpty("precursorMassShift")) and scan.options[
-                "precursorMassShift"
-            ]:
+            if (
+                not scan.options.isEmpty("precursorMassShift")
+            ) and scan.options["precursorMassShift"]:
                 if scan.options["precursorMassShift"] != 0:
                     print("Applying precursor mass shift")
                     scan.shiftPrecursors(scan.options["precursorMassShift"])
 
-            if (not scan.options.isEmpty("precursorMassShiftOrbi")) and scan.options[
-                "precursorMassShiftOrbi"
-            ]:
+            if (
+                not scan.options.isEmpty("precursorMassShiftOrbi")
+            ) and scan.options["precursorMassShiftOrbi"]:
                 if scan.options["precursorMassShiftOrbi"] != 0:
                     print(
                         "Applying precursor mass shift for Scanline error on Orbitrap data."
@@ -894,14 +927,20 @@ def doImport_alt(
 
             # recalibrate MS spectra
             if not scan.options.isEmpty("MScalibration"):
-                lRecalTable = recalibrateMS(scan, scan.options["MScalibration"])
+                lRecalTable = recalibrateMS(
+                    scan, scan.options["MScalibration"]
+                )
             if not scan.options.isEmpty("MSMScalibration") and (
                 scan.options["MSMScalibration"]
             ):
-                lRecalTable = recalibrateMSMS(scan, scan.options["MSMScalibration"])
+                lRecalTable = recalibrateMSMS(
+                    scan, scan.options["MSMScalibration"]
+                )
 
             calibrationtime = time.clock() - starttime - loadingtime
-            reportout("%.2f sec. for calibrating the spectra" % calibrationtime)
+            reportout(
+                "%.2f sec. for calibrating the spectra" % calibrationtime
+            )
 
             # if Debug("logMemory"):
             # 	print "ML> before alignment:", memory_logging.pythonMemory()
@@ -972,7 +1011,10 @@ def doImport_alt(
     ### align the chunks ###
 
     if Debug("logMemory"):
-        print("ML> before alignment of the chunks:", memory_logging.pythonMemory())
+        print(
+            "ML> before alignment of the chunks:",
+            memory_logging.pythonMemory(),
+        )
         print("MLh> before alignment of the chunks:", hpy().heap())
 
     # generate a list of specEntry elements for the alignment of the SurveyEntries
@@ -1014,7 +1056,6 @@ def doImport_alt(
     # mk the new SurveyEntries
     listSurveyEntry = []
     for cl in listClusters:
-
         # collect the base peaks
         dictBasePeakIntensity = {}
 
@@ -1040,7 +1081,9 @@ def doImport_alt(
                     ):
                         if key not in dictIntensity:
                             dictIntensity[key] = (
-                                cl[chunk].content["surveyEntry"].dictIntensity[key]
+                                cl[chunk]
+                                .content["surveyEntry"]
+                                .dictIntensity[key]
                             )
                             dictScans[key] = (
                                 cl[chunk].content["surveyEntry"].dictScans[key]
@@ -1053,7 +1096,9 @@ def doImport_alt(
                             peaks += cl[chunk].content["surveyEntry"].peaks
 
                         else:
-                            raise LipidXException("Something wrong: samples overlap")
+                            raise LipidXException(
+                                "Something wrong: samples overlap"
+                            )
                     count += 1
                     avgMass += cl[chunk].mass
         avgMass /= count
@@ -1076,7 +1121,6 @@ def doImport_alt(
             threshold=scan_original.options["MSthreshold"],
             threshold_type=scan_original.options["MSthresholdType"],
         ):
-
             listSurveyEntry.append(
                 SurveyEntry(
                     msmass=avgMass,
@@ -1147,7 +1191,9 @@ def doImport_alt(
     print("Save output to %s." % output)
     saveSC(scan_original, output)
 
-    reportout("%.2f sec. for the whole import process" % (time.clock() - starttime))
+    reportout(
+        "%.2f sec. for the whole import process" % (time.clock() - starttime)
+    )
     reportout("\n")
 
     if parent:

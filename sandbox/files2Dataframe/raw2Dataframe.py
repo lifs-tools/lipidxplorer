@@ -23,7 +23,13 @@ def ThermoRawfile2DataFrames(file_path, head=None):
 
     MSrawscansDF = pd.DataFrame(
         index=np.arange(start, end + 1),
-        columns=["scanNum", "filterLine", "retTime", "chargeState", "isolationMass"],
+        columns=[
+            "scanNum",
+            "filterLine",
+            "retTime",
+            "chargeState",
+            "isolationMass",
+        ],
     )
     peak_datasDF_list = []
     startTime = time.time()
@@ -37,10 +43,15 @@ def ThermoRawfile2DataFrames(file_path, head=None):
             )
 
         retTime = rawfile.RTFromScanNum(scanNum) * 60
-        chargeState = rawfile.GetTrailerExtraForScanNum(scanNum)["Charge State"]
+        chargeState = rawfile.GetTrailerExtraForScanNum(scanNum)[
+            "Charge State"
+        ]
         isolationMass = (
-            rawfile.GetFullMSOrderPrecursorDataFromScanNum(scanNum,0).precursorMass
-            if rawfile.GetFullMSOrderPrecursorDataFromScanNum(scanNum,0) is not None
+            rawfile.GetFullMSOrderPrecursorDataFromScanNum(
+                scanNum, 0
+            ).precursorMass
+            if rawfile.GetFullMSOrderPrecursorDataFromScanNum(scanNum, 0)
+            is not None
             else 0.0
         )  # or monoIsoMass
         row = [scanNum, filterLine, retTime, chargeState, isolationMass]
@@ -64,7 +75,9 @@ def ThermoRawfile2DataFrames(file_path, head=None):
             peak_datasDF["scanNum"] = scanNum
             peak_datasDF.set_index("scanNum", inplace=True)
         peak_datasDF_list.append(peak_datasDF)
-    MSPeakDatasDF = pd.concat(peak_datasDF_list)  # concat is expensive so just once
+    MSPeakDatasDF = pd.concat(
+        peak_datasDF_list
+    )  # concat is expensive so just once
     log.info("File Read time %f s", time.time() - startTime)
     log.info("Scan Count is %d", len(MSrawscansDF))
 

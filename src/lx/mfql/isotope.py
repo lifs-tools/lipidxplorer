@@ -30,7 +30,14 @@ def next2pow(x):
 
 # def isotope(elemC, elemH, elemO, elemN, elemS, elemP, WINDOW_SIZE = 500, RESOLUTION = 0.5):
 def isotope(
-    elemC, elemH, elemO, elemN, elemS, elemP, WINDOW_SIZE=100, RESOLUTION=0.00001
+    elemC,
+    elemH,
+    elemO,
+    elemN,
+    elemS,
+    elemP,
+    WINDOW_SIZE=100,
+    RESOLUTION=0.00001,
 ):
     elemC = int(elemC)  # removes fractions, fractions make for faulty results
     elemH = int(elemH)
@@ -51,7 +58,9 @@ def isotope(
     elif RESOLUTION > 0.5:  # maximal mass step allowed
         RESOLUTION = 0.5
 
-    R = 0.00001 / RESOLUTION  #  % R is used to scale nuclide masses (see below)
+    R = (
+        0.00001 / RESOLUTION
+    )  #  % R is used to scale nuclide masses (see below)
 
     WINDOW_SIZE = WINDOW_SIZE / RESOLUTION
     # convert window size to new mass units
@@ -82,7 +91,7 @@ def isotope(
         elemS = elemS[0]
     M = N.array(
         [elemH, elemC, elemN, elemO, elemP, elemS, 0]
-    )  #% empiric formula, e.g. bovine insulin
+    )  # % empiric formula, e.g. bovine insulin
     # M=N.array([elemH,elemC,elemN,elemO,elemS,0]) #% empiric formula, e.g. bovine insulin
 
     # isotopic abundances stored in matrix A (one row for each element)
@@ -122,14 +131,14 @@ def isotope(
         * M
     )  #  % (Virtual) monoisotopic mass in new units
     Mmi = Mmi.sum()
-    #% mass shift so Mmi is in left limit of window:
+    # % mass shift so Mmi is in left limit of window:
     # print "Mmi",Mmi
     # print "Window", WINDOW_SIZE
     FOLDED = (
         N.floor(Mmi / (WINDOW_SIZE - 1)) + 1
     )  #  % folded FOLDED times (always one folding due to shift below)
 
-    #% shift distribution to 1 Da from lower window limit:
+    # % shift distribution to 1 Da from lower window limit:
     M[MAX_ELEMENTS - 1] = N.ceil(
         ((WINDOW_SIZE - 1) - N.mod(Mmi, WINDOW_SIZE - 1) + N.round(100000 * R))
         * RESOLUTION
@@ -146,7 +155,6 @@ def isotope(
     t_mult = 0
 
     for i in range(MAX_ELEMENTS):
-
         tA = N.zeros(WINDOW_SIZE)
         for j in range(MAX_ISOTOPES):
             if A[i][j, 0] != 0:
@@ -220,7 +228,6 @@ def isotope(
 
 
 def isotopicValues(elemC, elemH, elemO, elemN, elemS, elemP):
-
     (MA, ptA) = isotope(elemC, elemH, elemO, elemN, elemS, elemP, 20, 0.1)
 
     one = ptA[0]  # TODO this may not be always correct
@@ -230,7 +237,6 @@ def isotopicValues(elemC, elemH, elemO, elemN, elemS, elemP):
 
 
 def isotopicValuesM(elemC, elemH, elemO, elemN, elemS, elemP):
-
     (MA, ptA) = isotope(elemC, elemH, elemO, elemN, elemS, elemP, 20, 0.1)
 
     one = ptA[0]
@@ -251,7 +257,6 @@ def isotopicValuesInter(
     elemSNL,
     elemPNL,
 ):
-
     elemS = 0
     elemSNL = 0
 
@@ -262,7 +267,9 @@ def isotopicValuesInter(
         F.append(0.0)
     monoisotopic = one
 
-    (MA, ptA) = isotope(elemCNL, elemHNL, elemONL, elemNNL, elemSNL, elemPNL, 20, 0.1)
+    (MA, ptA) = isotope(
+        elemCNL, elemHNL, elemONL, elemNNL, elemSNL, elemPNL, 20, 0.1
+    )
     one = ptA[0]
     N = [x / one for x in ptA]
     while len(N) < 5:
@@ -324,7 +331,9 @@ def isotopicValuesInterM(
     while len(F) < 5:
         F.append(0.0)
 
-    (MA, ptA) = isotope(elemCNL, elemHNL, elemONL, elemNNL, elemSNL, elemPNL, 20, 0.1)
+    (MA, ptA) = isotope(
+        elemCNL, elemHNL, elemONL, elemNNL, elemSNL, elemPNL, 20, 0.1
+    )
     N = [x for x in ptA]
     while len(N) < 5:
         N.append(0.0)

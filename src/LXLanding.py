@@ -3,7 +3,7 @@ import os
 from LXLandingGUI import LandingFrame
 import wx
 
-sys.path.append(os.environ.get('SRC_DIR'))
+sys.path.append(os.environ.get("SRC_DIR"))
 
 
 class MyApp(wx.App):
@@ -11,7 +11,9 @@ class MyApp(wx.App):
         self.frame = LandingFrame(
             None, -1, "", rawimport=False, lipidxplorer=True, version="1.0.1"
         )
-        self.frame.SetIcon(wx.Icon("src/lx/stuff/lipidx_ico2.ico", wx.BITMAP_TYPE_ICO))
+        self.frame.SetIcon(
+            wx.Icon("src/lx/stuff/lipidx_ico2.ico", wx.BITMAP_TYPE_ICO)
+        )
         self.frame.Show(True)
         self.frame.Center()
         self.SetTopWindow(self.frame)
@@ -28,4 +30,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

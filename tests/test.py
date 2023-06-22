@@ -21,24 +21,39 @@ class MyFrame1(wx.Frame):
         bSizer1 = wx.BoxSizer(wx.VERTICAL)
 
         self.m_staticText1 = wx.StaticText(
-            self, wx.ID_ANY, u"enter number", wx.DefaultPosition, wx.DefaultSize, 0
+            self,
+            wx.ID_ANY,
+            "enter number",
+            wx.DefaultPosition,
+            wx.DefaultSize,
+            0,
         )
         self.m_staticText1.Wrap(-1)
 
         bSizer1.Add(self.m_staticText1, 0, wx.ALL | wx.EXPAND, 5)
 
         self.m_textCtrl1 = wx.TextCtrl(
-            self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
+            self,
+            wx.ID_ANY,
+            wx.EmptyString,
+            wx.DefaultPosition,
+            wx.DefaultSize,
+            0,
         )
         bSizer1.Add(self.m_textCtrl1, 0, wx.ALL | wx.EXPAND, 5)
 
         self.m_button1 = wx.Button(
-            self, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.DefaultSize, 0
+            self, wx.ID_ANY, "MyButton", wx.DefaultPosition, wx.DefaultSize, 0
         )
         bSizer1.Add(self.m_button1, 0, wx.ALL | wx.EXPAND, 5)
 
         self.m_textCtrl2 = wx.TextCtrl(
-            self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
+            self,
+            wx.ID_ANY,
+            wx.EmptyString,
+            wx.DefaultPosition,
+            wx.DefaultSize,
+            0,
         )
         bSizer1.Add(self.m_textCtrl2, 0, wx.ALL | wx.EXPAND, 5)
 
@@ -64,4 +79,3 @@ frame = MyFrame1(None)
 frame.Show(True)
 # start the applications
 app.MainLoop()
-

@@ -66,7 +66,6 @@ keywords.sort()
 
 
 class PythonSTC(stc.StyledTextCtrl):
-
     fold_symbols = 2
 
     def __init__(
@@ -106,7 +105,10 @@ class PythonSTC(stc.StyledTextCtrl):
         if self.fold_symbols == 0:
             # Arrow pointing right for contracted folders, arrow pointing down for expanded
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDEROPEN, stc.STC_MARK_ARROWDOWN, "black", "black"
+                stc.STC_MARKNUM_FOLDEROPEN,
+                stc.STC_MARK_ARROWDOWN,
+                "black",
+                "black",
             )
             self.MarkerDefine(
                 stc.STC_MARKNUM_FOLDER, stc.STC_MARK_ARROW, "black", "black"
@@ -115,22 +117,34 @@ class PythonSTC(stc.StyledTextCtrl):
                 stc.STC_MARKNUM_FOLDERSUB, stc.STC_MARK_EMPTY, "black", "black"
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDERTAIL, stc.STC_MARK_EMPTY, "black", "black"
+                stc.STC_MARKNUM_FOLDERTAIL,
+                stc.STC_MARK_EMPTY,
+                "black",
+                "black",
             )
             self.MarkerDefine(
                 stc.STC_MARKNUM_FOLDEREND, stc.STC_MARK_EMPTY, "white", "black"
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_EMPTY, "white", "black"
+                stc.STC_MARKNUM_FOLDEROPENMID,
+                stc.STC_MARK_EMPTY,
+                "white",
+                "black",
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_EMPTY, "white", "black"
+                stc.STC_MARKNUM_FOLDERMIDTAIL,
+                stc.STC_MARK_EMPTY,
+                "white",
+                "black",
             )
 
         elif self.fold_symbols == 1:
             # Plus for contracted folders, minus for expanded
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDEROPEN, stc.STC_MARK_MINUS, "white", "black"
+                stc.STC_MARKNUM_FOLDEROPEN,
+                stc.STC_MARK_MINUS,
+                "white",
+                "black",
             )
             self.MarkerDefine(
                 stc.STC_MARKNUM_FOLDER, stc.STC_MARK_PLUS, "white", "black"
@@ -139,28 +153,46 @@ class PythonSTC(stc.StyledTextCtrl):
                 stc.STC_MARKNUM_FOLDERSUB, stc.STC_MARK_EMPTY, "white", "black"
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDERTAIL, stc.STC_MARK_EMPTY, "white", "black"
+                stc.STC_MARKNUM_FOLDERTAIL,
+                stc.STC_MARK_EMPTY,
+                "white",
+                "black",
             )
             self.MarkerDefine(
                 stc.STC_MARKNUM_FOLDEREND, stc.STC_MARK_EMPTY, "white", "black"
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDEROPENMID, stc.STC_MARK_EMPTY, "white", "black"
+                stc.STC_MARKNUM_FOLDEROPENMID,
+                stc.STC_MARK_EMPTY,
+                "white",
+                "black",
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_EMPTY, "white", "black"
+                stc.STC_MARKNUM_FOLDERMIDTAIL,
+                stc.STC_MARK_EMPTY,
+                "white",
+                "black",
             )
 
         elif self.fold_symbols == 2:
             # Like a flattened tree control using circular headers and curved joins
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDEROPEN, stc.STC_MARK_CIRCLEMINUS, "white", "#404040"
+                stc.STC_MARKNUM_FOLDEROPEN,
+                stc.STC_MARK_CIRCLEMINUS,
+                "white",
+                "#404040",
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDER, stc.STC_MARK_CIRCLEPLUS, "white", "#404040"
+                stc.STC_MARKNUM_FOLDER,
+                stc.STC_MARK_CIRCLEPLUS,
+                "white",
+                "#404040",
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDERSUB, stc.STC_MARK_VLINE, "white", "#404040"
+                stc.STC_MARKNUM_FOLDERSUB,
+                stc.STC_MARK_VLINE,
+                "white",
+                "#404040",
             )
             self.MarkerDefine(
                 stc.STC_MARKNUM_FOLDERTAIL,
@@ -190,16 +222,28 @@ class PythonSTC(stc.StyledTextCtrl):
         elif self.fold_symbols == 3:
             # Like a flattened tree control using square headers
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDEROPEN, stc.STC_MARK_BOXMINUS, "white", "#808080"
+                stc.STC_MARKNUM_FOLDEROPEN,
+                stc.STC_MARK_BOXMINUS,
+                "white",
+                "#808080",
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDER, stc.STC_MARK_BOXPLUS, "white", "#808080"
+                stc.STC_MARKNUM_FOLDER,
+                stc.STC_MARK_BOXPLUS,
+                "white",
+                "#808080",
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDERSUB, stc.STC_MARK_VLINE, "white", "#808080"
+                stc.STC_MARKNUM_FOLDERSUB,
+                stc.STC_MARK_VLINE,
+                "white",
+                "#808080",
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDERTAIL, stc.STC_MARK_LCORNER, "white", "#808080"
+                stc.STC_MARKNUM_FOLDERTAIL,
+                stc.STC_MARK_LCORNER,
+                "white",
+                "#808080",
             )
             self.MarkerDefine(
                 stc.STC_MARKNUM_FOLDEREND,
@@ -214,7 +258,10 @@ class PythonSTC(stc.StyledTextCtrl):
                 "#808080",
             )
             self.MarkerDefine(
-                stc.STC_MARKNUM_FOLDERMIDTAIL, stc.STC_MARK_TCORNER, "white", "#808080"
+                stc.STC_MARKNUM_FOLDERMIDTAIL,
+                stc.STC_MARK_TCORNER,
+                "white",
+                "#808080",
             )
 
         self.Bind(stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
@@ -226,62 +273,90 @@ class PythonSTC(stc.StyledTextCtrl):
         # Scintilla sample property files.
 
         # Global default styles for all languages
-        self.StyleSetSpec(stc.STC_STYLE_DEFAULT, "face:%(helv)s,size:%(size)d" % faces)
+        self.StyleSetSpec(
+            stc.STC_STYLE_DEFAULT, "face:%(helv)s,size:%(size)d" % faces
+        )
         self.StyleClearAll()  # Reset all to be like the default
 
         # Global default styles for all languages
-        self.StyleSetSpec(stc.STC_STYLE_DEFAULT, "face:%(helv)s,size:%(size)d" % faces)
+        self.StyleSetSpec(
+            stc.STC_STYLE_DEFAULT, "face:%(helv)s,size:%(size)d" % faces
+        )
         self.StyleSetSpec(
             stc.STC_STYLE_LINENUMBER,
             "back:#C0C0C0,face:%(helv)s,size:%(size2)d" % faces,
         )
         self.StyleSetSpec(stc.STC_STYLE_CONTROLCHAR, "face:%(other)s" % faces)
-        self.StyleSetSpec(stc.STC_STYLE_BRACELIGHT, "fore:#FFFFFF,back:#0000FF,bold")
-        self.StyleSetSpec(stc.STC_STYLE_BRACEBAD, "fore:#000000,back:#FF0000,bold")
+        self.StyleSetSpec(
+            stc.STC_STYLE_BRACELIGHT, "fore:#FFFFFF,back:#0000FF,bold"
+        )
+        self.StyleSetSpec(
+            stc.STC_STYLE_BRACEBAD, "fore:#000000,back:#FF0000,bold"
+        )
 
         # Python styles
         # Default
         self.StyleSetSpec(
-            stc.STC_P_DEFAULT, "fore:#000000,face:%(helv)s,size:%(size)d" % faces
+            stc.STC_P_DEFAULT,
+            "fore:#000000,face:%(helv)s,size:%(size)d" % faces,
         )
         # Comments
         # self.StyleSetSpec(stc.STC_P_COMMENTLINE, "fore:#007F00,face:%(other)s,size:%(size)d" % faces)
-        self.StyleSetSpec(stc.STC_P_COMMENTLINE, "fore:#2F9F2F,size:%(size)d" % faces)
+        self.StyleSetSpec(
+            stc.STC_P_COMMENTLINE, "fore:#2F9F2F,size:%(size)d" % faces
+        )
         # Number
         # self.StyleSetSpec(stc.STC_P_NUMBER, "fore:#007F7F,size:%(size)d" % faces)
-        self.StyleSetSpec(stc.STC_P_NUMBER, "fore:#2F5F5F,size:%(size)d" % faces)
+        self.StyleSetSpec(
+            stc.STC_P_NUMBER, "fore:#2F5F5F,size:%(size)d" % faces
+        )
         # String
         self.StyleSetSpec(
-            stc.STC_P_STRING, "fore:#7F3F7F,face:%(helv)s,size:%(size)d" % faces
+            stc.STC_P_STRING,
+            "fore:#7F3F7F,face:%(helv)s,size:%(size)d" % faces,
         )
         # Single quoted string
         self.StyleSetSpec(
-            stc.STC_P_CHARACTER, "fore:#AF8F00,face:%(helv)s,size:%(size)d" % faces
+            stc.STC_P_CHARACTER,
+            "fore:#AF8F00,face:%(helv)s,size:%(size)d" % faces,
         )
         # Keyword
-        self.StyleSetSpec(stc.STC_P_WORD, "fore:#00007F,bold,size:%(size)d" % faces)
+        self.StyleSetSpec(
+            stc.STC_P_WORD, "fore:#00007F,bold,size:%(size)d" % faces
+        )
         # Triple quotes
-        self.StyleSetSpec(stc.STC_P_TRIPLE, "fore:#7F0000,size:%(size)d" % faces)
+        self.StyleSetSpec(
+            stc.STC_P_TRIPLE, "fore:#7F0000,size:%(size)d" % faces
+        )
         # Triple double quotes
-        self.StyleSetSpec(stc.STC_P_TRIPLEDOUBLE, "fore:#7F0000,size:%(size)d" % faces)
+        self.StyleSetSpec(
+            stc.STC_P_TRIPLEDOUBLE, "fore:#7F0000,size:%(size)d" % faces
+        )
         # Class name definition
         self.StyleSetSpec(
-            stc.STC_P_CLASSNAME, "fore:#0000FF,bold,underline,size:%(size)d" % faces
+            stc.STC_P_CLASSNAME,
+            "fore:#0000FF,bold,underline,size:%(size)d" % faces,
         )
         # Function or method name definition
-        self.StyleSetSpec(stc.STC_P_DEFNAME, "fore:#007F7F,bold,size:%(size)d" % faces)
+        self.StyleSetSpec(
+            stc.STC_P_DEFNAME, "fore:#007F7F,bold,size:%(size)d" % faces
+        )
         # Operators
         self.StyleSetSpec(stc.STC_C_OPERATOR, "bold,size:%(size)d" % faces)
         # Identifiers
         self.StyleSetSpec(
-            stc.STC_P_IDENTIFIER, "fore:#000000,face:%(helv)s,size:%(size)d" % faces
+            stc.STC_P_IDENTIFIER,
+            "fore:#000000,face:%(helv)s,size:%(size)d" % faces,
         )
         # Comment-blocks
-        self.StyleSetSpec(stc.STC_P_COMMENTBLOCK, "fore:#5F9F5F,size:%(size)d" % faces)
+        self.StyleSetSpec(
+            stc.STC_P_COMMENTBLOCK, "fore:#5F9F5F,size:%(size)d" % faces
+        )
         # End of line where string is not closed
         self.StyleSetSpec(
             stc.STC_P_STRINGEOL,
-            "fore:#000000,face:%(helv)s,back:#CFCFCF,eol,size:%(size)d" % faces,
+            "fore:#000000,face:%(helv)s,back:#CFCFCF,eol,size:%(size)d"
+            % faces,
         )
 
         self.SetCaretForeground("BLACK")
@@ -395,7 +470,10 @@ class PythonSTC(stc.StyledTextCtrl):
             else:
                 lineClicked = self.LineFromPosition(evt.GetPosition())
 
-                if self.GetFoldLevel(lineClicked) & stc.STC_FOLDLEVELHEADERFLAG:
+                if (
+                    self.GetFoldLevel(lineClicked)
+                    & stc.STC_FOLDLEVELHEADERFLAG
+                ):
                     if evt.GetShift():
                         self.SetFoldExpanded(lineClicked, True)
                         self.Expand(lineClicked, True, True, 1)
@@ -425,9 +503,9 @@ class PythonSTC(stc.StyledTextCtrl):
             level = self.GetFoldLevel(lineNum)
             if (
                 level & stc.STC_FOLDLEVELHEADERFLAG
-                and (level & stc.STC_FOLDLEVELNUMBERMASK) == stc.STC_FOLDLEVELBASE
+                and (level & stc.STC_FOLDLEVELNUMBERMASK)
+                == stc.STC_FOLDLEVELBASE
             ):
-
                 if expanding:
                     self.SetFoldExpanded(lineNum, True)
                     lineNum = self.Expand(lineNum, True)

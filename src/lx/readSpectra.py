@@ -30,13 +30,10 @@ from lx.debugger import Debug
 # of a .dta file
 regDta = re.compile("(\d+\.?\d*)(\s|\t)+([-]?\d+\.?\d*)")
 
-fadi_percentageMSMS = (
-    None  # var used for filtering this is dirty code, TODO remove this global variable
-)
+fadi_percentageMSMS = None  # var used for filtering this is dirty code, TODO remove this global variable
 
 
 def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
-
     # if Debug("logMemory"):
     # 	from guppy import hpy
     # 	import memory_logging
@@ -58,7 +55,8 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
     for i in s:
         if re.match("(^\.\w+).*", i):
             raise LipidXException(
-                "The given path %s is not " + "accepted by LipidXplorer." % specFile
+                "The given path %s is not "
+                + "accepted by LipidXplorer." % specFile
             )
 
     specName = s[-1]
@@ -117,18 +115,20 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
     # get MS1 scans
     get_ms1Scans = [
         (t, mz, sn, sm, pol, tic, np, bp)
-        for t, mz, sn, st, sm, pol, tic, np, bp in mz_file.scan_info(t1, t2, msm1, msm2)
+        for t, mz, sn, st, sm, pol, tic, np, bp in mz_file.scan_info(
+            t1, t2, msm1, msm2
+        )
         if st == "MS1"
     ]
 
     ms1Scans = []
     for t, mz, sn, sm, pol, tic, np, bp in get_ms1Scans:
-
         # check for polarity switches which are not allowed right now
         if polarity != "":
             if pol != polarity:
                 raise LipidXException(
-                    "It is not allowed to have both polarities within" + " one file"
+                    "It is not allowed to have both polarities within"
+                    + " one file"
                 )
         else:
             polarity = pol
@@ -142,7 +142,9 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
         scan_processed = []
 
         # get relative intensity
-        max_it = max([it_value for (mz_value, it_value, res, bl, ns, cg) in scan])
+        max_it = max(
+            [it_value for (mz_value, it_value, res, bl, ns, cg) in scan]
+        )
         if max_it <= 0:
             continue
 
@@ -152,7 +154,9 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
         masses = [s[0] for s in scan]
         s_masses = sorted(masses)
-        diffs = [s_masses[i + 1] - s_masses[i] for i, _ in enumerate(s_masses[:-1])]
+        diffs = [
+            s_masses[i + 1] - s_masses[i] for i, _ in enumerate(s_masses[:-1])
+        ]
         min_da_delta = min(diffs)
 
         ms1Scans.append(
@@ -175,19 +179,21 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
     # get MS2 scans
     get_ms2Scans = [
         (t, mz, sn, sm, pol, tic, np, bp)
-        for t, mz, sn, st, sm, pol, tic, np, bp in mz_file.scan_info(t1, t2, msm1, msm2)
+        for t, mz, sn, st, sm, pol, tic, np, bp in mz_file.scan_info(
+            t1, t2, msm1, msm2
+        )
         if st == "MS2"
     ]  # TODO this is  bug, scan_info(t1, t2, msmsm1, msmsm2)
     # NOTE for-paper this is where the wrong amount of ms2 scans are read
 
     ms2Scans = []
     for t, precursor, sn, sm, pol, tic, np, bp in get_ms2Scans:
-
         # check for polarity switches which are not allowed right now
         if polarity != "":
             if pol != polarity:
                 raise LipidXException(
-                    "It is not allowed to have both polarities within" + " one file"
+                    "It is not allowed to have both polarities within"
+                    + " one file"
                 )
         else:
             polarity = pol
@@ -202,15 +208,21 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
         # filter for MS/MS mass range and relative intensity
         scan_processed = []
-        max_it = max([mz_value for (mz_value, it_value, res, bl, ns, cg) in scan])
+        max_it = max(
+            [mz_value for (mz_value, it_value, res, bl, ns, cg) in scan]
+        )
         for mz2, it2, res, bl, ns, cg in scan:
             if msmsm1 <= mz2 <= msmsm2:
-                scan_processed.append((mz2, it2, it2 / max_it, res, bl, ns, cg))
+                scan_processed.append(
+                    (mz2, it2, it2 / max_it, res, bl, ns, cg)
+                )
                 nb_msms_peaks += 1
 
         masses = [s[0] for s in scan]
         s_masses = sorted(masses)
-        diffs = [s_masses[i + 1] - s_masses[i] for i, _ in enumerate(s_masses[:-1])]
+        diffs = [
+            s_masses[i + 1] - s_masses[i] for i, _ in enumerate(s_masses[:-1])
+        ]
         min_da_delta = min(diffs) if diffs else 1000
 
         ms2Scans.append(
@@ -239,7 +251,8 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
         p = 1
     else:
         raise LipidXException(
-            "The polarity is given neither as '-' nor as '+'. " "It is %s" % polarity
+            "The polarity is given neither as '-' nor as '+'. "
+            "It is %s" % polarity
         )
 
     # close the mz_file
@@ -266,7 +279,6 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
     # maybe there is only one polarity
     if len(ms1Scans) > 0:
-
         ##################################
         ### averaging of the MS1 scans ###
 
@@ -353,9 +365,13 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
         # get the threshold
         if options["MSthresholdType"] == "absolute":
-            thrshld_absolute = float(options["MSthreshold"]) / sqrt(len(ms1Scans))
+            thrshld_absolute = float(options["MSthreshold"]) / sqrt(
+                len(ms1Scans)
+            )
         else:
-            thrshld_relative = float(options["MSthreshold"]) / sqrt(len(ms1Scans))
+            thrshld_relative = float(options["MSthreshold"]) / sqrt(
+                len(ms1Scans)
+            )
 
         # get the keys for the individual scans
         keys = [repr(n) for n in range(count)]
@@ -368,7 +384,6 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
         # store the averaged spectrum
         for cl in listClusters:
-
             sumMass = 0
             sumMassIntensity = 0
             sumIntensity = 0
@@ -383,7 +398,9 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                     )
                     sumIntensity += cl[sample].content["intensity"]
                     if "intensity_rel" in cl[sample].content:
-                        sumIntensity_relative += cl[sample].content["intensity_rel"]
+                        sumIntensity_relative += cl[sample].content[
+                            "intensity_rel"
+                        ]
 
             # empty intensity? make an empty entry
             if not sumIntensity > 0.0:
@@ -392,7 +409,9 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                     content={"intensity": 0.0, "intensity_rel": 0.0},
                 )
             else:  # make new specEntry
-                out = specEntry(mass=sumMassIntensity / sumIntensity, content={})
+                out = specEntry(
+                    mass=sumMassIntensity / sumIntensity, content={}
+                )
 
                 # write averaged intensity
                 out.content["intensity"] = sumIntensity / len(
@@ -434,7 +453,9 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
         except ValueError:
             pass
 
-        if kwargs.get("peaks_df_list", None) is not None:  # because it starts falsy
+        if (
+            kwargs.get("peaks_df_list", None) is not None
+        ):  # because it starts falsy
             peaks_df_list = kwargs.get("peaks_df_list", None)
             import pandas as pd
 
@@ -481,7 +502,6 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
     if len(ms2Scans) > 0:
         for ms2scan_entry in sorted(ms2Scans, key=lambda x: x["precursorMz"]):
             if ms2scan_entry["scan"] != []:
-
                 # add the fragment mass to the fragment spectrum
                 lpdxSample.listMsms.append(
                     MSMS(
@@ -536,9 +556,15 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
     reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS scans", nb_ms_scans))
     reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS peaks", nb_ms_peaks))
-    reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS/MS scans", nb_msms_scans))
-    reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS/MS peaks", nb_msms_peaks))
-    reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS peaks (after avg.)", numPeaks))
+    reportout(
+        "> {0:.<30s}{1:>11d}".format("Nb. of MS/MS scans", nb_msms_scans)
+    )
+    reportout(
+        "> {0:.<30s}{1:>11d}".format("Nb. of MS/MS peaks", nb_msms_peaks)
+    )
+    reportout(
+        "> {0:.<30s}{1:>11d}".format("Nb. of MS peaks (after avg.)", numPeaks)
+    )
     reportout("> Spray stability:")
     if listTotIonCurrent != []:
         reportout(
@@ -546,7 +572,10 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                 "  MaxTIC - MinTIC:",
                 (
                     100
-                    * (float(max(listTotIonCurrent)) - float(min(listTotIonCurrent)))
+                    * (
+                        float(max(listTotIonCurrent))
+                        - float(min(listTotIonCurrent))
+                    )
                     / float(median)
                 ),
             )
@@ -572,7 +601,6 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
 
 def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
-
     # if Debug("logMemory"):
     # 	from guppy import hpy
     # 	import memory_logging
@@ -588,7 +616,8 @@ def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
     for i in s:
         if re.match("(^\.\w+).*", i):
             raise LipidXException(
-                "The given path %s is not " + "accepted by LipidXplorer." % specFile
+                "The given path %s is not "
+                + "accepted by LipidXplorer." % specFile
             )
 
     specName = s[-1]
@@ -637,7 +666,9 @@ def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
     # get MS1 scans
     ms1_scan_nb = [
         sn
-        for t, mz, sn, st, sm, pol, tic in mz_file.scan_info(t1, t2, msm1, msm2)
+        for t, mz, sn, st, sm, pol, tic in mz_file.scan_info(
+            t1, t2, msm1, msm2
+        )
         if st == "MS1"
     ]
 
@@ -655,19 +686,21 @@ def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
     # get MS1 scans
     get_ms1Scans = [
         (t, mz, sn, sm, pol, tic)
-        for t, mz, sn, st, sm, pol, tic in mz_file.scan_info(t1, t2, msm1, msm2)
+        for t, mz, sn, st, sm, pol, tic in mz_file.scan_info(
+            t1, t2, msm1, msm2
+        )
         if st == "MS1"
     ]
 
     listTotIonCurrent = []
     ms1Scans = []
     for t, mz, sn, sm, pol, tic in get_ms1Scans:
-
         # check for polarity switches which are not allowed right now
         if polarity != "":
             if pol != polarity:
                 raise LipidXException(
-                    "It is not allowed to have both polarities within" + " one file"
+                    "It is not allowed to have both polarities within"
+                    + " one file"
                 )
         else:
             polarity = pol
@@ -695,18 +728,20 @@ def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
     # get MS2 scans
     get_ms2Scans = [
         (t, mz, sn, sm, pol, tic)
-        for t, mz, sn, st, sm, pol, tic in mz_file.scan_info(t1, t2, msm1, msm2)
+        for t, mz, sn, st, sm, pol, tic in mz_file.scan_info(
+            t1, t2, msm1, msm2
+        )
         if st == "MS2"
     ]
 
     ms2Scans = []
     for t, precursor, sn, sm, pol, tic in get_ms2Scans:
-
         # check for polarity switches which are not allowed right now
         if polarity != "":
             if pol != polarity:
                 raise LipidXException(
-                    "It is not allowed to have both polarities within" + " one file"
+                    "It is not allowed to have both polarities within"
+                    + " one file"
                 )
         else:
             polarity = pol
@@ -721,10 +756,14 @@ def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
         # filter for MS/MS mass range and relative intensity
         scan_processed = []
-        max_it = max([mz_value for (mz_value, it_value, res, bl, ns, cg) in scan])
+        max_it = max(
+            [mz_value for (mz_value, it_value, res, bl, ns, cg) in scan]
+        )
         for mz2, it2, res, bl, ns, cg in scan:
             if msmsm1 <= mz2 <= msmsm2:
-                scan_processed.append((mz2, it2, it2 / max_it, res, bl, ns, cg))
+                scan_processed.append(
+                    (mz2, it2, it2 / max_it, res, bl, ns, cg)
+                )
                 nb_msms_peaks += 1
 
         ms2Scans.append(
@@ -773,22 +812,24 @@ def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
     # maybe there is only one polarity
     if len(ms1Scans) > 0:
-
         ###########################################
         ### store the MS1 spectra in lpdxSample ###
 
         # get the threshold
         if options["MSthresholdType"] == "absolute":
-            thrshld_absolute = float(options["MSthreshold"]) / sqrt(len(ms1Scans))
+            thrshld_absolute = float(options["MSthreshold"]) / sqrt(
+                len(ms1Scans)
+            )
         else:
-            thrshld_relative = float(options["MSthreshold"]) / sqrt(len(ms1Scans))
+            thrshld_relative = float(options["MSthreshold"]) / sqrt(
+                len(ms1Scans)
+            )
 
         # for my interest
         numPeaks = 0
 
         # store the averaged spectrum
         for peak in spectrum:
-
             ### store the averaged spectra in lpdxSample ###
             takeIt = False
             if options["MSthresholdType"] == "absolute":
@@ -838,7 +879,6 @@ def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
             ms2Scans, cmp=lambda x, y: cmp(x["precursorMz"], y["precursorMz"])
         ):
             if ms2scan_entry["scan"] != []:
-
                 # add the fragment mass to the fragment spectrum
                 lpdxSample.listMsms.append(
                     MSMS(
@@ -893,9 +933,15 @@ def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
     reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS scans", nb_ms_scans))
     reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS peaks", nb_ms_peaks))
-    reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS/MS scans", nb_msms_scans))
-    reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS/MS peaks", nb_msms_peaks))
-    reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS peaks (after avg.)", numPeaks))
+    reportout(
+        "> {0:.<30s}{1:>11d}".format("Nb. of MS/MS scans", nb_msms_scans)
+    )
+    reportout(
+        "> {0:.<30s}{1:>11d}".format("Nb. of MS/MS peaks", nb_msms_peaks)
+    )
+    reportout(
+        "> {0:.<30s}{1:>11d}".format("Nb. of MS peaks (after avg.)", numPeaks)
+    )
     reportout("> Spray stability:")
     if listTotIonCurrent != []:
         reportout(
@@ -903,7 +949,10 @@ def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                 "  MaxTIC - MinTIC:",
                 (
                     100
-                    * (float(max(listTotIonCurrent)) - float(min(listTotIonCurrent)))
+                    * (
+                        float(max(listTotIonCurrent))
+                        - float(min(listTotIonCurrent))
+                    )
                     / float(median)
                 ),
             )
@@ -947,7 +996,8 @@ def add_mzXMLSample(
     for i in s:
         if re.match("(^\.\w+).*", i):
             raise LipidXException(
-                "The given path %s is not " + "accepted by LipidXplorer." % specFile
+                "The given path %s is not "
+                + "accepted by LipidXplorer." % specFile
             )
     specName = s[-1]
 
@@ -1008,7 +1058,6 @@ def add_mzXMLSample(
     listTotIonCurrent = []
     listRetTime = []
     for entry in smpl:
-
         if entry.get("centroided") == 0:
             raise LipidXException(
                 "Spectra in profile mode format. This is not allowed."
@@ -1020,28 +1069,27 @@ def add_mzXMLSample(
             float(entry.get("retentionTime")) >= t1
             and float(entry.get("retentionTime")) <= t2
         ):
-
             peakList = []
 
             # if entry is a MS/MS spectrum
             if (entry.get("msLevel") == 2 and importMSMS) or (
                 entry.get("msLevel") == 0 and options["pisSpectra"]
             ):
-
                 # precursor mass is there
                 if (
                     entry.get("precursorMz", None)
                     and entry.get("precursorMz") >= msm1
                     and entry.get("precursorMz") <= msm2
                 ):
-
                     precursor = entry.get("precursorMz")
 
                     max_it = max(entry.it_)
-                    for (mz, it) in zip(entry.mz_, entry.it_):
+                    for mz, it in zip(entry.mz_, entry.it_):
                         if mz >= msmsm1 and mz <= msmsm2:
                             if it > 0.0:
-                                peakList.append((mz, it, it / max_it, 0, 0, 0, 0))
+                                peakList.append(
+                                    (mz, it, it / max_it, 0, 0, 0, 0)
+                                )
 
                     if polarity != "":
                         if polarity != entry.get("polarity", None):
@@ -1077,15 +1125,18 @@ def add_mzXMLSample(
                     info["retentionTime"] = entry.get("retentionTime", None)
                     info["totIonCurrent"] = entry.get("totIonCurrent", None)
                     info["basePeakMz"] = entry.get("basePeakMz", None)
-                    info["basePeakIntensity"] = entry.get("basePeakIntensity", None)
+                    info["basePeakIntensity"] = entry.get(
+                        "basePeakIntensity", None
+                    )
 
                 # no precursor mass given
                 elif not entry.get("precursorMz", None):
-                    raise LipidXException("The MS/MS spectra have no precursor mass")
+                    raise LipidXException(
+                        "The MS/MS spectra have no precursor mass"
+                    )
                     exit(-1)
 
             elif entry.get("msLevel") == 1:
-
                 listTotIonCurrent.append(entry.get("totIonCurrent", None))
                 listRetTime.append(entry.get("retentionTime"))
 
@@ -1095,12 +1146,14 @@ def add_mzXMLSample(
                 info["retentionTime"] = entry.get("retentionTime", None)
                 info["totIonCurrent"] = entry.get("totIonCurrent", None)
                 info["basePeakMz"] = entry.get("basePeakMz", None)
-                info["basePeakIntensity"] = entry.get("basePeakIntensity", None)
+                info["basePeakIntensity"] = entry.get(
+                    "basePeakIntensity", None
+                )
 
                 unprocessed_info.append(info)
 
                 max_it = max(entry.it_)
-                for (mz, it) in zip(entry.mz_, entry.it_):
+                for mz, it in zip(entry.mz_, entry.it_):
                     # if mass is in mass range
                     if mz >= msm1 and mz <= msm2 and it > 0:
                         peakList.append((mz, it, it / max_it, 0, 0, 0, 0))
@@ -1179,7 +1232,6 @@ def add_mzXMLSample(
             ms2Scans, cmp=lambda x, y: cmp(x["precursorMz"], y["precursorMz"])
         ):
             if ms2scan_entry["scan"] != []:
-
                 # add the fragment mass to the fragment spectrum
                 lpdxSample.listMsms.append(
                     MSMS(
@@ -1205,13 +1257,11 @@ def add_mzXMLSample(
     ### averaging of the MS1 scans ###
 
     if len(ms1Scans) > 0:
-
         nb_ms_peaks = 0
         avgBasePeakIntensity = 0
         count = 0
         dictSpecEntry = {}
         for ms1scan_entry in ms1Scans:
-
             dictSpecEntry[repr(count)] = []
             for mz, it, it_rel, res, bl, ns, cg in ms1scan_entry["scan"]:
                 if it > 0.0 and it_rel > 0.0:
@@ -1262,7 +1312,8 @@ def add_mzXMLSample(
                     if sample in cl:
                         if cl[sample].content:
                             str += "  {0:>9.4f} - {1:>12.1f}  ".format(
-                                cl[sample].mass, cl[sample].content["intensity"]
+                                cl[sample].mass,
+                                cl[sample].content["intensity"],
                             )
                             # str +=  "  %.4f  " % cl[sample].content['intensity']
                         else:
@@ -1291,9 +1342,13 @@ def add_mzXMLSample(
         # get the threshold
         if len(ms1Scans) > 0:
             if options["MSthresholdType"] == "absolute":
-                thrshld_absolute = float(options["MSthreshold"]) / sqrt(len(ms1Scans))
+                thrshld_absolute = float(options["MSthreshold"]) / sqrt(
+                    len(ms1Scans)
+                )
             else:
-                thrshld_relative = float(options["MSthreshold"]) / sqrt(len(ms1Scans))
+                thrshld_relative = float(options["MSthreshold"]) / sqrt(
+                    len(ms1Scans)
+                )
         else:
             thrshld_absolute = float(options["MSthreshold"])
             thrshld_relative = float(options["MSthreshold"])
@@ -1306,7 +1361,6 @@ def add_mzXMLSample(
         numPeaks = 0
         # store the averaged spectrum
         for cl in listClusters:
-
             sumMass = 0
             sumMassIntensity = 0
             sumIntensity = 0
@@ -1320,7 +1374,9 @@ def add_mzXMLSample(
                     )
                     sumIntensity += cl[sample].content["intensity"]
                     if "intensity_rel" in cl[sample].content:
-                        sumIntensity_relative += cl[sample].content["intensity_rel"]
+                        sumIntensity_relative += cl[sample].content[
+                            "intensity_rel"
+                        ]
 
             out = specEntry(mass=sumMassIntensity / sumIntensity, content={})
 
@@ -1391,7 +1447,6 @@ def add_mzXMLSample(
     ### make average of info values ###
 
     if len(unprocessed_info) > 1:
-
         # MS
         sumPeaksCount = 0
         sumTotIonCurrent = 0
@@ -1399,7 +1454,9 @@ def add_mzXMLSample(
         for index in range(len(unprocessed_info)):
             sumPeaksCount += unprocessed_info[index]["peaksCount"]
             sumTotIonCurrent += unprocessed_info[index]["totIonCurrent"]
-            sumBasePeakIntensity += unprocessed_info[index]["basePeakIntensity"]
+            sumBasePeakIntensity += unprocessed_info[index][
+                "basePeakIntensity"
+            ]
 
         avgPeaksCount = sumPeaksCount / len(unprocessed_info)
         avgTotIonCurrent = sumTotIonCurrent / len(unprocessed_info)
@@ -1428,7 +1485,9 @@ def add_mzXMLSample(
 
     # prepare threshold value
     if sc.options["MSthresholdType"] == "relative":
-        thrshld = (float(sc.options["MSthreshold"] / 100)) * avgBasePeakIntensity
+        thrshld = (
+            float(sc.options["MSthreshold"] / 100)
+        ) * avgBasePeakIntensity
         # MSthresholdValues[strName] = ((float(sc.options['MSthreshold'] / 100)) * avgBasePeakIntensity) / sqrt(count)
 
     else:
@@ -1449,9 +1508,15 @@ def add_mzXMLSample(
     reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS scans", nb_ms_scans))
     reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS peaks", nb_ms_peaks))
     # countMSMS = nb_msms_scans
-    reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS/MS scans", nb_msms_scans))
-    reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS/MS peaks", nb_msms_peaks))
-    reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS peaks (after avg.)", numPeaks))
+    reportout(
+        "> {0:.<30s}{1:>11d}".format("Nb. of MS/MS scans", nb_msms_scans)
+    )
+    reportout(
+        "> {0:.<30s}{1:>11d}".format("Nb. of MS/MS peaks", nb_msms_peaks)
+    )
+    reportout(
+        "> {0:.<30s}{1:>11d}".format("Nb. of MS peaks (after avg.)", numPeaks)
+    )
     reportout("Spray stability:")
     if listTotIonCurrent != []:
         reportout(
@@ -1459,7 +1524,10 @@ def add_mzXMLSample(
                 "  MaxTIC - MinTIC:",
                 (
                     100
-                    * (float(max(listTotIonCurrent)) - float(min(listTotIonCurrent)))
+                    * (
+                        float(max(listTotIonCurrent))
+                        - float(min(listTotIonCurrent))
+                    )
                     / float(median)
                 ),
             )
@@ -1557,12 +1625,10 @@ def add_DTASample(
                 LipidXException('The directory "' + root + '" is empty')
 
             for namef in files:
-
                 # sort out hidden files
                 if not (re.match("(^\.\w+).*|.*(\\\.)|(\/\.).*", namef)) and (
                     len(namef.split(os.sep)) <= 1
                 ):
-
                     if mdta.match(namef):
                         dta = True
                     if mcsv.match(namef):
@@ -1588,12 +1654,22 @@ def add_DTASample(
             # TODO : insert Massranges ###
             # if only a container with .dta files is given
             if dirmsms != "" and csv == "" and dta and importMSMS:
-                loadMSMS(lpdxSample, dirmsms, sc.options["MSMSresolution"], sc.options)
+                loadMSMS(
+                    lpdxSample,
+                    dirmsms,
+                    sc.options["MSMSresolution"],
+                    sc.options,
+                )
                 set_PrecurmassFromMSMS(lpdxSample)
 
             # if both - .dta and .csv - are given
             elif dirmsms != "" and csv != "" and dta and importMSMS:
-                loadMSMS(lpdxSample, dirmsms, sc.options["MSMSresolution"], sc.options)
+                loadMSMS(
+                    lpdxSample,
+                    dirmsms,
+                    sc.options["MSMSresolution"],
+                    sc.options,
+                )
                 basePeakIntensity = lpdxSample.fillTable(
                     lpdxSample.openAndRead(csv),
                     sampleName,
@@ -1656,7 +1732,6 @@ def loadMSMS(sample, dirmsms, resolution, options):
     # get list of all .dta files
     fn1 = dirmsms.split(".")
     if fn1[0].split(os.sep)[-1] == "":
-
         # set name of the sample directory
         sample.sampleName = fn1[0].split(os.sep)[-2]
 
@@ -1665,7 +1740,6 @@ def loadMSMS(sample, dirmsms, resolution, options):
         for i in fn1[0].split(os.sep)[:-2]:
             fnp = fnp + i + os.sep
     else:
-
         # set name of the sample directory
         sample.sampleName = fn1[0].split(os.sep)[-1]
 
@@ -1737,7 +1811,6 @@ def set_PrecurmassFromMSMS(sample, chg=None):
     be given."""
     if sample.listMsms != []:
         for i in sample.listMsms:
-
             if chg and i.precurmass:
                 isIn = False
                 for p in sample.listPrecurmass:
@@ -1759,7 +1832,6 @@ def set_PrecurmassFromMSMS(sample, chg=None):
                     )
 
             elif hasattr(i, "charge"):
-
                 if i.charge > 0:
                     p = 1
                 else:
@@ -1779,7 +1851,6 @@ def set_PrecurmassFromMSMS(sample, chg=None):
                 )
 
             else:
-
                 if i.polarity == "+":
                     c = 1
                 else:

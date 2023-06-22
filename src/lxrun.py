@@ -14,7 +14,6 @@ from lx.lxMain import startMFQL
 
 
 def lpdxImportCLI(projpath=None):
-
     ######################################################
     ###              collect the options               ###
 
@@ -26,7 +25,11 @@ def lpdxImportCLI(projpath=None):
 
     # import part
     optParser.add_option(
-        "-p", "--prj", dest="prj", help="path of the project file", metavar="FILE"
+        "-p",
+        "--prj",
+        dest="prj",
+        help="path of the project file",
+        metavar="FILE",
     )
     optParser.add_option(
         "-i",
@@ -36,10 +39,16 @@ def lpdxImportCLI(projpath=None):
         metavar="FILE",
     )
     optParser.add_option(
-        "-s", "--setting", dest="setting", help="section of a setting from *.ini file"
+        "-s",
+        "--setting",
+        dest="setting",
+        help="section of a setting from *.ini file",
     )
     optParser.add_option(
-        "-r", "--resultfile", dest="resultFile", help="the name of the output file"
+        "-r",
+        "--resultfile",
+        dest="resultFile",
+        help="the name of the output file",
     )
     # optParser.add_option("-m", "--masterscan", dest="masterScan",
     # 				 help="the name of the output file")
@@ -210,7 +219,6 @@ def lpdxImportCLI(projpath=None):
         dictMFQL = project.mfql
 
     else:  # standard values
-
         project.options["setting"] = "command line"
         project.options["loopNr"] = 3
         project.options["alignmentMethodMS"] = "linear"
@@ -229,7 +237,10 @@ def lpdxImportCLI(projpath=None):
         try:
             project.options["resultFile"] = args[1]
         except IndexError:
-            print("ERROR: The result file was not specified. Use the option", end=" ")
+            print(
+                "ERROR: The result file was not specified. Use the option",
+                end=" ",
+            )
             print(" -r.")
     else:
         project.options["resultFile"] = cliOptions.resultFile
@@ -254,7 +265,9 @@ def lpdxImportCLI(projpath=None):
     if "queries" in cliOptions.__dict__:
         for q in cliOptions.queries.split(","):
             mfql_file = q.strip()
-            if os.path.isdir(mfql_file):  # collect the queries from the directory
+            if os.path.isdir(
+                mfql_file
+            ):  # collect the queries from the directory
                 for root, dirs, files in os.walk(mfql_file):
                     for f in files:
                         if re.match("(.*\.mfql$)", f):

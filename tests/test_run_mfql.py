@@ -10,10 +10,9 @@ from utils import (
     read_options,
 )
 
+
 # TODO: @Jacobo
-@pytest.mark.skip(
-    reason="out_reference is not defined!"
-)
+@pytest.mark.skip(reason="out_reference is not defined!")
 def test_run_mfql():
     options = read_options(proy_path)
 
@@ -32,10 +31,9 @@ def test_run_mfql():
 
     assert resultStr.strip() == out_reference.strip()
 
+
 # TODO: @Jacobo
-@pytest.mark.skip(
-    reason="out_reference is not defined!"
-)
+@pytest.mark.skip(reason="out_reference is not defined!")
 def test_lx2_sc_on_run_mfql():
     options = read_options(proy_path)
 
@@ -54,4 +52,3 @@ def test_lx2_sc_on_run_mfql():
     resultStr_lx2 = makeResultsString(result_lx2, options)
 
     assert resultStr_lx2.strip() == out_reference.strip()
-

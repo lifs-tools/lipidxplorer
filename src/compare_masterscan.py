@@ -13,7 +13,6 @@ log = logging.getLogger(Path(__file__).stem)
 
 
 def find_common_elements(lx1_df, lx2_df, tolerance=0.05):
-
     lx1_df.sort_values(by=["precurmass_lx1"], inplace=True)
     lx2_df.sort_values(by=["precurmass_lx2"], inplace=True)
     merged = pd.merge_asof(
@@ -38,10 +37,18 @@ def find_common_elements(lx1_df, lx2_df, tolerance=0.05):
 
 def ms2_common(matching_ms1s, lx1_masterscan, lx2_masterscan):
     for row in matching_ms1s.itertuples():
-        listMSMS_lx1 = lx1_masterscan.listSurveyEntry[int(row.idx_lx1)].listMSMS
-        listMSMS_lx2 = lx2_masterscan.listSurveyEntry[int(row.idx_lx2)].listMSMS
-        s1 = pd.Series((x.mass for x in listMSMS_lx1), name="ms2_lx1").sort_values()
-        s2 = pd.Series((x.mass for x in listMSMS_lx2), name="ms2_lx2").sort_values()
+        listMSMS_lx1 = lx1_masterscan.listSurveyEntry[
+            int(row.idx_lx1)
+        ].listMSMS
+        listMSMS_lx2 = lx2_masterscan.listSurveyEntry[
+            int(row.idx_lx2)
+        ].listMSMS
+        s1 = pd.Series(
+            (x.mass for x in listMSMS_lx1), name="ms2_lx1"
+        ).sort_values()
+        s2 = pd.Series(
+            (x.mass for x in listMSMS_lx2), name="ms2_lx2"
+        ).sort_values()
         m1 = pd.merge_asof(
             s1,
             s2,
@@ -69,7 +76,9 @@ def ms2_uncommon(*args, **kwargs):
         yield (c[c.isna().any(axis=1)])
 
 
-def compare_masterscan(lx1_masterscan_path, lx2_masterscan_path, xls_output_path=None):
+def compare_masterscan(
+    lx1_masterscan_path, lx2_masterscan_path, xls_output_path=None
+):
     """
     Compare a master scan with a list of scans.
     """
@@ -82,10 +91,12 @@ def compare_masterscan(lx1_masterscan_path, lx2_masterscan_path, xls_output_path
 
     log.info("Getting MS1")
     lx1_ms1 = (
-        (idx, se.precurmass) for idx, se in enumerate(lx1_masterscan.listSurveyEntry)
+        (idx, se.precurmass)
+        for idx, se in enumerate(lx1_masterscan.listSurveyEntry)
     )
     lx2_ms1 = (
-        (idx, se.precurmass) for idx, se in enumerate(lx2_masterscan.listSurveyEntry)
+        (idx, se.precurmass)
+        for idx, se in enumerate(lx2_masterscan.listSurveyEntry)
     )
 
     log.info("Making dataframe")
@@ -122,7 +133,7 @@ def compare_masterscan(lx1_masterscan_path, lx2_masterscan_path, xls_output_path
         common.loc[ms2_mismatch.common_idx.value_counts().index].to_excel(
             writer, sheet_name="ms2_mismatch_precursors"
         )
-    
+
     log.info("done")
 
     # TODO  handrolled find nearest closest, but with tolerance instead of merge_asof
@@ -130,9 +141,13 @@ def compare_masterscan(lx1_masterscan_path, lx2_masterscan_path, xls_output_path
 
 
 if __name__ == "__main__":
-    lx1_masterscan_path = r"c:\Users\mirandaa\Downloads\stitched\stitched\stitched.sc"
+    lx1_masterscan_path = (
+        r"c:\Users\mirandaa\Downloads\stitched\stitched\stitched.sc"
+    )
     lx2_masterscan_path = (
         r"c:\Users\mirandaa\Downloads\stitched\stitched\stitched-lx2.sc"
     )
     xls_output_path = None
-    compare_masterscan(lx1_masterscan_path, lx2_masterscan_path, xls_output_path)
+    compare_masterscan(
+        lx1_masterscan_path, lx2_masterscan_path, xls_output_path
+    )

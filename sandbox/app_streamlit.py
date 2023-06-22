@@ -101,7 +101,9 @@ def load_project(proj=None):
         return proj.options.get("MSMScalibration", "")
 
     proj = st.session_state["project"]
-    st.session_state["selectionWindow"] = proj.options.get("selectionWindow", "")
+    st.session_state["selectionWindow"] = proj.options.get(
+        "selectionWindow", ""
+    )
     st.session_state["_timerange0"] = proj_t2str(proj, "timerange", 0)
     st.session_state["_timerange1"] = proj_t2str(proj, "timerange", 1)
     st.session_state["MScalibration"] = proj.options.get("MScalibration", "")
@@ -123,7 +125,9 @@ def load_project(proj=None):
     # st.session_state["_MSMSresolution_MZ1"] = proj.options.get(
     #     "_MSMSresolution_MZ1", ""
     # )
-    st.session_state["MSresolutionDelta"] = proj.options.get("MSresolutionDelta", "")
+    st.session_state["MSresolutionDelta"] = proj.options.get(
+        "MSresolutionDelta", ""
+    )
     st.session_state["MSMSresolutionDelta"] = proj.options.get(
         "MSMSresolutionDelta", ""
     )
@@ -143,11 +147,21 @@ def load_project(proj=None):
     st.session_state["MSMSthresholdType"] = proj.options.get(
         "MSMSthresholdType", ThresholdEnum.relative.name
     )
-    st.session_state["MSminOccupation"] = proj.options.get("MSminOccupation", "")
-    st.session_state["MSMSminOccupation"] = proj.options.get("MSMSminOccupation", "")
-    st.session_state["MSfilter"] = proj.options_formatted.get("MSfilter", 0.7) * 100
-    st.session_state["MSMSfilter"] = proj.options_formatted.get("MSMSfilter", 0.7) * 100
-    st.session_state["precursorMassShift"] = proj.options.get("precursorMassShift", "")
+    st.session_state["MSminOccupation"] = proj.options.get(
+        "MSminOccupation", ""
+    )
+    st.session_state["MSMSminOccupation"] = proj.options.get(
+        "MSMSminOccupation", ""
+    )
+    st.session_state["MSfilter"] = (
+        proj.options_formatted.get("MSfilter", 0.7) * 100
+    )
+    st.session_state["MSMSfilter"] = (
+        proj.options_formatted.get("MSMSfilter", 0.7) * 100
+    )
+    st.session_state["precursorMassShift"] = proj.options.get(
+        "precursorMassShift", ""
+    )
     st.session_state["precursorMassShiftOrbi"] = proj.options.get(
         "precursorMassShiftOrbi", ""
     )
@@ -162,7 +176,8 @@ def save_project(proj=None):
     proj.options["MScalibration"] = st.session_state["MScalibration"]
     proj.options["MSMScalibration"] = (
         st.session_state["MScalibration"]
-        if st.session_state["MSMScalibration"] == "from MS"  # see cascade_calibrations
+        if st.session_state["MSMScalibration"]
+        == "from MS"  # see cascade_calibrations
         else st.session_state["MSMScalibration"]
     )
     proj.options[
@@ -172,7 +187,9 @@ def save_project(proj=None):
         "MSMSmassrange"
     ] = f"({st.session_state['_MSMSmassrange0']}, {st.session_state['_MSMSmassrange1']})"
     proj.options["MSresolutionDelta"] = st.session_state["MSresolutionDelta"]
-    proj.options["MSMSresolutionDelta"] = st.session_state["MSMSresolutionDelta"]
+    proj.options["MSMSresolutionDelta"] = st.session_state[
+        "MSMSresolutionDelta"
+    ]
     proj.options["MStolerance"] = st.session_state["MStolerance"]
     proj.options["MSMStolerance"] = st.session_state["MSMStolerance"]
     proj.options["MStoleranceType"] = st.session_state["MStoleranceType"]
@@ -186,7 +203,9 @@ def save_project(proj=None):
     proj.options["MSfilter"] = st.session_state["MSfilter"]
     proj.options["MSMSfilter"] = st.session_state["MSMSfilter"]
     proj.options["precursorMassShift"] = st.session_state["precursorMassShift"]
-    proj.options["precursorMassShiftOrbi"] = st.session_state["precursorMassShiftOrbi"]
+    proj.options["precursorMassShiftOrbi"] = st.session_state[
+        "precursorMassShiftOrbi"
+    ]
     # ----
     proj.testOptions()
     proj.formatOptions()  # converts from strings to types... optoins go into options_formatted
@@ -224,7 +243,10 @@ col110.text_input("Selection Window (Da)", key="selectionWindow")
 col120.text_input("Time Start (Sec)", key="_timerange0")
 col121.text_input("Time end", key="_timerange1")
 
-col210, col220, = st.columns([2, 2])
+(
+    col210,
+    col220,
+) = st.columns([2, 2])
 
 col210.text_input("Calibratoin masses MS", key="MScalibration")
 col220.text_input("MSMS", key="MSMScalibration")
@@ -271,27 +293,38 @@ col420.text_input("Resolution Gradient MS/MS", key="MSMSresolutionDelta")
 "----"
 col510, col520, col530, col540 = st.columns([2, 1, 2, 1])
 col510.text_input("Tolerance MS", key="MStolerance")
-col520.selectbox("unit", [e.name for e in ToleranceEnum], key="MStoleranceType")
+col520.selectbox(
+    "unit", [e.name for e in ToleranceEnum], key="MStoleranceType"
+)
 
 col530.text_input("MS/MS", key="MSMStolerance")
 col540.selectbox(
-    "unit", [e.name for e in ToleranceEnum], key="MSMStoleranceType",
+    "unit",
+    [e.name for e in ToleranceEnum],
+    key="MSMStoleranceType",
 )
 
 col610, col620, col630, col640 = st.columns([2, 1, 2, 1])
 col610.text_input("Threshold MS", key="MSthreshold")
 col620.selectbox(
-    "unit", [e.name for e in ThresholdEnum], key="MSthresholdType",
+    "unit",
+    [e.name for e in ThresholdEnum],
+    key="MSthresholdType",
 )
 col630.text_input("MS/MS", key="MSMSthreshold")
 col640.selectbox(
-    "unit", [e.name for e in ThresholdEnum], key="MSMSthresholdType",
+    "unit",
+    [e.name for e in ThresholdEnum],
+    key="MSMSthresholdType",
 )
 
 col810, col820 = st.columns([1, 1])
 col810.slider(r"In % of MS spectra files:", 0, 100, key="MSfilter")
 col820.slider(
-    r"In % of MS/MS spectra files:", 0, 100, key="MSMSfilter",
+    r"In % of MS/MS spectra files:",
+    0,
+    100,
+    key="MSMSfilter",
 )
 
 col910, col920, col930 = st.columns([1, 1, 1])
@@ -309,4 +342,3 @@ if cont.button("Save project"):
 if cont.button("import project"):
     make_masterscan(st.session_state["project"].getOptions())
     st.balloons()  # TODO check in tests how to run the project
-

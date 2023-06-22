@@ -243,12 +243,16 @@ def p_scriptname(p):
     global gprogressCount
     global numQueries
 
-    if mfqlObj.parsePart == "identification" or mfqlObj.parsePart == "genTargetList":
-
+    if (
+        mfqlObj.parsePart == "identification"
+        or mfqlObj.parsePart == "genTargetList"
+    ):
         numQueries += 1
         if numQueries > 1:
             raise SyntaxErrorException(
-                "There is only one query per *.mfql file allowed!", mfqlObj.filename, 0
+                "There is only one query per *.mfql file allowed!",
+                mfqlObj.filename,
+                0,
             )
 
         mfqlObj.listQueryNames.append(p[3])
@@ -641,21 +645,25 @@ def p_identification_normal_old(p):
         print("%.2f sec." % time.clock())
 
     if len(p) == 8:
-
         mfqlObj.suchthatApplied = False
         if mfqlObj.parsePart == "identification":
             query = TypeQuery(
-                mfqlObj=mfqlObj, id=mfqlObj.queryName, report=p[7], withSuchthat=False
+                mfqlObj=mfqlObj,
+                id=mfqlObj.queryName,
+                report=p[7],
+                withSuchthat=False,
             )
 
             mfqlObj.result.dictQuery[mfqlObj.queryName] = query
 
     if len(p) == 9:
-
         mfqlObj.suchthatApplied = True
         if mfqlObj.parsePart == "identification":
             query = TypeQuery(
-                mfqlObj=mfqlObj, id=mfqlObj.queryName, report=p[8], withSuchthat=True
+                mfqlObj=mfqlObj,
+                id=mfqlObj.queryName,
+                report=p[8],
+                withSuchthat=True,
             )
 
             mfqlObj.result.dictQuery[mfqlObj.queryName] = query
@@ -686,18 +694,20 @@ def p_identification_normal_new(p):
         print("%.2f sec." % time.clock())
 
     if len(p) == 6:
-
         mfqlObj.suchthatApplied = False
         if mfqlObj.parsePart == "identification":
-            query = TypeQuery(mfqlObj=mfqlObj, id=mfqlObj.queryName, report=p[5])
+            query = TypeQuery(
+                mfqlObj=mfqlObj, id=mfqlObj.queryName, report=p[5]
+            )
 
             mfqlObj.result.dictQuery[mfqlObj.queryName] = query
 
     if len(p) == 7:
-
         mfqlObj.suchthatApplied = True
         if mfqlObj.parsePart == "identification":
-            query = TypeQuery(mfqlObj=mfqlObj, id=mfqlObj.queryName, report=p[6])
+            query = TypeQuery(
+                mfqlObj=mfqlObj, id=mfqlObj.queryName, report=p[6]
+            )
 
             mfqlObj.result.dictQuery[mfqlObj.queryName] = query
 
@@ -730,7 +740,9 @@ def p_marks(p):
 
             # find variables which are DEFINEd but not used in IDENTIFY
             # they might be used later in SUCHTHAT
-            for i in list(mfqlObj.dictDefinitionTable[mfqlObj.queryName].keys()):
+            for i in list(
+                mfqlObj.dictDefinitionTable[mfqlObj.queryName].keys()
+            ):
                 if not i in [x.name for x in p[1].list()]:
                     name = i.split(mfqlObj.namespaceConnector)
                     raise SyntaxErrorException(
@@ -747,25 +759,33 @@ def p_marks(p):
 
 def p_booleanterm_paren(p):
     """boolmarks : LPAREN boolmarks RPAREN"""
-    p[0] = TypeMarkTerm(rightSide=p[2], leftSide=None, boolOp=None, mfqlObj=mfqlObj)
+    p[0] = TypeMarkTerm(
+        rightSide=p[2], leftSide=None, boolOp=None, mfqlObj=mfqlObj
+    )
 
 
 def p_boolmarks_not(p):
     """boolmarks : NOT boolmarks"""
 
-    p[0] = TypeMarkTerm(rightSide=p[2], leftSide=None, boolOp="NOT", mfqlObj=mfqlObj)
+    p[0] = TypeMarkTerm(
+        rightSide=p[2], leftSide=None, boolOp="NOT", mfqlObj=mfqlObj
+    )
 
 
 def p_boolmarks_or(p):
     """boolmarks : boolmarks OR boolmarks"""
 
-    p[0] = TypeMarkTerm(leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj)
+    p[0] = TypeMarkTerm(
+        leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj
+    )
 
 
 def p_boolmarks_and(p):
     """boolmarks : boolmarks AND boolmarks"""
 
-    p[0] = TypeMarkTerm(leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj)
+    p[0] = TypeMarkTerm(
+        leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj
+    )
 
 
 # 	p[0] = ('and', p[1], p[3])
@@ -774,7 +794,9 @@ def p_boolmarks_and(p):
 def p_boolmarks_if(p):
     """boolmarks : boolmarks IFA boolmarks"""
 
-    p[0] = TypeMarkTerm(leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj)
+    p[0] = TypeMarkTerm(
+        leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj
+    )
 
 
 # 	p[0] = ('if', p[1], p[3])
@@ -783,7 +805,9 @@ def p_boolmarks_if(p):
 def p_boolmarks_onlyif(p):
     """boolmarks : boolmarks IFF boolmarks"""
 
-    p[0] = TypeMarkTerm(leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj)
+    p[0] = TypeMarkTerm(
+        leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj
+    )
 
 
 # 	p[0] = ('iff', p[1], p[3])
@@ -792,7 +816,9 @@ def p_boolmarks_onlyif(p):
 def p_boolmarks_arrow(p):
     """boolmarks : boolmarks ARROW boolmarks"""
 
-    p[0] = TypeMarkTerm(leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj)
+    p[0] = TypeMarkTerm(
+        leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj
+    )
 
 
 # 	p[0] = ('iff', p[1], p[3])
@@ -801,7 +827,9 @@ def p_boolmarks_arrow(p):
 def p_boolmarks_le(p):
     """boolmarks : boolmarks LE boolmarks"""
 
-    p[0] = TypeMarkTerm(leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj)
+    p[0] = TypeMarkTerm(
+        leftSide=p[1], rightSide=p[3], boolOp=p[2], mfqlObj=mfqlObj
+    )
 
 
 # 	p[0] = ('iff', p[1], p[3])
@@ -810,7 +838,9 @@ def p_boolmarks_le(p):
 def p_boolmarks_toScan(p):
     """boolmarks : scan"""
 
-    p[0] = TypeMarkTerm(rightSide=p[1], leftSide=None, boolOp=None, mfqlObj=mfqlObj)
+    p[0] = TypeMarkTerm(
+        rightSide=p[1], leftSide=None, boolOp=None, mfqlObj=mfqlObj
+    )
 
 
 def p_evalMarks(p):
@@ -846,9 +876,7 @@ def p_bterm(p):
         report = []
         count = 0
         for se in mfqlObj.result[mfqlObj.queryName].sc:
-
             if se.listVariables != []:
-
                 ### add the empty variables to the 'normal'
                 # listVariables = []
                 # for empty_var in mfqlObj.dictEmptyVariables[mfqlObj.queryName]:
@@ -859,7 +887,6 @@ def p_bterm(p):
                 ) in (
                     se.listVariables
                 ):  # + mfqlObj.dictEmptyVariables[mfqlObj.queryName]:
-
                     # check if the variable of se contain at least one coming from the current query
                     isIn = False
                     for key in list(vars.keys()):
@@ -871,7 +898,6 @@ def p_bterm(p):
                             break
 
                     if isIn:
-
                         # add the empty vars to the list of variables
                         # if mfqlObj.dictEmptyVariables.has_key(mfqlObj.queryName):
                         if False:
@@ -887,7 +913,6 @@ def p_bterm(p):
                                     vars_plus_empty[empty_var] = e
 
                                     if vars_plus_empty != {}:
-
                                         count += len(vars_plus_empty)
 
                                         mfqlObj.currVars = vars_plus_empty
@@ -904,10 +929,16 @@ def p_bterm(p):
                                         ]
 
                                         if tmpRes[1] != []:
-                                            for key in list(vars_plus_empty.keys()):
-                                                for se in vars_plus_empty[key].se:
+                                            for key in list(
+                                                vars_plus_empty.keys()
+                                            ):
+                                                for se in vars_plus_empty[
+                                                    key
+                                                ].se:
                                                     if se:
-                                                        se.isTakenBySuchthat = True
+                                                        se.isTakenBySuchthat = (
+                                                            True
+                                                        )
                                                     else:  # this is a virtual SurveyEntry
                                                         artSE = SurveyEntry(
                                                             msmass=vars_plus_empty[
@@ -920,19 +951,23 @@ def p_bterm(p):
                                                             dictScans={},
                                                             dictBasePeakIntensity={},
                                                         )
-                                                        artSE.isTakenBySuchthat = True
-                                                        vars_plus_empty[key].se = artSE
+                                                        artSE.isTakenBySuchthat = (
+                                                            True
+                                                        )
+                                                        vars_plus_empty[
+                                                            key
+                                                        ].se = artSE
 
                                                 if vars_plus_empty[key].msmse:
                                                     vars_plus_empty[
                                                         key
-                                                    ].msmse.isTakenBySuchthat = True
+                                                    ].msmse.isTakenBySuchthat = (
+                                                        True
+                                                    )
                                             report.append(vars_plus_empty)
 
                         else:
-
                             if vars != {}:
-
                                 count += len(vars)
 
                                 mfqlObj.currVars = vars
@@ -967,7 +1002,9 @@ def p_bterm(p):
                                                 vars[key].se = artSE
 
                                         if vars[key].msmse:
-                                            vars[key].msmse.isTakenBySuchthat = True
+                                            vars[
+                                                key
+                                            ].msmse.isTakenBySuchthat = True
                                     report.append(vars)
 
                                 # result.append(tmpRes)
@@ -1147,12 +1184,17 @@ def p_scan_object(p):
 
     if p[4]:
         for o in p[4]:
-            mfqlObj.dictDefinitionTable[mfqlObj.queryName][v].options[o[0]] = o[1]
+            mfqlObj.dictDefinitionTable[mfqlObj.queryName][v].options[
+                o[0]
+            ] = o[1]
 
     ### read massrange from sc-constraint ###
-    if isinstance(mfqlObj.dictDefinitionTable[mfqlObj.queryName][v], TypeSFConstraint):
-
-        scConst = mfqlObj.dictDefinitionTable[mfqlObj.queryName][v].elementSequence
+    if isinstance(
+        mfqlObj.dictDefinitionTable[mfqlObj.queryName][v], TypeSFConstraint
+    ):
+        scConst = mfqlObj.dictDefinitionTable[mfqlObj.queryName][
+            v
+        ].elementSequence
 
         if scConst:
             if p[3] == "MS1+" or p[3] == "MS1-":
@@ -1185,13 +1227,20 @@ def p_scan_object(p):
                     "massrange"
                 ] = massrange
 
-    elif isinstance(mfqlObj.dictDefinitionTable[mfqlObj.queryName][v], TypeFloat):
+    elif isinstance(
+        mfqlObj.dictDefinitionTable[mfqlObj.queryName][v], TypeFloat
+    ):
         pass
 
     ### check for the tolerance settings ###
-    if not "tolerance" in mfqlObj.dictDefinitionTable[mfqlObj.queryName][v].options:
+    if (
+        not "tolerance"
+        in mfqlObj.dictDefinitionTable[mfqlObj.queryName][v].options
+    ):
         if p[3] == "MS1+" or p[3] == "MS1-":
-            mfqlObj.precursor = mfqlObj.dictDefinitionTable[mfqlObj.queryName][v]
+            mfqlObj.precursor = mfqlObj.dictDefinitionTable[mfqlObj.queryName][
+                v
+            ]
         if p[3] == "MS2+" or p[3] == "MS2-":
             pass
 
@@ -1243,15 +1292,15 @@ def p_error(p):
     else:
         # print "SYNTAX ERROR at '%s' in line %d of file '%s' " % (p.value, p.lineno, mfqlObj.queryName)
         # detail = "Syntax error at '%s' in file '%s' in line '%d'" % (p.value, mfqlObj.filename, p.lexer.lineno)
-        detail = "Syntax error at '%s' in file '%s'" % (p.value, mfqlObj.filename)
+        detail = "Syntax error at '%s' in file '%s'" % (
+            p.value,
+            mfqlObj.filename,
+        )
         raise SyntaxErrorException(detail, "", mfqlObj.filename, 0)
 
 
 parser = yacc.yacc(debug=0, optimize=0)
 # bparser = yacc.yacc(method = 'LALR')
-
-
-
 
 
 def startParsing(
@@ -1266,9 +1315,8 @@ def startParsing(
     generateStatistics,
     mode="",
     log_steps=False,
-    callback = None
+    callback=None,
 ):
-
     time.clock()
 
     global mfqlObj
@@ -1282,10 +1330,8 @@ def startParsing(
     options = mfqlObj.options
 
     if mode == "generateTargetList":
-
         ###  ###
         for k in list(dictData.keys()):
-
             mfqlObj.filename = k
             numQueries = 0
 
@@ -1299,7 +1345,6 @@ def startParsing(
 
     ### do the IDENTIFY(cation) ###
     for k in list(dictData.keys()):
-
         mfqlObj.filename = k
         numQueries = 0
 
@@ -1310,12 +1355,14 @@ def startParsing(
 
         mfqlObj.reset()
     if log_steps:
-        if  callback is None:
-            def holder(this,that):
+        if callback is None:
+
+            def holder(this, that):
                 pass
+
             callback = holder
 
-        callback('identification', mfqlObj.result.resultSC)
+        callback("identification", mfqlObj.result.resultSC)
 
     if isotopicCorrectionMS:
         # mfqlObj.result.isotopicCorrectionMSMS()
@@ -1325,7 +1372,7 @@ def startParsing(
         # to drop high ppms and lower the influense of isotopic corrections
         mfqlObj.result.isotopicCorrectionMS()
         if log_steps:
-            callback('isotopicCorrectionMS', mfqlObj.result.resultSC)
+            callback("isotopicCorrectionMS", mfqlObj.result.resultSC)
         # gprogressCount += 1
         # if parent:
         # 	(cont, skip) = parent.debug.progressDialog.Update(gprogressCount)
@@ -1341,10 +1388,14 @@ def startParsing(
     # note the change first
     print("generating result MasterScan ...", end=" ")
 
-    merge_collapse_ids = mfqlObj.options._data.get("lx2_merge_collapse_ids", True)
+    merge_collapse_ids = mfqlObj.options._data.get(
+        "lx2_merge_collapse_ids", True
+    )
     mfqlObj.result.generateResultSC(merge_collapse_ids=merge_collapse_ids)
     if log_steps:
-        callback('merge_collapse_ids',mfqlObj.resultSC) # now its a list not actually scans
+        callback(
+            "merge_collapse_ids", mfqlObj.resultSC
+        )  # now its a list not actually scans
     print("%.2f sec." % time.clock())
 
     # print("only some surveys are of interest")
@@ -1379,22 +1430,26 @@ def startParsing(
             mfqlObj.result.correctMonoisotopicPeaks()
         print("%.2f sec." % time.clock())
         if log_steps:
-            callback('correctMonoisotopicPeaks', mfqlObj.resultSC)
+            callback("correctMonoisotopicPeaks", mfqlObj.resultSC)
             print(
                 "changed the intentity again, now I dont know who changed the intensity"
             )
-            for se in (se for se in mfqlObj.resultSC if se.monoisotopicRatio != 1):
+            for se in (
+                se for se in mfqlObj.resultSC if se.monoisotopicRatio != 1
+            ):
                 print(f"{se} {se.monoisotopicRatio}")
 
-    if Debug("removeIsotopes"):  # and (isotopicCorrectionMS or isotopicCorrectionMSMS):
+    if Debug(
+        "removeIsotopes"
+    ):  # and (isotopicCorrectionMS or isotopicCorrectionMSMS):
         mfqlObj.result.removeIsotopicCorrected()
         if log_steps:
-            callback('removeIsotopicCorrected', mfqlObj.resultSC)
+            callback("removeIsotopicCorrected", mfqlObj.resultSC)
 
     print("generate query result MasterScans ...", end=" ")
     mfqlObj.result.generateQueryResultSC()
     if log_steps:
-            callback('generateQueryResultSC', mfqlObj.resultSC)
+        callback("generateQueryResultSC", mfqlObj.resultSC)
     print("%.2f sec." % time.clock())
 
     if log_steps:
@@ -1415,12 +1470,11 @@ def startParsing(
     print("checking if there are isobaric species ...", end=" ")
     mfqlObj.result.checkIsobaricSpeciesBeforeSUCHTHAT()
     if log_steps:
-            callback('checkIsobaricSpeciesBeforeSUCHTHAT', mfqlObj.resultSC)
+        callback("checkIsobaricSpeciesBeforeSUCHTHAT", mfqlObj.resultSC)
     print("%.2f sec." % time.clock())
 
     ### do the REPORT ###
     for k in list(dictData.keys()):
-
         # log.setLevel(logging.INFO)
         # log.info("Processing %s", k, extra = func)
 
@@ -1439,7 +1493,6 @@ def startParsing(
                         print(s)
 
     if complementSC:
-
         # mfqlObj.result.isotopicCorrectionMSMS()
         # print "de-isotoping MS ...",
         # mfqlObj.result.deIsotopingMS_complement()
@@ -1463,7 +1516,6 @@ def startParsing(
                     for k, variab in variabs.items():
                         for s in variab.se:
                             print(s)
-        
 
     ## debugging ###
     # for se in mfqlObj.result.mfqlObj.resultSC:

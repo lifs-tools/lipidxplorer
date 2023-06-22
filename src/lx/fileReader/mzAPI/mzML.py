@@ -185,11 +185,16 @@ class mzFile(mzAPImzFile):
         smart_strings=False,
     )
     _xp_prof = etree.XPath(
-        './mz:cvParam[@name="profile spectrum"]', namespaces=NSd, smart_strings=False
+        './mz:cvParam[@name="profile spectrum"]',
+        namespaces=NSd,
+        smart_strings=False,
     )
     # filterstring for Thermo files
     _xp_fstr = etree.XPath(
-        ('./mz:scanList/mz:scan/mz:cvParam[@name="filter string"]/' "attribute::value"),
+        (
+            './mz:scanList/mz:scan/mz:cvParam[@name="filter string"]/'
+            "attribute::value"
+        ),
         namespaces=NSd,
         smart_strings=False,
     )
@@ -199,10 +204,14 @@ class mzFile(mzAPImzFile):
         smart_strings=False,
     )
     _xp_pol_neg = etree.XPath(
-        ('./mz:cvParam[@name="negative scan"]'), namespaces=NSd, smart_strings=False
+        ('./mz:cvParam[@name="negative scan"]'),
+        namespaces=NSd,
+        smart_strings=False,
     )
     _xp_pol_pos = etree.XPath(
-        ('./mz:cvParam[@name="positive scan"]'), namespaces=NSd, smart_strings=False
+        ('./mz:cvParam[@name="positive scan"]'),
+        namespaces=NSd,
+        smart_strings=False,
     )
     _xp_tic = etree.XPath(
         './mz:cvParam[@name="total ion current"]/attribute::value',
@@ -238,7 +247,9 @@ class mzFile(mzAPImzFile):
         self._info_scans = None
         self.scan_map = {}
 
-    def scan_list(self, start_time=None, stop_time=None, start_mz=0, stop_mz=99999):
+    def scan_list(
+        self, start_time=None, stop_time=None, start_mz=0, stop_mz=99999
+    ):
         if start_time is None:
             start_time = -1.0
         # rather than guess the stop_time, if it's None we'll just ignore it
@@ -257,12 +268,16 @@ class mzFile(mzAPImzFile):
         scan_list = []
 
         self.fileobj.seek(0)
-        context = etree.iterparse(self.fileobj, events=("end",), tag="%sspectrum" % NS)
+        context = etree.iterparse(
+            self.fileobj, events=("end",), tag="%sspectrum" % NS
+        )
         for event, elem in context:
             xt = self._xp_time(elem)
             if xt:
                 time = float(xt[0])
-                if (start_time <= time) and ((not stop_time) or time <= stop_time):
+                if (start_time <= time) and (
+                    (not stop_time) or time <= stop_time
+                ):
                     if self._xp_ms2(elem):
                         if self._xp_iso(elem):
                             p = self._xp_iso(elem)
@@ -276,12 +291,15 @@ class mzFile(mzAPImzFile):
                                 scan_list.append((time, mz))
                         else:
                             print(
-                                "this ms2 didn't have precursor mz...", elem.get("id")
+                                "this ms2 didn't have precursor mz...",
+                                elem.get("id"),
                             )
                     else:
                         scan_list.append((time, 0.0))
             else:
-                print("this spectrum didn't have a scan time...", elem.get("id"))
+                print(
+                    "this spectrum didn't have a scan time...", elem.get("id")
+                )
 
             elem.clear()
 
@@ -317,7 +335,9 @@ class mzFile(mzAPImzFile):
         scan_info = []
 
         self.fileobj.seek(0)
-        context = etree.iterparse(self.fileobj, events=("end",), tag="%sspectrum" % NS)
+        context = etree.iterparse(
+            self.fileobj, events=("end",), tag="%sspectrum" % NS
+        )
         n_ms1 = 0
         n_ms2 = 0
         n_ms1_filtered = 0
@@ -327,7 +347,6 @@ class mzFile(mzAPImzFile):
             if xt:
                 time = float(xt[0])
                 if start_time <= time <= stop_time:
-
                     total_ic = elem.get("total ion count")
                     fstr = self._xp_fstr(elem)  # get filterLine
                     precursor = None
@@ -369,7 +388,9 @@ class mzFile(mzAPImzFile):
 
                     if self._xp_ms2(elem):
                         p = None
-                        if precursor is None:  # no precursor from the filter line
+                        if (
+                            precursor is None
+                        ):  # no precursor from the filter line
                             if self._xp_iso(elem):
                                 p = float(self._xp_iso(elem)[0])
                             elif self._xp_pre(elem):
@@ -409,10 +430,19 @@ class mzFile(mzAPImzFile):
 
                                 # caching here changes the results :-/
                                 # load mz and intensity arrays proactively
-                                mz, it = list(zip(*self._scan_from_spec_node(elem, xt)))
+                                mz, it = list(
+                                    zip(*self._scan_from_spec_node(elem, xt))
+                                )
                                 empty = [0 for i in range(len(mz))]
                                 self.scan_map[scan_name] = list(
-                                    zip(list(mz), list(it), empty, empty, empty, empty)
+                                    zip(
+                                        list(mz),
+                                        list(it),
+                                        empty,
+                                        empty,
+                                        empty,
+                                        empty,
+                                    )
                                 )
 
                                 n_ms2 = n_ms2 + 1
@@ -445,7 +475,9 @@ class mzFile(mzAPImzFile):
 
                         # caching here changes the results :-/
                         # load mz and intensity arrays proactively
-                        mz, it = list(zip(*self._scan_from_spec_node(elem, xt)))
+                        mz, it = list(
+                            zip(*self._scan_from_spec_node(elem, xt))
+                        )
                         empty = [0 for i in range(len(mz))]
                         self.scan_map[scan_name] = list(
                             zip(list(mz), list(it), empty, empty, empty, empty)
@@ -455,7 +487,9 @@ class mzFile(mzAPImzFile):
                 else:
                     n_ms1_filtered = n_ms1_filtered + 1
             else:
-                print("this spectrum didn't have a scan time...", elem.get("id"))
+                print(
+                    "this spectrum didn't have a scan time...", elem.get("id")
+                )
                 n_ms1_filtered = n_ms1_filtered + 1
             elem.clear()
 
@@ -474,7 +508,9 @@ class mzFile(mzAPImzFile):
             )[0]["time"]
 
         self.fileobj.seek(0)
-        context = etree.iterparse(self.fileobj, events=("end",), tag="%sspectrum" % NS)
+        context = etree.iterparse(
+            self.fileobj, events=("end",), tag="%sspectrum" % NS
+        )
         for event, elem in context:
             if elem.get("id") == scan_name:
                 x = self._xp_time(elem)
@@ -495,20 +531,27 @@ class mzFile(mzAPImzFile):
 
         if self._info_file:
             closest_item = self._info_scans.closest(key="time", value=time)
-            spec_start, spec_size = closest_item["offset"], closest_item["size"]
+            spec_start, spec_size = (
+                closest_item["offset"],
+                closest_item["size"],
+            )
             self.fileobj.seek(spec_start)
             spec = etree.XML(self.fileobj.read(spec_size))
 
             mz, it = list(
                 zip(
-                    *self._scan_from_spec_node(spec, closest_item["time"], prefix=False)
+                    *self._scan_from_spec_node(
+                        spec, closest_item["time"], prefix=False
+                    )
                 )
             )
             empty = [0 for i in range(len(mz))]
             return list(zip(list(mz), list(it), empty, empty, empty, empty))
 
         self.fileobj.seek(0)
-        context = etree.iterparse(self.fileobj, events=("end",), tag="%sspectrum" % NS)
+        context = etree.iterparse(
+            self.fileobj, events=("end",), tag="%sspectrum" % NS
+        )
         event, elem = next(context)
         min_dtime = abs(time - float((self._xp_time(elem) or (0.0,))[0]))
         closest_elem = elem
@@ -520,7 +563,9 @@ class mzFile(mzAPImzFile):
                 if x == time:
                     mz, it = list(zip(*self._scan_from_spec_node(elem, x)))
                     empty = [0 for i in range(len(mz))]
-                    return list(zip(list(mz), list(it), empty, empty, empty, empty))
+                    return list(
+                        zip(list(mz), list(it), empty, empty, empty, empty)
+                    )
                     # return self._scan_from_spec_node(elem, x)
                 elif abs(time - x) < min_dtime:
                     min_dtime = abs(time - x)
@@ -534,7 +579,8 @@ class mzFile(mzAPImzFile):
             mz, it = list(
                 zip(
                     *self._scan_from_spec_node(
-                        closest_elem, float((self._xp_time(closest_elem) or (0.0,))[0])
+                        closest_elem,
+                        float((self._xp_time(closest_elem) or (0.0,))[0]),
                     )
                 )
             )
@@ -566,24 +612,38 @@ class mzFile(mzAPImzFile):
 
         xic_data = []
 
-        context = etree.iterparse(fileobj, events=("end",), tag="%sspectrum" % p)
+        context = etree.iterparse(
+            fileobj, events=("end",), tag="%sspectrum" % p
+        )
         for event, elem in context:
-            if elem.find('./%scvParam[@name="ms level"][@value="1"]' % p) is not None:
+            if (
+                elem.find('./%scvParam[@name="ms level"][@value="1"]' % p)
+                is not None
+            ):
                 t = elem.find(
-                    './%sscanList/%sscan/%scvParam[@name="scan start time"]' % (p * 3)
+                    './%sscanList/%sscan/%scvParam[@name="scan start time"]'
+                    % (p * 3)
                 )
                 if t is not None:
                     time = float(t.get("value"))
                     if start_time <= time <= stop_time:
-                        scan = self._scan_from_spec_node(elem, time, prefix=(p == NS))
+                        scan = self._scan_from_spec_node(
+                            elem, time, prefix=(p == NS)
+                        )
                         xic_data.append(
                             (
                                 time,
-                                sum(i for mz, i in scan if start_mz <= mz <= stop_mz),
+                                sum(
+                                    i
+                                    for mz, i in scan
+                                    if start_mz <= mz <= stop_mz
+                                ),
                             )
                         )
                 else:
-                    print("this spectrum didn't have a scan time...", s.get("id"))
+                    print(
+                        "this spectrum didn't have a scan time...", s.get("id")
+                    )
             elem.clear()
 
         xic_data.sort()
@@ -600,7 +660,9 @@ class mzFile(mzAPImzFile):
             parse_e = lambda e: (self._xp_time(e), e.clear())
 
             times = [
-                float(x[0]) for x in (parse_e(elem)[0] for event, elem in context) if x
+                float(x[0])
+                for x in (parse_e(elem)[0] for event, elem in context)
+                if x
             ]
 
         return (min(times), max(times)) if times else (0.0, 0.0)
@@ -642,7 +704,15 @@ class mzFile(mzAPImzFile):
         # get rid of last offset (which was the end of the spectrumList)
         offsets.pop()
 
-        keys = ("time", "mz", "scan_name", "scan_type", "scan_mode", "offset", "size")
+        keys = (
+            "time",
+            "mz",
+            "scan_name",
+            "scan_type",
+            "scan_mode",
+            "offset",
+            "size",
+        )
 
         self._info_file = ":memory:"
         self._info_scans = mzInfoFile(
@@ -670,7 +740,9 @@ class mzFile(mzAPImzFile):
         mz_array = None
         int_array = None
 
-        for bin in spec.iterfind("%sbinaryDataArrayList/%sbinaryDataArray" % (p * 2)):
+        for bin in spec.iterfind(
+            "%sbinaryDataArrayList/%sbinaryDataArray" % (p * 2)
+        ):
             if bin.find('%scvParam[@name="64-bit float"]' % p) is not None:
                 fmt = "%dd" % array_length
             else:
@@ -689,7 +761,9 @@ class mzFile(mzAPImzFile):
                         mz_array = struct.unpack(
                             fmt,
                             zlib.decompress(
-                                base64.standard_b64decode(bin.find("%sbinary" % p).text)
+                                base64.standard_b64decode(
+                                    bin.find("%sbinary" % p).text
+                                )
                             ),
                         )
                     else:
@@ -698,11 +772,15 @@ class mzFile(mzAPImzFile):
                     if not bin.find("%sbinary" % p).text is None:
                         mz_array = struct.unpack(
                             fmt,
-                            base64.standard_b64decode(bin.find("%sbinary" % p).text),
+                            base64.standard_b64decode(
+                                bin.find("%sbinary" % p).text
+                            ),
                         )
                     else:
                         mz_array = [0.0]
-            elif bin.find('%scvParam[@name="intensity array"]' % p) is not None:
+            elif (
+                bin.find('%scvParam[@name="intensity array"]' % p) is not None
+            ):
                 if int_array:
                     print("Overwriting intensity array!?")
                 if compression:
@@ -710,7 +788,9 @@ class mzFile(mzAPImzFile):
                         int_array = struct.unpack(
                             fmt,
                             zlib.decompress(
-                                base64.standard_b64decode(bin.find("%sbinary" % p).text)
+                                base64.standard_b64decode(
+                                    bin.find("%sbinary" % p).text
+                                )
                             ),
                         )
                     else:
@@ -719,7 +799,9 @@ class mzFile(mzAPImzFile):
                     if not bin.find("%sbinary" % p).text is None:
                         int_array = struct.unpack(
                             fmt,
-                            base64.standard_b64decode(bin.find("%sbinary" % p).text),
+                            base64.standard_b64decode(
+                                bin.find("%sbinary" % p).text
+                            ),
                         )
                     else:
                         int_array = [0.0]
@@ -727,12 +809,17 @@ class mzFile(mzAPImzFile):
                 print(
                     (
                         "Found some other kind of binary array in here",
-                        [b.get("name") for b in bin.iterfind("%scvParam[@name]" % p)],
+                        [
+                            b.get("name")
+                            for b in bin.iterfind("%scvParam[@name]" % p)
+                        ],
                     )
                 )
 
         if mz_array and int_array:
-            return mzScan(list(zip(mz_array, int_array)), scan_time, mode=scan_mode)
+            return mzScan(
+                list(zip(mz_array, int_array)), scan_time, mode=scan_mode
+            )
         else:
             if mz_array:
                 print("No intensity values")
@@ -764,7 +851,9 @@ class mzFileInMemory:
         # now there's nothing to do, because there's no handle on the mzML file
         # pass
 
-    def scan_list(self, start_time=None, stop_time=None, start_mz=0, stop_mz=99999):
+    def scan_list(
+        self, start_time=None, stop_time=None, start_mz=0, stop_mz=99999
+    ):
         if start_time is None or stop_time is None:
             (file_start_time, file_stop_time) = self.time_range()
         if start_time is None:
@@ -774,9 +863,12 @@ class mzFileInMemory:
 
         scan_list = []
 
-        for s in self.fileobj.iterfind(".//%srun/%sspectrumList/%sspectrum" % (NS * 3)):
+        for s in self.fileobj.iterfind(
+            ".//%srun/%sspectrumList/%sspectrum" % (NS * 3)
+        ):
             st = s.find(
-                '%sscanList/%sscan/%scvParam[@name="scan start time"]' % (NS * 3)
+                '%sscanList/%sscan/%scvParam[@name="scan start time"]'
+                % (NS * 3)
             )
             if st is not None:
                 time = float(st.get("value"))
@@ -792,7 +884,10 @@ class mzFileInMemory:
                             if start_mz <= mz <= stop_mz:
                                 scan_list.append((time, mz))
                         else:
-                            print("this ms2 didn't have precursor mz...", s.get("id"))
+                            print(
+                                "this ms2 didn't have precursor mz...",
+                                s.get("id"),
+                            )
                     else:
                         scan_list.append((time, 0.0))
             else:
@@ -810,9 +905,12 @@ class mzFileInMemory:
 
         scan_info = []
 
-        for s in self.fileobj.iterfind(".//%srun/%sspectrumList/%sspectrum" % (NS * 3)):
+        for s in self.fileobj.iterfind(
+            ".//%srun/%sspectrumList/%sspectrum" % (NS * 3)
+        ):
             st = s.find(
-                '%sscanList/%sscan/%scvParam[@name="scan start time"]' % (NS * 3)
+                '%sscanList/%sscan/%scvParam[@name="scan start time"]'
+                % (NS * 3)
             )
             if st is not None:
                 time = float(st.get("value"))
@@ -827,7 +925,10 @@ class mzFileInMemory:
                             mz = float(p.get("value"))
                             if start_mz <= mz <= stop_mz:
                                 if (
-                                    s.find('%scvParam[@name="profile spectrum"]' % NS)
+                                    s.find(
+                                        '%scvParam[@name="profile spectrum"]'
+                                        % NS
+                                    )
                                     is not None
                                 ):
                                     scan_mode = "p"
@@ -836,10 +937,21 @@ class mzFileInMemory:
 
                                 scan_name = s.get("id")
                                 scan_info.append(
-                                    (time, mz, scan_name, "MS2", scan_mode, 0, 0)
+                                    (
+                                        time,
+                                        mz,
+                                        scan_name,
+                                        "MS2",
+                                        scan_mode,
+                                        0,
+                                        0,
+                                    )
                                 )
                         else:
-                            print("this ms2 didn't have precursor mz...", s.get("id"))
+                            print(
+                                "this ms2 didn't have precursor mz...",
+                                s.get("id"),
+                            )
                     else:
                         if (
                             s.find('%scvParam[@name="profile spectrum"]' % NS)
@@ -850,7 +962,9 @@ class mzFileInMemory:
                             scan_mode = "c"
 
                         scan_name = s.get("id")
-                        scan_info.append((time, 0.0, scan_name, "MS1", scan_mode, 0, 0))
+                        scan_info.append(
+                            (time, 0.0, scan_name, "MS1", scan_mode, 0, 0)
+                        )
             else:
                 print("this spectrum didn't have a scan time...", s.get("id"))
 
@@ -858,11 +972,13 @@ class mzFileInMemory:
 
     def scan_time_from_scan_name(self, scan_name):
         spec = self.fileobj.find(
-            './/%srun/%sspectrumList/%sspectrum[@id="%s"]' % (NS * 3 + (scan_name,))
+            './/%srun/%sspectrumList/%sspectrum[@id="%s"]'
+            % (NS * 3 + (scan_name,))
         )
         if spec is not None:
             st = s.find(
-                '%sscanList/%sscan/%scvParam[@name="scan start time"]' % (NS * 3)
+                '%sscanList/%sscan/%scvParam[@name="scan start time"]'
+                % (NS * 3)
             )
             if st is not None:
                 return float(st.get("value"))
@@ -872,7 +988,6 @@ class mzFileInMemory:
             print("scan not found:", scan_name)
 
     def scan(self, time):
-
         search_term = (
             ".//%srun/%sspectrumList/%sspectrum/%sscanList/%sscan/"
             '%scvParam[@name="scan start time"]'
@@ -885,7 +1000,9 @@ class mzFileInMemory:
 
         spec = min_cv.getparent().getparent().getparent()
 
-        mz, it = list(zip(*self._scan_from_spec_node(spec, float(min_cv.get("value")))))
+        mz, it = list(
+            zip(*self._scan_from_spec_node(spec, float(min_cv.get("value"))))
+        )
         empty = [0 for i in range(len(mz))]
         return list(zip(list(mz), list(it), empty, empty, empty, empty))
 
@@ -910,14 +1027,22 @@ class mzFileInMemory:
         for cv in self.fileobj.iterfind(search_term):
             s = cv.getparent()
             st = s.find(
-                '%sscanList/%sscan/%scvParam[@name="scan start time"]' % (NS * 3)
+                '%sscanList/%sscan/%scvParam[@name="scan start time"]'
+                % (NS * 3)
             )
             if st is not None:
                 time = float(st.get("value"))
                 if start_time <= time <= stop_time:
                     scan = self._scan_from_spec_node(s, time)
                     xic_data.append(
-                        (time, sum(i for mz, i in scan if start_mz <= mz <= stop_mz))
+                        (
+                            time,
+                            sum(
+                                i
+                                for mz, i in scan
+                                if start_mz <= mz <= stop_mz
+                            ),
+                        )
                     )
             else:
                 print("this spectrum didn't have a scan time...", s.get("id"))
@@ -929,7 +1054,9 @@ class mzFileInMemory:
             './/%sspectrum/%sscanList/%sscan/%scvParam[@name="scan start time"]'
             % (NS * 4)
         )
-        times = [float(t.get("value")) for t in self.fileobj.iterfind(search_term)]
+        times = [
+            float(t.get("value")) for t in self.fileobj.iterfind(search_term)
+        ]
 
         return (min(times), max(times))
 
@@ -948,7 +1075,9 @@ class mzFileInMemory:
         mz_array = None
         int_array = None
 
-        for bin in spec.iterfind("%sbinaryDataArrayList/%sbinaryDataArray" % (NS * 2)):
+        for bin in spec.iterfind(
+            "%sbinaryDataArrayList/%sbinaryDataArray" % (NS * 2)
+        ):
             if bin.find('%scvParam[@name="64-bit float"]' % NS) is not None:
                 fmt = "d" * array_length
             else:
@@ -966,37 +1095,54 @@ class mzFileInMemory:
                     mz_array = struct.unpack(
                         fmt,
                         zlib.decompress(
-                            base64.standard_b64decode(bin.find("%sbinary" % NS).text)
+                            base64.standard_b64decode(
+                                bin.find("%sbinary" % NS).text
+                            )
                         ),
                     )
                 else:
                     mz_array = struct.unpack(
-                        fmt, base64.standard_b64decode(bin.find("%sbinary" % NS).text)
+                        fmt,
+                        base64.standard_b64decode(
+                            bin.find("%sbinary" % NS).text
+                        ),
                     )
-            elif bin.find('%scvParam[@name="intensity array"]' % NS) is not None:
+            elif (
+                bin.find('%scvParam[@name="intensity array"]' % NS) is not None
+            ):
                 if int_array:
                     print("Overwriting intensity array!?")
                 if compression:
                     int_array = struct.unpack(
                         fmt,
                         zlib.decompress(
-                            base64.standard_b64decode(bin.find("%sbinary" % NS).text)
+                            base64.standard_b64decode(
+                                bin.find("%sbinary" % NS).text
+                            )
                         ),
                     )
                 else:
                     int_array = struct.unpack(
-                        fmt, base64.standard_b64decode(bin.find("%sbinary" % NS).text)
+                        fmt,
+                        base64.standard_b64decode(
+                            bin.find("%sbinary" % NS).text
+                        ),
                     )
             else:
                 print(
                     (
                         "Found some other kind of binary array in here",
-                        [b.get("name") for b in bin.iterfind("%scvParam[@name]" % NS)],
+                        [
+                            b.get("name")
+                            for b in bin.iterfind("%scvParam[@name]" % NS)
+                        ],
                     )
                 )
 
         if mz_array and int_array:
-            return mzScan(list(zip(mz_array, int_array)), scan_time, mode=scan_mode)
+            return mzScan(
+                list(zip(mz_array, int_array)), scan_time, mode=scan_mode
+            )
         else:
             if mz_array:
                 print("No intensity values")

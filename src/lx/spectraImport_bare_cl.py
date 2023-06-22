@@ -69,10 +69,16 @@ def lpdxImportDEF_new(parent, options=None):
                 # scan.sampleOccThr['MS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
                 # scan.sampleOccThr['MSMS'].append((float(i.split(':')[0]), [x.strip() for x in i.split(':')[1].split(',')]))
                 scan.sampleOccThr["MS"].append(
-                    (options["MSminOccupation"], [x.strip() for x in i.split(",")])
+                    (
+                        options["MSminOccupation"],
+                        [x.strip() for x in i.split(",")],
+                    )
                 )
                 scan.sampleOccThr["MSMS"].append(
-                    (options["MSMSminOccupation"], [x.strip() for x in i.split(",")])
+                    (
+                        options["MSMSminOccupation"],
+                        [x.strip() for x in i.split(",")],
+                    )
                 )
         else:
             scan.sampleOccThr["MS"] = [(options["MSminOccupation"], [])]
@@ -408,9 +414,14 @@ def lpdxImportDEF_new(parent, options=None):
 
 
 def doImport(
-    spectraFormat, scan, listFiles, alignmentMS, alignmentMSMS, scanAvg, importMSMS=True
+    spectraFormat,
+    scan,
+    listFiles,
+    alignmentMS,
+    alignmentMSMS,
+    scanAvg,
+    importMSMS=True,
 ):
-
     # some statistics
     nb_ms_scans = []
     nb_ms_peaks = []
@@ -432,8 +443,9 @@ def doImport(
         listFiles.sort()
 
         for i in listFiles:
-
-            if spectraFormat == "mzXML":  # old mzXML import. I don't wanna touch this
+            if (
+                spectraFormat == "mzXML"
+            ):  # old mzXML import. I don't wanna touch this
                 ret = add_mzXMLSample(
                     scan,
                     i,
@@ -472,7 +484,9 @@ def doImport(
                 nb_msms_peaks.append(ret[5])
 
         if not len(dictBasePeakIntensity.keys()) > 0:
-            raise Exception("Something wrong with the calculation of the base peaks")
+            raise Exception(
+                "Something wrong with the calculation of the base peaks"
+            )
 
     else:
         raise Exception("No valid option given.")
@@ -494,13 +508,15 @@ def doImport(
     if nb_msms_scans > 0:
         reportout(
             "> {0:.<30s}{1:>11d}".format(
-                "Avg. Nb. of MS/MS scans", sum(nb_msms_scans) / len(nb_msms_scans)
+                "Avg. Nb. of MS/MS scans",
+                sum(nb_msms_scans) / len(nb_msms_scans),
             )
         )
     if nb_msms_peaks > 0:
         reportout(
             "> {0:.<30s}{1:>11d}".format(
-                "Avg. Nb. of MS/MS peaks", sum(nb_msms_peaks) / len(nb_msms_peaks)
+                "Avg. Nb. of MS/MS peaks",
+                sum(nb_msms_peaks) / len(nb_msms_peaks),
             )
         )
 
@@ -511,15 +527,19 @@ def doImport(
         "precursorMassShift"
     ]:
         if scan.options["precursorMassShift"] != 0:
-            print "Applying precursor mass shift"
+            print("Applying precursor mass shift")
             scan.shiftPrecursors(scan.options["precursorMassShift"])
 
     if (scan.options["precursorMassShiftOrbi"] is not None) and scan.options[
         "precursorMassShiftOrbi"
     ]:
         if scan.options["precursorMassShiftOrbi"] != 0:
-            print "Applying precursor mass shift for Scanline error on Orbitrap data."
-            scan.shiftPrecursorsInRawFilterLine(scan.options["precursorMassShiftOrbi"])
+            print(
+                "Applying precursor mass shift for Scanline error on Orbitrap data."
+            )
+            scan.shiftPrecursorsInRawFilterLine(
+                scan.options["precursorMassShiftOrbi"]
+            )
 
     scan.listSamples.sort()
 
@@ -541,7 +561,7 @@ def doImport(
     reportout("%.2f sec. for calibrating the spectra" % calibrationtime)
 
     # align MS spectra
-    print "Aligning MS spectra", alignmentMS
+    print("Aligning MS spectra", alignmentMS)
 
     ### align the spectra for the MasterScan ###
 
@@ -598,9 +618,13 @@ def doImport(
     if importMSMS:
         reportout("Aligning MS/MS spectra %s\n" % alignmentMSMS)
         if alignmentMSMS == "linear":
-            mkMSMSEntriesLinear_new(scan, listPolarity, numLoops=3, isPIS=False)
+            mkMSMSEntriesLinear_new(
+                scan, listPolarity, numLoops=3, isPIS=False
+            )
         elif alignmentMSMS == "heuristic":
-            mkMSMSEntriesHeuristic_new(scan, listPolarity, numLoops=3, isPIS=False)
+            mkMSMSEntriesHeuristic_new(
+                scan, listPolarity, numLoops=3, isPIS=False
+            )
 
     alignmenttime = time.clock() - starttime - loadingtime - calibrationtime
     reportout("%.2f sec. for aligning the spectra\n" % alignmenttime)
@@ -616,7 +640,9 @@ def doImport(
     for se in scan.listSurveyEntry:
         se.sortAndIndedice()
 
-    reportout("%.2f sec. for the whole import process" % (time.clock() - starttime))
+    reportout(
+        "%.2f sec. for the whole import process" % (time.clock() - starttime)
+    )
     reportout("\n")
 
     return scan

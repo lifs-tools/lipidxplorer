@@ -9,8 +9,9 @@ import time
 import pickle
 
 if __name__ == "__main__":
-
-    mzml_file = "test_resources\\small_test\\190321_Serum_Lipidextract_368723_01.mzML"
+    mzml_file = (
+        "test_resources\\small_test\\190321_Serum_Lipidextract_368723_01.mzML"
+    )
     mfql_file = "test_resources\\small_test\\170213_CE_pos_MSMS.mfql"
 
     mfql = mfql_Parser.fromFile(mfql_file)

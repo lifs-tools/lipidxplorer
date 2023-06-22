@@ -16,7 +16,6 @@ from lpdxParser import *
 
 
 def main():
-
     optParser = OptionParser(
         usage="Usage: lpdxSCC.py <subcommand> [options] [args]\n\n\
 Availible subcommands:\n\
@@ -38,7 +37,6 @@ Availible subcommands:\n\
 
     # open input mfql file
     if len(args) > 0:
-
         if options.accuracy:
             accuracy = 1000000 / float(options.accuracy)
         else:
@@ -49,7 +47,9 @@ Availible subcommands:\n\
         else:
             if args[0] == "msc":
                 elscp = parseElemSeq(args[2])
-                rslt = lpdxSCTools.calcSFbyMass(float(args[1]), elscp, accuracy)
+                rslt = lpdxSCTools.calcSFbyMass(
+                    float(args[1]), elscp, accuracy
+                )
                 rsltlist = []
                 for i in rslt:
                     rsltlist.append((i.getWeight(), i))
@@ -70,7 +70,9 @@ Availible subcommands:\n\
                 print("Check, if you did not forget to add the charge!")
                 elscp = parseElemSeq(args[1])
                 rslt = elscp.getWeight()
-                print("Weight is:", rslt, "; Double Bounds are:", elscp.get_DB())
+                print(
+                    "Weight is:", rslt, "; Double Bounds are:", elscp.get_DB()
+                )
 
             elif args[0] == "sfsc":
                 elscp = parseElemSeq(args[1])
@@ -78,19 +80,22 @@ Availible subcommands:\n\
                     print(i, i.getWeight())
 
             elif args[0] == "corrDP":
-
                 res = 1000000 / float(args[3])
 
                 # open the spectra files
                 s1 = open(args[1], "r")
                 spec1 = []
                 for line in s1.readlines():
-                    spec1.append([float(line.split(",")[0]), float(line.split(",")[1])])
+                    spec1.append(
+                        [float(line.split(",")[0]), float(line.split(",")[1])]
+                    )
                 s1.close()
                 s2 = open(args[2], "r")
                 spec2 = []
                 for line in s2.readlines():
-                    spec2.append([float(line.split(",")[0]), float(line.split(",")[1])])
+                    spec2.append(
+                        [float(line.split(",")[0]), float(line.split(",")[1])]
+                    )
                 s2.close()
 
                 # match both spectra. The result are vectors VSpec1/2 with the same dimension
@@ -103,7 +108,6 @@ Availible subcommands:\n\
                 sum = 0
                 peak = 0
                 while peak < max(len(spec1), len(spec2)) - 1:
-
                     t = spec1[peak][0] / res
 
                     if (
@@ -186,19 +190,22 @@ Availible subcommands:\n\
                 )
 
             elif args[0] == "corrPC":
-
                 res = 1000000 / float(args[3])
 
                 # open the spectra files
                 s1 = open(args[1], "r")
                 spec1 = []
                 for line in s1.readlines():
-                    spec1.append([float(line.split(",")[0]), float(line.split(",")[1])])
+                    spec1.append(
+                        [float(line.split(",")[0]), float(line.split(",")[1])]
+                    )
                 s1.close()
                 s2 = open(args[2], "r")
                 spec2 = []
                 for line in s2.readlines():
-                    spec2.append([float(line.split(",")[0]), float(line.split(",")[1])])
+                    spec2.append(
+                        [float(line.split(",")[0]), float(line.split(",")[1])]
+                    )
                 s2.close()
 
                 # match both spectra. The result are vectors VSpec1/2 with the same dimension
@@ -211,7 +218,6 @@ Availible subcommands:\n\
                 sum = 0
                 peak = 0
                 while peak < max(len(spec1), len(spec2)) - 1:
-
                     t = spec1[peak][0] / res
 
                     if (

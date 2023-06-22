@@ -13,7 +13,6 @@ from lx.spectraContainer import MSMSEntry
 
 class TypeScan:
     def __init__(self, mfqlObj, **argv):  # , listScans, mfqlObj, **argv):
-
         # 	self.listScans = listScans
         self.mfqlObj = mfqlObj
 
@@ -125,22 +124,22 @@ class TypeScan:
 
         if self.mfqlObj.options["alignmentMethodMS"] == "calctol":
             newtol = max(
-                ((e.massWindow, e.peakMean) for e in self.mfqlObj.sc.listSurveyEntry),
+                (
+                    (e.massWindow, e.peakMean)
+                    for e in self.mfqlObj.sc.listSurveyEntry
+                ),
                 key=lambda item: item[0] * item[1],
             )
             # maybe =  self.mfqlObj.sc.options['calcSelectionWindow']
             ppm_tol = newtol[0] / (newtol[1] / 1_000_000)
 
         for se in self.mfqlObj.sc.listSurveyEntry:
-
             for indexM in range(len(self.scanTerm)):
-
                 scanEntry = TypeScanEntry(se=se)
                 takeScanEntry = False
                 scanTermBool = True
 
                 for m in self.scanTerm[indexM].list():
-
                     options = {}
 
                     boolPassStep = True
@@ -149,13 +148,15 @@ class TypeScan:
                         boolPassStep = False
 
                     if m.scope == "MS1+" or m.scope == "MS1-":
-
                         # check massrange
                         # if 'massrange' in mfqlObj.options:
                         if not self.mfqlObj.options.isEmpty("MSmassrange"):
-                            options["massrange"] = self.mfqlObj.options["MSmassrange"]
+                            options["massrange"] = self.mfqlObj.options[
+                                "MSmassrange"
+                            ]
                             if not (
-                                self.mfqlObj.options["MSmassrange"][0] <= se.precurmass
+                                self.mfqlObj.options["MSmassrange"][0]
+                                <= se.precurmass
                                 and se.precurmass
                                 <= self.mfqlObj.options["MSmassrange"][1]
                             ):
@@ -177,17 +178,23 @@ class TypeScan:
                         # 		boolPassStep = False
 
                     if m.scope == "MS1+" or m.scope == "MS1-":
-
                         if not self.mfqlObj.options.isEmpty("MSminOccupation"):
-                            options["minocc"] = self.mfqlObj.options["MSminOccupation"]
+                            options["minocc"] = self.mfqlObj.options[
+                                "MSminOccupation"
+                            ]
 
                         if (
-                            self.mfqlObj.options["alignmentMethodMS"] == "calctol"
+                            self.mfqlObj.options["alignmentMethodMS"]
+                            == "calctol"
                         ):  # is LX2
-                            options["tolerance"] = TypeTolerance("ppm", ppm_tol)
+                            options["tolerance"] = TypeTolerance(
+                                "ppm", ppm_tol
+                            )
 
                         if not "tolerance" in options:
-                            if not self.mfqlObj.options.isEmpty("optionalMStolerance"):
+                            if not self.mfqlObj.options.isEmpty(
+                                "optionalMStolerance"
+                            ):
                                 options["tolerance"] = self.mfqlObj.options[
                                     "optionalMStolerance"
                                 ]  # make the 2* fattest cluster
@@ -202,11 +209,14 @@ class TypeScan:
                             )
 
                     elif m.scope == "MS2+" or m.scope == "MS2-":
-
                         if not self.mfqlObj.options.isEmpty("MSMSmassrange"):
-                            options["massrange"] = self.mfqlObj.options["MSMSmassrange"]
+                            options["massrange"] = self.mfqlObj.options[
+                                "MSMSmassrange"
+                            ]
 
-                        if not self.mfqlObj.options.isEmpty("MSMSminOccupation"):
+                        if not self.mfqlObj.options.isEmpty(
+                            "MSMSminOccupation"
+                        ):
                             options["minocc"] = self.mfqlObj.options[
                                 "MSMSminOccupation"
                             ]
@@ -230,18 +240,15 @@ class TypeScan:
 
                     # if every 'if' fits, start the marking procedure
                     if boolPassStep:
-
                         ### searching in positive MS with sf-constraint
                         if (
                             m.scope == "MS1+" and se.polarity > 0
                         ):  # and isinstance(m, TypeSFConstraint):
-
                             if not m.name in list(scanEntry.dictMarks.keys()):
                                 scanEntry.dictMarks[m.name] = []
 
                             # sf-constraint given
                             if isinstance(m, TypeSFConstraint):
-
                                 scconst = m.elementSequence
 
                                 if m.elementSequence:
@@ -253,7 +260,6 @@ class TypeScan:
 
                                     # precursor mass found, adding to result list
                                     if newChemsc != []:
-
                                         se.listPrecurmassSF = unionSF(
                                             se.listPrecurmassSF,
                                             newChemsc,
@@ -272,23 +278,33 @@ class TypeScan:
                                             if not se.charge is None:
                                                 errppm = (
                                                     -(
-                                                        (i.getWeight() - se.precurmass)
+                                                        (
+                                                            i.getWeight()
+                                                            - se.precurmass
+                                                        )
                                                         * 1000000
                                                     )
                                                     / se.precurmass
                                                 ) * abs(se.charge)
                                                 errda = -(
-                                                    i.getWeight() - se.precurmass
+                                                    i.getWeight()
+                                                    - se.precurmass
                                                 ) * abs(se.charge)
                                             else:
                                                 errppm = (
                                                     -(
-                                                        (i.getWeight() - se.precurmass)
+                                                        (
+                                                            i.getWeight()
+                                                            - se.precurmass
+                                                        )
                                                         * 1000000
                                                     )
                                                     / se.precurmass
                                                 )
-                                                errda = -(i.getWeight() - se.precurmass)
+                                                errda = -(
+                                                    i.getWeight()
+                                                    - se.precurmass
+                                                )
 
                                             if errppm != 0:
                                                 errres = 1000000 / errppm
@@ -318,7 +334,9 @@ class TypeScan:
                                                 precursor=None,
                                                 options=options,
                                                 isSFConstraint=True,
-                                                expAccuraccy=options["tolerance"],
+                                                expAccuraccy=options[
+                                                    "tolerance"
+                                                ],
                                                 errppm=errppm,
                                                 errda=errda,
                                                 errres=errres,
@@ -330,7 +348,9 @@ class TypeScan:
                                                 frmass=None,
                                                 nlsc=None,
                                                 nlmass=None,
-                                                markIndex=[self.mfqlObj.markIndex],
+                                                markIndex=[
+                                                    self.mfqlObj.markIndex
+                                                ],
                                                 positionMS=positionMS,
                                                 positionMSMS=None,
                                             )
@@ -344,12 +364,15 @@ class TypeScan:
                                                 if not m.name in list(
                                                     scanEntry.dictMarks.keys()
                                                 ):
-                                                    scanEntry.dictMarks[m.name] = []
-                                                scanEntry.dictMarks[m.name].append(mark)
+                                                    scanEntry.dictMarks[
+                                                        m.name
+                                                    ] = []
+                                                scanEntry.dictMarks[
+                                                    m.name
+                                                ].append(mark)
                                                 se.listMark.append(mark)
 
                                 else:
-
                                     takeScanEntry = True
                                     scanEntry.scope = "MS1+"
                                     scanEntry.name = m.name
@@ -364,7 +387,9 @@ class TypeScan:
                                     occ = self.mfqlObj.sc.getOccupation(
                                         se.dictIntensity,
                                         se.dictScans,
-                                        threshold=self.mfqlObj.options["MSthreshold"],
+                                        threshold=self.mfqlObj.options[
+                                            "MSthreshold"
+                                        ],
                                     )
                                     mark = TypeMark(
                                         type=0,
@@ -407,17 +432,18 @@ class TypeScan:
                                             scanEntry.dictMarks.keys()
                                         ):
                                             scanEntry.dictMarks[m.name] = []
-                                        scanEntry.dictMarks[m.name].append(mark)
+                                        scanEntry.dictMarks[m.name].append(
+                                            mark
+                                        )
                                         se.listMark.append(mark)
 
                             elif isinstance(m, TypeElementSequence):
-
                                 scconst = None
 
                                 if options["tolerance"].fitIn(
-                                    se.precurmass, m.elementSequence.getWeight()
+                                    se.precurmass,
+                                    m.elementSequence.getWeight(),
                                 ):
-
                                     se.listPrecurmassSF = unionSF(
                                         se.listPrecurmassSF,
                                         [m.elementSequence],
@@ -471,7 +497,9 @@ class TypeScan:
                                     occ = self.mfqlObj.sc.getOccupation(
                                         se.dictIntensity,
                                         se.dictScans,
-                                        threshold=self.mfqlObj.options["MSthreshold"],
+                                        threshold=self.mfqlObj.options[
+                                            "MSthreshold"
+                                        ],
                                     )
                                     mark = TypeMark(
                                         type=0,
@@ -514,17 +542,17 @@ class TypeScan:
                                             scanEntry.dictMarks.keys()
                                         ):
                                             scanEntry.dictMarks[m.name] = []
-                                        scanEntry.dictMarks[m.name].append(mark)
+                                        scanEntry.dictMarks[m.name].append(
+                                            mark
+                                        )
                                         se.listMark.append(mark)
 
                             elif isinstance(m, TypeList):
-
                                 for ml in m.listElementSequence:
-
                                     if options["tolerance"].fitIn(
-                                        se.precurmass, ml.elementSequence.getWeight()
+                                        se.precurmass,
+                                        ml.elementSequence.getWeight(),
                                     ):
-
                                         se.listPrecurmassSF = unionSF(
                                             se.listPrecurmassSF,
                                             [ml.elementSequence],
@@ -622,12 +650,15 @@ class TypeScan:
                                             if not ml.name in list(
                                                 scanEntry.dictMarks.keys()
                                             ):
-                                                scanEntry.dictMarks[ml.name] = []
-                                            scanEntry.dictMarks[ml.name].append(mark)
+                                                scanEntry.dictMarks[
+                                                    ml.name
+                                                ] = []
+                                            scanEntry.dictMarks[
+                                                ml.name
+                                            ].append(mark)
                                             se.listMark.append(mark)
 
                             else:
-
                                 takeScanEntry = True
                                 scanEntry.scope = "MS1+"
                                 scanEntry.name = m.name
@@ -642,7 +673,9 @@ class TypeScan:
                                 occ = self.mfqlObj.sc.getOccupation(
                                     se.dictIntensity,
                                     se.dictScans,
-                                    threshold=self.mfqlObj.options["MSthreshold"],
+                                    threshold=self.mfqlObj.options[
+                                        "MSthreshold"
+                                    ],
                                 )
                                 mark = TypeMark(
                                     type=0,
@@ -650,7 +683,8 @@ class TypeScan:
                                     msmse=None,
                                     name=m.name,
                                     isnl=None,
-                                    encodedName="%s:%d" % (m.name, int(se.precurmass)),
+                                    encodedName="%s:%d"
+                                    % (m.name, int(se.precurmass)),
                                     chemsc=None,
                                     scconst=scconst,
                                     scope="MS1+",
@@ -680,7 +714,9 @@ class TypeScan:
                                         notIn = False
 
                                 if notIn:
-                                    if not m.name in list(scanEntry.dictMarks.keys()):
+                                    if not m.name in list(
+                                        scanEntry.dictMarks.keys()
+                                    ):
                                         scanEntry.dictMarks[m.name] = []
                                     scanEntry.dictMarks[m.name].append(mark)
                                     se.listMark.append(mark)
@@ -689,13 +725,11 @@ class TypeScan:
                         elif (
                             m.scope == "MS1-" and se.polarity < 0
                         ):  # and isinstance(m, TypeSFConstraint):
-
                             if not m.name in list(scanEntry.dictMarks.keys()):
                                 scanEntry.dictMarks[m.name] = []
 
                             # sf-constraint given
                             if isinstance(m, TypeSFConstraint):
-
                                 scconst = m.elementSequence
 
                                 if m.elementSequence:
@@ -707,7 +741,6 @@ class TypeScan:
 
                                     # precursor mass found, adding to result list
                                     if newChemsc != []:
-
                                         se.listPrecurmassSF = unionSF(
                                             se.listPrecurmassSF,
                                             newChemsc,
@@ -726,23 +759,33 @@ class TypeScan:
                                             if not se.charge is None:
                                                 errppm = (
                                                     -(
-                                                        (i.getWeight() - se.precurmass)
+                                                        (
+                                                            i.getWeight()
+                                                            - se.precurmass
+                                                        )
                                                         * 1000000
                                                     )
                                                     / se.precurmass
                                                 ) * abs(se.charge)
                                                 errda = -(
-                                                    i.getWeight() - se.precurmass
+                                                    i.getWeight()
+                                                    - se.precurmass
                                                 ) * abs(se.charge)
                                             else:
                                                 errppm = (
                                                     -(
-                                                        (i.getWeight() - se.precurmass)
+                                                        (
+                                                            i.getWeight()
+                                                            - se.precurmass
+                                                        )
                                                         * 1000000
                                                     )
                                                     / se.precurmass
                                                 )
-                                                errda = -(i.getWeight() - se.precurmass)
+                                                errda = -(
+                                                    i.getWeight()
+                                                    - se.precurmass
+                                                )
 
                                             if errppm != 0:
                                                 errres = 1000000 / errppm
@@ -770,7 +813,9 @@ class TypeScan:
                                                 precursor=None,
                                                 options=options,
                                                 isSFConstraint=True,
-                                                expAccuraccy=options["tolerance"],
+                                                expAccuraccy=options[
+                                                    "tolerance"
+                                                ],
                                                 errppm=errppm,
                                                 errda=errda,
                                                 errres=errres,
@@ -782,7 +827,9 @@ class TypeScan:
                                                 frmass=None,
                                                 nlsc=None,
                                                 nlmass=None,
-                                                markIndex=[self.mfqlObj.markIndex],
+                                                markIndex=[
+                                                    self.mfqlObj.markIndex
+                                                ],
                                                 positionMS=positionMS,
                                                 positionMSMS=None,
                                             )
@@ -797,17 +844,20 @@ class TypeScan:
                                                 if not m.name in list(
                                                     scanEntry.dictMarks.keys()
                                                 ):
-                                                    scanEntry.dictMarks[m.name] = []
-                                                scanEntry.dictMarks[m.name].append(mark)
+                                                    scanEntry.dictMarks[
+                                                        m.name
+                                                    ] = []
+                                                scanEntry.dictMarks[
+                                                    m.name
+                                                ].append(mark)
 
                             elif isinstance(m, TypeElementSequence):
-
                                 scconst = None
 
                                 if options["tolerance"].fitIn(
-                                    se.precurmass, m.elementSequence.getWeight()
+                                    se.precurmass,
+                                    m.elementSequence.getWeight(),
                                 ):
-
                                     se.listPrecurmassSF = unionSF(
                                         se.listPrecurmassSF,
                                         [m.elementSequence],
@@ -861,7 +911,9 @@ class TypeScan:
                                     occ = self.mfqlObj.sc.getOccupation(
                                         se.dictIntensity,
                                         se.dictScans,
-                                        threshold=self.mfqlObj.options["MSthreshold"],
+                                        threshold=self.mfqlObj.options[
+                                            "MSthreshold"
+                                        ],
                                     )
                                     mark = TypeMark(
                                         type=0,
@@ -905,16 +957,16 @@ class TypeScan:
                                             scanEntry.dictMarks.keys()
                                         ):
                                             scanEntry.dictMarks[m.name] = []
-                                        scanEntry.dictMarks[m.name].append(mark)
+                                        scanEntry.dictMarks[m.name].append(
+                                            mark
+                                        )
 
                             elif isinstance(m, TypeList):
-
                                 for ml in m.listElementSequence:
-
                                     if options["tolerance"].fitIn(
-                                        se.precurmass, ml.elementSequence.getWeight()
+                                        se.precurmass,
+                                        ml.elementSequence.getWeight(),
                                     ):
-
                                         se.listPrecurmassSF = unionSF(
                                             se.listPrecurmassSF,
                                             [ml.elementSequence],
@@ -1013,11 +1065,14 @@ class TypeScan:
                                             if not ml.name in list(
                                                 scanEntry.dictMarks.keys()
                                             ):
-                                                scanEntry.dictMarks[ml.name] = []
-                                            scanEntry.dictMarks[ml.name].append(mark)
+                                                scanEntry.dictMarks[
+                                                    ml.name
+                                                ] = []
+                                            scanEntry.dictMarks[
+                                                ml.name
+                                            ].append(mark)
 
                             else:
-
                                 takeScanEntry = True
                                 scanEntry.scope = "MS1-"
                                 scanEntry.name = m.name
@@ -1032,7 +1087,9 @@ class TypeScan:
                                 occ = self.mfqlObj.sc.getOccupation(
                                     se.dictIntensity,
                                     se.dictScans,
-                                    threshold=self.mfqlObj.options["MSthreshold"],
+                                    threshold=self.mfqlObj.options[
+                                        "MSthreshold"
+                                    ],
                                 )
                                 mark = TypeMark(
                                     type=0,
@@ -1040,7 +1097,8 @@ class TypeScan:
                                     msmse=None,
                                     name=m.name,
                                     isnl=None,
-                                    encodedName="%s:%d" % (m.name, int(se.precurmass)),
+                                    encodedName="%s:%d"
+                                    % (m.name, int(se.precurmass)),
                                     chemsc=None,
                                     scconst=scconst,
                                     scope="MS1-",
@@ -1066,7 +1124,9 @@ class TypeScan:
 
                                 if True:  # not mark in se.listMark:
                                     se.listMark.append(mark)
-                                    if not m.name in list(scanEntry.dictMarks.keys()):
+                                    if not m.name in list(
+                                        scanEntry.dictMarks.keys()
+                                    ):
                                         scanEntry.dictMarks[m.name] = []
                                     scanEntry.dictMarks[m.name].append(mark)
 
@@ -1091,14 +1151,12 @@ class TypeScan:
                             and se.polarity > 0
                             and se.listPrecurmassSF != []
                         ):
-
                             if not m.name in list(scanEntry.dictMarks.keys()):
                                 scanEntry.dictMarks[m.name] = []
 
                             positionMSMS = 0
 
                             for msmse in se.listMSMS:
-
                                 ### check for options ###
                                 boolPassStep = True
 
@@ -1106,12 +1164,12 @@ class TypeScan:
                                 if "massrange" in options:
                                     if not (
                                         options["massrange"][0] <= msmse.mass
-                                        and msmse.mass <= options["massrange"][1]
+                                        and msmse.mass
+                                        <= options["massrange"][1]
                                     ):
                                         boolPassStep = False
 
                                 if boolPassStep:
-
                                     isNL = False
                                     hasFR = False
                                     hasNL = False
@@ -1120,7 +1178,6 @@ class TypeScan:
 
                                     # sf-constraint given
                                     if isinstance(m, TypeSFConstraint):
-
                                         scconst = m.elementSequence
 
                                         # prepare variables for marking by deciding for neutral loss or fragment search
@@ -1129,8 +1186,12 @@ class TypeScan:
                                             if m.elementSequence.polarity > 0:
                                                 mass = msmse.mass
                                             # given ElementSequence is a NeutralLoss
-                                            elif m.elementSequence.polarity == 0:
-                                                mass = se.precurmass - msmse.mass
+                                            elif (
+                                                m.elementSequence.polarity == 0
+                                            ):
+                                                mass = (
+                                                    se.precurmass - msmse.mass
+                                                )
                                                 isNL = True
                                             else:
                                                 raise Scan_Exception(
@@ -1152,7 +1213,9 @@ class TypeScan:
                                                 frElementSequence = newChemsc
                                                 if se.listPrecurmassSF != []:
                                                     hasNL = True
-                                                    for i in se.listPrecurmassSF:
+                                                    for (
+                                                        i
+                                                    ) in se.listPrecurmassSF:
                                                         for j in newChemsc:
                                                             nlElementSequence.append(
                                                                 i - j
@@ -1166,7 +1229,9 @@ class TypeScan:
                                                 nlElementSequence = newChemsc
                                                 if se.listPrecurmassSF != []:
                                                     hasFR = True
-                                                    for i in se.listPrecurmassSF:
+                                                    for (
+                                                        i
+                                                    ) in se.listPrecurmassSF:
                                                         for j in newChemsc:
                                                             frElementSequence.append(
                                                                 i - j
@@ -1180,8 +1245,9 @@ class TypeScan:
 
                                             if isNL and hasFR:
                                                 for nl in nlElementSequence:
-                                                    for fr in frElementSequence:
-
+                                                    for (
+                                                        fr
+                                                    ) in frElementSequence:
                                                         errppm = (
                                                             -(
                                                                 (
@@ -1193,10 +1259,14 @@ class TypeScan:
                                                             / msmse.mass
                                                         )
                                                         errda = -(
-                                                            fr.getWeight() - msmse.mass
+                                                            fr.getWeight()
+                                                            - msmse.mass
                                                         )
                                                         if errppm != 0:
-                                                            errres = 1000000 / errppm
+                                                            errres = (
+                                                                1000000
+                                                                / errppm
+                                                            )
                                                         else:
                                                             errres = 1000000
 
@@ -1214,7 +1284,9 @@ class TypeScan:
                                                                 "MSMSthreshold"
                                                             ],
                                                         )
-                                                        self.mfqlObj.markIndex += 1
+                                                        self.mfqlObj.markIndex += (
+                                                            1
+                                                        )
                                                         mark = TypeMark(
                                                             type=1,
                                                             se=se,
@@ -1222,7 +1294,12 @@ class TypeScan:
                                                             name=m.name,
                                                             isnl=isNL,
                                                             encodedName="%s:%d"
-                                                            % (m.name, int(msmse.mass)),
+                                                            % (
+                                                                m.name,
+                                                                int(
+                                                                    msmse.mass
+                                                                ),
+                                                            ),
                                                             scope="MS2+",
                                                             precursor=m.precursor,
                                                             options=options,
@@ -1251,25 +1328,32 @@ class TypeScan:
                                                         )
 
                                                         notIn = True
-                                                        for i in msmse.listMark:
+                                                        for (
+                                                            i
+                                                        ) in msmse.listMark:
                                                             if mark == i:
                                                                 if i.mergeMSMSMarks(
                                                                     mark
                                                                 ):
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
 
                                                         if notIn:
-                                                            msmse.listMark.append(mark)
+                                                            msmse.listMark.append(
+                                                                mark
+                                                            )
                                                         if (
                                                             True
                                                         ):  # not mark in scanEntry.dictMarks[m.name]:
                                                             scanEntry.dictMarks[
                                                                 m.name
-                                                            ].append(mark)
+                                                            ].append(
+                                                                mark
+                                                            )
 
                                             elif isNL and not hasFR:
                                                 for nl in nlElementSequence:
-
                                                     errppm = (
                                                         -(
                                                             (
@@ -1284,11 +1368,16 @@ class TypeScan:
                                                         / msmse.mass
                                                     )
                                                     errda = -(
-                                                        (se.precurmass - nl.getWeight())
+                                                        (
+                                                            se.precurmass
+                                                            - nl.getWeight()
+                                                        )
                                                         - msmse.mass
                                                     )
                                                     if errppm != 0:
-                                                        errres = 1000000 / errppm
+                                                        errres = (
+                                                            1000000 / errppm
+                                                        )
                                                     else:
                                                         errres = 1000000
 
@@ -1314,7 +1403,10 @@ class TypeScan:
                                                         name=m.name,
                                                         isnl=isNL,
                                                         encodedName="%s:%d"
-                                                        % (m.name, int(msmse.mass)),
+                                                        % (
+                                                            m.name,
+                                                            int(msmse.mass),
+                                                        ),
                                                         scope="MS2+",
                                                         precursor=m.precursor,
                                                         options=options,
@@ -1345,11 +1437,15 @@ class TypeScan:
                                                     notIn = True
                                                     for i in msmse.listMark:
                                                         if mark == i:
-                                                            if i.mergeMSMSMarks(mark):
+                                                            if i.mergeMSMSMarks(
+                                                                mark
+                                                            ):
                                                                 notIn = False
 
                                                     if notIn:
-                                                        msmse.listMark.append(mark)
+                                                        msmse.listMark.append(
+                                                            mark
+                                                        )
                                                     if (
                                                         True
                                                     ):  # not mark in scanEntry.dictMarks[m.name]:
@@ -1358,10 +1454,8 @@ class TypeScan:
                                                         ].append(mark)
 
                                             elif not isNL and hasNL:
-
                                                 for nl in nlElementSequence:
                                                     for fr in newChemsc:
-
                                                         errppm = (
                                                             -(
                                                                 (
@@ -1373,10 +1467,14 @@ class TypeScan:
                                                             / msmse.mass
                                                         )
                                                         errda = -(
-                                                            fr.getWeight() - msmse.mass
+                                                            fr.getWeight()
+                                                            - msmse.mass
                                                         )
                                                         if errppm != 0:
-                                                            errres = 1000000 / errppm
+                                                            errres = (
+                                                                1000000
+                                                                / errppm
+                                                            )
                                                         else:
                                                             errres = 1000000
 
@@ -1394,7 +1492,9 @@ class TypeScan:
                                                                 "MSMSthreshold"
                                                             ],
                                                         )
-                                                        self.mfqlObj.markIndex += 1
+                                                        self.mfqlObj.markIndex += (
+                                                            1
+                                                        )
                                                         mark = TypeMark(
                                                             type=1,
                                                             se=se,
@@ -1402,7 +1502,12 @@ class TypeScan:
                                                             name=m.name,
                                                             isnl=isNL,
                                                             encodedName="%s:%d"
-                                                            % (m.name, int(msmse.mass)),
+                                                            % (
+                                                                m.name,
+                                                                int(
+                                                                    msmse.mass
+                                                                ),
+                                                            ),
                                                             scope="MS2+",
                                                             precursor=precursor,
                                                             options=options,
@@ -1431,28 +1536,34 @@ class TypeScan:
                                                         )
 
                                                         notIn = True
-                                                        for i in msmse.listMark:
+                                                        for (
+                                                            i
+                                                        ) in msmse.listMark:
                                                             if mark == i:
                                                                 if i.mergeMSMSMarks(
                                                                     mark
                                                                 ):
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
 
                                                         if notIn:
-                                                            msmse.listMark.append(mark)
+                                                            msmse.listMark.append(
+                                                                mark
+                                                            )
                                                         if (
                                                             True
                                                         ):  # not mark in scanEntry.dictMarks[m.name]:
                                                             scanEntry.dictMarks[
                                                                 m.name
-                                                            ].append(mark)
+                                                            ].append(
+                                                                mark
+                                                            )
 
                                                 pass
 
                                             elif not isNL and not hasNL:
-
                                                 for fr in newChemsc:
-
                                                     errppm = (
                                                         -(
                                                             (
@@ -1464,10 +1575,13 @@ class TypeScan:
                                                         / msmse.mass
                                                     )
                                                     errda = -(
-                                                        fr.getWeight() - msmse.mass
+                                                        fr.getWeight()
+                                                        - msmse.mass
                                                     )
                                                     if errppm != 0:
-                                                        errres = 1000000 / errppm
+                                                        errres = (
+                                                            1000000 / errppm
+                                                        )
                                                     else:
                                                         errres = 1000000
 
@@ -1493,7 +1607,10 @@ class TypeScan:
                                                         name=m.name,
                                                         isnl=isNL,
                                                         encodedName="%s:%d"
-                                                        % (m.name, int(msmse.mass)),
+                                                        % (
+                                                            m.name,
+                                                            int(msmse.mass),
+                                                        ),
                                                         scope="MS2+",
                                                         precursor=precursor,
                                                         options=options,
@@ -1524,11 +1641,15 @@ class TypeScan:
                                                     notIn = True
                                                     for i in msmse.listMark:
                                                         if mark == i:
-                                                            if i.mergeMSMSMarks(mark):
+                                                            if i.mergeMSMSMarks(
+                                                                mark
+                                                            ):
                                                                 notIn = False
 
                                                     if notIn:
-                                                        msmse.listMark.append(mark)
+                                                        msmse.listMark.append(
+                                                            mark
+                                                        )
                                                     if (
                                                         True
                                                     ):  # not mark in scanEntry.dictMarks[m.name]:
@@ -1539,14 +1660,15 @@ class TypeScan:
                                             # if no precursor scan given
                                             if not scanEntry.encodedName:
                                                 scanEntry.encodedName = (
-                                                    stdName + ":%d" % int(se.precurmass)
+                                                    stdName
+                                                    + ":%d"
+                                                    % int(se.precurmass)
                                                 )
 
                                             curStatBool = True
 
                                     # chemical sum composition given
                                     elif isinstance(m, TypeElementSequence):
-
                                         scconst = None
 
                                         # given ElementSequence is a Fragment
@@ -1564,23 +1686,27 @@ class TypeScan:
 
                                         fits = False
                                         if isNL:
-                                            fits = options["tolerance"].fitInNL(
+                                            fits = options[
+                                                "tolerance"
+                                            ].fitInNL(
                                                 mass,
                                                 m.elementSequence.getWeight(),
                                                 msmse.mass,
                                             )
                                         else:
                                             fits = options["tolerance"].fitIn(
-                                                mass, m.elementSequence.getWeight()
+                                                mass,
+                                                m.elementSequence.getWeight(),
                                             )
 
                                         if fits:
-
                                             newNLChemsc = []
                                             newFRChemsc = []
 
                                             if not isNL:
-                                                newFRChemsc = [m.elementSequence]
+                                                newFRChemsc = [
+                                                    m.elementSequence
+                                                ]
                                                 if se.listPrecurmassSF != []:
                                                     for i in se.listMark:
                                                         if (
@@ -1605,18 +1731,23 @@ class TypeScan:
                                                         )
                                                     ):
                                                         newNLChemsc = calcSFbyMass(
-                                                            se.precurmass - mass,
+                                                            se.precurmass
+                                                            - mass,
                                                             self.mfqlObj.precursor.elementSequence.subWoRange(
                                                                 m.elementSequence
                                                             ),
-                                                            options["tolerance"],
+                                                            options[
+                                                                "tolerance"
+                                                            ],
                                                         )
                                                     else:
                                                         newNLChemsc = []
                                                 nlmass = se.precurmass - mass
 
                                             else:
-                                                newNLChemsc = [m.elementSequence]
+                                                newNLChemsc = [
+                                                    m.elementSequence
+                                                ]
                                                 if se.listPrecurmassSF != []:
                                                     for i in se.listMark:
                                                         if (
@@ -1640,11 +1771,14 @@ class TypeScan:
                                                         )
                                                     ):
                                                         newFRChemsc = calcSFbyMass(
-                                                            se.precurmass - mass,
+                                                            se.precurmass
+                                                            - mass,
                                                             self.mfqlObj.precursor.elementSequence.subWoRange(
                                                                 m.elementSequence
                                                             ),
-                                                            options["tolerance"],
+                                                            options[
+                                                                "tolerance"
+                                                            ],
                                                         )
                                                     else:
                                                         newFRChemsc = []
@@ -1655,10 +1789,8 @@ class TypeScan:
 
                                             if newFRChemsc != []:
                                                 for i in newFRChemsc:
-
                                                     if newNLChemsc != []:
                                                         for n in newNLChemsc:
-
                                                             errppm = (
                                                                 -(
                                                                     (
@@ -1675,17 +1807,22 @@ class TypeScan:
                                                             )
                                                             if errppm != 0:
                                                                 errres = (
-                                                                    1000000 / errppm
+                                                                    1000000
+                                                                    / errppm
                                                                 )
                                                             else:
-                                                                errres = 1000000
+                                                                errres = (
+                                                                    1000000
+                                                                )
 
                                                             if m.precursor:
                                                                 precursor = scanEntry.dictMarks[
                                                                     m.precursor
                                                                 ]
                                                             else:
-                                                                precursor = None
+                                                                precursor = (
+                                                                    None
+                                                                )
 
                                                             occ = self.mfqlObj.sc.getOccupation(
                                                                 msmse.dictIntensity,
@@ -1694,7 +1831,9 @@ class TypeScan:
                                                                     "MSMSthreshold"
                                                                 ],
                                                             )
-                                                            self.mfqlObj.markIndex += 1
+                                                            self.mfqlObj.markIndex += (
+                                                                1
+                                                            )
                                                             mark = TypeMark(
                                                                 type=1,
                                                                 se=se,
@@ -1704,7 +1843,9 @@ class TypeScan:
                                                                 encodedName="%s:%d"
                                                                 % (
                                                                     m.name,
-                                                                    int(msmse.mass),
+                                                                    int(
+                                                                        msmse.mass
+                                                                    ),
                                                                 ),
                                                                 scope="MS2+",
                                                                 precursor=m.precursor,
@@ -1734,7 +1875,11 @@ class TypeScan:
                                                             )
 
                                                             notIn = True
-                                                            for i in msmse.listMark:
+                                                            for (
+                                                                i
+                                                            ) in (
+                                                                msmse.listMark
+                                                            ):
                                                                 if mark == i:
                                                                     if i.mergeMSMSMarks(
                                                                         mark
@@ -1750,7 +1895,9 @@ class TypeScan:
                                                             ):  # not mark in scanEntry.dictMarks[m.name]:
                                                                 scanEntry.dictMarks[
                                                                     m.name
-                                                                ].append(mark)
+                                                                ].append(
+                                                                    mark
+                                                                )
 
                                                     else:
                                                         errppm = (
@@ -1768,7 +1915,10 @@ class TypeScan:
                                                             - msmse.mass
                                                         )
                                                         if errppm != 0:
-                                                            errres = 1000000 / errppm
+                                                            errres = (
+                                                                1000000
+                                                                / errppm
+                                                            )
                                                         else:
                                                             errres = 1000000
 
@@ -1786,7 +1936,9 @@ class TypeScan:
                                                                 "MSMSthreshold"
                                                             ],
                                                         )
-                                                        self.mfqlObj.markIndex += 1
+                                                        self.mfqlObj.markIndex += (
+                                                            1
+                                                        )
                                                         mark = TypeMark(
                                                             type=1,
                                                             se=se,
@@ -1794,7 +1946,12 @@ class TypeScan:
                                                             name=m.name,
                                                             isnl=isNL,
                                                             encodedName="%s:%d"
-                                                            % (m.name, int(msmse.mass)),
+                                                            % (
+                                                                m.name,
+                                                                int(
+                                                                    msmse.mass
+                                                                ),
+                                                            ),
                                                             scope="MS2+",
                                                             precursor=m.precursor,
                                                             options=options,
@@ -1823,26 +1980,33 @@ class TypeScan:
                                                         )
 
                                                         notIn = True
-                                                        for i in msmse.listMark:
+                                                        for (
+                                                            i
+                                                        ) in msmse.listMark:
                                                             if mark == i:
                                                                 if i.mergeMSMSMarks(
                                                                     mark
                                                                 ):
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
 
                                                         if notIn:
-                                                            msmse.listMark.append(mark)
+                                                            msmse.listMark.append(
+                                                                mark
+                                                            )
                                                         if (
                                                             True
                                                         ):  # not mark in scanEntry.dictMarks[m.name]:
                                                             scanEntry.dictMarks[
                                                                 m.name
-                                                            ].append(mark)
+                                                            ].append(
+                                                                mark
+                                                            )
 
                                             else:
                                                 if newNLChemsc != []:
                                                     for n in newNLChemsc:
-
                                                         errppm = (
                                                             -(
                                                                 (
@@ -1864,7 +2028,10 @@ class TypeScan:
                                                             - msmse.mass
                                                         )
                                                         if errppm != 0:
-                                                            errres = 1000000 / errppm
+                                                            errres = (
+                                                                1000000
+                                                                / errppm
+                                                            )
                                                         else:
                                                             errres = 1000000
 
@@ -1882,7 +2049,9 @@ class TypeScan:
                                                                 "MSMSthreshold"
                                                             ],
                                                         )
-                                                        self.mfqlObj.markIndex += 1
+                                                        self.mfqlObj.markIndex += (
+                                                            1
+                                                        )
                                                         mark = TypeMark(
                                                             type=1,
                                                             se=se,
@@ -1890,7 +2059,12 @@ class TypeScan:
                                                             name=m.name,
                                                             isnl=isNL,
                                                             encodedName="%s:%d"
-                                                            % (m.name, int(msmse.mass)),
+                                                            % (
+                                                                m.name,
+                                                                int(
+                                                                    msmse.mass
+                                                                ),
+                                                            ),
                                                             scope="MS2+",
                                                             precursor=m.precursor,
                                                             options=options,
@@ -1919,21 +2093,29 @@ class TypeScan:
                                                         )
 
                                                         notIn = True
-                                                        for i in msmse.listMark:
+                                                        for (
+                                                            i
+                                                        ) in msmse.listMark:
                                                             if mark == i:
                                                                 if i.mergeMSMSMarks(
                                                                     mark
                                                                 ):
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
 
                                                         if notIn:
-                                                            msmse.listMark.append(mark)
+                                                            msmse.listMark.append(
+                                                                mark
+                                                            )
                                                         if (
                                                             True
                                                         ):  # not mark in scanEntry.dictMarks[m.name]:
                                                             scanEntry.dictMarks[
                                                                 m.name
-                                                            ].append(mark)
+                                                            ].append(
+                                                                mark
+                                                            )
 
                                                     # 	else:
                                                     # 		raise MyVariableException("Variable %s already defined" % m.name)
@@ -1963,7 +2145,9 @@ class TypeScan:
                                                         - msmse.mass
                                                     )
                                                     if errppm != 0:
-                                                        errres = 1000000 / errppm
+                                                        errres = (
+                                                            1000000 / errppm
+                                                        )
                                                     else:
                                                         errres = 1000000
 
@@ -1989,7 +2173,10 @@ class TypeScan:
                                                         name=m.name,
                                                         isnl=isNL,
                                                         encodedName="%s:%d"
-                                                        % (m.name, int(msmse.mass)),
+                                                        % (
+                                                            m.name,
+                                                            int(msmse.mass),
+                                                        ),
                                                         scope="MS2+",
                                                         options=options,
                                                         precursor=m.precursor,
@@ -2022,14 +2209,20 @@ class TypeScan:
                                                     notIn = True
                                                     for i in msmse.listMark:
                                                         if mark == i:
-                                                            if i.mergeMSMSMarks(mark):
+                                                            if i.mergeMSMSMarks(
+                                                                mark
+                                                            ):
                                                                 notIn = False
 
                                                     if notIn:
-                                                        msmse.listMark.append(mark)
+                                                        msmse.listMark.append(
+                                                            mark
+                                                        )
                                                     if (
                                                         not mark
-                                                        in scanEntry.dictMarks[m.name]
+                                                        in scanEntry.dictMarks[
+                                                            m.name
+                                                        ]
                                                     ):
                                                         scanEntry.dictMarks[
                                                             m.name
@@ -2038,24 +2231,33 @@ class TypeScan:
                                             # if no precursor scan given
                                             if not scanEntry.encodedName:
                                                 scanEntry.encodedName = (
-                                                    stdName + ":%d" % int(se.precurmass)
+                                                    stdName
+                                                    + ":%d"
+                                                    % int(se.precurmass)
                                                 )
 
                                             curStatBool = True
 
                                     # list of chemical sum composition given
                                     elif isinstance(m, TypeList):
-
                                         for ml in m.listElementSequence:
-
                                             # prepare variables as above, but for lists
                                             if ml.elementSequence:
                                                 # given ElementSequence is a Fragment
-                                                if ml.elementSequence.polarity > 0:
+                                                if (
+                                                    ml.elementSequence.polarity
+                                                    > 0
+                                                ):
                                                     mass = msmse.mass
                                                 # given ElementSequence is a NeutralLoss
-                                                elif ml.elementSequence.polarity == 0:
-                                                    mass = se.precurmass - msmse.mass
+                                                elif (
+                                                    ml.elementSequence.polarity
+                                                    == 0
+                                                ):
+                                                    mass = (
+                                                        se.precurmass
+                                                        - msmse.mass
+                                                    )
                                                     isNL = True
                                                 else:
                                                     raise Scan_Exception(
@@ -2065,24 +2267,33 @@ class TypeScan:
 
                                             fits = False
                                             if isNL:
-                                                fits = options["tolerance"].fitInNL(
+                                                fits = options[
+                                                    "tolerance"
+                                                ].fitInNL(
                                                     mass,
                                                     ml.elementSequence.getWeight(),
                                                     msmse.mass,
                                                 )
                                             else:
-                                                fits = options["tolerance"].fitIn(
-                                                    mass, ml.elementSequence.getWeight()
+                                                fits = options[
+                                                    "tolerance"
+                                                ].fitIn(
+                                                    mass,
+                                                    ml.elementSequence.getWeight(),
                                                 )
 
                                             if fits:
-
                                                 newNLChemsc = []
                                                 newFRChemsc = []
 
                                                 if not isNL:
-                                                    newFRChemsc = [ml.elementSequence]
-                                                    if se.listPrecurmassSF != []:
+                                                    newFRChemsc = [
+                                                        ml.elementSequence
+                                                    ]
+                                                    if (
+                                                        se.listPrecurmassSF
+                                                        != []
+                                                    ):
                                                         for i in se.listMark:
                                                             if (
                                                                 i.name.split(
@@ -2090,7 +2301,9 @@ class TypeScan:
                                                                 )[0]
                                                                 == m.name.split(
                                                                     self.mfqlObj.namespaceConnector
-                                                                )[0]
+                                                                )[
+                                                                    0
+                                                                ]
                                                             ):
                                                                 newNLChemsc.append(
                                                                     i.chemsc
@@ -2105,19 +2318,29 @@ class TypeScan:
                                                             )
                                                         ):
                                                             newNLChemsc = calcSFbyMass(
-                                                                se.precurmass - mass,
+                                                                se.precurmass
+                                                                - mass,
                                                                 self.mfqlObj.precursor.elementSequence.subWoRange(
                                                                     ml.elementSequence
                                                                 ),
-                                                                options["tolerance"],
+                                                                options[
+                                                                    "tolerance"
+                                                                ],
                                                             )
                                                         else:
                                                             newNLChemsc = []
-                                                    nlmass = se.precurmass - mass
+                                                    nlmass = (
+                                                        se.precurmass - mass
+                                                    )
 
                                                 else:
-                                                    newNLChemsc = [ml.elementSequence]
-                                                    if se.listPrecurmassSF != []:
+                                                    newNLChemsc = [
+                                                        ml.elementSequence
+                                                    ]
+                                                    if (
+                                                        se.listPrecurmassSF
+                                                        != []
+                                                    ):
                                                         for i in se.listMark:
                                                             if (
                                                                 i.name.split(
@@ -2125,7 +2348,9 @@ class TypeScan:
                                                                 )[0]
                                                                 == m.name.split(
                                                                     self.mfqlObj.namespaceConnector
-                                                                )[0]
+                                                                )[
+                                                                    0
+                                                                ]
                                                             ):
                                                                 newFRChemsc.append(
                                                                     i.chemsc
@@ -2140,11 +2365,14 @@ class TypeScan:
                                                             )
                                                         ):
                                                             newFRChemsc = calcSFbyMass(
-                                                                se.precurmass - mass,
+                                                                se.precurmass
+                                                                - mass,
                                                                 self.mfqlObj.precursor.elementSequence.subWoRange(
                                                                     ml.elementSequence
                                                                 ),
-                                                                options["tolerance"],
+                                                                options[
+                                                                    "tolerance"
+                                                                ],
                                                             )
                                                         else:
                                                             newFRChemsc = []
@@ -2155,10 +2383,10 @@ class TypeScan:
 
                                                 if newFRChemsc != []:
                                                     for i in newFRChemsc:
-
                                                         if newNLChemsc != []:
-                                                            for n in newNLChemsc:
-
+                                                            for (
+                                                                n
+                                                            ) in newNLChemsc:
                                                                 errppm = (
                                                                     -(
                                                                         (
@@ -2175,17 +2403,24 @@ class TypeScan:
                                                                 )
                                                                 if errppm != 0:
                                                                     errres = (
-                                                                        1000000 / errppm
+                                                                        1000000
+                                                                        / errppm
                                                                     )
                                                                 else:
-                                                                    errres = 1000000
+                                                                    errres = (
+                                                                        1000000
+                                                                    )
 
-                                                                if ml.precursor:
+                                                                if (
+                                                                    ml.precursor
+                                                                ):
                                                                     precursor = scanEntry.dictMarks[
                                                                         ml.precursor
                                                                     ]
                                                                 else:
-                                                                    precursor = None
+                                                                    precursor = (
+                                                                        None
+                                                                    )
 
                                                                 occ = self.mfqlObj.sc.getOccupation(
                                                                     msmse.dictIntensity,
@@ -2206,7 +2441,9 @@ class TypeScan:
                                                                     encodedName="%s:%d"
                                                                     % (
                                                                         ml.name,
-                                                                        int(msmse.mass),
+                                                                        int(
+                                                                            msmse.mass
+                                                                        ),
                                                                     ),
                                                                     scope="MS2+",
                                                                     precursor=ml.precursor,
@@ -2236,14 +2473,19 @@ class TypeScan:
                                                                 )
 
                                                                 notIn = True
-                                                                for i in msmse.listMark:
-                                                                    if mark == i:
+                                                                for (
+                                                                    i
+                                                                ) in (
+                                                                    msmse.listMark
+                                                                ):
+                                                                    if (
+                                                                        mark
+                                                                        == i
+                                                                    ):
                                                                         if i.mergeMSMSMarks(
                                                                             mark
                                                                         ):
-                                                                            notIn = (
-                                                                                False
-                                                                            )
+                                                                            notIn = False
 
                                                                 if notIn:
                                                                     msmse.listMark.append(
@@ -2254,7 +2496,9 @@ class TypeScan:
                                                                 ):  # not mark in scanEntry.dictMarks[ml.name]:
                                                                     scanEntry.dictMarks[
                                                                         ml.name
-                                                                    ].append(mark)
+                                                                    ].append(
+                                                                        mark
+                                                                    )
 
                                                         else:
                                                             errppm = (
@@ -2273,17 +2517,22 @@ class TypeScan:
                                                             )
                                                             if errppm != 0:
                                                                 errres = (
-                                                                    1000000 / errppm
+                                                                    1000000
+                                                                    / errppm
                                                                 )
                                                             else:
-                                                                errres = 1000000
+                                                                errres = (
+                                                                    1000000
+                                                                )
 
                                                             if ml.precursor:
                                                                 precursor = scanEntry.dictMarks[
                                                                     ml.precursor
                                                                 ]
                                                             else:
-                                                                precursor = None
+                                                                precursor = (
+                                                                    None
+                                                                )
 
                                                             occ = self.mfqlObj.sc.getOccupation(
                                                                 msmse.dictIntensity,
@@ -2292,7 +2541,9 @@ class TypeScan:
                                                                     "MSMSthreshold"
                                                                 ],
                                                             )
-                                                            self.mfqlObj.markIndex += 1
+                                                            self.mfqlObj.markIndex += (
+                                                                1
+                                                            )
                                                             mark = TypeMark(
                                                                 type=1,
                                                                 se=se,
@@ -2302,7 +2553,9 @@ class TypeScan:
                                                                 encodedName="%s:%d"
                                                                 % (
                                                                     ml.name,
-                                                                    int(msmse.mass),
+                                                                    int(
+                                                                        msmse.mass
+                                                                    ),
                                                                 ),
                                                                 scope="MS2+",
                                                                 precursor=ml.precursor,
@@ -2332,7 +2585,11 @@ class TypeScan:
                                                             )
 
                                                             notIn = True
-                                                            for i in msmse.listMark:
+                                                            for (
+                                                                i
+                                                            ) in (
+                                                                msmse.listMark
+                                                            ):
                                                                 if mark == i:
                                                                     if i.mergeMSMSMarks(
                                                                         mark
@@ -2348,12 +2605,13 @@ class TypeScan:
                                                             ):  # not mark in scanEntry.dictMarks[ml.name]:
                                                                 scanEntry.dictMarks[
                                                                     ml.name
-                                                                ].append(mark)
+                                                                ].append(
+                                                                    mark
+                                                                )
 
                                                 else:
                                                     if newNLChemsc != []:
                                                         for n in newNLChemsc:
-
                                                             errppm = (
                                                                 -(
                                                                     (
@@ -2370,17 +2628,22 @@ class TypeScan:
                                                             )
                                                             if errppm != 0:
                                                                 errres = (
-                                                                    1000000 / errppm
+                                                                    1000000
+                                                                    / errppm
                                                                 )
                                                             else:
-                                                                errres = 1000000
+                                                                errres = (
+                                                                    1000000
+                                                                )
 
                                                             if ml.precursor:
                                                                 precursor = scanEntry.dictMarks[
                                                                     ml.precursor
                                                                 ]
                                                             else:
-                                                                precursor = None
+                                                                precursor = (
+                                                                    None
+                                                                )
 
                                                             occ = self.mfqlObj.sc.getOccupation(
                                                                 msmse.dictIntensity,
@@ -2389,7 +2652,9 @@ class TypeScan:
                                                                     "MSMSthreshold"
                                                                 ],
                                                             )
-                                                            self.mfqlObj.markIndex += 1
+                                                            self.mfqlObj.markIndex += (
+                                                                1
+                                                            )
                                                             mark = TypeMark(
                                                                 type=1,
                                                                 se=se,
@@ -2399,7 +2664,9 @@ class TypeScan:
                                                                 encodedName="%s:%d"
                                                                 % (
                                                                     ml.name,
-                                                                    int(msmse.mass),
+                                                                    int(
+                                                                        msmse.mass
+                                                                    ),
                                                                 ),
                                                                 scope="MS2+",
                                                                 precursor=ml.precursor,
@@ -2429,7 +2696,11 @@ class TypeScan:
                                                             )
 
                                                             notIn = True
-                                                            for i in msmse.listMark:
+                                                            for (
+                                                                i
+                                                            ) in (
+                                                                msmse.listMark
+                                                            ):
                                                                 if mark == i:
                                                                     if i.mergeMSMSMarks(
                                                                         mark
@@ -2445,12 +2716,13 @@ class TypeScan:
                                                             ):  # not mark in scanEntry.dictMarks[ml.name]:
                                                                 scanEntry.dictMarks[
                                                                     ml.name
-                                                                ].append(mark)
+                                                                ].append(
+                                                                    mark
+                                                                )
                                                         # 	else:
                                                         # 		raise MyVariableException("Variable %s already defined" % ml.name)
 
                                                     else:
-
                                                         errppm = (
                                                             -(
                                                                 (
@@ -2466,7 +2738,10 @@ class TypeScan:
                                                             - msmse.mass
                                                         )
                                                         if errppm != 0:
-                                                            errres = 1000000 / errppm
+                                                            errres = (
+                                                                1000000
+                                                                / errppm
+                                                            )
                                                         else:
                                                             errres = 1000000
 
@@ -2484,7 +2759,9 @@ class TypeScan:
                                                                 "MSMSthreshold"
                                                             ],
                                                         )
-                                                        self.mfqlObj.markIndex += 1
+                                                        self.mfqlObj.markIndex += (
+                                                            1
+                                                        )
                                                         mark = TypeMark(
                                                             type=1,
                                                             se=se,
@@ -2494,7 +2771,9 @@ class TypeScan:
                                                             encodedName="%s:%d"
                                                             % (
                                                                 ml.name,
-                                                                int(msmse.mass),
+                                                                int(
+                                                                    msmse.mass
+                                                                ),
                                                             ),
                                                             scope="MS2+",
                                                             options=options,
@@ -2526,34 +2805,42 @@ class TypeScan:
                                                         # else:
                                                         # 	raise MyVariableException("Variable %s already defined" % ml.name)
                                                         notIn = True
-                                                        for i in msmse.listMark:
+                                                        for (
+                                                            i
+                                                        ) in msmse.listMark:
                                                             if mark == i:
                                                                 if i.mergeMSMSMarks(
                                                                     mark
                                                                 ):
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
 
                                                         if notIn:
-                                                            msmse.listMark.append(mark)
+                                                            msmse.listMark.append(
+                                                                mark
+                                                            )
                                                         if (
                                                             True
                                                         ):  # not mark in scanEntry.dictMarks[ml.name]:
                                                             scanEntry.dictMarks[
                                                                 ml.name
-                                                            ].append(mark)
+                                                            ].append(
+                                                                mark
+                                                            )
 
                                                 # if no precursor scan given
                                                 if not scanEntry.encodedName:
                                                     scanEntry.encodedName = (
                                                         stdName
-                                                        + ":%d" % int(se.precurmass)
+                                                        + ":%d"
+                                                        % int(se.precurmass)
                                                     )
 
                                                 curStatBool = True
 
                                     # TypeFloat
                                     else:
-
                                         # given ElementSequence is a Fragment
                                         if m.polarity > 0:
                                             mass = msmse.mass
@@ -2569,7 +2856,9 @@ class TypeScan:
 
                                         fits = False
                                         if isNL:
-                                            fits = options["tolerance"].fitInNL(
+                                            fits = options[
+                                                "tolerance"
+                                            ].fitInNL(
                                                 mass, m.float, msmse.mass
                                             )
                                         else:
@@ -2578,7 +2867,6 @@ class TypeScan:
                                             )
 
                                         if fits:
-
                                             newNLChemsc = []
                                             newFRChemsc = []
 
@@ -2590,7 +2878,10 @@ class TypeScan:
                                             takeScanEntry = True
 
                                             errppm = (
-                                                -((m.float - msmse.mass) * 1000000)
+                                                -(
+                                                    (m.float - msmse.mass)
+                                                    * 1000000
+                                                )
                                                 / msmse.mass
                                             )
                                             errda = -(m.float - msmse.mass)
@@ -2600,9 +2891,11 @@ class TypeScan:
                                                 errres = 1000000
 
                                             if m.precursor:
-                                                precursor = scanEntry.dictMarks[
-                                                    m.precursor
-                                                ]
+                                                precursor = (
+                                                    scanEntry.dictMarks[
+                                                        m.precursor
+                                                    ]
+                                                )
                                             else:
                                                 precursor = None
 
@@ -2626,7 +2919,9 @@ class TypeScan:
                                                 precursor=m.precursor,
                                                 options=options,
                                                 isSFConstraint=False,
-                                                expAccuraccy=options["tolerance"],
+                                                expAccuraccy=options[
+                                                    "tolerance"
+                                                ],
                                                 errppm=errppm,
                                                 errda=errda,
                                                 errres=errres,
@@ -2640,7 +2935,9 @@ class TypeScan:
                                                 frmass=msmse.mass,
                                                 nlsc=None,
                                                 nlmass=nlmass,
-                                                markIndex=[self.mfqlObj.markIndex],
+                                                markIndex=[
+                                                    self.mfqlObj.markIndex
+                                                ],
                                                 positionMS=positionMS,
                                                 positionMSMS=positionMSMS,
                                             )
@@ -2653,7 +2950,9 @@ class TypeScan:
                                             if (
                                                 True
                                             ):  # not mark in scanEntry.dictMarks[m.name]:
-                                                scanEntry.dictMarks[m.name].append(mark)
+                                                scanEntry.dictMarks[
+                                                    m.name
+                                                ].append(mark)
 
                                         positionMSMS += 1
 
@@ -2668,14 +2967,12 @@ class TypeScan:
                             and se.polarity < 0
                             and se.listPrecurmassSF != []
                         ):
-
                             if not m.name in list(scanEntry.dictMarks.keys()):
                                 scanEntry.dictMarks[m.name] = []
 
                             positionMSMS = 0
 
                             for msmse in se.listMSMS:
-
                                 ### check for options ###
                                 boolPassStep = True
 
@@ -2683,12 +2980,12 @@ class TypeScan:
                                 if "massrange" in options:
                                     if not (
                                         options["massrange"][0] <= msmse.mass
-                                        and msmse.mass <= options["massrange"][1]
+                                        and msmse.mass
+                                        <= options["massrange"][1]
                                     ):
                                         boolPassStep = False
 
                                 if boolPassStep:
-
                                     isNL = False
                                     hasNL = False
                                     hasFR = False
@@ -2697,7 +2994,6 @@ class TypeScan:
 
                                     # sf-constraint given
                                     if isinstance(m, TypeSFConstraint):
-
                                         scconst = m.elementSequence
 
                                         # prepare variables for marking by deciding for neutral loss or fragment search
@@ -2706,8 +3002,12 @@ class TypeScan:
                                             if m.elementSequence.polarity < 0:
                                                 mass = msmse.mass
                                             # given ElementSequence is a NeutralLoss
-                                            elif m.elementSequence.polarity == 0:
-                                                mass = se.precurmass - msmse.mass
+                                            elif (
+                                                m.elementSequence.polarity == 0
+                                            ):
+                                                mass = (
+                                                    se.precurmass - msmse.mass
+                                                )
                                                 isNL = True
                                             else:
                                                 raise SyntaxErrorException(
@@ -2722,7 +3022,6 @@ class TypeScan:
                                         )
 
                                         if newChemsc != []:
-
                                             # msmse.listChemsc += newChemsc
 
                                             # calculate other attributes for TypeMark
@@ -2730,7 +3029,9 @@ class TypeScan:
                                                 frElementSequence = newChemsc
                                                 if se.listPrecurmassSF != []:
                                                     hasNL = True
-                                                    for i in se.listPrecurmassSF:
+                                                    for (
+                                                        i
+                                                    ) in se.listPrecurmassSF:
                                                         for j in newChemsc:
                                                             nlElementSequence.append(
                                                                 i - j
@@ -2744,7 +3045,9 @@ class TypeScan:
                                                 nlElementSequence = newChemsc
                                                 if se.listPrecurmassSF != []:
                                                     hasFR = True
-                                                    for i in se.listPrecurmassSF:
+                                                    for (
+                                                        i
+                                                    ) in se.listPrecurmassSF:
                                                         for j in newChemsc:
                                                             frElementSequence.append(
                                                                 i - j
@@ -2758,8 +3061,9 @@ class TypeScan:
 
                                             if isNL and hasFR:
                                                 for nl in nlElementSequence:
-                                                    for fr in frElementSequence:
-
+                                                    for (
+                                                        fr
+                                                    ) in frElementSequence:
                                                         errppm = (
                                                             -(
                                                                 (
@@ -2781,7 +3085,10 @@ class TypeScan:
                                                             - msmse.mass
                                                         )
                                                         if errppm != 0:
-                                                            errres = 1000000 / errppm
+                                                            errres = (
+                                                                1000000
+                                                                / errppm
+                                                            )
                                                         else:
                                                             errres = 1000000
 
@@ -2799,7 +3106,9 @@ class TypeScan:
                                                                 "MSMSthreshold"
                                                             ],
                                                         )
-                                                        self.mfqlObj.markIndex += 1
+                                                        self.mfqlObj.markIndex += (
+                                                            1
+                                                        )
                                                         mark = TypeMark(
                                                             type=1,
                                                             se=se,
@@ -2807,7 +3116,12 @@ class TypeScan:
                                                             name=m.name,
                                                             isnl=isNL,
                                                             encodedName="%s:%d"
-                                                            % (m.name, int(msmse.mass)),
+                                                            % (
+                                                                m.name,
+                                                                int(
+                                                                    msmse.mass
+                                                                ),
+                                                            ),
                                                             scope="MS2-",
                                                             precursor=m.precursor,
                                                             options=options,
@@ -2836,25 +3150,32 @@ class TypeScan:
                                                         )
 
                                                         notIn = True
-                                                        for i in msmse.listMark:
+                                                        for (
+                                                            i
+                                                        ) in msmse.listMark:
                                                             if mark == i:
                                                                 if i.mergeMSMSMarks(
                                                                     mark
                                                                 ):
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
 
                                                         if notIn:
-                                                            msmse.listMark.append(mark)
+                                                            msmse.listMark.append(
+                                                                mark
+                                                            )
                                                         if (
                                                             True
                                                         ):  # not mark in scanEntry.dictMarks[m.name]:
                                                             scanEntry.dictMarks[
                                                                 m.name
-                                                            ].append(mark)
+                                                            ].append(
+                                                                mark
+                                                            )
 
                                             elif isNL and not hasFR:
                                                 for nl in nlElementSequence:
-
                                                     errppm = (
                                                         -(
                                                             (
@@ -2869,11 +3190,16 @@ class TypeScan:
                                                         / msmse.mass
                                                     )
                                                     errda = -(
-                                                        (se.precurmass - nl.getWeight())
+                                                        (
+                                                            se.precurmass
+                                                            - nl.getWeight()
+                                                        )
                                                         - msmse.mass
                                                     )
                                                     if errppm != 0:
-                                                        errres = 1000000 / errppm
+                                                        errres = (
+                                                            1000000 / errppm
+                                                        )
                                                     else:
                                                         errres = 1000000
 
@@ -2899,7 +3225,10 @@ class TypeScan:
                                                         name=m.name,
                                                         isnl=isNL,
                                                         encodedName="%s:%d"
-                                                        % (m.name, int(msmse.mass)),
+                                                        % (
+                                                            m.name,
+                                                            int(msmse.mass),
+                                                        ),
                                                         scope="MS2-",
                                                         precursor=m.precursor,
                                                         options=options,
@@ -2930,11 +3259,15 @@ class TypeScan:
                                                     notIn = True
                                                     for i in msmse.listMark:
                                                         if mark == i:
-                                                            if i.mergeMSMSMarks(mark):
+                                                            if i.mergeMSMSMarks(
+                                                                mark
+                                                            ):
                                                                 notIn = False
 
                                                     if notIn:
-                                                        msmse.listMark.append(mark)
+                                                        msmse.listMark.append(
+                                                            mark
+                                                        )
                                                     if (
                                                         True
                                                     ):  # not mark in scanEntry.dictMarks[m.name]:
@@ -2943,10 +3276,8 @@ class TypeScan:
                                                         ].append(mark)
 
                                             elif not isNL and hasNL:
-
                                                 for nl in nlElementSequence:
                                                     for fr in newChemsc:
-
                                                         errppm = (
                                                             -(
                                                                 (
@@ -2958,10 +3289,14 @@ class TypeScan:
                                                             / msmse.mass
                                                         )
                                                         errda = -(
-                                                            fr.getWeight() - msmse.mass
+                                                            fr.getWeight()
+                                                            - msmse.mass
                                                         )
                                                         if errppm != 0:
-                                                            errres = 1000000 / errppm
+                                                            errres = (
+                                                                1000000
+                                                                / errppm
+                                                            )
                                                         else:
                                                             errres = 1000000
 
@@ -2979,7 +3314,9 @@ class TypeScan:
                                                                 "MSMSthreshold"
                                                             ],
                                                         )
-                                                        self.mfqlObj.markIndex += 1
+                                                        self.mfqlObj.markIndex += (
+                                                            1
+                                                        )
                                                         mark = TypeMark(
                                                             type=1,
                                                             se=se,
@@ -2987,7 +3324,12 @@ class TypeScan:
                                                             name=m.name,
                                                             isnl=isNL,
                                                             encodedName="%s:%d"
-                                                            % (m.name, int(msmse.mass)),
+                                                            % (
+                                                                m.name,
+                                                                int(
+                                                                    msmse.mass
+                                                                ),
+                                                            ),
                                                             scope="MS2-",
                                                             precursor=precursor,
                                                             options=options,
@@ -3016,27 +3358,33 @@ class TypeScan:
                                                         )
 
                                                         notIn = True
-                                                        for i in msmse.listMark:
+                                                        for (
+                                                            i
+                                                        ) in msmse.listMark:
                                                             if mark == i:
                                                                 if i.mergeMSMSMarks(
                                                                     mark
                                                                 ):
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
                                                         if notIn:
-                                                            msmse.listMark.append(mark)
+                                                            msmse.listMark.append(
+                                                                mark
+                                                            )
                                                         if (
                                                             True
                                                         ):  # not mark in scanEntry.dictMarks[m.name]:
                                                             scanEntry.dictMarks[
                                                                 m.name
-                                                            ].append(mark)
+                                                            ].append(
+                                                                mark
+                                                            )
 
                                                 pass
 
                                             elif not isNL and not hasNL:
-
                                                 for fr in newChemsc:
-
                                                     errppm = (
                                                         -(
                                                             (
@@ -3048,10 +3396,13 @@ class TypeScan:
                                                         / msmse.mass
                                                     )
                                                     errda = -(
-                                                        fr.getWeight() - msmse.mass
+                                                        fr.getWeight()
+                                                        - msmse.mass
                                                     )
                                                     if errppm != 0:
-                                                        errres = 1000000 / errppm
+                                                        errres = (
+                                                            1000000 / errppm
+                                                        )
                                                     else:
                                                         errres = 1000000
 
@@ -3077,7 +3428,10 @@ class TypeScan:
                                                         name=m.name,
                                                         isnl=isNL,
                                                         encodedName="%s:%d"
-                                                        % (m.name, int(msmse.mass)),
+                                                        % (
+                                                            m.name,
+                                                            int(msmse.mass),
+                                                        ),
                                                         scope="MS2-",
                                                         precursor=precursor,
                                                         options=options,
@@ -3108,10 +3462,14 @@ class TypeScan:
                                                     notIn = True
                                                     for i in msmse.listMark:
                                                         if mark == i:
-                                                            if i.mergeMSMSMarks(mark):
+                                                            if i.mergeMSMSMarks(
+                                                                mark
+                                                            ):
                                                                 notIn = False
                                                     if notIn:
-                                                        msmse.listMark.append(mark)
+                                                        msmse.listMark.append(
+                                                            mark
+                                                        )
                                                     if (
                                                         True
                                                     ):  # not mark in scanEntry.dictMarks[m.name]:
@@ -3122,14 +3480,15 @@ class TypeScan:
                                             # if no precursor scan given
                                             if not scanEntry.encodedName:
                                                 scanEntry.encodedName = (
-                                                    stdName + ":%d" % int(se.precurmass)
+                                                    stdName
+                                                    + ":%d"
+                                                    % int(se.precurmass)
                                                 )
 
                                             curStatBool = True
 
                                     # chemical sum composition given
                                     elif isinstance(m, TypeElementSequence):
-
                                         scconst = None
 
                                         # given ElementSequence is a Fragment
@@ -3147,23 +3506,27 @@ class TypeScan:
 
                                         fits = False
                                         if isNL:
-                                            fits = options["tolerance"].fitInNL(
+                                            fits = options[
+                                                "tolerance"
+                                            ].fitInNL(
                                                 mass,
                                                 m.elementSequence.getWeight(),
                                                 msmse.mass,
                                             )
                                         else:
                                             fits = options["tolerance"].fitIn(
-                                                mass, m.elementSequence.getWeight()
+                                                mass,
+                                                m.elementSequence.getWeight(),
                                             )
 
                                         if fits:
-
                                             newNLChemsc = []
                                             newFRChemsc = []
 
                                             if not isNL:
-                                                newFRChemsc = [m.elementSequence]
+                                                newFRChemsc = [
+                                                    m.elementSequence
+                                                ]
                                                 if se.listPrecurmassSF != []:
                                                     for i in se.listMark:
                                                         if (
@@ -3188,18 +3551,23 @@ class TypeScan:
                                                         )
                                                     ):
                                                         newNLChemsc = calcSFbyMass(
-                                                            se.precurmass - mass,
+                                                            se.precurmass
+                                                            - mass,
                                                             self.mfqlObj.precursor.elementSequence.subWoRange(
                                                                 m.elementSequence
                                                             ),
-                                                            options["tolerance"],
+                                                            options[
+                                                                "tolerance"
+                                                            ],
                                                         )
                                                     else:
                                                         newNLChemsc = []
                                                 nlmass = se.precurmass - mass
 
                                             else:
-                                                newNLChemsc = [m.elementSequence]
+                                                newNLChemsc = [
+                                                    m.elementSequence
+                                                ]
                                                 if se.listPrecurmassSF != []:
                                                     # carful here, this is actually no right, since only one
                                                     # precursor ion can be for the neutral loss of this particular
@@ -3226,11 +3594,14 @@ class TypeScan:
                                                         )
                                                     ):
                                                         newFRChemsc = calcSFbyMass(
-                                                            se.precurmass - mass,
+                                                            se.precurmass
+                                                            - mass,
                                                             self.mfqlObj.precursor.elementSequence.subWoRange(
                                                                 m.elementSequence
                                                             ),
-                                                            options["tolerance"],
+                                                            options[
+                                                                "tolerance"
+                                                            ],
                                                         )
                                                     else:
                                                         newFRChemsc = []
@@ -3241,10 +3612,8 @@ class TypeScan:
 
                                             if newFRChemsc != []:
                                                 for i in newFRChemsc:
-
                                                     if newNLChemsc != []:
                                                         for n in newNLChemsc:
-
                                                             errppm = (
                                                                 -(
                                                                     (
@@ -3261,17 +3630,22 @@ class TypeScan:
                                                             )
                                                             if errppm != 0:
                                                                 errres = (
-                                                                    1000000 / errppm
+                                                                    1000000
+                                                                    / errppm
                                                                 )
                                                             else:
-                                                                errres = 1000000
+                                                                errres = (
+                                                                    1000000
+                                                                )
 
                                                             if m.precursor:
                                                                 precursor = scanEntry.dictMarks[
                                                                     m.precursor
                                                                 ]
                                                             else:
-                                                                precursor = None
+                                                                precursor = (
+                                                                    None
+                                                                )
 
                                                             occ = self.mfqlObj.sc.getOccupation(
                                                                 msmse.dictIntensity,
@@ -3280,7 +3654,9 @@ class TypeScan:
                                                                     "MSMSthreshold"
                                                                 ],
                                                             )
-                                                            self.mfqlObj.markIndex += 1
+                                                            self.mfqlObj.markIndex += (
+                                                                1
+                                                            )
                                                             mark = TypeMark(
                                                                 type=1,
                                                                 se=se,
@@ -3290,7 +3666,9 @@ class TypeScan:
                                                                 encodedName="%s:%d"
                                                                 % (
                                                                     m.name,
-                                                                    int(msmse.mass),
+                                                                    int(
+                                                                        msmse.mass
+                                                                    ),
                                                                 ),
                                                                 scope="MS2-",
                                                                 precursor=m.precursor,
@@ -3320,7 +3698,11 @@ class TypeScan:
                                                             )
 
                                                             notIn = True
-                                                            for i in msmse.listMark:
+                                                            for (
+                                                                i
+                                                            ) in (
+                                                                msmse.listMark
+                                                            ):
                                                                 if mark == i:
                                                                     if i.mergeMSMSMarks(
                                                                         mark
@@ -3340,7 +3722,9 @@ class TypeScan:
                                                             ):  # not mark in scanEntry.dictMarks[m.name]:
                                                                 scanEntry.dictMarks[
                                                                     m.name
-                                                                ].append(mark)
+                                                                ].append(
+                                                                    mark
+                                                                )
 
                                                     else:
                                                         errppm = (
@@ -3358,7 +3742,10 @@ class TypeScan:
                                                             - msmse.mass
                                                         )
                                                         if errppm != 0:
-                                                            errres = 1000000 / errppm
+                                                            errres = (
+                                                                1000000
+                                                                / errppm
+                                                            )
                                                         else:
                                                             errres = 1000000
 
@@ -3376,7 +3763,9 @@ class TypeScan:
                                                                 "MSMSthreshold"
                                                             ],
                                                         )
-                                                        self.mfqlObj.markIndex += 1
+                                                        self.mfqlObj.markIndex += (
+                                                            1
+                                                        )
                                                         mark = TypeMark(
                                                             type=1,
                                                             se=se,
@@ -3384,7 +3773,12 @@ class TypeScan:
                                                             name=m.name,
                                                             isnl=isNL,
                                                             encodedName="%s:%d"
-                                                            % (m.name, int(msmse.mass)),
+                                                            % (
+                                                                m.name,
+                                                                int(
+                                                                    msmse.mass
+                                                                ),
+                                                            ),
                                                             scope="MS2-",
                                                             precursor=m.precursor,
                                                             options=options,
@@ -3413,23 +3807,30 @@ class TypeScan:
                                                         )
 
                                                         notIn = True
-                                                        for i in msmse.listMark:
+                                                        for (
+                                                            i
+                                                        ) in msmse.listMark:
                                                             if mark == i:
                                                                 if i.mergeMSMSMarks(
                                                                     mark
                                                                 ):
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
 
                                                         if notIn:
-                                                            msmse.listMark.append(mark)
+                                                            msmse.listMark.append(
+                                                                mark
+                                                            )
                                                             scanEntry.dictMarks[
                                                                 m.name
-                                                            ].append(mark)
+                                                            ].append(
+                                                                mark
+                                                            )
 
                                             else:
                                                 if newNLChemsc != []:
                                                     for n in newNLChemsc:
-
                                                         errppm = (
                                                             -(
                                                                 (
@@ -3445,7 +3846,10 @@ class TypeScan:
                                                             - msmse.mass
                                                         )
                                                         if errppm != 0:
-                                                            errres = 1000000 / errppm
+                                                            errres = (
+                                                                1000000
+                                                                / errppm
+                                                            )
                                                         else:
                                                             errres = 1000000
 
@@ -3463,7 +3867,9 @@ class TypeScan:
                                                                 "MSMSthreshold"
                                                             ],
                                                         )
-                                                        self.mfqlObj.markIndex += 1
+                                                        self.mfqlObj.markIndex += (
+                                                            1
+                                                        )
                                                         mark = TypeMark(
                                                             type=1,
                                                             se=se,
@@ -3471,7 +3877,12 @@ class TypeScan:
                                                             name=m.name,
                                                             isnl=isNL,
                                                             encodedName="%s:%d"
-                                                            % (m.name, int(msmse.mass)),
+                                                            % (
+                                                                m.name,
+                                                                int(
+                                                                    msmse.mass
+                                                                ),
+                                                            ),
                                                             scope="MS2-",
                                                             precursor=m.precursor,
                                                             options=options,
@@ -3500,30 +3911,40 @@ class TypeScan:
                                                         )
 
                                                         notIn = True
-                                                        for i in msmse.listMark:
+                                                        for (
+                                                            i
+                                                        ) in msmse.listMark:
                                                             if mark == i:
                                                                 if i.mergeMSMSMarks(
                                                                     mark
                                                                 ):
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
 
                                                         if notIn:
-                                                            msmse.listMark.append(mark)
+                                                            msmse.listMark.append(
+                                                                mark
+                                                            )
                                                             scanEntry.dictMarks[
                                                                 m.name
-                                                            ].append(mark)
+                                                            ].append(
+                                                                mark
+                                                            )
 
                                     # li#st of chemical sum composition given
                                     elif isinstance(m, TypeList):
-
                                         for ml in m.listElementSequence:
-
                                             # given ElementSequence is a Fragment
                                             if ml.elementSequence.charge < 0:
                                                 mass = msmse.mass
                                             # given ElementSequence is a NeutralLoss
-                                            elif ml.elementSequence.charge == 0:
-                                                mass = se.precurmass - msmse.mass
+                                            elif (
+                                                ml.elementSequence.charge == 0
+                                            ):
+                                                mass = (
+                                                    se.precurmass - msmse.mass
+                                                )
                                                 isNL = True
                                             else:
                                                 raise LipidXException(
@@ -3533,24 +3954,33 @@ class TypeScan:
 
                                             fits = False
                                             if isNL:
-                                                fits = options["tolerance"].fitInNL(
+                                                fits = options[
+                                                    "tolerance"
+                                                ].fitInNL(
                                                     mass,
                                                     ml.elementSequence.getWeight(),
                                                     msmse.mass,
                                                 )
                                             else:
-                                                fits = options["tolerance"].fitIn(
-                                                    mass, ml.elementSequence.getWeight()
+                                                fits = options[
+                                                    "tolerance"
+                                                ].fitIn(
+                                                    mass,
+                                                    ml.elementSequence.getWeight(),
                                                 )
 
                                             if fits:
-
                                                 newNLChemsc = []
                                                 newFRChemsc = []
 
                                                 if not isNL:
-                                                    newFRChemsc = [ml.elementSequence]
-                                                    if se.listPrecurmassSF != []:
+                                                    newFRChemsc = [
+                                                        ml.elementSequence
+                                                    ]
+                                                    if (
+                                                        se.listPrecurmassSF
+                                                        != []
+                                                    ):
                                                         for i in se.listMark:
                                                             if (
                                                                 i.name.split(
@@ -3558,7 +3988,9 @@ class TypeScan:
                                                                 )[0]
                                                                 == ml.name.split(
                                                                     self.mfqlObj.namespaceConnector
-                                                                )[0]
+                                                                )[
+                                                                    0
+                                                                ]
                                                             ):
                                                                 newNLChemsc.append(
                                                                     i.chemsc
@@ -3573,19 +4005,29 @@ class TypeScan:
                                                             )
                                                         ):
                                                             newNLChemsc = calcSFbyMass(
-                                                                se.precurmass - mass,
+                                                                se.precurmass
+                                                                - mass,
                                                                 self.mfqlObj.precursor.elementSequence.subWoRange(
                                                                     ml.elementSequence
                                                                 ),
-                                                                options["tolerance"],
+                                                                options[
+                                                                    "tolerance"
+                                                                ],
                                                             )
                                                         else:
                                                             newNLChemsc = []
-                                                    nlmass = se.precurmass - mass
+                                                    nlmass = (
+                                                        se.precurmass - mass
+                                                    )
 
                                                 else:
-                                                    newNLChemsc = [ml.elementSequence]
-                                                    if se.listPrecurmassSF != []:
+                                                    newNLChemsc = [
+                                                        ml.elementSequence
+                                                    ]
+                                                    if (
+                                                        se.listPrecurmassSF
+                                                        != []
+                                                    ):
                                                         for i in se.listMark:
                                                             if (
                                                                 i.name.split(
@@ -3593,7 +4035,9 @@ class TypeScan:
                                                                 )[0]
                                                                 == ml.name.split(
                                                                     self.mfqlObj.namespaceConnector
-                                                                )[0]
+                                                                )[
+                                                                    0
+                                                                ]
                                                             ):
                                                                 newFRChemsc.append(
                                                                     i.chemsc
@@ -3608,11 +4052,14 @@ class TypeScan:
                                                             )
                                                         ):
                                                             newFRChemsc = calcSFbyMass(
-                                                                se.precurmass - mass,
+                                                                se.precurmass
+                                                                - mass,
                                                                 self.mfqlObj.precursor.elementSequence.subWoRange(
                                                                     ml.elementSequence
                                                                 ),
-                                                                options["tolerance"],
+                                                                options[
+                                                                    "tolerance"
+                                                                ],
                                                             )
                                                         else:
                                                             newFRChemsc = []
@@ -3623,10 +4070,10 @@ class TypeScan:
 
                                                 if newFRChemsc != []:
                                                     for i in newFRChemsc:
-
                                                         if newNLChemsc != []:
-                                                            for n in newNLChemsc:
-
+                                                            for (
+                                                                n
+                                                            ) in newNLChemsc:
                                                                 errppm = (
                                                                     -(
                                                                         (
@@ -3643,17 +4090,24 @@ class TypeScan:
                                                                 )
                                                                 if errppm != 0:
                                                                     errres = (
-                                                                        1000000 / errppm
+                                                                        1000000
+                                                                        / errppm
                                                                     )
                                                                 else:
-                                                                    errres = 1000000
+                                                                    errres = (
+                                                                        1000000
+                                                                    )
 
-                                                                if ml.precursor:
+                                                                if (
+                                                                    ml.precursor
+                                                                ):
                                                                     precursor = scanEntry.dictMarks[
                                                                         ml.precursor
                                                                     ]
                                                                 else:
-                                                                    precursor = None
+                                                                    precursor = (
+                                                                        None
+                                                                    )
 
                                                                 occ = self.mfqlObj.sc.getOccupation(
                                                                     msmse.dictIntensity,
@@ -3674,7 +4128,9 @@ class TypeScan:
                                                                     encodedName="%s:%d"
                                                                     % (
                                                                         ml.name,
-                                                                        int(msmse.mass),
+                                                                        int(
+                                                                            msmse.mass
+                                                                        ),
                                                                     ),
                                                                     scope="MS2-",
                                                                     precursor=ml.precursor,
@@ -3704,8 +4160,15 @@ class TypeScan:
                                                                 )
 
                                                                 notIn = True
-                                                                for i in msmse.listMark:
-                                                                    if mark == i:
+                                                                for (
+                                                                    i
+                                                                ) in (
+                                                                    msmse.listMark
+                                                                ):
+                                                                    if (
+                                                                        mark
+                                                                        == i
+                                                                    ):
                                                                         notIn = False
 
                                                                 if notIn:
@@ -3717,7 +4180,9 @@ class TypeScan:
                                                                 ):  # not mark in scanEntry.dictMarks[ml.name]:
                                                                     scanEntry.dictMarks[
                                                                         ml.name
-                                                                    ].append(mark)
+                                                                    ].append(
+                                                                        mark
+                                                                    )
 
                                                         else:
                                                             errppm = (
@@ -3736,17 +4201,22 @@ class TypeScan:
                                                             )
                                                             if errppm != 0:
                                                                 errres = (
-                                                                    1000000 / errppm
+                                                                    1000000
+                                                                    / errppm
                                                                 )
                                                             else:
-                                                                errres = 1000000
+                                                                errres = (
+                                                                    1000000
+                                                                )
 
                                                             if ml.precursor:
                                                                 precursor = scanEntry.dictMarks[
                                                                     ml.precursor
                                                                 ]
                                                             else:
-                                                                precursor = None
+                                                                precursor = (
+                                                                    None
+                                                                )
 
                                                             occ = self.mfqlObj.sc.getOccupation(
                                                                 msmse.dictIntensity,
@@ -3755,7 +4225,9 @@ class TypeScan:
                                                                     "MSMSthreshold"
                                                                 ],
                                                             )
-                                                            self.mfqlObj.markIndex += 1
+                                                            self.mfqlObj.markIndex += (
+                                                                1
+                                                            )
                                                             mark = TypeMark(
                                                                 type=1,
                                                                 se=se,
@@ -3765,7 +4237,9 @@ class TypeScan:
                                                                 encodedName="%s:%d"
                                                                 % (
                                                                     ml.name,
-                                                                    int(msmse.mass),
+                                                                    int(
+                                                                        msmse.mass
+                                                                    ),
                                                                 ),
                                                                 scope="MS2-",
                                                                 precursor=ml.precursor,
@@ -3795,9 +4269,15 @@ class TypeScan:
                                                             )
 
                                                             notIn = True
-                                                            for i in msmse.listMark:
+                                                            for (
+                                                                i
+                                                            ) in (
+                                                                msmse.listMark
+                                                            ):
                                                                 if mark == i:
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
 
                                                             if notIn:
                                                                 msmse.listMark.append(
@@ -3808,12 +4288,13 @@ class TypeScan:
                                                             ):  # not mark in scanEntry.dictMarks[ml.name]:
                                                                 scanEntry.dictMarks[
                                                                     ml.name
-                                                                ].append(mark)
+                                                                ].append(
+                                                                    mark
+                                                                )
 
                                                 else:
                                                     if newNLChemsc != []:
                                                         for n in newNLChemsc:
-
                                                             errppm = (
                                                                 -(
                                                                     (
@@ -3830,17 +4311,22 @@ class TypeScan:
                                                             )
                                                             if errppm != 0:
                                                                 errres = (
-                                                                    1000000 / errppm
+                                                                    1000000
+                                                                    / errppm
                                                                 )
                                                             else:
-                                                                errres = 1000000
+                                                                errres = (
+                                                                    1000000
+                                                                )
 
                                                             if ml.precursor:
                                                                 precursor = scanEntry.dictMarks[
                                                                     ml.precursor
                                                                 ]
                                                             else:
-                                                                precursor = None
+                                                                precursor = (
+                                                                    None
+                                                                )
 
                                                             occ = self.mfqlObj.sc.getOccupation(
                                                                 msmse.dictIntensity,
@@ -3849,7 +4335,9 @@ class TypeScan:
                                                                     "MSMSthreshold"
                                                                 ],
                                                             )
-                                                            self.mfqlObj.markIndex += 1
+                                                            self.mfqlObj.markIndex += (
+                                                                1
+                                                            )
                                                             mark = TypeMark(
                                                                 type=1,
                                                                 se=se,
@@ -3859,7 +4347,9 @@ class TypeScan:
                                                                 encodedName="%s:%d"
                                                                 % (
                                                                     ml.name,
-                                                                    int(msmse.mass),
+                                                                    int(
+                                                                        msmse.mass
+                                                                    ),
                                                                 ),
                                                                 scope="MS2-",
                                                                 precursor=ml.precursor,
@@ -3889,9 +4379,15 @@ class TypeScan:
                                                             )
 
                                                             notIn = True
-                                                            for i in msmse.listMark:
+                                                            for (
+                                                                i
+                                                            ) in (
+                                                                msmse.listMark
+                                                            ):
                                                                 if mark == i:
-                                                                    notIn = False
+                                                                    notIn = (
+                                                                        False
+                                                                    )
 
                                                             if notIn:
                                                                 msmse.listMark.append(
@@ -3902,12 +4398,13 @@ class TypeScan:
                                                             ):  # not mark in scanEntry.dictMarks[ml.name]:
                                                                 scanEntry.dictMarks[
                                                                     ml.name
-                                                                ].append(mark)
+                                                                ].append(
+                                                                    mark
+                                                                )
                                                         # 	else:
                                                         # 		raise MyVariableException("Variable %s already defined" % ml.name)
 
                                                     else:
-
                                                         errppm = (
                                                             -(
                                                                 (
@@ -3923,7 +4420,10 @@ class TypeScan:
                                                             - msmse.mass
                                                         )
                                                         if errppm != 0:
-                                                            errres = 1000000 / errppm
+                                                            errres = (
+                                                                1000000
+                                                                / errppm
+                                                            )
                                                         else:
                                                             errres = 1000000
 
@@ -3941,7 +4441,9 @@ class TypeScan:
                                                                 "MSMSthreshold"
                                                             ],
                                                         )
-                                                        self.mfqlObj.markIndex += 1
+                                                        self.mfqlObj.markIndex += (
+                                                            1
+                                                        )
                                                         mark = TypeMark(
                                                             type=1,
                                                             se=se,
@@ -3951,7 +4453,9 @@ class TypeScan:
                                                             encodedName="%s:%d"
                                                             % (
                                                                 ml.name,
-                                                                int(msmse.mass),
+                                                                int(
+                                                                    msmse.mass
+                                                                ),
                                                             ),
                                                             scope="MS2-",
                                                             options=options,
@@ -3983,34 +4487,45 @@ class TypeScan:
                                                         # else:
                                                         # 	raise MyVariableException("Variable %s already defined" % ml.name)
                                                         notIn = True
-                                                        for i in msmse.listMark:
+                                                        for (
+                                                            i
+                                                        ) in msmse.listMark:
                                                             if mark == i:
                                                                 notIn = False
 
                                                         if notIn:
-                                                            msmse.listMark.append(mark)
+                                                            msmse.listMark.append(
+                                                                mark
+                                                            )
                                                         if (
                                                             True
                                                         ):  # not mark in scanEntry.dictMarks[ml.name]:
                                                             scanEntry.dictMarks[
                                                                 ml.name
-                                                            ].append(mark)
+                                                            ].append(
+                                                                mark
+                                                            )
 
                                                     # if no precursor scan given
-                                                    if not scanEntry.encodedName:
+                                                    if (
+                                                        not scanEntry.encodedName
+                                                    ):
                                                         scanEntry.encodedName = (
                                                             stdName
-                                                            + ":%d" % int(se.precurmass)
+                                                            + ":%d"
+                                                            % int(
+                                                                se.precurmass
+                                                            )
                                                         )
 
                                                     curStatBool = True
                                     # TypeFloat
                                     # elif isinstance(m, TypeFloat):
                                     else:
-
                                         raise SyntaxErrorException(
                                             "Please define your variable as chemical sum composition in"
-                                            + " query %s." % self.mfqlObj.queryName,
+                                            + " query %s."
+                                            % self.mfqlObj.queryName,
                                             self.mfqlObj.filename,
                                             "",
                                             0,
@@ -4104,7 +4619,6 @@ class TypeMark:
         positionMS,
         positionMSMS,
     ):
-
         self.type = type  # 0 - MS, 1 - MS/MS
         self.se = [se]  # the SurveyEntry with the precursor of the Mark
         self.msmse = msmse  # the MSMSEntry, if there is one
@@ -4124,14 +4638,20 @@ class TypeMark:
         self.binsize = binsize  # the binsize referres to the massWindow of SurveyEntry and MSMSEntry
         self.charge = charge  # the ...
         self.occ = occ  # the occupation threshold
-        self.chemsc = chemsc  # chemical sum composition. Should always be there!
+        self.chemsc = (
+            chemsc  # chemical sum composition. Should always be there!
+        )
         self.scconst = scconst  # the sc constraint
         self.mass = mass  # mass of the mark: mass of the fragment if fragment; mass of the given neutral loss else
         self.frsc = frsc  # is None, if one searched for nl, but the precursor mass had no sum composition
-        self.isofrsc = frsc  # this is needed as extra variable for isotopic correction
+        self.isofrsc = (
+            frsc  # this is needed as extra variable for isotopic correction
+        )
         self.frmass = frmass  # the mass of the fragment
         self.nlsc = nlsc  # is None, if one searched for fr, but the precursor mass had no sum composition
-        self.isonlsc = nlsc  # this is needed as extra variable for isotopic correction
+        self.isonlsc = (
+            nlsc  # this is needed as extra variable for isotopic correction
+        )
         self.nlmass = nlmass  # precursor mass minus fragment mass
         self.markIndex = markIndex
         self.positionMS = positionMS
@@ -4166,12 +4686,10 @@ class TypeMark:
                 self.intensity = msmse.dictIntensity
 
     def __repr__(self):
-
         str = self.encodedName + ":" + self.scope
         return str
 
     def __cmp__(self, other):
-
         if isinstance(other, str):
             return self.cmp(self.encodedName.split(":")[0], other)
 
@@ -4248,7 +4766,10 @@ class TypeMark:
         if self.isnl != other.isnl:
             str += "isnl: %s, %s\n" % (self.isnl, other.isnl)
         if self.encodedName != other.encodedName:
-            str += "encodedName: %s, %s" % (self.encodedName, other.encodedName)
+            str += "encodedName: %s, %s" % (
+                self.encodedName,
+                other.encodedName,
+            )
         if self.scope != other.scope:
             str += "scope: %s, %s\n" % (self.scope, other.scope)
         # this should never return Fals
@@ -4406,7 +4927,6 @@ class TypeEmptyMark(TypeMark):
 
 class TypeMarkTerm:
     def __init__(self, leftSide, rightSide, boolOp, mfqlObj):
-
         self.leftSide = leftSide
         self.rightSide = rightSide
         self.operator = boolOp
@@ -4416,7 +4936,6 @@ class TypeMarkTerm:
         self.noOfSymbols = 0
 
     def evaluate(self, res):
-
         leftResult = False
         rightResult = False
 
@@ -4426,7 +4945,10 @@ class TypeMarkTerm:
             or isinstance(self.leftSide, TypeFloat)
             or isinstance(self.leftSide, TypeList)
         ):
-            if self.leftSide.name in list(res.keys()) and res[self.leftSide.name] != []:
+            if (
+                self.leftSide.name in list(res.keys())
+                and res[self.leftSide.name] != []
+            ):
                 leftResult = True
 
         elif isinstance(self.leftSide, TypeMarkTerm):
@@ -4539,7 +5061,6 @@ class TypeMarkTerm:
         return l
 
     def evaluateStepwise(self, res):
-
         list = self.listBool()
 
         return list
@@ -4552,7 +5073,6 @@ class TypeScanEntry:
     variables for SUCHTHAT and/or REPORT"""
 
     def __init__(self, se):
-
         self.se = se
         self.encodedName = None
         self.chemsc = None
@@ -4562,7 +5082,6 @@ class TypeScanEntry:
         self.dictMarks = {}
 
     def __repr__(self):
-
         if self.encodedName:
             str = self.encodedName + " > "
         else:

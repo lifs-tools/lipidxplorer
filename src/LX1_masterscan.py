@@ -14,87 +14,129 @@ logging.basicConfig(
 )
 log = logging.getLogger(Path(__file__).stem)
 
-from LX2_masterscan import ms2entry_factory, se_factory, spectra_2_df, spectra_2_df_single
+from LX2_masterscan import (
+    ms2entry_factory,
+    se_factory,
+    spectra_2_df,
+    spectra_2_df_single,
+)
 from lx.spectraContainer import MasterScan
 
+
 def make_lx_spectra(mzml, options):
-    #all peaks - time and mass range
+    # all peaks - time and mass range
     spectra_df = spectra_2_df_single(Path(mzml), options)
     ms1_peaks = spectra_df.loc[spectra_df.precursor_id.isna()]
     bins = make_lx1_bins(ms1_peaks, options)
-    ms1_peaks['bin_mass_lx1']= bins
+    ms1_peaks["bin_mass_lx1"] = bins
     agg_ms1_peaks = ms1_peaks_agg(ms1_peaks, options)
     agg_ms1_peaks["stem"] = ms1_peaks.stem.iloc[0]
     if options._data.get("MScalibration"):
         cal_matchs, cal_vals = recalibration_values(agg_ms1_peaks, options)
         if cal_matchs and cal_vals:
-            agg_ms1_peaks.mz = agg_ms1_peaks.mz + np.interp(agg_ms1_peaks.mz, cal_matchs, cal_vals)
+            agg_ms1_peaks.mz = agg_ms1_peaks.mz + np.interp(
+                agg_ms1_peaks.mz, cal_matchs, cal_vals
+            )
 
-    bins_lx2,_ = ms1_peaks_agg_lx2_bin(ms1_peaks)
-    ms1_peaks['bin_mass_lx2']= list(bins_lx2)
+    bins_lx2, _ = ms1_peaks_agg_lx2_bin(ms1_peaks)
+    ms1_peaks["bin_mass_lx2"] = list(bins_lx2)
     agg_ms1_peaks_lx2 = ms1_peaks_agg_lx2(ms1_peaks, options)
     if options._data.get("MScalibration"):
-        (options["lx2_MSresolution"],
-        options["lx2_MSresolution_gradient"] ) = suggest_resolution_gradient_and_tolerance(spectra_df)
-        cal_matchs, cal_vals = recalibration_values(agg_ms1_peaks_lx2, options, use_lx2=True)
+        (
+            options["lx2_MSresolution"],
+            options["lx2_MSresolution_gradient"],
+        ) = suggest_resolution_gradient_and_tolerance(spectra_df)
+        cal_matchs, cal_vals = recalibration_values(
+            agg_ms1_peaks_lx2, options, use_lx2=True
+        )
         if cal_matchs and cal_vals:
-            agg_ms1_peaks_lx2.mz = agg_ms1_peaks_lx2.mz + np.interp(agg_ms1_peaks_lx2.mz, cal_matchs, cal_vals)
+            agg_ms1_peaks_lx2.mz = agg_ms1_peaks_lx2.mz + np.interp(
+                agg_ms1_peaks_lx2.mz, cal_matchs, cal_vals
+            )
 
-
-    peaks_with_agg = ms1_peaks.merge(agg_ms1_peaks, how='left', left_on ='bin_mass_lx1', right_on='bin_mass', suffixes = ('_og','_lx1'))
+    peaks_with_agg = ms1_peaks.merge(
+        agg_ms1_peaks,
+        how="left",
+        left_on="bin_mass_lx1",
+        right_on="bin_mass",
+        suffixes=("_og", "_lx1"),
+    )
     # now add lx2 data
-    peaks_with_agg = peaks_with_agg.merge(agg_ms1_peaks_lx2, how='left', left_on ='bin_mass_lx2', right_on='bin_mass', suffixes = ('_og','_lx2'))
-    peaks_with_agg.rename(columns = {'mz':'mz_lx2','inty':'inty_lx2'}, inplace = True)
+    peaks_with_agg = peaks_with_agg.merge(
+        agg_ms1_peaks_lx2,
+        how="left",
+        left_on="bin_mass_lx2",
+        right_on="bin_mass",
+        suffixes=("_og", "_lx2"),
+    )
+    peaks_with_agg.rename(
+        columns={"mz": "mz_lx2", "inty": "inty_lx2"}, inplace=True
+    )
     return peaks_with_agg
 
+
 def compare_grouping(mzml, options):
-
-
     peaks_with_agg = make_lx_spectra(mzml, options)
 
-
-    cols = ['mz_og','inty_og', 'stem_og','scan_id',
-    'inty_lx1', 'mz_lx1','mz_lx2','inty_lx2']
+    cols = [
+        "mz_og",
+        "inty_og",
+        "stem_og",
+        "scan_id",
+        "inty_lx1",
+        "mz_lx1",
+        "mz_lx2",
+        "inty_lx2",
+    ]
     peaks = peaks_with_agg[cols]
-    peaks = peaks[(peaks.mz_lx1 != peaks.mz_lx2) & ~(peaks.mz_lx1.isna() & peaks.mz_lx2.isna())]
-    peaks[(abs(peaks.inty_lx1 - peaks.inty_lx2) / peaks.inty_lx1)>0.1].to_clipboard()
+    peaks = peaks[
+        (peaks.mz_lx1 != peaks.mz_lx2)
+        & ~(peaks.mz_lx1.isna() & peaks.mz_lx2.isna())
+    ]
+    peaks[
+        (abs(peaks.inty_lx1 - peaks.inty_lx2) / peaks.inty_lx1) > 0.1
+    ].to_clipboard()
 
     # peaks_with_agg make the stdde
-    df = peaks_with_agg[['mz_og','inty_og','stem_og','scan_id']]
+    df = peaks_with_agg[["mz_og", "inty_og", "stem_og", "scan_id"]]
     count = df.scan_id.unique().shape[0]
-    df['r_mean'] = df.mz_og.rolling(count, center=True).mean()
-    df['r_std'] = df.mz_og.rolling(count, center = True).apply(np.std)
-    df['r_std_min'] = df['r_std'].rolling(count, center = True).min()
-    df['is_std_min'] = df['r_std'] == df['r_std_min']
+    df["r_mean"] = df.mz_og.rolling(count, center=True).mean()
+    df["r_std"] = df.mz_og.rolling(count, center=True).apply(np.std)
+    df["r_std_min"] = df["r_std"].rolling(count, center=True).min()
+    df["is_std_min"] = df["r_std"] == df["r_std_min"]
     bins = df.loc[df.is_std_min]
     # add kurtosis and skew to check
-    cuts = pd.concat([bins.r_mean - (3* bins['r_std']), bins.r_mean + (3* bins['r_std'])]).sort_values()
+    cuts = pd.concat(
+        [bins.r_mean - (3 * bins["r_std"]), bins.r_mean + (3 * bins["r_std"])]
+    ).sort_values()
     cuts = cuts.drop_duplicates()
-    df = df.sort_values('mz_og')
+    df = df.sort_values("mz_og")
 
-    df['cuts'] = pd.cut(df.mz_og,cuts, labels = False)
-    bins['cuts'] = pd.cut(bins.mz_og,cuts, labels = False)
+    df["cuts"] = pd.cut(df.mz_og, cuts, labels=False)
+    bins["cuts"] = pd.cut(bins.mz_og, cuts, labels=False)
 
-    #merger peaks from single scan
+    # merger peaks from single scan
     mad = lambda x: np.fabs(x - x.mean())
+
     def mz_weight(mz_series):
         # https://stackoverflow.com/questions/64368050/gaussian-rolling-weights-pandas
         # https://www.youtube.com/watch?v=QIi2eWmdPM8&ab_channel=learndataa
-        #https://dsp.stackexchange.com/questions/84471/rolling-average-in-pandas-using-a-gaussian-window\
+        # https://dsp.stackexchange.com/questions/84471/rolling-average-in-pandas-using-a-gaussian-window\
         import numpy as np
+
         x = mz_series
         m = mz_series.mean()
-        weights = np.exp(-(x-mu)**2 / 2*sigma**2) / np.sqrt(2*np.pi*sigma**2)
+        weights = np.exp(-((x - mu) ** 2) / 2 * sigma**2) / np.sqrt(
+            2 * np.pi * sigma**2
+        )
         return weights
 
-
-    df['weights'] = df.groupby('cuts')['mz_og'].apply(mad)
-    df['inty_low_bound'] = df.groupby('cuts')['inty_og'].transform('std')
-    #only keep peaks that are above  inty_low_bound
-    #averge mz value
+    df["weights"] = df.groupby("cuts")["mz_og"].apply(mad)
+    df["inty_low_bound"] = df.groupby("cuts")["inty_og"].transform("std")
+    # only keep peaks that are above  inty_low_bound
+    # averge mz value
 
     return peaks
-
 
 
 def make_lx1_masterscan(options) -> MasterScan:
@@ -106,7 +148,9 @@ def make_lx1_masterscan(options) -> MasterScan:
     options["lx2_include_text"] = None  # all scans should include this text
     options["lx2_exclude_text"] = None  # all scans should exlude this text
 
-    spectra_dfs = spectra_2_df(options)  # already teim range and mass range filtered
+    spectra_dfs = spectra_2_df(
+        options
+    )  # already teim range and mass range filtered
     polarity = spectra_dfs[0].polarity.iat[0]
 
     # suggested_selection_window = suggest_selection_window(spectra_dfs[0])
@@ -115,7 +159,9 @@ def make_lx1_masterscan(options) -> MasterScan:
     use_lx2 = options._data.get("MSresolution", "") == ""
 
     ms1_dfs = {}
-    for df in spectra_dfs:  # first file, already teim range and mass range filtered
+    for (
+        df
+    ) in spectra_dfs:  # first file, already teim range and mass range filtered
         ms1_peaks = df.loc[df.precursor_id.isna()]
         agg_df = (
             ms1_peaks_agg(ms1_peaks, options)
@@ -132,9 +178,13 @@ def make_lx1_masterscan(options) -> MasterScan:
                 options["lx2_MSresolution_gradient"],
             ) = suggest_resolution_gradient_and_tolerance(spectra_dfs[0])
         for stem, ms1_df in ms1_dfs.items():
-            cal_matchs, cal_vals = recalibration_values(ms1_df, options, use_lx2)
+            cal_matchs, cal_vals = recalibration_values(
+                ms1_df, options, use_lx2
+            )
             if cal_matchs and cal_vals:
-                ms1_df.mz = ms1_df.mz + np.interp(ms1_df.mz, cal_matchs, cal_vals)
+                ms1_df.mz = ms1_df.mz + np.interp(
+                    ms1_df.mz, cal_matchs, cal_vals
+                )
             log.info(f"{stem} recalibrated with {cal_matchs} {cal_vals}")
 
     ms1_agg_peaks = pd.concat(ms1_dfs.values())
@@ -159,14 +209,20 @@ def make_lx1_masterscan(options) -> MasterScan:
             precursors_df = grouped_precursors_df(spectra_dfs, options)
         else:
             precursors_df = lx2_grouped_precursors_df(spectra_dfs, options)
-        precursors_bins = precursors_df.set_index("precursor_mz")["prec_bin"].to_dict()
+        precursors_bins = precursors_df.set_index("precursor_mz")[
+            "prec_bin"
+        ].to_dict()
 
-        ms2_peaks = pd.concat((df.loc[~df.precursor_id.isna()] for df in spectra_dfs))
+        ms2_peaks = pd.concat(
+            (df.loc[~df.precursor_id.isna()] for df in spectra_dfs)
+        )
         ms2_peaks["prec_bin"] = ms2_peaks.precursor_mz.map(precursors_bins)
 
         grouped_prec = ms2_peaks.groupby("prec_bin")
         if not use_lx2:
-            ms2_agg_peaks = pd.concat(ms2_peaks_group_generator(grouped_prec, options))
+            ms2_agg_peaks = pd.concat(
+                ms2_peaks_group_generator(grouped_prec, options)
+            )
         else:
             ms2_agg_peaks = pd.concat(
                 lx2_ms2_peaks_group_generator(grouped_prec, options)
@@ -214,7 +270,9 @@ def make_lx1_masterscan(options) -> MasterScan:
             direction="nearest",
             tolerance=tol,
         )
-        precur_dict = precur_map_df.set_index("MS1_precurmass")["MS2_precurs"].to_dict()
+        precur_dict = precur_map_df.set_index("MS1_precurmass")[
+            "MS2_precurs"
+        ].to_dict()
 
         for se in listSurveyEntry:
             precursor = precur_dict[se.precurmass]
@@ -251,9 +309,9 @@ def ms1_peaks_agg(ms1_peaks, options):
     ms1_peaks["scan_cumcount"] = g.cumcount()
     ms1_peaks["merged_mass"] = g["mz"].transform("mean")
     ms1_peaks["merged_inty"] = g["inty"].transform("mean")
-    ms1_peaks["weigted_mass"] = g["inty_x_mass"].transform("sum") / g["inty"].transform(
-        "sum"
-    )
+    ms1_peaks["weigted_mass"] = g["inty_x_mass"].transform("sum") / g[
+        "inty"
+    ].transform("sum")
 
     # TODO make a weighted intensity based on standard deviation... but not now
     # NOTE lx1 adds the intesities of close peaks... see alignmebt.py mk survey linear:643
@@ -282,7 +340,9 @@ def ms1_peaks_agg(ms1_peaks, options):
 
     # apply fadi filters, in lx1 its done between each bin  process
     fadi_denominator = ms1_peaks.scan_id.unique().shape[0]
-    mask_ff = agg_df.merged_mass_count / fadi_denominator >= options["MSfilter"]
+    mask_ff = (
+        agg_df.merged_mass_count / fadi_denominator >= options["MSfilter"]
+    )
     agg_df = agg_df[mask_ff]
 
     # NOTE intensity threshold is do in add_Sample... but lets do it here
@@ -296,7 +356,8 @@ def ms1_peaks_agg(ms1_peaks, options):
     # agg_df["lx1_bad_inty"] = agg_df.merged_inty_sum / fadi_denominator
 
     agg_df.rename(
-        columns={"weigted_mass_mean": "mz", "merged_inty_mean": "inty"}, inplace=True
+        columns={"weigted_mass_mean": "mz", "merged_inty_mean": "inty"},
+        inplace=True,
     )
     return agg_df
 
@@ -307,10 +368,14 @@ def make_lx1_bins(ms1_peaks, options):
     # binning is done 3 times in lx1, between each fadi filter is performed, we do it at the end intead
     bins1 = list(bin_linear_alignment(ms1_peaks.mz, options))
     bins2 = list(
-        bin_linear_alignment(ms1_peaks.groupby(bins1)["mz"].transform("mean"), options)
+        bin_linear_alignment(
+            ms1_peaks.groupby(bins1)["mz"].transform("mean"), options
+        )
     )
     bins3 = list(
-        bin_linear_alignment(ms1_peaks.groupby(bins2)["mz"].transform("mean"), options)
+        bin_linear_alignment(
+            ms1_peaks.groupby(bins2)["mz"].transform("mean"), options
+        )
     )
 
     return bins3
@@ -324,9 +389,13 @@ def get_collapsable_bins(
     df["accross_column_f"] = df[accross_column].factorize()[0]
     grouped = df.groupby(cluster_column)
     grouped_stats = grouped.agg({"mz": ["max", "min", "std"]})
-    close_mz = grouped_stats[("mz", "min")] - grouped_stats[("mz", "max")].shift(
+    close_mz = grouped_stats[("mz", "min")] - grouped_stats[
+        ("mz", "max")
+    ].shift(-1) < grouped_stats[("mz", "std")] + grouped_stats[
+        ("mz", "std")
+    ].shift(
         -1
-    ) < grouped_stats[("mz", "std")] + grouped_stats[("mz", "std")].shift(-1)
+    )
     close_enough_mz = (
         grouped_stats[("mz", "min")] - grouped_stats[("mz", "max")].shift(-1)
         < close_enogh
@@ -362,15 +431,13 @@ def get_collapsable_bins(
     return collapsable_map
 
 
-def diff_bin(df, scan_count = 1, currlong=False):
-
+def diff_bin(df, scan_count=1, currlong=False):
     cur_bin = 0
     curr_long = 0.01
 
     for tup in df.itertuples():
         if tup.mz_diff > (curr_long * scan_count):
             cur_bin += 1
-
 
         if tup.mz_diff_long < curr_long:
             curr_long = tup.mz_diff_long
@@ -379,6 +446,7 @@ def diff_bin(df, scan_count = 1, currlong=False):
             yield cur_bin, curr_long
         else:
             yield cur_bin
+
 
 def ms1_peaks_agg_lx2_bin(ms1_peaks):
     ms1_peaks.sort_values("mz", ascending=False, inplace=True)
@@ -401,6 +469,7 @@ def ms1_peaks_agg_lx2_bin(ms1_peaks):
     # df['mean_mz_diff']  = df.mz_diff.rolling(window = 31, center=True, win_type ='cosine' ).mean() # note win_type =should be tukey
     bin_mass, curr_long = zip(*diff_bin(ms1_peaks, currlong=True))
     return bin_mass, curr_long
+
 
 def ms1_peaks_agg_lx2(ms1_peaks, options, out_dpm=False):
     ms1_peaks.sort_values("mz", ascending=False, inplace=True)
@@ -444,7 +513,9 @@ def ms1_peaks_agg_lx2(ms1_peaks, options, out_dpm=False):
 
     # apply fadi filters, in lx1 its done between each bin  process
     fadi_denominator = ms1_peaks.scan_id.unique().shape[0]
-    mask_ff = agg_df.merged_mass_count / fadi_denominator >= options["MSfilter"]
+    mask_ff = (
+        agg_df.merged_mass_count / fadi_denominator >= options["MSfilter"]
+    )
     agg_df = agg_df[mask_ff]
 
     # NOTE intensity threshold is do in add_Sample... but lets do it here
@@ -458,7 +529,8 @@ def ms1_peaks_agg_lx2(ms1_peaks, options, out_dpm=False):
     # agg_df["lx1_bad_inty"] = agg_df.merged_inty_sum / fadi_denominator
 
     agg_df.rename(
-        columns={"merged_mass_mean": "mz", "merged_inty_mean": "inty"}, inplace=True
+        columns={"merged_mass_mean": "mz", "merged_inty_mean": "inty"},
+        inplace=True,
     )
     if out_dpm:
         sel = agg_df[agg_df.mz_max - agg_df.mz_min > 0].assign(
@@ -492,6 +564,7 @@ def bin_mkSurveyLinear(masses, options):
             up_to = mass + (mass / deltatol)
             yield up_to
 
+
 def bin_mkSurveyLinear_masswindow(masses, options):
     minmass = masses.min()
     for _, mass in masses.iteritems():
@@ -523,18 +596,23 @@ def ms1_scans_agg(ms1_agg_peaks, options):
         ms1_agg_peaks, accross_column="stem", cluster_column="bins"
     )
     ms1_agg_peaks["bins"].replace(collapsable_map, inplace=True)
-    ms1_agg_peaks["masswindow"] = list(bin_mkSurveyLinear_masswindow(ms1_agg_peaks.mz, options))
-
+    ms1_agg_peaks["masswindow"] = list(
+        bin_mkSurveyLinear_masswindow(ms1_agg_peaks.mz, options)
+    )
 
     # check occupation spectracontainer.py masterscan.chekoccupation
     # occupation is the % of peak intensities abvove "thrsld: "
-    threshold_denominator = ms1_agg_peaks.stem.unique().shape[0]  # same as len(res)
+    threshold_denominator = ms1_agg_peaks.stem.unique().shape[
+        0
+    ]  # same as len(res)
     threshold = options["MSminOccupation"]
     bin_peak_count = ms1_agg_peaks.groupby("bins")["inty"].transform("count")
     tf_mask = (bin_peak_count / threshold_denominator) >= threshold
     ms1_agg_peaks["above_threshold"] = tf_mask
 
-    ms1_agg_peaks["mass"] = ms1_agg_peaks.groupby("bins")["mz"].transform("mean")
+    ms1_agg_peaks["mass"] = ms1_agg_peaks.groupby("bins")["mz"].transform(
+        "mean"
+    )
 
     return ms1_agg_peaks
 
@@ -561,11 +639,11 @@ def ms1_scans_agg_lx2(ms1_agg_peaks, options):
     ms1_agg_peaks["bins"] = [e[0] for e in res]
     ms1_agg_peaks["masswindow"] = [e[1] for e in res]
 
-    #handle split peaks
-    gdf = ms1_agg_peaks.groupby(['bins','stem'])
-    ms1_agg_peaks['mz'] = gdf['mz'].transform('mean')
-    ms1_agg_peaks['inty'] = gdf['inty'].transform('mean')
-    ms1_agg_peaks = ms1_agg_peaks[gdf.cumcount()==0]
+    # handle split peaks
+    gdf = ms1_agg_peaks.groupby(["bins", "stem"])
+    ms1_agg_peaks["mz"] = gdf["mz"].transform("mean")
+    ms1_agg_peaks["inty"] = gdf["inty"].transform("mean")
+    ms1_agg_peaks = ms1_agg_peaks[gdf.cumcount() == 0]
 
     collapsable_map = get_collapsable_bins(
         ms1_agg_peaks, accross_column="stem", cluster_column="bins"
@@ -582,7 +660,9 @@ def ms1_scans_agg_lx2(ms1_agg_peaks, options):
     tf_mask = (bin_peak_count / threshold_denominator) >= threshold
     ms1_agg_peaks["above_threshold"] = tf_mask
 
-    ms1_agg_peaks["mass"] = ms1_agg_peaks.groupby("bins")["mz"].transform("mean")
+    ms1_agg_peaks["mass"] = ms1_agg_peaks.groupby("bins")["mz"].transform(
+        "mean"
+    )
     return ms1_agg_peaks
 
 
@@ -611,7 +691,9 @@ def lx2_grouped_precursors_df(ms2_peaks, options):
     # fallback to 0.5 da
     all_ms2_peaks = pd.concat(ms2_peaks)
 
-    precursors_df = all_ms2_peaks[["stem", "scan_id", "precursor_mz"]].drop_duplicates()
+    precursors_df = all_ms2_peaks[
+        ["stem", "scan_id", "precursor_mz"]
+    ].drop_duplicates()
     precursors_df.sort_values("precursor_mz", inplace=True)
     mz_diffs = precursors_df.precursor_mz.diff()
     mz_diffs = mz_diffs.where(mz_diffs >= 0, np.NAN)
@@ -639,7 +721,9 @@ def lx2_grouped_precursors_df(ms2_peaks, options):
 
 def grouped_precursors_df(spectra_dfs, options):
     # ms2_peaks.sort_values(["precursor_mz", "mz"], inplace=True)
-    ms2_peaks = pd.concat((df.loc[~df.precursor_id.isna()] for df in spectra_dfs))
+    ms2_peaks = pd.concat(
+        (df.loc[~df.precursor_id.isna()] for df in spectra_dfs)
+    )
     precursors_df = ms2_peaks[
         ["stem", "scan_id", "precursor_mz"]
     ].drop_duplicates()  # similar to unqie but return a series instead of an array
@@ -722,7 +806,9 @@ def lx2_ms2_peaks_group_generator(grouped_prec, options):
         # it uses merge sum intensity for getting the averrage intensity...
         agg_prec_ms2_peaks = (
             prec_ms2_peaks[tf_mask]
-            .groupby(["bins", "stem"])  # weighted_mass is as indicateive as the bin
+            .groupby(
+                ["bins", "stem"]
+            )  # weighted_mass is as indicateive as the bin
             .agg({"inty": "mean", "mz": ["count", "mean"]})
         )
         agg_prec_ms2_peaks.columns = [
@@ -739,11 +825,13 @@ def lx2_ms2_peaks_group_generator(grouped_prec, options):
         )
 
         ff_mask = (
-            agg_prec_ms2_peaks["count"] / agg_prec_ms2_peaks.stem.map(fadi_denominators)
+            agg_prec_ms2_peaks["count"]
+            / agg_prec_ms2_peaks.stem.map(fadi_denominators)
             >= options["MSMSfilter"]
         )
         mof_mask = (
-            agg_prec_ms2_peaks["count"] / agg_prec_ms2_peaks.stem.map(fadi_denominators)
+            agg_prec_ms2_peaks["count"]
+            / agg_prec_ms2_peaks.stem.map(fadi_denominators)
             >= options["MSMSminOccupation"]
         )
 
@@ -771,17 +859,31 @@ def ms2_peaks_group_generator(grouped_prec, options):
         log.info(f"processing ms2 {idx}")
         prec_ms2_peaks.sort_values("mz", inplace=True)
         bins1 = list(bin_mkSurveyLinear_for_ms2(prec_ms2_peaks.mz, options))
-        bins1_weighted_average = (prec_ms2_peaks.mz * prec_ms2_peaks.inty).groupby(
+        bins1_weighted_average = (
+            prec_ms2_peaks.mz * prec_ms2_peaks.inty
+        ).groupby(bins1).transform("sum") / prec_ms2_peaks.inty.groupby(
             bins1
-        ).transform("sum") / prec_ms2_peaks.inty.groupby(bins1).transform("sum")
-        bins2 = list(bin_mkSurveyLinear_for_ms2(bins1_weighted_average, options))
-        bins2_weighted_average = (prec_ms2_peaks.mz * prec_ms2_peaks.inty).groupby(
+        ).transform(
+            "sum"
+        )
+        bins2 = list(
+            bin_mkSurveyLinear_for_ms2(bins1_weighted_average, options)
+        )
+        bins2_weighted_average = (
+            prec_ms2_peaks.mz * prec_ms2_peaks.inty
+        ).groupby(bins2).transform("sum") / prec_ms2_peaks.inty.groupby(
             bins2
-        ).transform("sum") / prec_ms2_peaks.inty.groupby(bins2).transform("sum")
-        bins3 = list(bin_mkSurveyLinear_for_ms2(bins2_weighted_average, options))
+        ).transform(
+            "sum"
+        )
+        bins3 = list(
+            bin_mkSurveyLinear_for_ms2(bins2_weighted_average, options)
+        )
         weighted_mass = (prec_ms2_peaks.mz * prec_ms2_peaks.inty).groupby(
             bins3
-        ).transform("sum") / prec_ms2_peaks.inty.groupby(bins3).transform("sum")
+        ).transform("sum") / prec_ms2_peaks.inty.groupby(bins3).transform(
+            "sum"
+        )
 
         prec_ms2_peaks["bins"] = bins3
         prec_ms2_peaks["weighted_mass"] = weighted_mass
@@ -798,18 +900,22 @@ def ms2_peaks_group_generator(grouped_prec, options):
         )
         agg_prec_ms2_peaks.rename(columns={"mz": "count"}, inplace=True)
         agg_prec_ms2_peaks.reset_index(inplace=True)
-        agg_prec_ms2_peaks.rename(columns={"weighted_mass": "mz"}, inplace=True)
+        agg_prec_ms2_peaks.rename(
+            columns={"weighted_mass": "mz"}, inplace=True
+        )
 
         fadi_denominators = (
             prec_ms2_peaks.groupby("stem")["scan_id"].nunique().to_dict()
         )
 
         ff_mask = (
-            agg_prec_ms2_peaks["count"] / agg_prec_ms2_peaks.stem.map(fadi_denominators)
+            agg_prec_ms2_peaks["count"]
+            / agg_prec_ms2_peaks.stem.map(fadi_denominators)
             >= options["MSMSfilter"]
         )
         mof_mask = (
-            agg_prec_ms2_peaks["count"] / agg_prec_ms2_peaks.stem.map(fadi_denominators)
+            agg_prec_ms2_peaks["count"]
+            / agg_prec_ms2_peaks.stem.map(fadi_denominators)
             >= options["MSMSminOccupation"]
         )
 
@@ -897,7 +1003,9 @@ def build_masterscan(options, listSurveyEntry, samples):
     listSurveyEntry = list(sorted(listSurveyEntry, key=lambda x: x.precurmass))
     scan = MasterScan(options)
     scan.listSurveyEntry = listSurveyEntry
-    scan.sampleOccThr["MS"] = [(0.0, [])]  # to avoid bug at def checkOccupation
+    scan.sampleOccThr["MS"] = [
+        (0.0, [])
+    ]  # to avoid bug at def checkOccupation
     scan.sampleOccThr["MSMS"] = [(0.0, [])]
 
     # for printing we need
@@ -936,7 +1044,9 @@ def suggest_resolution_gradient_and_tolerance(spectra_df):
         return res, 0
     df["scan_id_f"] = df["scan_id"].factorize()[0]
     df.sort_values(["mz", "scan_id_f"], ascending=False, inplace=True)
-    df["nunique_scans"] = df.rolling(60)["scan_id_f"].apply(lambda s: len(set(s)))
+    df["nunique_scans"] = df.rolling(60)["scan_id_f"].apply(
+        lambda s: len(set(s))
+    )
     # try https://stackoverflow.com/questions/46470743/how-to-efficiently-compute-a-rolling-unique-count-in-a-pandas-time-series
     max_unique_scans = df["nunique_scans"].max()
     max_unique_scans = int(max_unique_scans)
@@ -948,7 +1058,9 @@ def suggest_resolution_gradient_and_tolerance(spectra_df):
     df["mz_r"] = (df.mz / 10).round() * 10
     valids = df.loc[df["nunique_scans"] >= max_unique_scans * 0.9]
     valids.sort_values("mz", inplace=True)
-    selected = valids.groupby("mz_r")["min_mean_diff"].max().to_frame().reset_index()
+    selected = (
+        valids.groupby("mz_r")["min_mean_diff"].max().to_frame().reset_index()
+    )
     selected["resolution"] = selected["mz_r"] / selected["min_mean_diff"]
     # selected.plot(x='mz_r', y="resolution")
     res_at_loest_mass = selected["resolution"].iat[0]
@@ -970,4 +1082,3 @@ if __name__ == "__main__":
     masterscan = make_lx1_masterscan(options)
     with open("tmp_lx1_and_lx2.sc", "wb") as f:
         pickle.dump(masterscan, f)
-

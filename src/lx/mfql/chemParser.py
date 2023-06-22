@@ -1,7 +1,18 @@
 # Parsers
-NAME, NUM, EOS, SP, NUMPAREN, RANGE, ENUM, SLPAREN, SRPAREN, SIMI, DB, CHARGE = list(
-    range(12)
-)
+(
+    NAME,
+    NUM,
+    EOS,
+    SP,
+    NUMPAREN,
+    RANGE,
+    ENUM,
+    SLPAREN,
+    SRPAREN,
+    SIMI,
+    DB,
+    CHARGE,
+) = list(range(12))
 
 import re
 from lx.exceptions import LipidXException, SyntaxErrorException
@@ -167,13 +178,14 @@ def parse_sequence():
 
         # after sum form there comes the optional options
         if ttype == DB:
-
             # if double bond range is given, it is a SCConstraint
             seq.__class__ = SCConstraint
 
             # to prevent the algorithm adding more elements
             zeroFlag = True
-            match = re.compile("\s?db\(([-+]?\d{1,3}\.\d{1,4}),([+-]?\d{1,3})\)")
+            match = re.compile(
+                "\s?db\(([-+]?\d{1,3}\.\d{1,4}),([+-]?\d{1,3})\)"
+            )
             if match.match(tvalue):
                 r = match.match(tvalue)
                 seq.set_db(float(r.group(1)), int(r.group(2)))
@@ -187,7 +199,9 @@ def parse_sequence():
             if match.match(tvalue):
                 r = match.match(tvalue)
                 seq.set_db(float(r.group(1)), float(r.group(2)))
-            match = re.compile("\s?db\(([-+]?\d{1,3}),([+-]?\d{1,3}\.\d{1,4})\)")
+            match = re.compile(
+                "\s?db\(([-+]?\d{1,3}),([+-]?\d{1,3}\.\d{1,4})\)"
+            )
             if match.match(tvalue):
                 r = match.match(tvalue)
                 seq.set_db(int(r.group(1)), float(r.group(2)))

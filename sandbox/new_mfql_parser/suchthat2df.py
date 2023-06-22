@@ -135,8 +135,12 @@ if __name__ == "__main__":
                 operation="+",
                 term_1=Evaluable(
                     operation="+",
-                    term_1=Obj(p_rule="p_withAttr_id", p_values=["FA1", ".", "chemsc"]),
-                    term_2=Obj(p_rule="p_withAttr_id", p_values=["FA2", ".", "chemsc"]),
+                    term_1=Obj(
+                        p_rule="p_withAttr_id", p_values=["FA1", ".", "chemsc"]
+                    ),
+                    term_2=Obj(
+                        p_rule="p_withAttr_id", p_values=["FA2", ".", "chemsc"]
+                    ),
                 ),
                 term_2=ElementSeq(txt="C9 H19 N1 O6 P1"),
             ),

@@ -28,7 +28,6 @@ def startImport(
     lipidxplorer=False,
     optimization=False,
 ):
-
     ######################################################
     ###              start LipidXplorer                ###
 
@@ -39,7 +38,8 @@ def startImport(
     if lipidxplorer:
         if not options["spectraFormat"] in ["dta/csv", "mzXML", "mzML"]:
             raise LipidXException(
-                "The spectra format *.%s is not supported" % options["spectraFormat"]
+                "The spectra format *.%s is not supported"
+                % options["spectraFormat"]
             )
 
     # if optimization:
@@ -77,7 +77,6 @@ def startImport(
         )
 
     else:
-
         doImport(
             listIntermission[0],
             listIntermission[1],
@@ -95,7 +94,6 @@ def startImport(
 
 
 def startMFQL(options={}, queries={}, parent=None):
-
     # get the starting time for speed measure
     start = time.clock()
 
@@ -145,7 +143,9 @@ def startMFQL(options={}, queries={}, parent=None):
 
     # read the lx2 options
     lx2_opts = {
-        k: v for k, v in mfqlObj.sc.options._data.items() if k.startswith("lx2_")
+        k: v
+        for k, v in mfqlObj.sc.options._data.items()
+        if k.startswith("lx2_")
     }
     mfqlObj.options.update(lx2_opts)
 
@@ -226,7 +226,6 @@ def startMFQL(options={}, queries={}, parent=None):
 
     # may dump the masterscan
     if options["dumpMasterScan"]:
-
         if not options["masterScanInSQL"]:
             masterscan.dump(options["dumpMasterScanFile"])
         else:

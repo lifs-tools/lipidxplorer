@@ -17,7 +17,9 @@ def pymzml_path2df(path, time_start=0, time_end=float("inf")):
             df["scan_id"] = b.ID
             df["filter_string"] = b.get("MS:1000512")
             if b.ms_level == 2:
-                df["precursor_id"] = b.selected_precursors[0].get("precursor id")
+                df["precursor_id"] = b.selected_precursors[0].get(
+                    "precursor id"
+                )
             else:
                 df["precursor_id"] = None
             dfs.append(df)
@@ -57,7 +59,9 @@ def path2df(path, time_start=0, time_end=float("inf")):
                 df["scan_id"] = p.scan_id  # TODO  make them categoriacal?
                 df["filter_string"] = p.annotations["filter string"]
                 df["precursor_id"] = b.precursor.scan_id
-                df.set_index(["scan_id", "filter_string"], append=True, inplace=True)
+                df.set_index(
+                    ["scan_id", "filter_string"], append=True, inplace=True
+                )
                 dfs.append(df)
     df = pd.concat(dfs)
     df.set_index(
@@ -85,4 +89,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

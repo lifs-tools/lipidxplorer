@@ -1,22 +1,25 @@
-
-
 import numpy as np
 import pandas as pd
 from pathlib import Path
 import argparse
 from gooey import Gooey
 
+
 def to_lister(lines):
     for line in lines:
-        yield line.strip().split(',')
+        yield line.strip().split(",")
+
 
 def suggest_result_file(out_file):
     out_path = Path(out_file)
-    result_file = str(out_path.with_name(out_path.stem + "_v2" + out_path.suffix))
+    result_file = str(
+        out_path.with_name(out_path.stem + "_v2" + out_path.suffix)
+    )
     return result_file
 
-def  parse_dump_file(dump):
-        # Read the file content
+
+def parse_dump_file(dump):
+    # Read the file content
     with open(dump, "r") as file:
         lines = file.readlines()
 
@@ -30,7 +33,7 @@ def  parse_dump_file(dump):
             continue
 
         # Split the line based on ',' into parts
-        parts = line.strip().split(',')
+        parts = line.strip().split(",")
 
         # Check if the first part has ':'
         if ":" in parts[0].strip():
@@ -42,7 +45,6 @@ def  parse_dump_file(dump):
         else:
             second_section.append(line)
 
-
     # Process the lines
     second_section_data = []
     for line in second_section:
@@ -51,7 +53,7 @@ def  parse_dump_file(dump):
             continue
 
         # Split the line based on '\t' into cells
-        cells = line.strip().split(',')
+        cells = line.strip().split(",")
 
         # Add the cells to the second_section_data list
         second_section_data.append(cells)
@@ -61,18 +63,17 @@ def  parse_dump_file(dump):
 
     headers = second_section_data[0]
     new_column_names = []
-    for idx,name in enumerate(headers):
+    for idx, name in enumerate(headers):
         if name.strip():
             new_column_names.append(name)
         else:
             new_column_names.append(idx)
 
     # fixed columns
-    new_column_names[0]='dash'
-    new_column_names[1]='empty'
-    new_column_names[2]='mass'
-    new_column_names[3]='mol'
-
+    new_column_names[0] = "dash"
+    new_column_names[1] = "empty"
+    new_column_names[2] = "mass"
+    new_column_names[3] = "mol"
 
     df.rename(columns=dict(zip(df.columns, new_column_names)), inplace=True)
 
@@ -82,51 +83,67 @@ def  parse_dump_file(dump):
             df[column] = pd.to_numeric(df[column])
         except ValueError:
             pass
-    
-    header_data['headers'] = headers
+
+    header_data["headers"] = headers
     return header_data, df
 
-def get_id_info(header_data, df):
-    headers = header_data['headers']
 
-    flag_columns = df.columns[len(headers):]
+def get_id_info(header_data, df):
+    headers = header_data["headers"]
+
+    flag_columns = df.columns[len(headers) :]
     dirty_flag_df = df[flag_columns]
-    flag_df = pd.melt(dirty_flag_df.reset_index(), id_vars='index', value_name='flag')
-    flag_df['flag'].replace('', np.nan, inplace=True)
-    flag_df = flag_df[flag_df['flag'].notna()] # column 'variable' is the unmelted column name
-    flag_df[['var','nominal','mode','molecule']] = flag_df.flag.str.split(":", expand = True)
-    flag_df.set_index('index', inplace=True)
+    flag_df = pd.melt(
+        dirty_flag_df.reset_index(), id_vars="index", value_name="flag"
+    )
+    flag_df["flag"].replace("", np.nan, inplace=True)
+    flag_df = flag_df[
+        flag_df["flag"].notna()
+    ]  # column 'variable' is the unmelted column name
+    flag_df[["var", "nominal", "mode", "molecule"]] = flag_df.flag.str.split(
+        ":", expand=True
+    )
+    flag_df.set_index("index", inplace=True)
     # flag_df = flag_df.drop_duplicates()
     # flag_df = flag_df.sort_values(['var','nominal'])
 
-    molecules_df = df.iloc[:,:4]
+    molecules_df = df.iloc[:, :4]
     molecules_df = molecules_df.reset_index()
-    molecules_df.loc[molecules_df.mass == ' ','index'] = np.nan
+    molecules_df.loc[molecules_df.mass == " ", "index"] = np.nan
 
-    molecules_df['index'].fillna(method='ffill', inplace=True)
-    molecules_df.set_index('index', inplace=True)
-    molecules_df = molecules_df[molecules_df['mol'] != '%']
-    molecules_df[['molecule','error']] = molecules_df['mol'].str.extract(r'\((.*?) ; (.*?)\)')
-    molecules_df['error'] = pd.to_numeric(molecules_df['error'])
-    molecules_df['abs_err'] = molecules_df['error'].abs()
-    molecules_df['min_err'] = molecules_df.groupby('molecule')['abs_err'].transform('min')
-    molecules_df['selected'] = molecules_df['min_err'] == molecules_df['abs_err']
+    molecules_df["index"].fillna(method="ffill", inplace=True)
+    molecules_df.set_index("index", inplace=True)
+    molecules_df = molecules_df[molecules_df["mol"] != "%"]
+    molecules_df[["molecule", "error"]] = molecules_df["mol"].str.extract(
+        r"\((.*?) ; (.*?)\)"
+    )
+    molecules_df["error"] = pd.to_numeric(molecules_df["error"])
+    molecules_df["abs_err"] = molecules_df["error"].abs()
+    molecules_df["min_err"] = molecules_df.groupby("molecule")[
+        "abs_err"
+    ].transform("min")
+    molecules_df["selected"] = (
+        molecules_df["min_err"] == molecules_df["abs_err"]
+    )
 
-    result_df = pd.merge(molecules_df, flag_df, how='left', left_index=True, right_index=True)
+    result_df = pd.merge(
+        molecules_df, flag_df, how="left", left_index=True, right_index=True
+    )
     result_df = result_df.drop_duplicates()
 
     return result_df
 
-def  parse_out_file(out):
-        # Read the file content
+
+def parse_out_file(out):
+    # Read the file content
     with open(out, "r") as file:
         lines = file.readlines()
 
-    df = pd.DataFrame((line.split(',') for line in lines))
-    df['row_no'] = df.index
+    df = pd.DataFrame((line.split(",") for line in lines))
+    df["row_no"] = df.index
 
     col_names = []
-    for idx,e in enumerate(df.iloc[0].to_list()):
+    for idx, e in enumerate(df.iloc[0].to_list()):
         if e:
             col_names.append(e.strip())
         else:
@@ -135,27 +152,28 @@ def  parse_out_file(out):
     df.columns = col_names
 
     df = df.drop(0)
-    df['section'] = df['EC'].where(df['PRM'] == '###')
-    df['section'] = df['section'].str.strip()
-    df['section'] = df['section'].ffill()
+    df["section"] = df["EC"].where(df["PRM"] == "###")
+    df["section"] = df["section"].str.strip()
+    df["section"] = df["section"].ffill()
 
-    df = df[df['CLASS'].notna()]
+    df = df[df["CLASS"].notna()]
 
     return df
 
+
 def check_and_relace_results(out, dump, result_file):
-    '''
+    """
     replace the results from the out file with values from the dump file,
     where the eabsolute error is smaller,
 
     out: out csv from
     dunp: dum.csv file that contains the results from the out file
     result_file: path to the updated outfile, if falsy no file is created
-    '''
+    """
     outs_mass_row = 0
     outs_elemental_comp_row = 1
     outs_error_row = 9
-    out_title_prefix = 'QS:'
+    out_title_prefix = "QS:"
 
     header_data, df = parse_dump_file(dump)
     result_df = get_id_info(header_data, df)
@@ -165,63 +183,77 @@ def check_and_relace_results(out, dump, result_file):
         lines = file.readlines()
 
     lines_out = []
-    header = lines[0].split(',')
-    
+    header = lines[0].split(",")
+
     lines_out.append(lines[0])
-    
+
     for line in lines[1:]:
-        if not line.strip(): # nothing there
+        if not line.strip():  # nothing there
             lines_out.append(line)
             continue
-        if line.startswith('###'): # nothing to do
+        if line.startswith("###"):  # nothing to do
             lines_out.append(line)
             continue
 
-        row = line.split(',')
+        row = line.split(",")
         Elemental_comp = row[outs_elemental_comp_row]
         Elemental_comp = Elemental_comp.strip()
         error = float(row[outs_error_row])
-        error = round(error,2)
+        error = round(error, 2)
 
-        result = result_df[result_df.molecule_x == Elemental_comp].reset_index().iloc[0]
-        e_1 = round(float(result.error),2)
+        result = (
+            result_df[result_df.molecule_x == Elemental_comp]
+            .reset_index()
+            .iloc[0]
+        )
+        e_1 = round(float(result.error), 2)
 
-        if error == e_1: # same error no replacement
+        if error == e_1:  # same error no replacement
             lines_out.append(line)
             continue
 
-        replacement = df.iloc[int(result['index'])]
-        
+        replacement = df.iloc[int(result["index"])]
 
-        for idx,title in enumerate(header):
-            if title.strip(out_title_prefix ) in replacement.index:
-                row[idx] = str(replacement[title.strip(out_title_prefix )])
+        for idx, title in enumerate(header):
+            if title.strip(out_title_prefix) in replacement.index:
+                row[idx] = str(replacement[title.strip(out_title_prefix)])
 
         row[outs_mass_row] = replacement.mass
         row[outs_error_row] = str(result.error)
 
-        lines_out.append(','.join(row))
-    
+        lines_out.append(",".join(row))
+
     if result_file:
-        with open(result_file, 'w') as file:
-            file.writelines(''.join(lines_out))
+        with open(result_file, "w") as file:
+            file.writelines("".join(lines_out))
 
     return lines_out
+
 
 @Gooey
 def parse_args():
     # Create the argument parser
-    parser = argparse.ArgumentParser(description='replaces the out values with updated values from the dump file, and generates a new results file.')
+    parser = argparse.ArgumentParser(
+        description="replaces the out values with updated values from the dump file, and generates a new results file."
+    )
 
     # Add the input file argument
-    parser.add_argument('out_file', type=argparse.FileType('r'), help='path to the output file')
+    parser.add_argument(
+        "out_file", type=argparse.FileType("r"), help="path to the output file"
+    )
 
     # Add the dump file argument
-    parser.add_argument('dump_file', type=argparse.FileType('r'), help='path to the dump file')
+    parser.add_argument(
+        "dump_file", type=argparse.FileType("r"), help="path to the dump file"
+    )
 
     # Add an optional result file argument
-    parser.add_argument('-r', '--result_file', type=argparse.FileType('w'), help='path to the result file (default: next to the out file with "_v2" suffix)')
-
+    parser.add_argument(
+        "-r",
+        "--result_file",
+        type=argparse.FileType("w"),
+        help='path to the result file (default: next to the out file with "_v2" suffix)',
+    )
 
     # Parse the command-line arguments
     args = parser.parse_args()
@@ -235,16 +267,17 @@ def parse_args():
         result_file = suggest_result_file(out_file)
 
     # Print the file paths
-    print(f'Output file: {out_file}')
-    print(f'Dump file: {dump_file}')
-    print(f'Result file: {result_file}')
+    print(f"Output file: {out_file}")
+    print(f"Dump file: {dump_file}")
+    print(f"Result file: {result_file}")
 
     return out_file, dump_file, result_file
 
+
 def main():
-    args  = parse_args()
+    args = parse_args()
     check_and_relace_results(*args)
 
-if __name__ == '__main__':
-    main()
 
+if __name__ == "__main__":
+    main()

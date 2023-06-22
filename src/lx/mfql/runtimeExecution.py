@@ -17,12 +17,12 @@ from copy import copy, deepcopy
 import numpy as np
 from functools import reduce
 
+
 ## CarthesianProduct
 # Takes an array of arrays and generates the carthesian product of the given
 # arrays. E.g. a = [[0], [1,2,3], [4,5]] -> [[0,1,4], [0,1,5], [0,2,4],
 # [0,2,5], [0,3,4], [0,3,5]]
 def CarthesianProduct(array):
-
     # init an array containing the lenghts of the arrays in "array"
     lengthVector = []
     for i in array:
@@ -114,7 +114,6 @@ class TypeMFQL:
         self.markIndex = 0
 
     def reset(self):
-
         self.scan = None
 
         # dictionary for the definition part
@@ -190,7 +189,9 @@ class TypeMFQL:
             self.dictEmptyVariables[self.queryName] = []
         self.dictEmptyVariables[self.queryName].append(mark)
 
-    def genVariables_new(self, surveyEntry, plus_permutation=False, empty_vars={}):
+    def genVariables_new(
+        self, surveyEntry, plus_permutation=False, empty_vars={}
+    ):
         """This routine generates all combinations of fragments
         for a precursor plus MS/MS. The problem are ambiguous
         fragments. They exist if more than one variable of
@@ -212,7 +213,6 @@ class TypeMFQL:
 
         theResult = []
         for se in loopResults:
-
             # merge the marks and empty variables
             marks = se.dictMarks
             for key in list(empty_vars.keys()):
@@ -261,7 +261,6 @@ class TypeMFQL:
 
         tmp = []
         for se in loopResults:
-
             precursor = []
             noSFConstraint = []
             length = 0
@@ -337,7 +336,6 @@ class TypeMFQL:
 
 class TypeResult:
     def __init__(self, mfqlObj=None):
-
         self.mfqlObj = mfqlObj
         self.listQuery = []
         self.dictQuery = odict()  # {}
@@ -361,7 +359,6 @@ class TypeResult:
         resultSC = self.mfqlObj.resultSC
 
         for se in self.mfqlObj.sc.listSurveyEntry:
-
             # take only se's which have a mark and a sum composition
             # if se.listMark != [] and \
             # 		not se.removedByIsotopicCorrection_MS and\
@@ -369,7 +366,10 @@ class TypeResult:
             # 	resultSC.append(se)
 
             # take only se's which have a sum composition
-            if not se.removedByIsotopicCorrection_MS and se.listPrecurmassSF != []:
+            if (
+                not se.removedByIsotopicCorrection_MS
+                and se.listPrecurmassSF != []
+            ):
                 resultSC.append(se)
 
             else:
@@ -408,13 +408,17 @@ class TypeResult:
                 dictcountIntensity = {}
 
                 for entry in group:
-                    new_dict = {k: v for k, v in entry.dictIntensity.items() if v != 0}
+                    new_dict = {
+                        k: v for k, v in entry.dictIntensity.items() if v != 0
+                    }
                     count = len(new_dict)
                     precurmass_sum_counts += count
                     precurmass_sum += entry.precurmass * count
                     for k, v in new_dict.items():
                         dictsumIntensity[k] = dictsumIntensity.get(k, 0) + v
-                        dictcountIntensity[k] = dictcountIntensity.get(k, 0) + 1
+                        dictcountIntensity[k] = (
+                            dictcountIntensity.get(k, 0) + 1
+                        )
 
                 base = deepcopy(entry)  # TODO this takes a long time
                 base.precurmass = precurmass_sum / precurmass_sum_counts
@@ -428,11 +432,9 @@ class TypeResult:
             self.mfqlObj.resultSC = sorted(merged_resultSC)
 
     def generateComplementSC(self):
-
         resultSC = []
 
         for query in list(self.dictQuery.values()):
-
             # construct the artificial MasterScan
             for v in query.listVariables:
                 for k in list(v.keys()):
@@ -451,9 +453,7 @@ class TypeResult:
         with open("complementTest.csv", "w") as f:
             listMSMS = []
             for entry in self.mfqlObj.sc.listSurveyEntry:
-
                 if not entry.isIsotope and not entry.isTakenBySuchthat:
-
                     sc.listSurveyEntry.append(copy(entry))
                     sc.listSurveyEntry[-1].listMark = []
                     sc.listSurveyEntry[-1].listPrecurmassSF = []
@@ -472,26 +472,26 @@ class TypeResult:
                 else:
                     f.write(
                         "%.4f, %s, %s\n"
-                        % (entry.precurmass, entry.isIsotope, entry.isTakenBySuchthat)
+                        % (
+                            entry.precurmass,
+                            entry.isIsotope,
+                            entry.isTakenBySuchthat,
+                        )
                     )
 
                 sc.listSurveyEntry.sort()
 
     def generateQueryResultSC(self):
-
         import re
 
         sc = self.mfqlObj.resultSC
 
         for query in list(self.dictQuery.values()):
-
             query.sc = []
 
             # construct the artificial MasterScan
             for se in self.mfqlObj.resultSC:
-
                 if se.isInQueryMS(query.name, self.mfqlObj.namespaceConnector):
-
                     # I guess just doing a deepcopy cause a lot of trouble
                     # newSE = deepcopy(se)
                     newSE = copy(se)
@@ -501,10 +501,11 @@ class TypeResult:
                     # are (again) checked if every entry of IDENTIFY was present
                     # in the spectrum
                     for vars in se.listVariables:
-
                         # add the empty vars to the list of variables
                         if query.name in self.mfqlObj.dictEmptyVariables:
-                            for emptyVar in self.mfqlObj.dictEmptyVariables[query.name]:
+                            for emptyVar in self.mfqlObj.dictEmptyVariables[
+                                query.name
+                            ]:
                                 vars[emptyVar.name] = emptyVar
 
                         isIn = True
@@ -539,7 +540,9 @@ class TypeResult:
                             for mark in msmse.listMark:
                                 # if mark.scope == "MS2+" or mark.scope == "MS2-":
                                 if mark.type == 1:
-                                    mark.msmse.dictIntensity = copy(msmse.dictIntensity)
+                                    mark.msmse.dictIntensity = copy(
+                                        msmse.dictIntensity
+                                    )
                                     mark.intensity = msmse.dictIntensity
                                     mark.float = msmse.mass
 
@@ -547,7 +550,6 @@ class TypeResult:
         pass
 
     def deIsotopingMS_complement(self):
-
         import math
 
         scan = self.mfqlObj.sc
@@ -555,9 +557,7 @@ class TypeResult:
         listSE = self.mfqlObj.sc.listSurveyEntry
 
         for entry in range(len(listSE) - 1):
-
             if listSE[entry].isTakenBySuchthat:
-
                 res = listSE[entry].precurmass / (
                     (
                         (listSE[entry].precurmass - listSE[0].precurmass)
@@ -568,7 +568,6 @@ class TypeResult:
                 # res = listSE[entry].precurmass / scan.MSresolution
 
                 if listSE[entry].listPrecurmassSF != []:
-
                     actualKey = listSE[entry]
                     keyIndex = entry + 1
                     nextKey = listSE[keyIndex]
@@ -578,20 +577,24 @@ class TypeResult:
                     M2found = []
                     M1found = []
 
-                    while nextKey.precurmass - actualKey.precurmass - res <= 4.0132:
-
+                    while (
+                        nextKey.precurmass - actualKey.precurmass - res
+                        <= 4.0132
+                    ):
                         # are there isotopes according to double bound difference?
                         isThere = False
 
                         if (
-                            4.0132 <= nextKey.precurmass - actualKey.precurmass + res
+                            4.0132
+                            <= nextKey.precurmass - actualKey.precurmass + res
                             and 4.0132
                             >= nextKey.precurmass - actualKey.precurmass - res
                         ) or isThere:
                             M4found.append(nextKey)
 
                         if (
-                            3.0099 <= nextKey.precurmass - actualKey.precurmass + res
+                            3.0099
+                            <= nextKey.precurmass - actualKey.precurmass + res
                             and 3.0099
                             >= nextKey.precurmass - actualKey.precurmass - res
                         ):
@@ -601,14 +604,16 @@ class TypeResult:
                         isThere = False
 
                         if (
-                            2.0066 <= nextKey.precurmass - actualKey.precurmass + res
+                            2.0066
+                            <= nextKey.precurmass - actualKey.precurmass + res
                             and 2.0066
                             >= nextKey.precurmass - actualKey.precurmass - res
                         ) or isThere:
                             M2found.append(nextKey)
 
                         if (
-                            1.0033 <= nextKey.precurmass - actualKey.precurmass + res
+                            1.0033
+                            <= nextKey.precurmass - actualKey.precurmass + res
                             and 1.0033
                             >= nextKey.precurmass - actualKey.precurmass - res
                         ):
@@ -620,8 +625,12 @@ class TypeResult:
                         else:
                             break
 
-                    if M4found != [] or M3found != [] or M2found != [] or M1found != []:
-
+                    if (
+                        M4found != []
+                        or M3found != []
+                        or M2found != []
+                        or M1found != []
+                    ):
                         # calculate ratios of isotopic occurance for M-2
                         numC = 0
                         for scomp in actualKey.listPrecurmassSF:
@@ -630,14 +639,25 @@ class TypeResult:
                         gotOne = False
 
                         neg = 1 - 0.01082
-                        cWithoutIsotopes = neg ** numC
+                        cWithoutIsotopes = neg**numC
 
                         cfM = []
                         cfM.append(
-                            (numC * 0.01082 * neg ** (numC - 1) / cWithoutIsotopes)
+                            (
+                                numC
+                                * 0.01082
+                                * neg ** (numC - 1)
+                                / cWithoutIsotopes
+                            )
                         )
                         cfM.append(
-                            (0.5 * numC * (numC - 1) * 0.0001170724 * neg ** (numC - 2))
+                            (
+                                0.5
+                                * numC
+                                * (numC - 1)
+                                * 0.0001170724
+                                * neg ** (numC - 2)
+                            )
                             / cWithoutIsotopes
                         )  # continue here!
                         cfM.append(
@@ -669,40 +689,56 @@ class TypeResult:
                             # correct the found fragment intensity
                             for k in listKeys:
                                 # change intensity of the fragment, if it is already changed
-                                difference = actualKey.dictIntensity[k] * cfM[0]
+                                difference = (
+                                    actualKey.dictIntensity[k] * cfM[0]
+                                )
                                 M1f.dictIntensity[k] -= difference
                                 M1f.isIsotope = True
-                                self.mfqlObj.sc.getSEbyIndex(M1f.index).isIsotope = True
+                                self.mfqlObj.sc.getSEbyIndex(
+                                    M1f.index
+                                ).isIsotope = True
 
                     if M2found != []:
                         for M2f in M2found:
                             # correct the found fragment intensity
                             for k in listKeys:
                                 # change intensity of the fragment, if it is already changed
-                                difference = actualKey.dictIntensity[k] * cfM[1]
+                                difference = (
+                                    actualKey.dictIntensity[k] * cfM[1]
+                                )
                                 M2f.dictIntensity[k] -= difference
                                 M2f.isIsotope = True
-                                self.mfqlObj.sc.getSEbyIndex(M2f.index).isIsotope = True
+                                self.mfqlObj.sc.getSEbyIndex(
+                                    M2f.index
+                                ).isIsotope = True
 
                     if M3found != []:
                         for M3f in M3found:
                             # correct the found fragment intensity
                             for k in listKeys:
                                 # change intensity of the fragment, if it is already changed
-                                difference = actualKey.dictIntensity[k] * cfM[2]
+                                difference = (
+                                    actualKey.dictIntensity[k] * cfM[2]
+                                )
                                 M3f.dictIntensity[k] -= difference
                                 M3f.isIsotope = True
-                                self.mfqlObj.sc.getSEbyIndex(M3f.index).isIsotope = True
+                                self.mfqlObj.sc.getSEbyIndex(
+                                    M3f.index
+                                ).isIsotope = True
 
                     if M4found:
                         for M4f in M4found:
                             # correct the found fragment intensity
                             for k in listKeys:
                                 # change intensity of the fragment, if it is already changed
-                                difference = actualKey.dictIntensity[k] * cfM[3]
+                                difference = (
+                                    actualKey.dictIntensity[k] * cfM[3]
+                                )
                                 M4f.dictIntensity[k] -= difference
                                 M4f.isIsotope = True
-                                self.mfqlObj.sc.getSEbyIndex(M4f.index).isIsotope = True
+                                self.mfqlObj.sc.getSEbyIndex(
+                                    M4f.index
+                                ).isIsotope = True
 
                 zero = True
                 for k in listKeys:
@@ -713,7 +749,6 @@ class TypeResult:
                         zero = False
 
     def isotopicCorrectionMS_wholeSC(self):
-
         import math
 
         scan = self.mfqlObj.sc
@@ -721,7 +756,6 @@ class TypeResult:
         listSE = self.mfqlObj.sc.listSurveyEntry
 
         for entry in range(len(listSE) - 1):
-
             res = listSE[entry].precurmass / (
                 (
                     (listSE[entry].precurmass - listSE[0].precurmass)
@@ -732,7 +766,6 @@ class TypeResult:
             # res = listSE[entry].precurmass / scan.MSresolution
 
             if listSE[entry].listPrecurmassSF != []:
-
                 actualKey = listSE[entry]
                 keyIndex = entry + 1
                 nextKey = listSE[keyIndex]
@@ -742,20 +775,25 @@ class TypeResult:
                 M2found = []
                 M1found = []
 
-                while nextKey.precurmass - actualKey.precurmass - res <= 4.0132:
-
+                while (
+                    nextKey.precurmass - actualKey.precurmass - res <= 4.0132
+                ):
                     # are there isotopes according to double bound difference?
                     isThere = False
 
                     if (
-                        4.0132 <= nextKey.precurmass - actualKey.precurmass + res
-                        and 4.0132 >= nextKey.precurmass - actualKey.precurmass - res
+                        4.0132
+                        <= nextKey.precurmass - actualKey.precurmass + res
+                        and 4.0132
+                        >= nextKey.precurmass - actualKey.precurmass - res
                     ) or isThere:
                         M4found.append(nextKey)
 
                     if (
-                        3.0099 <= nextKey.precurmass - actualKey.precurmass + res
-                        and 3.0099 >= nextKey.precurmass - actualKey.precurmass - res
+                        3.0099
+                        <= nextKey.precurmass - actualKey.precurmass + res
+                        and 3.0099
+                        >= nextKey.precurmass - actualKey.precurmass - res
                     ):
                         M3found.append(nextKey)
 
@@ -763,14 +801,18 @@ class TypeResult:
                     isThere = False
 
                     if (
-                        2.0066 <= nextKey.precurmass - actualKey.precurmass + res
-                        and 2.0066 >= nextKey.precurmass - actualKey.precurmass - res
+                        2.0066
+                        <= nextKey.precurmass - actualKey.precurmass + res
+                        and 2.0066
+                        >= nextKey.precurmass - actualKey.precurmass - res
                     ) or isThere:
                         M2found.append(nextKey)
 
                     if (
-                        1.0033 <= nextKey.precurmass - actualKey.precurmass + res
-                        and 1.0033 >= nextKey.precurmass - actualKey.precurmass - res
+                        1.0033
+                        <= nextKey.precurmass - actualKey.precurmass + res
+                        and 1.0033
+                        >= nextKey.precurmass - actualKey.precurmass - res
                     ):
                         M1found.append(nextKey)
 
@@ -780,8 +822,12 @@ class TypeResult:
                     else:
                         break
 
-                if M4found != [] or M3found != [] or M2found != [] or M1found != []:
-
+                if (
+                    M4found != []
+                    or M3found != []
+                    or M2found != []
+                    or M1found != []
+                ):
                     # calculate ratios of isotopic occurance for M-2
                     numC = 0
                     for scomp in actualKey.listPrecurmassSF:
@@ -790,12 +836,20 @@ class TypeResult:
                     gotOne = False
 
                     neg = 1 - 0.01082
-                    cWithoutIsotopes = neg ** numC
+                    cWithoutIsotopes = neg**numC
 
                     cfM = []
-                    cfM.append((numC * 0.01082 * neg ** (numC - 1) / cWithoutIsotopes))
                     cfM.append(
-                        (0.5 * numC * (numC - 1) * 0.0001170724 * neg ** (numC - 2))
+                        (numC * 0.01082 * neg ** (numC - 1) / cWithoutIsotopes)
+                    )
+                    cfM.append(
+                        (
+                            0.5
+                            * numC
+                            * (numC - 1)
+                            * 0.0001170724
+                            * neg ** (numC - 2)
+                        )
                         / cWithoutIsotopes
                     )  # continue here!
                     cfM.append(
@@ -883,7 +937,6 @@ class TypeResult:
         # check the occuaption threshold for MS1
         indexI = 0
         while indexI < len(listSE):
-
             entry = listSE[indexI]
             check = self.mfqlObj.sc.checkOccupation(
                 # entry[keyVar].intensity,
@@ -902,7 +955,6 @@ class TypeResult:
             # check the occupation threshold for MS2
             indexF = 0
             while indexF < len(entry.listMSMS):
-
                 entryMSMS = entry.listMSMS[indexF]
                 check = self.mfqlObj.sc.checkOccupation(
                     entryMSMS.dictIntensity,
@@ -910,7 +962,9 @@ class TypeResult:
                     occThr=self.mfqlObj.options["MSMSminOccupation"],
                     threshold=self.mfqlObj.options["MSMSthreshold"],
                     threshold_type=self.mfqlObj.options["MSMSthresholdType"],
-                    dictBasePeakIntensity=entry.listMSMS[indexF].dictBasePeakIntensity,
+                    dictBasePeakIntensity=entry.listMSMS[
+                        indexF
+                    ].dictBasePeakIntensity,
                 )
                 if not check:
                     del entry.listMSMS[indexF]
@@ -929,18 +983,25 @@ class TypeResult:
 
         listSE = sorted(listSE, key=lambda x: x.peakMean)
 
-        use_lx2_MSresolution = self.mfqlObj.options._data.get('lx2_MSresolution')
+        use_lx2_MSresolution = self.mfqlObj.options._data.get(
+            "lx2_MSresolution"
+        )
 
         if Debug("isotopicCorrection"):
             dbgstr = "\n"
-            dbgstr += "\n - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
-            dbgstr += "\n -        Isotopic correction on MS spectrum           - "
-            dbgstr += "\n - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
+            dbgstr += (
+                "\n - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
+            )
+            dbgstr += (
+                "\n -        Isotopic correction on MS spectrum           - "
+            )
+            dbgstr += (
+                "\n - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
+            )
             dbgstr += "\n"
             dbgout(dbgstr)
 
         for entry in range(len(listSE)):
-
             actualKey = listSE[entry]
 
             ### mark the isotopic corrected peaks ###
@@ -966,7 +1027,6 @@ class TypeResult:
                 actualKey.removedByIsotopicCorrection_MS = True
             res = None
             if listSE[entry].listMark != []:
-
                 # if scan.options.has_key('MSMSresolutionDelta') and scan.options['MSresolutionDelta']:
                 # 	res = listSE[entry].precurmass / (((listSE[entry].precurmass - listSE[0].precurmass) * scan.options['MSresolutionDelta']) + scan.options['MSresolution'].tolerance)
                 # else:
@@ -976,17 +1036,22 @@ class TypeResult:
                     listSE = self.mfqlObj.sc.listSurveyEntry
                     res = max(e.massWindow for e in listSE if e.massWindow > 0)
 
-                if use_lx2_MSresolution and not self.mfqlObj.options._data.get("MSresolution"):
+                if (
+                    use_lx2_MSresolution
+                    and not self.mfqlObj.options._data.get("MSresolution")
+                ):
                     last_res = res
-                    if last_res is None: last_res = max(e.massWindow for e in listSE if e.massWindow > 0)
+                    if last_res is None:
+                        last_res = max(
+                            e.massWindow for e in listSE if e.massWindow > 0
+                        )
 
-                    if listSE[entry].massWindow > 0: #minimum size
-                        #arbitrary 5 ppm
-                        ppm5 = 5/1_000_000 * listSE[entry].precurmass
+                    if listSE[entry].massWindow > 0:  # minimum size
+                        # arbitrary 5 ppm
+                        ppm5 = 5 / 1_000_000 * listSE[entry].precurmass
                         res = max(ppm5, listSE[entry].massWindow)
                     else:
                         res = last_res
-
 
                 else:
                     # self.mfqlObj.options._data.get("MSresolution"):
@@ -1002,7 +1067,6 @@ class TypeResult:
                 # test if all listPrecurmassSF entries are of multiple charge
                 multiCharge = True
                 for scomp in listSE[entry].listPrecurmassSF:
-
                     # sort precurmass sum compositions by charge
                     if "%d" % abs(scomp.charge) not in chargePrecurmassSF:
                         chargePrecurmassSF["%d" % abs(scomp.charge)] = []
@@ -1013,7 +1077,6 @@ class TypeResult:
                     # 	multiCharge = False
 
                 for charge in list(chargePrecurmassSF.keys()):
-
                     # calculate ratios of isotopic occurance for M-2
                     numC = 0
                     numH = 0
@@ -1051,7 +1114,8 @@ class TypeResult:
                     # delta = nextKey.precurmass - actualKey.precurmass
                     # new:
                     delta = (
-                        nextKey.precurmass - actualKey.listPrecurmassSF[0].getWeight()
+                        nextKey.precurmass
+                        - actualKey.listPrecurmassSF[0].getWeight()
                     )
 
                     M4found = []
@@ -1067,7 +1131,6 @@ class TypeResult:
                     listSE[entry].monoisotopicRatio = copy(monoisotopic)
 
                     while delta <= 5 * cID:
-
                         if 4 * cID <= delta + res and 4 * cID >= delta - res:
                             if nextKey.listMark != []:
                                 M4found.append(nextKey)
@@ -1107,7 +1170,6 @@ class TypeResult:
                                 M3foundUnmarked.append(nextKey)
 
                         if 2 * cID <= delta + res and 2 * cID >= delta - res:
-
                             if nextKey.listMark != []:
                                 M2found.append(nextKey)
                             else:
@@ -1321,7 +1383,6 @@ class TypeResult:
                             pass
 
                     if smthStrangeForM1:
-
                         index = 1
                         if entry + index < len(listSE):
                             nextKey = listSE[entry + index]
@@ -1332,8 +1393,10 @@ class TypeResult:
                         delta = nextKey.precurmass - actualKey.precurmass
 
                         while delta <= 1 * cID:
-
-                            if 1 * cID <= delta + 2 * res and 1 * cID >= delta - res:
+                            if (
+                                1 * cID <= delta + 2 * res
+                                and 1 * cID >= delta - res
+                            ):
                                 if nextKey.listMark != []:
                                     M1found.append(nextKey)
                                     doCorrectionM1 = True
@@ -1341,12 +1404,13 @@ class TypeResult:
                             index += 1
                             if entry + index < len(listSE):
                                 nextKey = listSE[entry + index]
-                                delta = nextKey.precurmass - actualKey.precurmass
+                                delta = (
+                                    nextKey.precurmass - actualKey.precurmass
+                                )
                             else:
                                 break
 
                     if smthStrangeForM2:
-
                         index = 1
                         if entry + index < len(listSE):
                             nextKey = listSE[entry + index]
@@ -1356,8 +1420,10 @@ class TypeResult:
                         delta = nextKey.precurmass - actualKey.precurmass
 
                         while delta <= 3 * cID:
-
-                            if delta >= 2 * cID - res and delta <= 2 * cID + 3 * res:
+                            if (
+                                delta >= 2 * cID - res
+                                and delta <= 2 * cID + 3 * res
+                            ):
                                 if nextKey.listMark != []:
                                     M2found.append(nextKey)
                                     doCorrectionM2 = True
@@ -1365,12 +1431,13 @@ class TypeResult:
                             index += 1
                             if entry + index < len(listSE):
                                 nextKey = listSE[entry + index]
-                                delta = nextKey.precurmass - actualKey.precurmass
+                                delta = (
+                                    nextKey.precurmass - actualKey.precurmass
+                                )
                             else:
                                 break
 
                     if smthStrangeForM3:
-
                         index = 1
                         if entry + index < len(listSE):
                             nextKey = listSE[entry + index]
@@ -1380,8 +1447,10 @@ class TypeResult:
                         delta = nextKey.precurmass - actualKey.precurmass
 
                         while delta <= 4 * cID:
-
-                            if 3 * cID <= delta + 2 * res and 3 * cID >= delta - res:
+                            if (
+                                3 * cID <= delta + 2 * res
+                                and 3 * cID >= delta - res
+                            ):
                                 if nextKey.listMark != []:
                                     M3found.append(nextKey)
                                     doCorrectionM3 = True
@@ -1389,12 +1458,13 @@ class TypeResult:
                             index += 1
                             if entry + index < len(listSE):
                                 nextKey = listSE[entry + index]
-                                delta = nextKey.precurmass - actualKey.precurmass
+                                delta = (
+                                    nextKey.precurmass - actualKey.precurmass
+                                )
                             else:
                                 break
 
                     if smthStrangeForM4:
-
                         index = 1
                         if entry + index < len(listSE):
                             nextKey = listSE[entry + index]
@@ -1404,8 +1474,10 @@ class TypeResult:
                         delta = nextKey.precurmass - actualKey.precurmass
 
                         while delta <= 5 * cID:
-
-                            if 4 * cID <= delta + 2 * res and 4 * cID >= delta - res:
+                            if (
+                                4 * cID <= delta + 2 * res
+                                and 4 * cID >= delta - res
+                            ):
                                 if nextKey.listMark != []:
                                     M4found.append(nextKey)
                                     doCorrectionM4 = True
@@ -1413,12 +1485,18 @@ class TypeResult:
                             index += 1
                             if entry + index < len(listSE):
                                 nextKey = listSE[entry + index]
-                                delta = nextKey.precurmass - actualKey.precurmass
+                                delta = (
+                                    nextKey.precurmass - actualKey.precurmass
+                                )
                             else:
                                 break
 
-                    if M4found != [] or M3found != [] or M2found != [] or M1found != []:
-
+                    if (
+                        M4found != []
+                        or M3found != []
+                        or M2found != []
+                        or M1found != []
+                    ):
                         if Debug("isotopicCorrection"):
                             dbgstr = "\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
                             dbgstr += (
@@ -1449,7 +1527,6 @@ class TypeResult:
 
                     if M1found != [] and doCorrectionM1:
                         for M1f in M1found:
-
                             # mark it as isotop
                             M1f.isIsotope
 
@@ -1461,9 +1538,10 @@ class TypeResult:
 
                             # correct the found fragment intensity
                             for k in listKeys:
-
                                 if M1f.dictIntensity[k] > 0:
-                                    difference = actualKey.dictIntensity[k] * intens[1]
+                                    difference = (
+                                        actualKey.dictIntensity[k] * intens[1]
+                                    )
                                     M1f.dictIntensity[k] -= difference
 
                                     if Debug("isotopicCorrection"):
@@ -1478,7 +1556,6 @@ class TypeResult:
 
                     if M2found != [] and doCorrectionM2:
                         for M2f in M2found:
-
                             # mark it as isotop
                             M2f.isIsotope
 
@@ -1490,9 +1567,10 @@ class TypeResult:
 
                             # correct the found fragment intensity
                             for k in listKeys:
-
                                 if M2f.dictIntensity[k] > 0:
-                                    difference = actualKey.dictIntensity[k] * intens[2]
+                                    difference = (
+                                        actualKey.dictIntensity[k] * intens[2]
+                                    )
                                     M2f.dictIntensity[k] -= difference
 
                                     if Debug("isotopicCorrection"):
@@ -1507,7 +1585,6 @@ class TypeResult:
 
                     if M3found != [] and doCorrectionM3:
                         for M3f in M3found:
-
                             # mark it as isotop
                             M3f.isIsotope
 
@@ -1519,9 +1596,10 @@ class TypeResult:
 
                             # correct the found fragment intensity
                             for k in listKeys:
-
                                 if M3f.dictIntensity[k] > 0:
-                                    difference = actualKey.dictIntensity[k] * intens[3]
+                                    difference = (
+                                        actualKey.dictIntensity[k] * intens[3]
+                                    )
                                     M3f.dictIntensity[k] -= difference
 
                                     if Debug("isotopicCorrection"):
@@ -1536,7 +1614,6 @@ class TypeResult:
 
                     if M4found != [] and doCorrectionM4:
                         for M4f in M4found:
-
                             # mark it as isotop
                             M4f.isIsotope
 
@@ -1548,9 +1625,10 @@ class TypeResult:
 
                             # correct the found fragment intensity
                             for k in listKeys:
-
                                 if M4f.dictIntensity[k] > 0:
-                                    difference = actualKey.dictIntensity[k] * intens[4]
+                                    difference = (
+                                        actualKey.dictIntensity[k] * intens[4]
+                                    )
                                     M4f.dictIntensity[k] -= difference
 
                                     if Debug("isotopicCorrection"):
@@ -1587,8 +1665,6 @@ class TypeResult:
             se.monoisotopicCorrected = False
 
         for entry in range(len(listSE)):
-
-
             # correct the monoisotopic peak
             for sample in list(listSE[entry].dictIntensity.keys()):
                 # store the original intensity for the dump
@@ -1602,11 +1678,14 @@ class TypeResult:
                         listSE[entry].dictIntensity[sample]
                         / listSE[entry].monoisotopicRatio
                     )
-            
+
             listSE[entry].monoisotopicCorrected = True
 
             for msmsEntry in listSE[entry].listMSMS:
-                if msmsEntry.listMark != [] and not msmsEntry.monoisotopicCorrected:
+                if (
+                    msmsEntry.listMark != []
+                    and not msmsEntry.monoisotopicCorrected
+                ):
                     msmsEntry.monoisotopicCorrected = True
 
                     # store the original intensity for the dump
@@ -1623,7 +1702,6 @@ class TypeResult:
                         pass
 
     def deIsotopingMSMS_complement(self, artPIS=None, scan=None):
-
         # sc = self.mfqlObj.resultSC
         sc = self.mfqlObj.sc.listSurveyEntry
         scan = self.mfqlObj.sc
@@ -1656,7 +1734,6 @@ class TypeResult:
 
         # python tweak -> generate a list of sorted (key, value)
         for pis in dictPIS:
-
             # sort the precursor masses for PIS 'pis'
             listKeys = []
             for i in list(dictPIS[pis].keys()):
@@ -1664,7 +1741,6 @@ class TypeResult:
             listKeys.sort()
 
             for key, value in [(k, dictPIS[pis][k]) for k in dictPIS[pis]]:
-
                 # index marks for isotope overlapped fragments
                 M3found = []
                 M2found = []
@@ -1674,7 +1750,6 @@ class TypeResult:
                 keyIndex = listKeys.index(precurKey)
                 selectWin = self.mfqlObj.options["selectionWindow"]
                 while actualKey - precurKey - selectWin / 2 < 4.1:
-
                     keyIndex += 1
                     if keyIndex < len(listKeys):
                         actualKey = listKeys[keyIndex]
@@ -1700,10 +1775,9 @@ class TypeResult:
                         M1found.append(actualKey)
 
                 # takes the values for the isotopes from the neutral loss of M, where (M->I1->I2->...)
-                if (M3found != [] or M2found != [] or M1found != []) and dictPIS[pis][
-                    key
-                ].chemsc:
-
+                if (
+                    M3found != [] or M2found != [] or M1found != []
+                ) and dictPIS[pis][key].chemsc:
                     # calculate ratios of isotopic occurance for M-2
                     gotOne = False
 
@@ -1719,12 +1793,20 @@ class TypeResult:
                         numC = 0
 
                     neg = 1 - 0.01082
-                    cWithoutIsotopes = neg ** numC
+                    cWithoutIsotopes = neg**numC
 
                     cfM = []
-                    cfM.append((numC * 0.01082 * neg ** (numC - 1) / cWithoutIsotopes))
                     cfM.append(
-                        (0.5 * numC * (numC - 1) * 0.0001170724 * neg ** (numC - 2))
+                        (numC * 0.01082 * neg ** (numC - 1) / cWithoutIsotopes)
+                    )
+                    cfM.append(
+                        (
+                            0.5
+                            * numC
+                            * (numC - 1)
+                            * 0.0001170724
+                            * neg ** (numC - 2)
+                        )
                         / cWithoutIsotopes
                     )  # continue here!
                     cfM.append(
@@ -1754,10 +1836,10 @@ class TypeResult:
                 if dictPIS[pis][key].chemsc:
                     if M1found != []:
                         for M1f in M1found:
-
                             # correct the found fragment intensity
-                            for k in list(dictPIS[pis][key].msmse.dictIntensity.keys()):
-
+                            for k in list(
+                                dictPIS[pis][key].msmse.dictIntensity.keys()
+                            ):
                                 # change intensity of the fragment, if it is already changed
                                 l = dictPIS[pis]["%4.5f" % M1f]
                                 l.msmse.isIsotope = True
@@ -1766,16 +1848,18 @@ class TypeResult:
                                 if l.msmse.dictIntensity[k] != 0.0:
                                     l.msmse.dictIntensity[k] = (
                                         l.msmse.dictIntensity[k]
-                                        - dictPIS[pis][key].msmse.dictIntensity[k]
+                                        - dictPIS[pis][
+                                            key
+                                        ].msmse.dictIntensity[k]
                                         * cfM[0]
                                     )
 
                     if M2found != []:
                         for M2f in M2found:
-
                             # correct the found fragment intensity
-                            for k in list(dictPIS[pis][key].msmse.dictIntensity.keys()):
-
+                            for k in list(
+                                dictPIS[pis][key].msmse.dictIntensity.keys()
+                            ):
                                 # change intensity of the fragment, if it is already changed
                                 l = dictPIS[pis]["%4.5f" % M2f]
                                 l.msmse.isIsotope = True
@@ -1784,7 +1868,9 @@ class TypeResult:
                                 if l.msmse.dictIntensity[k] != 0.0:
                                     l.msmse.dictIntensity[k] = (
                                         l.msmse.dictIntensity[k]
-                                        - dictPIS[pis][key].msmse.dictIntensity[k]
+                                        - dictPIS[pis][
+                                            key
+                                        ].msmse.dictIntensity[k]
                                         * cfM[1]
                                     )
 
@@ -1792,8 +1878,9 @@ class TypeResult:
                         for M3f in M3found:
                             #
                             # correct the found fragment intensity
-                            for k in list(dictPIS[pis][key].msmse.dictIntensity.keys()):
-
+                            for k in list(
+                                dictPIS[pis][key].msmse.dictIntensity.keys()
+                            ):
                                 # change intensity of the fragment, if it is already changed
                                 l = dictPIS[pis]["%4.5f" % M3f]
                                 l.msmse.isIsotope = True
@@ -1802,12 +1889,13 @@ class TypeResult:
                                 if l.msmse.dictIntensity[k] != 0.0:
                                     l.msmse.dictIntensity[k] = (
                                         l.msmse.dictIntensity[k]
-                                        - dictPIS[pis][key].msmse.dictIntensity[k]
+                                        - dictPIS[pis][
+                                            key
+                                        ].msmse.dictIntensity[k]
                                         * cfM[2]
                                     )
 
     def isotopicCorrectionMSMS_wholeSC(self, artPIS=None, scan=None):
-
         # sc = self.mfqlObj.resultSC
         sc = self.mfqlObj.sc.listSurveyEntry
         scan = self.mfqlObj.sc
@@ -1850,7 +1938,6 @@ class TypeResult:
 
         # python tweak -> generate a list of sorted (key, value)
         for pis in dictPIS:
-
             # sort the precursor masses for PIS 'pis'
             listKeys = []
             for i in list(dictPIS[pis].keys()):
@@ -1858,7 +1945,6 @@ class TypeResult:
             listKeys.sort()
 
             for key, value in [(k, dictPIS[pis][k]) for k in dictPIS[pis]]:
-
                 # index marks for isotope overlapped fragments
                 M3found = []
                 M2found = []
@@ -1868,7 +1954,6 @@ class TypeResult:
                 keyIndex = listKeys.index(precurKey)
                 selectWin = self.mfqlObj.options["selectionWindow"]
                 while actualKey - precurKey - selectWin / 2 < 3.0099:
-
                     keyIndex += 1
                     if keyIndex < len(listKeys):
                         actualKey = listKeys[keyIndex]
@@ -1894,10 +1979,9 @@ class TypeResult:
                         M1found.append(actualKey)
 
                 # takes the values for the isotopes from the neutral loss of M, where (M->I1->I2->...)
-                if (M3found != [] or M2found != [] or M1found != []) and dictPIS[pis][
-                    key
-                ].chemsc:
-
+                if (
+                    M3found != [] or M2found != [] or M1found != []
+                ) and dictPIS[pis][key].chemsc:
                     # calculate ratios of isotopic occurance for M-2
                     gotOne = False
 
@@ -1913,12 +1997,20 @@ class TypeResult:
                         numC = 0
 
                     neg = 1 - 0.01082
-                    cWithoutIsotopes = neg ** numC
+                    cWithoutIsotopes = neg**numC
 
                     cfM = []
-                    cfM.append((numC * 0.01082 * neg ** (numC - 1) / cWithoutIsotopes))
                     cfM.append(
-                        (0.5 * numC * (numC - 1) * 0.0001170724 * neg ** (numC - 2))
+                        (numC * 0.01082 * neg ** (numC - 1) / cWithoutIsotopes)
+                    )
+                    cfM.append(
+                        (
+                            0.5
+                            * numC
+                            * (numC - 1)
+                            * 0.0001170724
+                            * neg ** (numC - 2)
+                        )
                         / cWithoutIsotopes
                     )  # continue here!
                     cfM.append(
@@ -1953,9 +2045,10 @@ class TypeResult:
 
                                 # correct the found fragment intensity
                                 for k in list(
-                                    dictPIS[pis][key].msmse.dictIntensity.keys()
+                                    dictPIS[pis][
+                                        key
+                                    ].msmse.dictIntensity.keys()
                                 ):
-
                                     # change intensity of the fragment, if it is already changed
                                     l = dictPIS[pis]["%4.5f" % M1f]
 
@@ -1963,10 +2056,14 @@ class TypeResult:
                                     if l.msmse.dictIntensity[k] > 0.0:
                                         l.msmse.dictIntensity[k] = (
                                             l.msmse.dictIntensity[k]
-                                            - dictPIS[pis][key].msmse.dictIntensity[k]
+                                            - dictPIS[pis][
+                                                key
+                                            ].msmse.dictIntensity[k]
                                             * cfM[0]
                                         )
-                                dictPIS[pis][key].msmse.isCorrectedIsotopic = True
+                                dictPIS[pis][
+                                    key
+                                ].msmse.isCorrectedIsotopic = True
 
                     if M2found != []:
                         for M2f in M2found:
@@ -1975,9 +2072,10 @@ class TypeResult:
 
                                 # correct the found fragment intensity
                                 for k in list(
-                                    dictPIS[pis][key].msmse.dictIntensity.keys()
+                                    dictPIS[pis][
+                                        key
+                                    ].msmse.dictIntensity.keys()
                                 ):
-
                                     # change intensity of the fragment, if it is already changed
                                     l = dictPIS[pis]["%4.5f" % M2f]
 
@@ -1985,10 +2083,14 @@ class TypeResult:
                                     if l.msmse.dictIntensity[k] > 0.0:
                                         l.msmse.dictIntensity[k] = (
                                             l.msmse.dictIntensity[k]
-                                            - dictPIS[pis][key].msmse.dictIntensity[k]
+                                            - dictPIS[pis][
+                                                key
+                                            ].msmse.dictIntensity[k]
                                             * cfM[1]
                                         )
-                                dictPIS[pis][key].msmse.isCorrectedIsotopic = True
+                                dictPIS[pis][
+                                    key
+                                ].msmse.isCorrectedIsotopic = True
 
                     if M3found != []:
                         for M3f in M3found:
@@ -1997,9 +2099,10 @@ class TypeResult:
 
                                 # correct the found fragment intensity
                                 for k in list(
-                                    dictPIS[pis][key].msmse.dictIntensity.keys()
+                                    dictPIS[pis][
+                                        key
+                                    ].msmse.dictIntensity.keys()
                                 ):
-
                                     # change intensity of the fragment, if it is already changed
                                     l = dictPIS[pis]["%4.5f" % M3f]
 
@@ -2007,18 +2110,27 @@ class TypeResult:
                                     if l.msmse.dictIntensity[k] > 0.0:
                                         l.msmse.dictIntensity[k] = (
                                             l.msmse.dictIntensity[k]
-                                            - dictPIS[pis][key].msmse.dictIntensity[k]
+                                            - dictPIS[pis][
+                                                key
+                                            ].msmse.dictIntensity[k]
                                             * cfM[2]
                                         )
-                                dictPIS[pis][key].msmse.isCorrectedIsotopic = True
+                                dictPIS[pis][
+                                    key
+                                ].msmse.isCorrectedIsotopic = True
 
     def isotopicCorrectionMSMS(self, artPIS=None, scan=None):
-
         if Debug("isotopicCorrection"):
             dbgstr = "\n"
-            dbgstr += "\n - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
-            dbgstr += "\n -       Isotopic correction on MS/MS spectrum         - "
-            dbgstr += "\n - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
+            dbgstr += (
+                "\n - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
+            )
+            dbgstr += (
+                "\n -       Isotopic correction on MS/MS spectrum         - "
+            )
+            dbgstr += (
+                "\n - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
+            )
             dbgstr += "\n"
             dbgout(dbgstr)
 
@@ -2029,7 +2141,9 @@ class TypeResult:
 
         isotopicDistance = 1.0033
 
-        use_lx2_MSresolution  = self.mfqlObj.options._data.get("lx2_MSresolution")
+        use_lx2_MSresolution = self.mfqlObj.options._data.get(
+            "lx2_MSresolution"
+        )
         if self.mfqlObj.sc.options["alignmentMethodMSMS"] == "calctol":
             toleranceMS = self.mfqlObj.sc.options["calcSelectionWindow"]
             toleranceMSMS = None  # not used
@@ -2046,9 +2160,7 @@ class TypeResult:
 
         # for key in dictPrePIS:
         for entry in range(len(listSE) - 1):
-
             if listSE[entry].listMark != []:
-
                 cID = isotopicDistance / 1.0  # listSE[entry].charge
 
                 monoisotopic = 1.0
@@ -2066,7 +2178,6 @@ class TypeResult:
                 M1found = []
 
                 while delta <= 5 * cID:
-
                     if 4 * cID <= delta + res and 4 * cID >= delta - res:
                         M4found.append(nextKey)
 
@@ -2145,7 +2256,10 @@ class TypeResult:
                 for M in listM:
                     for pis1 in list(M.keys()):
                         for pis2 in list(M.keys()):
-                            if M[pis1][0].mass == M[pis2][0].mass and pis1 != pis2:
+                            if (
+                                M[pis1][0].mass == M[pis2][0].mass
+                                and pis1 != pis2
+                            ):
                                 print("Doubly marked entry")
 
                 # the following has to be done also for MSMS: separate the charges
@@ -2160,7 +2274,6 @@ class TypeResult:
                 ### go through all pis and calculate the fragments isotopic distribution in Mtx. This ###
                 ### is then stored in dictPIS[pis][1].												  ###
                 for pis in list(listM[0].keys()):
-
                     if not listM[0][pis][0].chemsc:
                         break
 
@@ -2171,8 +2284,12 @@ class TypeResult:
                         break
 
                     # takes the values for the isotopes from the neutral loss of M, where (M->I1->I2->...)
-                    if M4found != [] or M3found != [] or M2found != [] or M1found != []:
-
+                    if (
+                        M4found != []
+                        or M3found != []
+                        or M2found != []
+                        or M1found != []
+                    ):
                         gotOne = False
 
                         if listM[0][pis][0].isnl:
@@ -2244,7 +2361,8 @@ class TypeResult:
                             )
                             for k in listM[0][pis][0].msmse.dictIntensity:
                                 dbgstr += (
-                                    "\n %.4f " % listM[0][pis][0].msmse.dictIntensity[k]
+                                    "\n %.4f "
+                                    % listM[0][pis][0].msmse.dictIntensity[k]
                                 )
                             dbgstr += "\n"
                             dbgstr += "\nPrecur: %s %s" % (
@@ -2284,10 +2402,13 @@ class TypeResult:
                                 Mtx[0][1],
                                 Mtx[1][0],
                             )
-                            dbgstr += "     F0N2: %.4f, F1N1: %.4f, F2N0: %.4f\n" % (
-                                Mtx[0][2],
-                                Mtx[1][1],
-                                Mtx[2][0],
+                            dbgstr += (
+                                "     F0N2: %.4f, F1N1: %.4f, F2N0: %.4f\n"
+                                % (
+                                    Mtx[0][2],
+                                    Mtx[1][1],
+                                    Mtx[2][0],
+                                )
                             )
                             dbgstr += (
                                 "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n"
@@ -2326,11 +2447,9 @@ class TypeResult:
                         F4N0 = Mtx[4][0]
 
                         if M1found != []:
-
                             M = listM[0][pis][0]  # listPIS[0] == M1found
 
                             if pis in listM[1]:
-
                                 M1 = listM[1][pis][0]  # listPIS[0] == M1found
 
                                 # prevent double correction
@@ -2338,33 +2457,38 @@ class TypeResult:
 
                                 # listPIS[0] == M1found fragments
                                 if "1" in M1.msmse.isCorrectedIsotopic:
-
                                     for name in M1.listNames:
-                                        if name in M1.msmse.isCorrectedIsotopic["1"]:
+                                        if (
+                                            name
+                                            in M1.msmse.isCorrectedIsotopic[
+                                                "1"
+                                            ]
+                                        ):
                                             isIn = True
 
                                 if not isIn:
-
                                     ############################
                                     ### Interscan correction ###
                                     ############################
 
                                     # store original intensity for dump
                                     if M1.msmse.dictBeforeIsocoIntensity == {}:
-                                        M1.msmse.dictBeforeIsocoIntensity = deepcopy(
-                                            M1.msmse.dictIntensity
+                                        M1.msmse.dictBeforeIsocoIntensity = (
+                                            deepcopy(M1.msmse.dictIntensity)
                                         )
 
                                     # correct the found fragment intensity
-                                    for k in list(M1.msmse.dictIntensity.keys()):
-
+                                    for k in list(
+                                        M1.msmse.dictIntensity.keys()
+                                    ):
                                         if (
                                             M1.msmse.dictIntensity[k] > 0.0
                                             and M.msmse.dictIntensity[k] > 0.0
                                         ):
                                             M1.msmse.dictIntensity[k] = (
                                                 M1.msmse.dictIntensity[k]
-                                                - M.msmse.dictIntensity[k] * F0N1
+                                                - M.msmse.dictIntensity[k]
+                                                * F0N1
                                             )
                                             M1.msmse.dictIntensity[k]
 
@@ -2377,7 +2501,9 @@ class TypeResult:
                                             "1"
                                         ] += M1.listNames
                                     else:
-                                        M1.msmse.isCorrectedIsotopic["1"] = M1.listNames
+                                        M1.msmse.isCorrectedIsotopic[
+                                            "1"
+                                        ] = M1.listNames
 
                                     if Debug("isotopicCorrection"):
                                         dbgstr = (
@@ -2391,7 +2517,8 @@ class TypeResult:
                                         for k in M1.msmse.dictIntensity:
                                             dbgstr += " %.4f (-%.4f);" % (
                                                 M1.msmse.dictIntensity[k],
-                                                M.msmse.dictIntensity[k] * F0N1,
+                                                M.msmse.dictIntensity[k]
+                                                * F0N1,
                                             )
                                         dbgstr += "\n"
                                         dbgout(dbgstr)
@@ -2410,13 +2537,16 @@ class TypeResult:
                             # <It is no problem to take l.se[0] because the listMSMS is
                             #  the same for all entries of l.se>
                             listMSMS = [
-                                x for x in M1found[0].listMSMS if x.mass >= M.mass
+                                x
+                                for x in M1found[0].listMSMS
+                                if x.mass >= M.mass
                             ]
 
                             while index + next < (len(listMSMS)):
-
                                 if (
-                                    self.mfqlObj.sc.options["alignmentMethodMSMS"]
+                                    self.mfqlObj.sc.options[
+                                        "alignmentMethodMSMS"
+                                    ]
                                     == "calctol"
                                     or use_lx2_MSresolution
                                 ):
@@ -2428,14 +2558,19 @@ class TypeResult:
                                 delta = isotopicPeak - monoisotopicPeak
 
                                 if delta <= 4 * cID:
-
                                     if (
                                         1.0033
-                                        <= isotopicPeak - monoisotopicPeak + res / 2
+                                        <= isotopicPeak
+                                        - monoisotopicPeak
+                                        + res / 2
                                         and 1.0033
-                                        >= isotopicPeak - monoisotopicPeak - res / 2
+                                        >= isotopicPeak
+                                        - monoisotopicPeak
+                                        - res / 2
                                     ):
-                                        MSMS1found.append(listMSMS[index + next])
+                                        MSMS1found.append(
+                                            listMSMS[index + next]
+                                        )
 
                                 next += 1
                                 if index + next >= len(listMSMS):
@@ -2443,31 +2578,36 @@ class TypeResult:
 
                             if MSMS1found != []:
                                 for M1f in MSMS1found:
-
                                     isIn = False
                                     if "1i" in M1f.isCorrectedIsotopic:
                                         for name in M1f.listNames:
-                                            if name in M1f.isCorrectedIsotopic["1i"]:
+                                            if (
+                                                name
+                                                in M1f.isCorrectedIsotopic[
+                                                    "1i"
+                                                ]
+                                            ):
                                                 isIn = True
 
                                     if not isIn:
-
                                         # store original intensity for dump
                                         if M1f.dictBeforeIsocoIntensity == {}:
-                                            M1f.dictBeforeIsocoIntensity = deepcopy(
-                                                M1f.dictIntensity
+                                            M1f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M1f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
-                                        for k in list(M1f.dictIntensity.keys()):
-
+                                        for k in list(
+                                            M1f.dictIntensity.keys()
+                                        ):
                                             if (
                                                 M1f.dictIntensity[k] > 0.0
                                                 and M1f.dictIntensity[k] > 0.0
                                             ):
                                                 M1f.dictIntensity[k] = (
                                                     M1f.dictIntensity[k]
-                                                    - M.msmse.dictIntensity[k] * F1N0
+                                                    - M.msmse.dictIntensity[k]
+                                                    * F1N0
                                                 )
                                             if not Debug("isotopicCorrection"):
                                                 if M1f.dictIntensity[k] < 0.0:
@@ -2494,42 +2634,47 @@ class TypeResult:
                                             for k in M1f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
                                                     M1f.dictIntensity[k],
-                                                    M.msmse.dictIntensity[k] * F1N0,
+                                                    M.msmse.dictIntensity[k]
+                                                    * F1N0,
                                                 )
                                             dbgstr += "\n"
                                             dbgout(dbgstr)
 
                         if M2found != []:
-
                             M = listM[0][pis][0]
 
                             if pis in listM[2]:
-
                                 M2 = listM[2][pis][0]
 
                                 isIn = False
                                 if "2" in M2.msmse.isCorrectedIsotopic:
                                     for name in M2.listNames:
-                                        if name in M2.msmse.isCorrectedIsotopic["2"]:
+                                        if (
+                                            name
+                                            in M2.msmse.isCorrectedIsotopic[
+                                                "2"
+                                            ]
+                                        ):
                                             isIn = True
 
                                 if not isIn:
-
                                     # store original intensity for dump
                                     if M2.msmse.dictBeforeIsocoIntensity == {}:
-                                        M2.msmse.dictBeforeIsocoIntensity = deepcopy(
-                                            M2.msmse.dictIntensity
+                                        M2.msmse.dictBeforeIsocoIntensity = (
+                                            deepcopy(M2.msmse.dictIntensity)
                                         )
 
-                                    for k in list(M2.msmse.dictIntensity.keys()):
-
+                                    for k in list(
+                                        M2.msmse.dictIntensity.keys()
+                                    ):
                                         if (
                                             M2.msmse.dictIntensity[k] > 0.0
                                             and M.msmse.dictIntensity[k] > 0.0
                                         ):
                                             M2.msmse.dictIntensity[k] = (
                                                 M2.msmse.dictIntensity[k]
-                                                - M.msmse.dictIntensity[k] * F0N2
+                                                - M.msmse.dictIntensity[k]
+                                                * F0N2
                                             )
 
                                         if not Debug("isotopicCorrection"):
@@ -2541,7 +2686,9 @@ class TypeResult:
                                             "2"
                                         ] += M2.listNames
                                     else:
-                                        M2.msmse.isCorrectedIsotopic["2"] = M2.listNames
+                                        M2.msmse.isCorrectedIsotopic[
+                                            "2"
+                                        ] = M2.listNames
 
                                     if Debug("isotopicCorrection"):
                                         dbgstr = (
@@ -2555,7 +2702,8 @@ class TypeResult:
                                         for k in M2.msmse.dictIntensity:
                                             dbgstr += " %.4f (-%.4f);" % (
                                                 M2.msmse.dictIntensity[k],
-                                                M.msmse.dictIntensity[k] * F0N2,
+                                                M.msmse.dictIntensity[k]
+                                                * F0N2,
                                             )
                                         dbgstr += "\n"
                                         dbgout(dbgstr)
@@ -2575,13 +2723,16 @@ class TypeResult:
                             # <It is no problem to take l.se[0] because the listMSMS is
                             #  the same for all entries of l.se>
                             listMSMS = [
-                                x for x in M2found[0].listMSMS if x.mass >= M.mass
+                                x
+                                for x in M2found[0].listMSMS
+                                if x.mass >= M.mass
                             ]
 
                             while index + next < (len(listMSMS)):
-
                                 if (
-                                    self.mfqlObj.sc.options["alignmentMethodMSMS"]
+                                    self.mfqlObj.sc.options[
+                                        "alignmentMethodMSMS"
+                                    ]
                                     == "calctol"
                                     or use_lx2_MSresolution
                                     # TODO fix this its just a bad guess
@@ -2589,25 +2740,40 @@ class TypeResult:
                                     res = M.binsize
                                 else:
                                     res = toleranceMSMS.getTinDA(M.mass)
-                                monoisotopicPeak = M.mass  # listMSMS[index].mass
+                                monoisotopicPeak = (
+                                    M.mass
+                                )  # listMSMS[index].mass
                                 isotopicPeak = listMSMS[index + next].mass
                                 delta = isotopicPeak - monoisotopicPeak
 
                                 if delta <= 4 * cID:
-
                                     if (
-                                        2.0066 <= isotopicPeak - monoisotopicPeak + res
+                                        2.0066
+                                        <= isotopicPeak
+                                        - monoisotopicPeak
+                                        + res
                                         and 2.0066
-                                        >= isotopicPeak - monoisotopicPeak - res
+                                        >= isotopicPeak
+                                        - monoisotopicPeak
+                                        - res
                                     ):
-                                        MSMS2found.append(listMSMS[index + next])
+                                        MSMS2found.append(
+                                            listMSMS[index + next]
+                                        )
 
                                     if (
-                                        1.0033 <= isotopicPeak - monoisotopicPeak + res
+                                        1.0033
+                                        <= isotopicPeak
+                                        - monoisotopicPeak
+                                        + res
                                         and 1.0033
-                                        >= isotopicPeak - monoisotopicPeak - res
+                                        >= isotopicPeak
+                                        - monoisotopicPeak
+                                        - res
                                     ):
-                                        MSMS1found.append(listMSMS[index + next])
+                                        MSMS1found.append(
+                                            listMSMS[index + next]
+                                        )
 
                                 next += 1
                                 if index + next >= len(listMSMS):
@@ -2615,31 +2781,36 @@ class TypeResult:
 
                             if MSMS1found != []:
                                 for M1f in MSMS1found:
-
                                     isIn = False
                                     if "1i" in M1f.isCorrectedIsotopic:
                                         for name in M1f.listNames:
-                                            if name in M1f.isCorrectedIsotopic["1i"]:
+                                            if (
+                                                name
+                                                in M1f.isCorrectedIsotopic[
+                                                    "1i"
+                                                ]
+                                            ):
                                                 isIn = True
 
                                     if not isIn:
-
                                         # store original intensity for dump
                                         if M1f.dictBeforeIsocoIntensity == {}:
-                                            M1f.dictBeforeIsocoIntensity = deepcopy(
-                                                M1f.dictIntensity
+                                            M1f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M1f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
-                                        for k in list(M1f.dictIntensity.keys()):
-
+                                        for k in list(
+                                            M1f.dictIntensity.keys()
+                                        ):
                                             if (
                                                 M1f.dictIntensity[k] > 0.0
                                                 and M1f.dictIntensity[k] > 0.0
                                             ):
                                                 M1f.dictIntensity[k] = (
                                                     M1f.dictIntensity[k]
-                                                    - M.msmse.dictIntensity[k] * F1N1
+                                                    - M.msmse.dictIntensity[k]
+                                                    * F1N1
                                                 )
                                             if not Debug("isotopicCorrection"):
                                                 if M1f.dictIntensity[k] < 0.0:
@@ -2666,35 +2837,41 @@ class TypeResult:
                                             for k in M1f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
                                                     M1f.dictIntensity[k],
-                                                    M.msmse.dictIntensity[k] * F1N1,
+                                                    M.msmse.dictIntensity[k]
+                                                    * F1N1,
                                                 )
                                             dbgstr += "\n"
                                             dbgout(dbgstr)
 
                             if MSMS2found != []:
                                 for M2f in MSMS2found:
-
                                     isIn = False
                                     if "2i" in M2f.isCorrectedIsotopic:
                                         for name in M2f.listNames:
-                                            if name in M2f.isCorrectedIsotopic["2i"]:
+                                            if (
+                                                name
+                                                in M2f.isCorrectedIsotopic[
+                                                    "2i"
+                                                ]
+                                            ):
                                                 isIn = True
 
                                     if not isIn:
-
                                         # store original intensity for dump
                                         if M2f.dictBeforeIsocoIntensity == {}:
-                                            M2f.dictBeforeIsocoIntensity = deepcopy(
-                                                M2f.dictIntensity
+                                            M2f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M2f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
-                                        for k in list(M2f.dictIntensity.keys()):
-
+                                        for k in list(
+                                            M2f.dictIntensity.keys()
+                                        ):
                                             if M2f.dictIntensity[k] > 0.0:
                                                 M2f.dictIntensity[k] = (
                                                     M2f.dictIntensity[k]
-                                                    - M.msmse.dictIntensity[k] * F2N0
+                                                    - M.msmse.dictIntensity[k]
+                                                    * F2N0
                                                 )
                                             if not Debug("isotopicCorrection"):
                                                 if M2f.dictIntensity[k] < 0.0:
@@ -2721,42 +2898,47 @@ class TypeResult:
                                             for k in M2f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
                                                     M2f.dictIntensity[k],
-                                                    M.msmse.dictIntensity[k] * F2N0,
+                                                    M.msmse.dictIntensity[k]
+                                                    * F2N0,
                                                 )
                                             dbgstr += "\n"
                                             dbgout(dbgstr)
 
                         if M3found != [] and pis in listM[3]:
-
                             M = listM[0][pis][0]
 
                             if pis in listM[3]:
-
                                 M3 = listM[3][pis][0]
 
                                 isIn = False
                                 if "3" in M3.msmse.isCorrectedIsotopic:
                                     for name in M3.listNames:
-                                        if name in M3.msmse.isCorrectedIsotopic["3"]:
+                                        if (
+                                            name
+                                            in M3.msmse.isCorrectedIsotopic[
+                                                "3"
+                                            ]
+                                        ):
                                             isIn = True
 
                                 if not isIn:
-
                                     # store original intensity for dump
                                     if M3.msmse.dictBeforeIsocoIntensity == {}:
-                                        M3.msmse.dictBeforeIsocoIntensity = deepcopy(
-                                            M3.msmse.dictIntensity
+                                        M3.msmse.dictBeforeIsocoIntensity = (
+                                            deepcopy(M3.msmse.dictIntensity)
                                         )
 
-                                    for k in list(M3.msmse.dictIntensity.keys()):
-
+                                    for k in list(
+                                        M3.msmse.dictIntensity.keys()
+                                    ):
                                         if (
                                             M3.msmse.dictIntensity[k] > 0.0
                                             and M.msmse.dictIntensity[k] > 0.0
                                         ):
                                             M3.msmse.dictIntensity[k] = (
                                                 M3.msmse.dictIntensity[k]
-                                                - M.msmse.dictIntensity[k] * F0N3
+                                                - M.msmse.dictIntensity[k]
+                                                * F0N3
                                             )
 
                                         if not Debug("isotopicCorrection"):
@@ -2768,7 +2950,9 @@ class TypeResult:
                                             "3"
                                         ] += M3.listNames
                                     else:
-                                        M3.msmse.isCorrectedIsotopic["3"] = M3.listNames
+                                        M3.msmse.isCorrectedIsotopic[
+                                            "3"
+                                        ] = M3.listNames
 
                                     if Debug("isotopicCorrection"):
                                         dbgstr = (
@@ -2783,7 +2967,8 @@ class TypeResult:
                                         for k in M3.msmse.dictIntensity:
                                             dbgstr += " %.4f (-%.4f);" % (
                                                 M3.msmse.dictIntensity[k],
-                                                M.msmse.dictIntensity[k] * F0N3,
+                                                M.msmse.dictIntensity[k]
+                                                * F0N3,
                                             )
                                         dbgstr += "\n"
                                         dbgout(dbgstr)
@@ -2798,7 +2983,9 @@ class TypeResult:
                             MSMS1found = []
 
                             resolution = (
-                                self.mfqlObj.options["MSMSresolution"].tolerance
+                                self.mfqlObj.options[
+                                    "MSMSresolution"
+                                ].tolerance
                                 if not use_lx2_MSresolution
                                 else None
                             )
@@ -2809,13 +2996,16 @@ class TypeResult:
                             # <It is no problem to take l.se[0] because the listMSMS is
                             #  the same for all entries of l.se>
                             listMSMS = [
-                                x for x in M3found[0].listMSMS if x.mass >= M.mass
+                                x
+                                for x in M3found[0].listMSMS
+                                if x.mass >= M.mass
                             ]
 
                             while index + next < (len(listMSMS)):
-
                                 if (
-                                    self.mfqlObj.sc.options["alignmentMethodMSMS"]
+                                    self.mfqlObj.sc.options[
+                                        "alignmentMethodMSMS"
+                                    ]
                                     == "calctol"
                                     or use_lx2_MSresolution
                                     # TODO fix this its just a bad guess
@@ -2826,28 +3016,51 @@ class TypeResult:
                                 monoisotopicPeak = M.mass
                                 isotopicPeak = listMSMS[index + next].mass
 
-                                if isotopicPeak - monoisotopicPeak - res < 4 * 1.0033:
-
+                                if (
+                                    isotopicPeak - monoisotopicPeak - res
+                                    < 4 * 1.0033
+                                ):
                                     if (
-                                        3.0099 <= isotopicPeak - monoisotopicPeak + res
+                                        3.0099
+                                        <= isotopicPeak
+                                        - monoisotopicPeak
+                                        + res
                                         and 3.0099
-                                        >= isotopicPeak - monoisotopicPeak - res
+                                        >= isotopicPeak
+                                        - monoisotopicPeak
+                                        - res
                                     ):
-                                        MSMS3found.append(listMSMS[index + next])
+                                        MSMS3found.append(
+                                            listMSMS[index + next]
+                                        )
 
                                     if (
-                                        2.0066 <= isotopicPeak - monoisotopicPeak + res
+                                        2.0066
+                                        <= isotopicPeak
+                                        - monoisotopicPeak
+                                        + res
                                         and 2.0066
-                                        >= isotopicPeak - monoisotopicPeak - res
+                                        >= isotopicPeak
+                                        - monoisotopicPeak
+                                        - res
                                     ):
-                                        MSMS2found.append(listMSMS[index + next])
+                                        MSMS2found.append(
+                                            listMSMS[index + next]
+                                        )
 
                                     if (
-                                        1.0033 <= isotopicPeak - monoisotopicPeak + res
+                                        1.0033
+                                        <= isotopicPeak
+                                        - monoisotopicPeak
+                                        + res
                                         and 1.0033
-                                        >= isotopicPeak - monoisotopicPeak - res
+                                        >= isotopicPeak
+                                        - monoisotopicPeak
+                                        - res
                                     ):
-                                        MSMS1found.append(listMSMS[index + next])
+                                        MSMS1found.append(
+                                            listMSMS[index + next]
+                                        )
 
                                 next += 1
                                 if index + next >= len(listMSMS):
@@ -2855,31 +3068,36 @@ class TypeResult:
 
                             if MSMS1found != []:
                                 for M1f in MSMS1found:
-
                                     isIn = False
                                     if "1i" in M1f.isCorrectedIsotopic:
                                         for name in M1f.listNames:
-                                            if name in M1f.isCorrectedIsotopic["1i"]:
+                                            if (
+                                                name
+                                                in M1f.isCorrectedIsotopic[
+                                                    "1i"
+                                                ]
+                                            ):
                                                 isIn = True
 
                                     if not isIn:
-
                                         # store original intensity for dump
                                         if M1f.dictBeforeIsocoIntensity == {}:
-                                            M1f.dictBeforeIsocoIntensity = deepcopy(
-                                                M1f.dictIntensity
+                                            M1f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M1f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
-                                        for k in list(M1f.dictIntensity.keys()):
-
+                                        for k in list(
+                                            M1f.dictIntensity.keys()
+                                        ):
                                             if (
                                                 M1f.dictIntensity[k] > 0.0
                                                 and M1f.dictIntensity[k] > 0.0
                                             ):
                                                 M1f.dictIntensity[k] = (
                                                     M1f.dictIntensity[k]
-                                                    - M.msmse.dictIntensity[k] * F1N2
+                                                    - M.msmse.dictIntensity[k]
+                                                    * F1N2
                                                 )
                                             if not Debug("isotopicCorrection"):
                                                 if M1f.dictIntensity[k] < 0.0:
@@ -2906,38 +3124,44 @@ class TypeResult:
                                             for k in M1f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
                                                     M1f.dictIntensity[k],
-                                                    M.msmse.dictIntensity[k] * F1N2,
+                                                    M.msmse.dictIntensity[k]
+                                                    * F1N2,
                                                 )
                                             dbgstr += "\n"
                                             dbgout(dbgstr)
 
                             if MSMS2found != []:
                                 for M2f in MSMS2found:
-
                                     isIn = False
                                     if "2i" in M2f.isCorrectedIsotopic:
                                         for name in M2f.listNames:
-                                            if name in M2f.isCorrectedIsotopic["2i"]:
+                                            if (
+                                                name
+                                                in M2f.isCorrectedIsotopic[
+                                                    "2i"
+                                                ]
+                                            ):
                                                 isIn = True
 
                                     if not isIn:
-
                                         # store original intensity for dump
                                         if M2f.dictBeforeIsocoIntensity == {}:
-                                            M2f.dictBeforeIsocoIntensity = deepcopy(
-                                                M2f.dictIntensity
+                                            M2f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M2f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
-                                        for k in list(M2f.dictIntensity.keys()):
-
+                                        for k in list(
+                                            M2f.dictIntensity.keys()
+                                        ):
                                             if (
                                                 M2f.dictIntensity[k] > 0.0
                                                 and M2f.dictIntensity[k] > 0.0
                                             ):
                                                 M2f.dictIntensity[k] = (
                                                     M2f.dictIntensity[k]
-                                                    - M.msmse.dictIntensity[k] * F2N1
+                                                    - M.msmse.dictIntensity[k]
+                                                    * F2N1
                                                 )
                                             if not Debug("isotopicCorrection"):
                                                 if M2f.dictIntensity[k] < 0.0:
@@ -2964,38 +3188,44 @@ class TypeResult:
                                             for k in M2f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
                                                     M2f.dictIntensity[k],
-                                                    M.msmse.dictIntensity[k] * F2N1,
+                                                    M.msmse.dictIntensity[k]
+                                                    * F2N1,
                                                 )
                                             dbgstr += "\n"
                                             dbgout(dbgstr)
 
                             if MSMS3found != []:
                                 for M3f in MSMS3found:
-
                                     isIn = False
                                     if "3i" in M3f.isCorrectedIsotopic:
                                         for name in M3f.listNames:
-                                            if name in M3f.isCorrectedIsotopic["3i"]:
+                                            if (
+                                                name
+                                                in M3f.isCorrectedIsotopic[
+                                                    "3i"
+                                                ]
+                                            ):
                                                 isIn = True
 
                                     if not isIn:
-
                                         # store original intensity for dump
                                         if M3f.dictBeforeIsocoIntensity == {}:
-                                            M3f.dictBeforeIsocoIntensity = deepcopy(
-                                                M3f.dictIntensity
+                                            M3f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M3f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
-                                        for k in list(M3f.dictIntensity.keys()):
-
+                                        for k in list(
+                                            M3f.dictIntensity.keys()
+                                        ):
                                             if (
                                                 M3f.dictIntensity[k] > 0.0
                                                 and M3f.dictIntensity[k] > 0.0
                                             ):
                                                 M3f.dictIntensity[k] = (
                                                     M3f.dictIntensity[k]
-                                                    - M.msmse.dictIntensity[k] * F3N0
+                                                    - M.msmse.dictIntensity[k]
+                                                    * F3N0
                                                 )
                                             if not Debug("isotopicCorrection"):
                                                 if M3f.dictIntensity[k] < 0.0:
@@ -3022,42 +3252,47 @@ class TypeResult:
                                             for k in M3f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
                                                     M3f.dictIntensity[k],
-                                                    M.msmse.dictIntensity[k] * F3N0,
+                                                    M.msmse.dictIntensity[k]
+                                                    * F3N0,
                                                 )
                                             dbgstr += "\n"
                                             dbgout(dbgstr)
 
                         if M4found != []:
-
                             M = listM[0][pis][0]
 
                             if pis in listM[4]:
-
                                 M4 = listM[4][pis][0]
 
                                 isIn = False
                                 if "4" in M4.msmse.isCorrectedIsotopic:
                                     for name in M4.listNames:
-                                        if name in M4.msmse.isCorrectedIsotopic["4"]:
+                                        if (
+                                            name
+                                            in M4.msmse.isCorrectedIsotopic[
+                                                "4"
+                                            ]
+                                        ):
                                             isIn = True
 
                                 if not isIn:
-
                                     # store original intensity for dump
                                     if M4.msmse.dictBeforeIsocoIntensity == {}:
-                                        M4.msmse.dictBeforeIsocoIntensity = deepcopy(
-                                            M4.msmse.dictIntensity
+                                        M4.msmse.dictBeforeIsocoIntensity = (
+                                            deepcopy(M4.msmse.dictIntensity)
                                         )
 
-                                    for k in list(M4.msmse.dictIntensity.keys()):
-
+                                    for k in list(
+                                        M4.msmse.dictIntensity.keys()
+                                    ):
                                         if (
                                             M4.msmse.dictIntensity[k] > 0.0
                                             and M.msmse.dictIntensity[k] > 0.0
                                         ):
                                             M4.msmse.dictIntensity[k] = (
                                                 M4.msmse.dictIntensity[k]
-                                                - M.msmse.dictIntensity[k] * F0N4
+                                                - M.msmse.dictIntensity[k]
+                                                * F0N4
                                             )
 
                                         if not Debug("isotopicCorrection"):
@@ -3069,7 +3304,9 @@ class TypeResult:
                                             "4"
                                         ] += M4.listNames
                                     else:
-                                        M4.msmse.isCorrectedIsotopic["4"] = M4.listNames
+                                        M4.msmse.isCorrectedIsotopic[
+                                            "4"
+                                        ] = M4.listNames
 
                                     if Debug("isotopicCorrection"):
                                         dbgstr = (
@@ -3083,7 +3320,8 @@ class TypeResult:
                                         for k in M4.msmse.dictIntensity:
                                             dbgstr += " %.4f (-%.4f);" % (
                                                 M4.msmse.dictIntensity[k],
-                                                M.msmse.dictIntensity[k] * F0N4,
+                                                M.msmse.dictIntensity[k]
+                                                * F0N4,
                                             )
                                         dbgstr += "\n"
                                         dbgout(dbgstr)
@@ -3105,13 +3343,16 @@ class TypeResult:
                             # <It is no problem to take l.se[0] because the listMSMS is
                             #  the same for all entries of l.se>
                             listMSMS = [
-                                x for x in M4found[0].listMSMS if x.mass >= M.mass
+                                x
+                                for x in M4found[0].listMSMS
+                                if x.mass >= M.mass
                             ]
 
                             while index + next < (len(listMSMS)):
-
                                 if (
-                                    self.mfqlObj.sc.options["alignmentMethodMSMS"]
+                                    self.mfqlObj.sc.options[
+                                        "alignmentMethodMSMS"
+                                    ]
                                     == "calctol"
                                     or use_lx2_MSresolution
                                     # TODO fix this its just a bad guess
@@ -3123,35 +3364,65 @@ class TypeResult:
                                 monoisotopicPeak = M.mass
                                 isotopicPeak = listMSMS[index + next].mass
 
-                                if isotopicPeak - monoisotopicPeak - res < 5 * 1.0033:
-
+                                if (
+                                    isotopicPeak - monoisotopicPeak - res
+                                    < 5 * 1.0033
+                                ):
                                     if (
-                                        4.0122 <= isotopicPeak - monoisotopicPeak + res
+                                        4.0122
+                                        <= isotopicPeak
+                                        - monoisotopicPeak
+                                        + res
                                         and 4.0122
-                                        >= isotopicPeak - monoisotopicPeak - res
+                                        >= isotopicPeak
+                                        - monoisotopicPeak
+                                        - res
                                     ):
-                                        MSMS4found.append(listMSMS[index + next])
+                                        MSMS4found.append(
+                                            listMSMS[index + next]
+                                        )
 
                                     if (
-                                        3.0099 <= isotopicPeak - monoisotopicPeak + res
+                                        3.0099
+                                        <= isotopicPeak
+                                        - monoisotopicPeak
+                                        + res
                                         and 3.0099
-                                        >= isotopicPeak - monoisotopicPeak - res
+                                        >= isotopicPeak
+                                        - monoisotopicPeak
+                                        - res
                                     ):
-                                        MSMS3found.append(listMSMS[index + next])
+                                        MSMS3found.append(
+                                            listMSMS[index + next]
+                                        )
 
                                     if (
-                                        2.0066 <= isotopicPeak - monoisotopicPeak + res
+                                        2.0066
+                                        <= isotopicPeak
+                                        - monoisotopicPeak
+                                        + res
                                         and 2.0066
-                                        >= isotopicPeak - monoisotopicPeak - res
+                                        >= isotopicPeak
+                                        - monoisotopicPeak
+                                        - res
                                     ):
-                                        MSMS2found.append(listMSMS[index + next])
+                                        MSMS2found.append(
+                                            listMSMS[index + next]
+                                        )
 
                                     if (
-                                        1.0033 <= isotopicPeak - monoisotopicPeak + res
+                                        1.0033
+                                        <= isotopicPeak
+                                        - monoisotopicPeak
+                                        + res
                                         and 1.0033
-                                        >= isotopicPeak - monoisotopicPeak - res
+                                        >= isotopicPeak
+                                        - monoisotopicPeak
+                                        - res
                                     ):
-                                        MSMS1found.append(listMSMS[index + next])
+                                        MSMS1found.append(
+                                            listMSMS[index + next]
+                                        )
 
                                 next += 1
                                 if index + next >= len(listMSMS):
@@ -3159,31 +3430,36 @@ class TypeResult:
 
                             if MSMS1found != []:
                                 for M1f in MSMS1found:
-
                                     isIn = False
                                     if "1i" in M1f.isCorrectedIsotopic:
                                         for name in M1f.listNames:
-                                            if name in M1f.isCorrectedIsotopic["1i"]:
+                                            if (
+                                                name
+                                                in M1f.isCorrectedIsotopic[
+                                                    "1i"
+                                                ]
+                                            ):
                                                 isIn = True
 
                                     if not isIn:
-
                                         # store original intensity for dump
                                         if M1f.dictBeforeIsocoIntensity == {}:
-                                            M1f.dictBeforeIsocoIntensity = deepcopy(
-                                                M1f.dictIntensity
+                                            M1f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M1f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
-                                        for k in list(M1f.dictIntensity.keys()):
-
+                                        for k in list(
+                                            M1f.dictIntensity.keys()
+                                        ):
                                             if (
                                                 M1f.dictIntensity[k] > 0.0
                                                 and M1f.dictIntensity[k] > 0.0
                                             ):
                                                 M1f.dictIntensity[k] = (
                                                     M1f.dictIntensity[k]
-                                                    - M.msmse.dictIntensity[k] * F1N3
+                                                    - M.msmse.dictIntensity[k]
+                                                    * F1N3
                                                 )
                                             if not Debug("isotopicCorrection"):
                                                 if M1f.dictIntensity[k] < 0.0:
@@ -3210,38 +3486,44 @@ class TypeResult:
                                             for k in M1f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
                                                     M1f.dictIntensity[k],
-                                                    M.msmse.dictIntensity[k] * F1N3,
+                                                    M.msmse.dictIntensity[k]
+                                                    * F1N3,
                                                 )
                                             dbgstr += "\n"
                                             dbgout(dbgstr)
 
                             if MSMS2found != []:
                                 for M2f in MSMS2found:
-
                                     isIn = False
                                     if "2i" in M2f.isCorrectedIsotopic:
                                         for name in M2f.listNames:
-                                            if name in M2f.isCorrectedIsotopic["2i"]:
+                                            if (
+                                                name
+                                                in M2f.isCorrectedIsotopic[
+                                                    "2i"
+                                                ]
+                                            ):
                                                 isIn = True
 
                                     if not isIn:
-
                                         # store original intensity for dump
                                         if M2f.dictBeforeIsocoIntensity == {}:
-                                            M2f.dictBeforeIsocoIntensity = deepcopy(
-                                                M2f.dictIntensity
+                                            M2f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M2f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
-                                        for k in list(M2f.dictIntensity.keys()):
-
+                                        for k in list(
+                                            M2f.dictIntensity.keys()
+                                        ):
                                             if (
                                                 M2f.dictIntensity[k] > 0.0
                                                 and M2f.dictIntensity[k] > 0.0
                                             ):
                                                 M2f.dictIntensity[k] = (
                                                     M2f.dictIntensity[k]
-                                                    - M.msmse.dictIntensity[k] * F2N2
+                                                    - M.msmse.dictIntensity[k]
+                                                    * F2N2
                                                 )
                                             if not Debug("isotopicCorrection"):
                                                 if M2f.dictIntensity[k] < 0.0:
@@ -3268,38 +3550,44 @@ class TypeResult:
                                             for k in M2f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
                                                     M2f.dictIntensity[k],
-                                                    M.msmse.dictIntensity[k] * F2N2,
+                                                    M.msmse.dictIntensity[k]
+                                                    * F2N2,
                                                 )
                                             dbgstr += "\n"
                                             dbgout(dbgstr)
 
                             if MSMS3found != []:
                                 for M3f in MSMS3found:
-
                                     isIn = False
                                     if "3i" in M3f.isCorrectedIsotopic:
                                         for name in M3f.listNames:
-                                            if name in M3f.isCorrectedIsotopic["3i"]:
+                                            if (
+                                                name
+                                                in M3f.isCorrectedIsotopic[
+                                                    "3i"
+                                                ]
+                                            ):
                                                 isIn = True
 
                                     if not isIn:
-
                                         # store original intensity for dump
                                         if M3f.dictBeforeIsocoIntensity == {}:
-                                            M3f.dictBeforeIsocoIntensity = deepcopy(
-                                                M3f.dictIntensity
+                                            M3f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M3f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
-                                        for k in list(M3f.dictIntensity.keys()):
-
+                                        for k in list(
+                                            M3f.dictIntensity.keys()
+                                        ):
                                             if (
                                                 M3f.dictIntensity[k] > 0.0
                                                 and M3f.dictIntensity[k] > 0.0
                                             ):
                                                 M3f.dictIntensity[k] = (
                                                     M3f.dictIntensity[k]
-                                                    - M.msmse.dictIntensity[k] * F3N1
+                                                    - M.msmse.dictIntensity[k]
+                                                    * F3N1
                                                 )
                                             if not Debug("isotopicCorrection"):
                                                 if M3f.dictIntensity[k] < 0.0:
@@ -3326,38 +3614,44 @@ class TypeResult:
                                             for k in M3f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
                                                     M3f.dictIntensity[k],
-                                                    M.msmse.dictIntensity[k] * F3N1,
+                                                    M.msmse.dictIntensity[k]
+                                                    * F3N1,
                                                 )
                                             dbgstr += "\n"
                                             dbgout(dbgstr)
 
                             if MSMS4found != []:
                                 for M4f in MSMS4found:
-
                                     isIn = False
                                     if "4i" in M4f.isCorrectedIsotopic:
                                         for name in M4f.listNames:
-                                            if name in M4f.isCorrectedIsotopic["4i"]:
+                                            if (
+                                                name
+                                                in M4f.isCorrectedIsotopic[
+                                                    "4i"
+                                                ]
+                                            ):
                                                 isIn = True
 
                                     if not isIn:
-
                                         # store original intensity for dump
                                         if M4f.dictBeforeIsocoIntensity == {}:
-                                            M4f.dictBeforeIsocoIntensity = deepcopy(
-                                                M4f.dictIntensity
+                                            M4f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M4f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
-                                        for k in list(M4f.dictIntensity.keys()):
-
+                                        for k in list(
+                                            M4f.dictIntensity.keys()
+                                        ):
                                             if (
                                                 M4f.dictIntensity[k] > 0.0
                                                 and M4f.dictIntensity[k] > 0.0
                                             ):
                                                 M4f.dictIntensity[k] = (
                                                     M4f.dictIntensity[k]
-                                                    - M.msmse.dictIntensity[k] * F4N0
+                                                    - M.msmse.dictIntensity[k]
+                                                    * F4N0
                                                 )
                                             if not Debug("isotopicCorrection"):
                                                 if M4f.dictIntensity[k] < 0.0:
@@ -3384,13 +3678,13 @@ class TypeResult:
                                             for k in M4f.dictIntensity:
                                                 dbgstr += " %.4f (-%.4f);" % (
                                                     M4f.dictIntensity[k],
-                                                    M.msmse.dictIntensity[k] * F4N0,
+                                                    M.msmse.dictIntensity[k]
+                                                    * F4N0,
                                                 )
                                             dbgstr += "\n"
                                             dbgout(dbgstr)
 
     def generateReport(self, options={}):
-
         noString = re.compile(r"\[(\w+)\]", re.VERBOSE)
 
         self.listHead = []
@@ -3398,7 +3692,6 @@ class TypeResult:
 
         # every query
         for query in list(self.dictQuery.values()):
-
             self.mfqlObj.currQuery = query
             self.mfqlObj.queryName = query.name
 
@@ -3408,7 +3701,6 @@ class TypeResult:
             ### TODO 20.08.2008: variables muessen auf query.sc zugreifen ###
             # every identified set of variables
             for vars in query.listVariables:
-
                 self.mfqlObj.currVars = vars
 
                 boolAdd = True
@@ -3416,10 +3708,8 @@ class TypeResult:
 
                 # every report variable
                 for report in query.listReport:
-
                     # the report entry is a string format
                     if len(report) == 3:
-
                         # generate objects for report
                         for v in vars:
                             if vars[v]:
@@ -3439,11 +3729,9 @@ class TypeResult:
 
                         # if list is not given as string
                         if isinstance(report[2], type([])):
-
                             listAttributes = []
 
                             for entry in report[2]:
-
                                 # namespacedVariable = self.mfqlObj.queryName + self.mfqlObj.namespaceConnector + entry.variable
                                 # if self.mfqlObj.currVars.has_key(namespacedVariable) and not self.mfqlObj.currVars[namespacedVariable] is None:
 
@@ -3462,9 +3750,9 @@ class TypeResult:
                                         queryName=self.mfqlObj.queryName,
                                         sc=query.sc,
                                     )
-                                elif isinstance(entry, TypeExpression) or isinstance(
-                                    entry, TypeElementSequence
-                                ):
+                                elif isinstance(
+                                    entry, TypeExpression
+                                ) or isinstance(entry, TypeElementSequence):
                                     tmpRpt = entry.evaluate(
                                         mode=None,
                                         scane=None,
@@ -3490,7 +3778,9 @@ class TypeResult:
                                 elif tmpRpt.isType(TYPE_STRING):
                                     listAttributes.append(tmpRpt.string)
                                 elif tmpRpt.isType(TYPE_CHEMSC):
-                                    listAttributes.append(tmpRpt.chemsc.getWeight())
+                                    listAttributes.append(
+                                        tmpRpt.chemsc.getWeight()
+                                    )
                                 else:
                                     listAttributes.append(tmpRpt.float)
 
@@ -3505,7 +3795,9 @@ class TypeResult:
                             strReportVars = report[2]
                             for v in list(vars.keys()):
                                 strReportVars = re.sub(
-                                    "%s" % v.split(connector)[1], v, strReportVars
+                                    "%s" % v.split(connector)[1],
+                                    v,
+                                    strReportVars,
                                 )
 
                             # make input more user friendly
@@ -3540,11 +3832,12 @@ class TypeResult:
                                     report[0],
                                     detail,
                                 )
-                                raise SyntaxErrorException(detail, "", query.name, 0)
+                                raise SyntaxErrorException(
+                                    detail, "", query.name, 0
+                                )
 
                     # the report entry is an expression
                     elif len(report) == 2:
-
                         if isinstance(report[1], TypeVariable):
                             tmpRpt = TypeExpression(
                                 isSingleton=True,
@@ -3608,11 +3901,12 @@ class TypeResult:
                             # check if report contains a dictionary like for the intensity
                             # if tmpRpt.dictIntensity:
                             if tmpRpt.type == TYPE_DICT_INTENS:
-
                                 for k in self.mfqlObj.sc.listSamples:
                                     strK = "%s:%s" % (report[0], k)
                                     if k in tmpRpt.dictIntensity:
-                                        rpt[strK] = "%.1f" % (tmpRpt.dictIntensity[k])
+                                        rpt[strK] = "%.1f" % (
+                                            tmpRpt.dictIntensity[k]
+                                        )
                                         # rpt[strK] = int(tmpRpt.dictIntensity[k])
                                     else:
                                         rpt[strK] = "0.0"  # int(0.0)
@@ -3638,9 +3932,7 @@ class TypeResult:
 
         # if there are results, then there is a self.listHead
         if self.listHead:
-
             for query in list(self.dictQuery.values()):
-
                 dataMatrix = TypeDataMatrix("")
                 for key in self.listHead:
                     dataMatrix.dataR[key] = []
@@ -3701,24 +3993,27 @@ class TypeResult:
                 if options["intensityCorrection"]:
                     precursorPrefix = options["intensityCorrectionPrecursor"]
                     fragmentPrefix = options["intensityCorrectionFragment"]
-                    mPrecursorPrefix = re.compile("(%s.*):(.*)" % precursorPrefix)
-                    mFragmentPrefix = re.compile("(%s.*):(.*)" % fragmentPrefix)
+                    mPrecursorPrefix = re.compile(
+                        "(%s.*):(.*)" % precursorPrefix
+                    )
+                    mFragmentPrefix = re.compile(
+                        "(%s.*):(.*)" % fragmentPrefix
+                    )
 
                     # go through the rows
                     for i in range(length):
-
                         # go through fragments
                         for k in list(dataMatrix.dataR.keys()):
                             m = mFragmentPrefix.match(k)
                             if m is not None:  # == fragmentPrefix:
                                 if float(dataMatrix.dataR[k][i]) <= 0.0:
-
                                     # go through precursors, find the matching precursor
                                     for l in list(dataMatrix.dataR.keys()):
                                         n = mPrecursorPrefix.match(l)
                                         if n is not None:  # == fragmentPrefix:
                                             dataMatrix.dataR[
-                                                "%s:%s" % (n.group(1), m.group(2))
+                                                "%s:%s"
+                                                % (n.group(1), m.group(2))
                                             ][i] = "0.0"
 
                         # go through precursors
@@ -3726,13 +4021,13 @@ class TypeResult:
                             m = mPrecursorPrefix.match(k)
                             if m is not None:
                                 if float(dataMatrix.dataR[k][i]) <= 0.0:
-
                                     # go through precursors, find the matching precursor
                                     for l in list(dataMatrix.dataR.keys()):
                                         n = mFragmentPrefix.match(l)
                                         if n is not None:
                                             dataMatrix.dataR[
-                                                "%s:%s" % (n.group(1), m.group(2))
+                                                "%s:%s"
+                                                % (n.group(1), m.group(2))
                                             ][i] = "0.0"
 
                     # make a index
@@ -3799,7 +4094,6 @@ class TypeResult:
         pass
 
     def generateStatistics(self, options):
-
         # import matplotlib
         # matplotlib.use('Pdf')
         # import pylab as p
@@ -3810,15 +4104,12 @@ class TypeResult:
         # this routine sums up the molecular species. I.e. for example:
         # PE [18:0/16:1] and PE [18:1/16:0] to PE [34:1]
         if options["sumFattyAcids"] == "True":
-
             lipidName = "NAME"  # the column which contains the lipid name (in opposite to lipid species)
             fragmentColumn = (
                 "FRAGINTENS"  # the column containing the fragment intensities
             )
             for query in list(self.dictQuery.values()):
-
                 if hasattr(query, "dataMatrix"):
-
                     d = query.dataMatrix
 
                     # collect all samples, i.e. all headers which are intensity headers
@@ -3831,7 +4122,6 @@ class TypeResult:
 
                     index = 0
                     while index < len(list(query.dataMatrix.values())[0]) - 1:
-
                         if d[lipidName][index] == d[lipidName][index + 1]:
                             for sample in intensitySamples:
                                 d[sample][index] += d[sample][index + 1]
@@ -3846,9 +4136,7 @@ class TypeResult:
         length = 0
         # calculate total ion count for every query by giving the name of the intensity list
         for query in list(self.dictQuery.values()):
-
             if hasattr(query, "dataMatrix"):
-
                 intensitySamples = []
                 dataKeys = list(query.dataMatrix.keys())
 
@@ -3871,7 +4159,6 @@ class TypeResult:
                             intensitySamples.append(m.group(1))
 
                 for smplIntensity in intensitySamples:
-
                     # define some useful variables
                     sampleKeys = []
                     for key in dataKeys:
@@ -3888,11 +4175,15 @@ class TypeResult:
                             try:
                                 if data[index] != data[index + 1]:
                                     if data[index] > 0.0:
-                                        dictTotalIonCount[sample] += data[index]
+                                        dictTotalIonCount[sample] += data[
+                                            index
+                                        ]
                             except IndexError:
                                 if data[index] > 0.0:
                                     try:
-                                        dictTotalIonCount[sample] += data[index]
+                                        dictTotalIonCount[sample] += data[
+                                            index
+                                        ]
 
                                     except TypeError:
                                         raise TypeError
@@ -3918,7 +4209,9 @@ class TypeResult:
                         for sample in sampleKeys:
                             sum += dictRelativeAbundance[sample][index]
 
-                        dictAverage[smplIntensity].append(sum / len(sampleKeys))
+                        dictAverage[smplIntensity].append(
+                            sum / len(sampleKeys)
+                        )
 
                     # calculate standard deviation
                     dictStdev[smplIntensity] = []
@@ -3944,7 +4237,9 @@ class TypeResult:
                 query.statisticalData["relativeAbundance"] = deepcopy(
                     dictRelativeAbundance
                 )
-                query.statisticalData["totalIonCount"] = deepcopy(dictTotalIonCount)
+                query.statisticalData["totalIonCount"] = deepcopy(
+                    dictTotalIonCount
+                )
                 query.statisticalData["average"] = deepcopy(dictAverage)
                 query.statisticalData["stdev"] = deepcopy(dictStdev)
                 # query.statisticalData['stdev2'] = deepcopy(dictStdev2)
@@ -3958,22 +4253,31 @@ class TypeResult:
                     for key in allSampleKeys:
                         str += (
                             "%.12f,"
-                            % query.statisticalData["relativeAbundance"][key][index]
+                            % query.statisticalData["relativeAbundance"][key][
+                                index
+                            ]
                         )
                     # str += ','
 
                     # the average by smplIntensity
                     for i in intensitySamples:
-                        str += "%.12f," % (query.statisticalData["average"][i][index])
+                        str += "%.12f," % (
+                            query.statisticalData["average"][i][index]
+                        )
                     # the standard deviation by smplIntensity
                     for i in intensitySamples:
-                        str += "%.12f," % (query.statisticalData["stdev"][i][index])
+                        str += "%.12f," % (
+                            query.statisticalData["stdev"][i][index]
+                        )
                     str += "\n"
 
                 str += "\n"
                 for key in dataKeys:
                     if key in query.statisticalData["totalIonCount"]:
-                        str += "%.4f," % query.statisticalData["totalIonCount"][key]
+                        str += (
+                            "%.4f,"
+                            % query.statisticalData["totalIonCount"][key]
+                        )
                     else:
                         str += ","
 
@@ -4001,7 +4305,6 @@ class TypeResult:
         self.listHead += heads
 
     def generateGraphics(self):
-
         import matplotlib
 
         # matplotlib.use('Pdf')
@@ -4015,12 +4318,15 @@ class TypeResult:
         ### routine for total ion count graph ###
         dictTotalIonCount = {}
         for query in list(self.dictQuery.values()):
-
             # totalIonCount: {sample : total ion count} for lipid class query.name
-            dictTotalIonCount[query.name] = query.statisticalData["totalIonCount"]
+            dictTotalIonCount[query.name] = query.statisticalData[
+                "totalIonCount"
+            ]
 
         dataKeys = list(dictTotalIonCount.keys())  # lipid classes
-        dataLen = len(list(dictTotalIonCount.values())[0].values())  # number of samples
+        dataLen = len(
+            list(dictTotalIonCount.values())[0].values()
+        )  # number of samples
         data = dictTotalIonCount
 
         # add the figure to the pdf
@@ -4090,9 +4396,7 @@ class TypeResult:
         # first try: put out all found species with their abundance for all spectra
         if False:
             for query in list(self.dictQuery.values()):
-
                 if hasattr(query, "dataMatrix"):
-
                     dataKeys = list(query.dataMatrix.keys())
                     dataLen = len(list(query.dataMatrix.values())[0])
 
@@ -4102,7 +4406,9 @@ class TypeResult:
                     listAllIntensities = []
                     for i in range(dataLen):
                         for j in dataKeys[5:]:
-                            listAllIntensities.append(float(query.dataMatrix[j][i]))
+                            listAllIntensities.append(
+                                float(query.dataMatrix[j][i])
+                            )
 
                     n = len(listAllIntensities)
                     nbox = len(dataKeys[5:])
@@ -4141,7 +4447,12 @@ class TypeResult:
                             listColor.append(listStandardColors[i % 15])
 
                     assert len(listAllIntensities) == len(listColor)
-                    ax.bar(ind, listAllIntensities, color=listColor, align="center")
+                    ax.bar(
+                        ind,
+                        listAllIntensities,
+                        color=listColor,
+                        align="center",
+                    )
                     ax.set_ylabel("Counts")
                     ax.set_title("Eat this", fontstyle="italic")
 
@@ -4188,8 +4499,12 @@ class TypeResult:
                 listSCMS[index].mass == listSCMS[index + lookahead].mass
                 and index + lookahead < len(listSCMS) - 1
             ):
-                listSCMS[index].isobaric = "%s" % listSCMS[index + lookahead].name
-                listSCMS[index + lookahead].isobaric = "%s" % listSCMS[index].name
+                listSCMS[index].isobaric = (
+                    "%s" % listSCMS[index + lookahead].name
+                )
+                listSCMS[index + lookahead].isobaric = (
+                    "%s" % listSCMS[index].name
+                )
                 lookahead += 1
                 isospecFound = True
 
@@ -4207,8 +4522,12 @@ class TypeResult:
                 listSCMSMS[index].mass == listSCMSMS[index + lookahead].mass
                 and index + lookahead < len(listSCMSMS) - 1
             ):
-                listSCMSMS[index].isobaric = "%s" % listSCMSMS[index + lookahead].name
-                listSCMSMS[index + lookahead].isobaric = "%s" % listSCMSMS[index].name
+                listSCMSMS[index].isobaric = (
+                    "%s" % listSCMSMS[index + lookahead].name
+                )
+                listSCMSMS[index + lookahead].isobaric = (
+                    "%s" % listSCMSMS[index].name
+                )
                 lookahead += 1
                 isospecFound = True
 
@@ -4218,7 +4537,6 @@ class TypeResult:
             index += lookahead
 
     def checkIsobaricSpeciesAfterSUCHTHAT(self):
-
         listSCMS = []
         listSCMSMS = []
         for query in self.dictQuery:
@@ -4245,8 +4563,14 @@ class TypeResult:
             ):
                 # listSCMS[index].isobaric = '<%s>' % listSCMS[index].isobaric
                 # listSCMS[index + lookahead].isobaric = '<%s>' % listSCMS[index + lookahead].isobaric
-                if not listSCMS[index].name == listSCMS[index + lookahead].name:
-                    if not listSCMS[index + lookahead].name in listSCMS[index].isobaric:
+                if (
+                    not listSCMS[index].name
+                    == listSCMS[index + lookahead].name
+                ):
+                    if (
+                        not listSCMS[index + lookahead].name
+                        in listSCMS[index].isobaric
+                    ):
                         listSCMS[index].isobaric.append(
                             listSCMS[index + lookahead].name
                         )
@@ -4277,7 +4601,10 @@ class TypeResult:
             ):
                 # listSCMSMS[index].isobaric = '<%s>' % listSCMSMS[index].isobaric
                 # listSCMSMS[index + lookahead].isobaric = '<%s>' % listSCMSMS[index + lookahead].isobaric
-                if not listSCMSMS[index].name == listSCMSMS[index + lookahead].name:
+                if (
+                    not listSCMSMS[index].name
+                    == listSCMSMS[index + lookahead].name
+                ):
                     if listSCMSMS[index].isobaric == []:
                         listSCMSMS[index].isobaric.append(
                             listSCMSMS[index + lookahead].name
@@ -4328,8 +4655,14 @@ class TypeResult:
                     ]  # will get 'dictBeforeIsocoIntensity' if its available else this
                 if not intens_vals:
                     intens_vals = [v for v in mark.intensity.values() if v > 0]
-                mean_i = sum(intens_vals) / len(intens_vals) if intens_vals else 1
-                res = mean_i / abs(mark.errppm) if abs(mark.errppm) > 1 else mean_i
+                mean_i = (
+                    sum(intens_vals) / len(intens_vals) if intens_vals else 1
+                )
+                res = (
+                    mean_i / abs(mark.errppm)
+                    if abs(mark.errppm) > 1
+                    else mean_i
+                )
                 return res
 
             return sum((criteria(e) for e in lv.values()))
@@ -4348,14 +4681,11 @@ class TypeResult:
 
             # if there are no variables, we don't need to do anything
             if len(listVar) > 0:
-
                 listVar_noPermutations = [listVar[0]]
                 for idx1, i in listVar:
-
                     # check every entry
                     isIn = False
                     for idx2, j in listVar_noPermutations:
-
                         # compare two lists
                         lists_are_same = True
                         for index in range(len(i)):
@@ -4380,7 +4710,6 @@ class TypeResult:
 
 class TypeQuery:
     def __init__(self, mfqlObj=None, id=None, report=None, withSuchthat=False):
-
         # this is {'identifyer' : TypeQuery}
         self.name = id
 
@@ -4437,7 +4766,9 @@ class DataPoint:
 
 class TypeDataMatrix:
     def __init__(self, primaryKey):
-        self.dataR = odict()  # the original data set as it comes from the output
+        self.dataR = (
+            odict()
+        )  # the original data set as it comes from the output
         self.dataL = odict()  # the transposed data set using the primaryKey
         self.primaryKey = ""
         self.dataRKeys = odict()
@@ -4512,7 +4843,6 @@ class TypeDataMatrix:
             f.write(str)
 
     def showGraphics(self):
-
         import matplotlib
         from matplotlib.backends.backend_pdf import PdfPages
 
@@ -4520,7 +4850,9 @@ class TypeDataMatrix:
         pdf = PdfPages("multipages_pdf.pdf")
 
         dataKeys = list(dictTotalIonCount.keys())  # lipid classes
-        dataLen = len(list(dictTotalIonCount.values())[0].values())  # number of samples
+        dataLen = len(
+            list(dictTotalIonCount.values())[0].values()
+        )  # number of samples
         data = dictTotalIonCount
 
         fig = p.figure()
@@ -4533,7 +4865,6 @@ class TypeDataMatrix:
         return list(self.dataL.keys())
 
     def getValues(self, label, content):
-
         r = re.compile("(%s):.*" % intensityRow)
 
         dictOut = {}
@@ -4541,9 +4872,9 @@ class TypeDataMatrix:
             indexLabel = dataRKeys.index(label)
             indexContent = dataRKeys.index(content)
             if self.dataL[indexKey][indexLabel] not in dictOut:
-                dictOut[self.dataL[indexKey][indexLabel]] = self.dataL[indexKey][
-                    indexContent
-                ]
+                dictOut[self.dataL[indexKey][indexLabel]] = self.dataL[
+                    indexKey
+                ][indexContent]
 
     def getIntensity(self, intensityRow, index=None):
         """Returns a dictionary with the primary key and the
@@ -4559,9 +4890,13 @@ class TypeDataMatrix:
                     m = r.match(key)
                     if m:
                         if not indexKey in retIntensity:
-                            retIntensity[indexKey] = DataPoint(indexKey, [], [])
+                            retIntensity[indexKey] = DataPoint(
+                                indexKey, [], []
+                            )
                         index = self.dataRKeys.index(key)
-                        retIntensity[indexKey].data.append(self.dataL[indexKey][index])
+                        retIntensity[indexKey].data.append(
+                            self.dataL[indexKey][index]
+                        )
                         retIntensity[indexKey].rowKey.append(key)
         else:
             retIntensity = DataPoint(index, [], [])
@@ -4597,13 +4932,17 @@ class TypeDataMatrix:
         # gen an index dictionary to map array index to dictionary keys
         dicIndex = dict(
             list(
-                zip(list(self.dataL.keys()), list(range(len(list(self.dataL.keys())))))
+                zip(
+                    list(self.dataL.keys()),
+                    list(range(len(list(self.dataL.keys())))),
+                )
             )
         )
         indexDic = dict(
             (str(k), v)
             for k, v in zip(
-                list(range(len(list(self.dataL.keys())))), list(self.dataL.keys())
+                list(range(len(list(self.dataL.keys())))),
+                list(self.dataL.keys()),
             )
         )
 
@@ -4650,14 +4989,15 @@ class TypeDataMatrix:
             index += n
 
     def genIonSum(self):
-
         # r = re.compile('(%s):.*' % intensityRow)
         retSum = dict([(x, 0.0) for x in self.dataRKeys])
 
         for primKey in self.dataL:
             for rowKey in list(retSum.keys()):
                 try:
-                    e = float(self.dataL[primKey][self.dataRKeys.index(rowKey)])
+                    e = float(
+                        self.dataL[primKey][self.dataRKeys.index(rowKey)]
+                    )
                 except ValueError:
                     e = 0.0
                 except AttributeError:
@@ -4670,7 +5010,6 @@ class TypeDataMatrix:
             self.dataL["IonSum"].append(retSum[key])
 
     def convertToFloat(self):
-
         matchFloat = re.compile("^[+-]?\d+\.?\d*$")
 
         # convert data types to floating point numbers in the dataMatrix

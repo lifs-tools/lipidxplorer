@@ -8,7 +8,7 @@ from copy import copy
 
 
 def func(float):
-    return float ** 2
+    return float**2
 
 
 def isEven(float):
@@ -46,7 +46,6 @@ def sub(sc1, sc2):
 
 
 def sumIntensity(*input):
-
     result = ""
     return input
 
@@ -70,13 +69,11 @@ class InternFunctions:
 
     # def startFun(self, fun, args, vars):
     def startFun(self, fun, args, vars):
-
         currArguments = copy(args)
 
         ### if it is a postFunction, redirect it to pospostFunction() ###
 
         if fun == "isStandard" and len(currArguments) == 3:
-
             # collect arguments
             varName = (
                 self.mfqlObj.queryName
@@ -97,12 +94,13 @@ class InternFunctions:
 
             # direct function call to post functions
             if self.mfqlObj.queryName not in self.mfqlObj.dictPostFuns:
-                self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {funName: funArgs}
+                self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {
+                    funName: funArgs
+                }
 
             return True
 
         if fun == "isStandard" and len(currArguments) == 2:
-
             # collect arguments
             varName = (
                 self.mfqlObj.queryName
@@ -121,7 +119,9 @@ class InternFunctions:
 
             # direct function call to post functions
             if self.mfqlObj.queryName not in self.mfqlObj.dictPostFuns:
-                self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {funName: funArgs}
+                self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {
+                    funName: funArgs
+                }
 
             return True
 
@@ -169,7 +169,10 @@ class InternFunctions:
                 elif isinstance(currArguments[index], TypeFunction):
                     boolEvaluated = False
                     currArguments[index] = currArguments[index].evaluate(
-                        scane, self.mfqlObj.currVars, self.environment, queryName
+                        scane,
+                        self.mfqlObj.currVars,
+                        self.environment,
+                        queryName,
                     )
                 elif isinstance(currArguments[index], type(0.0)):
                     boolEvaluated = False
@@ -181,11 +184,9 @@ class InternFunctions:
                         chemsc=None,
                     )
         if currArguments[0]:
-
             ### process functions ###
 
             if fun == "nbsmpls":
-
                 # generate the result as TypeTmpResult
                 result = TypeTmpResult(
                     options=None,
@@ -197,9 +198,7 @@ class InternFunctions:
                 )
 
             if fun == "score":
-
                 if self.mfqlObj.sc.options["MSMSaccuracy"].ppm:
-
                     # collect the intensities, get rid of double entries
                     # first argument is the intensity dictionary
                     sum = 0
@@ -215,7 +214,6 @@ class InternFunctions:
                     )
 
                 elif self.mfqlObj.sc.options["MSMSaccuracy"].da:
-
                     # collect the intensities, get rid of double entries
                     # first argument is the intensity dictionary
                     sum = 0
@@ -241,11 +239,8 @@ class InternFunctions:
                 )
 
             if fun == "avg":
-
                 if len(currArguments) == 1:
-
                     if currArguments[0].dictIntensity:
-
                         # collect the intensities, get rid of double entries
                         # first argument is the intensity dictionary
                         sum = 0
@@ -254,7 +249,9 @@ class InternFunctions:
                                 sum += currArguments[0].dictIntensity[key]
                             else:
                                 sum += 0
-                        avg = sum / len(list(currArguments[0].dictIntensity.keys()))
+                        avg = sum / len(
+                            list(currArguments[0].dictIntensity.keys())
+                        )
 
                         # generate the result as TypeTmpResult
                         result = TypeTmpResult(
@@ -266,7 +263,6 @@ class InternFunctions:
                         )
 
                 else:
-
                     # collect the intensities, get rid of double entries
                     # first argument is the intensity dictionary
                     sum = 0
@@ -287,11 +283,8 @@ class InternFunctions:
                     )
 
             if fun == "medianU":  # median - take lower median if list is even
-
                 if len(currArguments) == 1:
-
                     if currArguments[0].dictIntensity:
-
                         d = sorted(currArguments[0].dictIntensity.values())
                         dl = len(d)
 
@@ -310,7 +303,6 @@ class InternFunctions:
                         )
 
                 else:
-
                     # collect the intensities, get rid of double entries
                     # first argument is the intensity dictionary
 
@@ -332,11 +324,8 @@ class InternFunctions:
                     )
 
             if fun == "medianL":  # median - take lower median if list is even
-
                 if len(currArguments) == 1:
-
                     if currArguments[0].dictIntensity:
-
                         d = sorted(currArguments[0].dictIntensity.values())
                         dl = len(d)
 
@@ -355,7 +344,6 @@ class InternFunctions:
                         )
 
                 else:
-
                     # collect the intensities, get rid of double entries
                     # first argument is the intensity dictionary
 
@@ -377,11 +365,8 @@ class InternFunctions:
                     )
 
             if fun == "abs":
-
                 if len(currArguments) == 1:
-
                     if currArguments[0].dictIntensity:
-
                         # collect the intensities, get rid of double entries
                         # first argument is the intensity dictionary
                         sum = 0
@@ -401,7 +386,6 @@ class InternFunctions:
                         )
 
                     else:
-
                         if currArguments[0].float < 0.0:
                             absolute = 0 - currArguments[0].float
                         else:
@@ -421,7 +405,6 @@ class InternFunctions:
                     )
 
             if fun == "sumIntensity":
-
                 ### sum the given intensities iff the peaks are different ###
 
                 # try:
@@ -463,7 +446,10 @@ class InternFunctions:
                     for j in toSum:
                         # if i.mass == j.mass:
                         for sample in samples:
-                            if i.dictIntensity[sample] != j.dictIntensity[sample]:
+                            if (
+                                i.dictIntensity[sample]
+                                != j.dictIntensity[sample]
+                            ):
                                 isIn = True
 
                     if isIn:
@@ -475,7 +461,6 @@ class InternFunctions:
                     isotopeMode = True
                     for k in samples:
                         if k in dictIntensityResult:
-
                             if i.dictIntensity[k] >= 0.0:
                                 isotopeMode = False
 
@@ -485,7 +470,9 @@ class InternFunctions:
                                 if i.dictIntensity[k] <= 0.0:
                                     pass
                                 else:
-                                    dictIntensityResult[k] += i.dictIntensity[k]
+                                    dictIntensityResult[k] += i.dictIntensity[
+                                        k
+                                    ]
 
                         else:
                             dictIntensityResult[k] = i.dictIntensity[k]
@@ -500,7 +487,6 @@ class InternFunctions:
                 )
 
             if fun == "column":
-
                 ### return the intensities of the samples specified with a regular expression ###
 
                 import re
