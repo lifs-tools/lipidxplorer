@@ -1,5 +1,5 @@
 import pytest
-from legacy.lx_masterscan import lx2_spectra
+from legacy.lx2_masterscan import lx2_spectra
 
 
 def test_readfile():

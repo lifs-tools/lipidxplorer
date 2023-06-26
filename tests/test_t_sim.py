@@ -8,7 +8,7 @@ from utils import (
     compareMasterScans,
     compareResults,
 )
-from LX1_masterscan import make_lx1_masterscan
+from LX1_masterscan import make_lx_masterscan
 import pickle
 
 
@@ -34,12 +34,12 @@ def get_no_res_options():
 
 @pytest.fixture
 def get_masterscan(get_options):
-    return make_lx1_masterscan(get_options)
+    return make_lx_masterscan(get_options)
 
 
 @pytest.fixture
 def get_no_res_masterscan(get_no_res_options):
-    return make_lx1_masterscan(get_no_res_options)
+    return make_lx_masterscan(get_no_res_options)
 
 
 @pytest.fixture

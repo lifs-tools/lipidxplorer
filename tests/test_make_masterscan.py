@@ -13,8 +13,7 @@ from utils import (
     proy_path,
     read_options,
 )
-from LX2_masterscan import make_lx2_masterscan
-from LX1_masterscan import make_lx1_masterscan
+from LX1_masterscan import make_lx_masterscan
 
 # from memory_profiler import profile
 
@@ -65,11 +64,9 @@ def test_compare_ms2s():
     print("compare ms2")
 
 
-# TODO: @Jacobo
-@pytest.mark.skip(reason="assert False")
 def test_make_lx2_masterscan():
     options = read_options(proy_path)
-    masterscan = make_lx2_masterscan(options)
+    masterscan = make_lx_masterscan(options, lx_version=2)
     expected = loadSC(expected_lx2ms_path)
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
     masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]
@@ -78,7 +75,7 @@ def test_make_lx2_masterscan():
 
 def test_make_lx1_masterscan():
     options = read_options(proy_path)
-    masterscan = make_lx1_masterscan(options)  # refactored code of lx1
+    masterscan = make_lx_masterscan(options, lx_version=1)
     expected = loadSC(expected_lx2ms_path)
     expected.listSurveyEntry = expected.listSurveyEntry[:100]
     masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]

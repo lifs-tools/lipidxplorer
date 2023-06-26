@@ -14,78 +14,7 @@ log = logging.getLogger(Path(__file__).stem)
 from ms_deisotope import MSFileLoader
 from lx.spectraContainer import MasterScan, SurveyEntry, MSMSEntry
 
-
-def make_lx2_masterscan(options) -> MasterScan:
-    log.info("Generating Masterscan from LX2 data")
-
-    mzmls = mz_ml_paths(options)
-    samples = [p.stem for p in mzmls]
-    log.info("for the files... \n{}".format("\n".join(samples)))
-
-    spectra_dfs = spectra_2_df(options)
-
-    ms1_calibration = options._data.get(
-        "MScalibration"
-    )  # from _data otherwise missing value error
-    ms2_calibration = options._data.get("MSMScalibration")
-
-    if ms1_calibration and not ms2_calibration:
-        log.warning("Using MS1 calibration on MS2 also")
-        ms2_calibration = ms1_calibration
-
-    occup_between_scans = options["MSfilter"]
-    ms1_df = pd.concat(
-        (
-            agg_ms1_spectra_df(
-                df, occupancy=occup_between_scans, calibration=ms1_calibration
-            )
-            for df in spectra_dfs
-        )
-    )
-    occup_between_spectra = options["MSminOccupation"]
-    listSurveyEntry = [
-        se_factory(msmass, dictIntensity, samples, polarity)
-        for msmass, dictIntensity, polarity in mass_inty_generator_ms1(
-            ms1_df, occupancy=occup_between_spectra
-        )
-    ]
-
-    listSurveyEntry = sorted(listSurveyEntry, key=lambda x: x.precurmass)
-
-    occup_between_ms2_scans = options["MSMSfilter"]
-    ms2_df = pd.concat(
-        (
-            agg_ms2_spectra_df(
-                df,
-                occupancy=occup_between_ms2_scans,
-                calibration=ms2_calibration,
-            )
-            for df in spectra_dfs
-        )
-    )
-
-    if not ms2_df.empty:  # only if there are any ms2s
-        occup_between_ms2_spectra = options["MSMSminOccupation"]
-        precurs, msmslists = precur_msmslists_from(
-            ms2_df, samples, occup_between_ms2_spectra
-        )
-
-        for se in listSurveyEntry:
-            se.listMSMS = find_msmslist(se.precurmass, precurs, msmslists)
-
-    # add data to masterscan
-    scan = MasterScan(options)
-    scan.listSurveyEntry = listSurveyEntry
-    scan.listSurveyEntry[0].massWindow = 0.01  # to avoid bug
-    scan.sampleOccThr["MS"] = [
-        (0.0, [])
-    ]  # to avoid bug at def checkOccupation
-    scan.sampleOccThr["MSMS"] = [(0.0, [])]
-
-    # for printing we need
-    scan.listSamples = samples
-
-    return scan
+from LX1_masterscan import make_lx_masterscan
 
 
 def spectra_2_df_single(mzml, options):
@@ -566,7 +495,7 @@ def main():
         "MScalibration": [680.4802],
         "MSMScalibration": None,
     }
-    scan = make_lx2_masterscan(options)
+    scan = make_lx_masterscan(options, lx_version=2)
     if False:
         import pickle
 

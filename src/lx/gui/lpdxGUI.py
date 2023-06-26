@@ -5044,7 +5044,7 @@ intensity."""
             )
 
             def make_save_mastersscan(options):
-                masterscan = LX1_masterscan.make_lx1_masterscan(options)
+                masterscan = LX1_masterscan.make_lx_masterscan(options)
                 idp = Path(options["importDir"])
                 # filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
                 filename = options["masterScanRun"]
