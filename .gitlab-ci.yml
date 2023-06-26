@@ -129,7 +129,7 @@ release:
   release:
     name: 'Release Executables $CI_COMMIT_SHORT_SHA'
     description: 'Created by pipeline $CI_PIPELINE_IID'
-    tag_name: '$CI_COMMIT_TAG'
+    tag_name: '$CI_COMMIT_SHORT_SHA'
     assets:
       links:
         - name: 'Windows binaries zipped'
