@@ -1,20 +1,24 @@
+![pipeline](https://git.mpi-cbg.de/labShevchenko/lx2/badges/dev/pipeline.svg)
+![coverage](https://git.mpi-cbg.de/labShevchenko/lx2/badges/dev/coverage.svg)
+![pylint](https://git.mpi-cbg.de/labShevchenko/lx2/-/jobs/artifacts/dev/raw/pylint/pylint.svg?job=lint-job)
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3483976.svg)](https://doi.org/10.5281/zenodo.3483976)
 # LipidXplorer
 
-LipidXplorer is a software that is designed to support bottom-up and top-down shotgun lipidomics experiments performed 
-on all types of tandem mass spectrometers. Lipid identification does not rely on a database resource of reference 
-or simulated mass spectra but uses user-defined molecular fragment queries. It supports accurate, isotope-corrected 
+LipidXplorer is a software that is designed to support bottom-up and top-down shotgun lipidomics experiments performed
+on all types of tandem mass spectrometers. Lipid identification does not rely on a database resource of reference
+or simulated mass spectra but uses user-defined molecular fragment queries. It supports accurate, isotope-corrected
 quantification based on the identified MS1 or MS2 level fragments.
 
 ## Downloading LipidXplorer
 
-The latest (binary) release version of LipidXplorer is available from the [LIFS Portal](https://lifs.isas.de/lipidxplorer.html). 
+The latest (binary) release version of LipidXplorer is available from the [LIFS Portal](https://lifs.isas.de/lipidxplorer.html).
 You can obtain the source code for LipidXplorer from our [GitLab server](https://gitlab.isas.de/lifs/lipidxplorer) and release version archives from [here](https://gitlab.isas.de/lifs/lipidxplorer/-/releases).
 
 ## Running LipidXplorer on Windows
 
 For Windows, we provide a single executable for LipidXplorer for download from the [LIFS Portal](https://lifs.isas.de/lipidxplorer.html).
-Please download the zip-archive to a location of your choice and extract (unzip) the contents. 
+Please download the zip-archive to a location of your choice and extract (unzip) the contents.
 Change to the unzipped LipidXplorer archive directory and simply double-click on `LipidXplorer.exe` to start it.
 
 ## Installation and Tutorials
@@ -28,9 +32,9 @@ These also cover the case of working with the source code.
 
 We recommend [PyCharm](https://www.jetbrains.com/pycharm/) for development of the LipidXplorer codebase and [Anaconda 3](https://www.anaconda.com/distribution/) to manage a stable, versioned Python environment.
 Any other Python IDE will also work just as well.
-Please see the `environment.yml` file in the project's source root folder for reference of an exported Anaconda environment. You can import it in your local Anaconda installation, call 
- 
-    conda env create -f environment.yml 
+Please see the `environment.yml` file in the project's source root folder for reference of an exported Anaconda environment. You can import it in your local Anaconda installation, call
+
+    conda env create -f environment.yml
 
 ## Creating a Windows Executable
 
@@ -53,8 +57,8 @@ This will also create a zip archive of the `distpath` folder in the root directo
 ## Versioning
 
 We use [Semantic Versioning](http://semver.org/) for versioning of the software.
- 
-To browse available versions and releases, please see the [tags on this repository](https://gitlab.isas.de/lifs/lipidxplorer/tags). 
+
+To browse available versions and releases, please see the [tags on this repository](https://gitlab.isas.de/lifs/lipidxplorer/tags).
 
 ## Authors
 
