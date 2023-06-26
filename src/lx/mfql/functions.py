@@ -8,7 +8,7 @@ from copy import copy
 
 
 def func(float):
-    return float**2
+    return float ** 2
 
 
 def isEven(float):

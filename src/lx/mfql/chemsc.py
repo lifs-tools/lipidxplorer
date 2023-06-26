@@ -744,16 +744,18 @@ class SCConstraint(ElementSequence):
                                                             )
                                                             # if (((iN != 0) and (int(mass) % 2) == ((abs(self.charge) % 2) + (iN % 2)) % 2) or (iN == 0)):
                                                             if (
-                                                                int(mass) % 2
-                                                            ) == (
-                                                                (
-                                                                    abs(
-                                                                        self.charge
+                                                                (int(mass) % 2)
+                                                                == (
+                                                                    (
+                                                                        abs(
+                                                                            self.charge
+                                                                        )
+                                                                        % 2
                                                                     )
-                                                                    % 2
+                                                                    + (iN % 2)
                                                                 )
-                                                                + (iN % 2)
-                                                            ) % 2:
+                                                                % 2
+                                                            ):
                                                                 elemseq = (
                                                                     ElementSequence()
                                                                 )

@@ -7,6 +7,8 @@ OPTIONS_PATH = (
     r"d:\fork\lx2\tests\resources\t_sim\project_data\tSIM_Stitched.lxp"
 )
 RESULT_PICKLE = r"tests/resources/t_sim/reference/type_result_1.pkl"
+
+
 def test_isotopic_correction():
 
     options = read_options(OPTIONS_PATH)

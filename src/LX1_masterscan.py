@@ -126,8 +126,8 @@ def compare_grouping(mzml, options):
 
         x = mz_series
         m = mz_series.mean()
-        weights = np.exp(-((x - mu) ** 2) / 2 * sigma**2) / np.sqrt(
-            2 * np.pi * sigma**2
+        weights = np.exp(-((x - mu) ** 2) / 2 * sigma ** 2) / np.sqrt(
+            2 * np.pi * sigma ** 2
         )
         return weights
 

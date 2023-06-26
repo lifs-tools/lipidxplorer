@@ -243,10 +243,7 @@ col110.text_input("Selection Window (Da)", key="selectionWindow")
 col120.text_input("Time Start (Sec)", key="_timerange0")
 col121.text_input("Time end", key="_timerange1")
 
-(
-    col210,
-    col220,
-) = st.columns([2, 2])
+(col210, col220,) = st.columns([2, 2])
 
 col210.text_input("Calibratoin masses MS", key="MScalibration")
 col220.text_input("MSMS", key="MSMScalibration")
@@ -299,32 +296,23 @@ col520.selectbox(
 
 col530.text_input("MS/MS", key="MSMStolerance")
 col540.selectbox(
-    "unit",
-    [e.name for e in ToleranceEnum],
-    key="MSMStoleranceType",
+    "unit", [e.name for e in ToleranceEnum], key="MSMStoleranceType",
 )
 
 col610, col620, col630, col640 = st.columns([2, 1, 2, 1])
 col610.text_input("Threshold MS", key="MSthreshold")
 col620.selectbox(
-    "unit",
-    [e.name for e in ThresholdEnum],
-    key="MSthresholdType",
+    "unit", [e.name for e in ThresholdEnum], key="MSthresholdType",
 )
 col630.text_input("MS/MS", key="MSMSthreshold")
 col640.selectbox(
-    "unit",
-    [e.name for e in ThresholdEnum],
-    key="MSMSthresholdType",
+    "unit", [e.name for e in ThresholdEnum], key="MSMSthresholdType",
 )
 
 col810, col820 = st.columns([1, 1])
 col810.slider(r"In % of MS spectra files:", 0, 100, key="MSfilter")
 col820.slider(
-    r"In % of MS/MS spectra files:",
-    0,
-    100,
-    key="MSMSfilter",
+    r"In % of MS/MS spectra files:", 0, 100, key="MSMSfilter",
 )
 
 col910, col920, col930 = st.columns([1, 1, 1])
