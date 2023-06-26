@@ -59,15 +59,17 @@ def test_masterscan_lx_vs_lx1(get_masterscan, get_lx1_refactored_masterscan):
 
 # TODO: @Jacobo
 @pytest.mark.skip(reason="not validated yet")
-def test_masterescan_lx_vs_lx2(get_masterscan, get_lx2_masterscan):
+def test_masterescan_lx_vs_lx2(
+    get_masterscan, get_lx2_masterscan
+):
+
     assert compareMasterScans(get_masterscan, get_lx2_masterscan)
 
 
 # TODO: @Jacobo
 @pytest.mark.skip(reason="not validated yet")
-def test_mfql_lx_vs_lx1(
-    get_masterscan, get_lx1_refactored_masterscan, get_options, getMfqlFiles
-):
+def test_mfql_lx_vs_lx1(get_masterscan, get_lx1_refactored_masterscan, get_options, getMfqlFiles):
+
     result1 = make_MFQL_result(
         get_masterscan, getMfqlFiles, get_options, log_steps=True
     )
@@ -84,9 +86,8 @@ def test_mfql_lx_vs_lx1(
 
 # TODO: @Jacobo
 @pytest.mark.skip(reason="not validated yet")
-def test_mfql_lx_vs_lx2(
-    get_masterscan, get_lx2_masterscan, get_options, getMfqlFiles
-):
+def test_mfql_lx_vs_lx2(get_masterscan,get_lx2_masterscan, get_options, getMfqlFiles):
+
     result1 = make_MFQL_result(
         get_masterscan, getMfqlFiles, get_options, log_steps=True
     )
