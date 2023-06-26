@@ -17,9 +17,15 @@ default:
   tags:
     - ubuntu-docker
 
+cache:
+  paths:
+    - build/
+    - venv/
+
 stages:          # List of stages for jobs, and their order of execution
   - test
-  - deploy
+  - build
+  - release
 
 .template_job:
   image: python:3.7-slim-buster
@@ -27,45 +33,13 @@ stages:          # List of stages for jobs, and their order of execution
     - apt-get update -qy
     - apt-get -y install build-essential
     - apt-get -y install libgtk-3-dev
-    - apt-get -y install libwxgtk-webview3.0-gtk3-dev
+    - apt-get -y install libgstreamer-gl1.0-0 libwxgtk-webview3.0-gtk3-dev
     - apt-get -y install freeglut3-dev
     - apt-get -y install libgstreamer-plugins-base1.0-dev
+    - pip install --upgrade wheel==0.33.6
+    - pip install --upgrade setuptools==41.6.0
     - python3 -V
     - pip install -r requirements.txt
-
-# Windows image should be used in the Windows server based docker
-# Try this after the computer department starts the service
-.windows_template_job:
-  #  image: mcr.microsoft.com/windows-cssc/python3.7windows:ltsc2019
-  tags:
-    - win11
-  before_script:
-    - echo $env:Path
-    - dir C:\
-    - python -V
-    - pip install -r requirements.txt
-
-# Window build
-#build-job:       # This job runs in the build stage, which runs first.
-#  tags:
-#    - windows
-#  stage: build
-#  script:
-#    - echo $env:Path
-#    - $env:Path += ";C:\ProgramData\chocolatey;C:\py3\Scripts;C:\Windows\system32\config\systemprofile\.windows-build-tools\"
-#    - Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-#    - choco install python3 --version=$PYTHON_VERSION --yes --force --no-progress --pre -ia="'/D=C:\py3'"
-#    - dir C:\Python310\Scripts\
-#    - dir C:\py3
-#    - refreshenv
-#    - python3 --version
-#    - systeminfo /fo csv | ConvertFrom-Csv | select OS* | Format-List
-#    - echo $env:Path
-#    - Set-Variable -Name "time" -Value (date -Format "%H:%m")
-#    - echo ${time}
-#    - echo "started by ${GITLAB_USER_NAME}"
-#    - python ./src/LipidXplorer.py
-
 
 test-job:   # This job runs in the test stage.
   extends: [ '.template_job' ]
@@ -90,10 +64,13 @@ lint-job:
       - pylint
 
 pages:
-  stage: deploy
+  stage: test
   image: alpine:latest
   script:
     - echo
+  needs:
+    - job: lint-job
+      artifacts: true
   artifacts:
     paths:
       - pylint
@@ -101,20 +78,62 @@ pages:
     refs:
       - dev
 
-#deploy-job:      # This job runs in the deploy stage.
-#  extends: [ '.windows_template_job' ]
-#  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
-#  script:
-#    - echo "Deploying application..."
-#    - echo $env:Path
-#    - python3 --version
-#    - systeminfo /fo csv | ConvertFrom-Csv | select OS* | Format-List
-#    - echo $env:Path
-#    - Set-Variable -Name "time" -Value (date -Format "%H:%m")
-#    - echo ${time}
-#    - echo "started by ${GITLAB_USER_NAME}"
-#    - pyinstaller src/LipidXplorer.spec
-#    - echo "Application successfully deployed."
+
+# Windows image should be used in the Windows server based docker later
+.windows_template_job:
+  #  image: mcr.microsoft.com/windows-cssc/python3.7windows:ltsc2019
+  tags:
+    - win11
+  before_script:
+    - echo $env:Path
+    - $env:Path += ";C:\ProgramData\chocoportable;C:\Python37\Scripts"
+    - echo $env:Path
+
+
+build-job:      # This job runs in the build stage.
+  extends: [ '.windows_template_job' ]
+  stage: build  # It only runs when *both* jobs in the test stage complete successfully.
+  before_script:
+    - echo $CI_JOB_ID
+  script:
+    - $env:Path += ";C:\ProgramData\chocoportable;C:\Python37\Scripts"
+    - echo "Deploying application..."
+    - echo $env:Path
+    - systeminfo /fo csv | ConvertFrom-Csv | select OS* | Format-List
+    - echo $env:Path
+    - Set-Variable -Name "time" -Value (date -Format "%H:%m")
+    - echo ${time}
+    - echo "started by ${GITLAB_USER_NAME}"
+    - ./run.ps1
+    - pyinstaller src/LipidXplorer.spec
+    - dir
+    - echo "Application successfully built."
+  artifacts:
+    paths:
+      - dist.zip
+  only:
+    - dev
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never                                  # Do not run this job when a tag is created manually
+    - if: $CI_COMMIT_BRANCH == 'dev'  # Run this job when commits are pushed or merged to 'dev' branch
+  script:
+    - echo 'running release_job'
+  needs:
+    - job: build-job
+      artifacts: true
+  release:
+    name: 'Release Executables $CI_COMMIT_SHORT_SHA'
+    description: 'Created by pipeline $CI_PIPELINE_IID'
+    tag_name: '$CI_COMMIT_TAG'
+    assets:
+      links:
+        - name: 'Windows binaries zipped'
+          url: 'https://git.mpi-cbg.de/labShevchenko/lx2/-/jobs/artifacts/dev/raw/dist.zip?job=build-job'
 
 #branch-pipeline-job:
 #  rules:
