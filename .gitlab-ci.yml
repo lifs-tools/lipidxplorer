@@ -44,6 +44,10 @@ stages:          # List of stages for jobs, and their order of execution
 test-job:   # This job runs in the test stage.
   extends: [ '.template_job' ]
   stage: test    # It only starts when the job in the build stage completes successfully.
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never                                  # Do not run this job when a tag is created manually
+    - if: $CI_COMMIT_BRANCH == 'dev'  # Run this job when commits are pushed or merged to 'dev' branch
   script:
     - echo "Running unit tests..."
     - python3 -m pytest tests
@@ -51,6 +55,10 @@ test-job:   # This job runs in the test stage.
 lint-job:
   stage: test
   image: python:3.7-slim-buster
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never                                  # Do not run this job when a tag is created manually
+    - if: $CI_COMMIT_BRANCH == 'dev'  # Run this job when commits are pushed or merged to 'dev' branch
   before_script:
     - pip install pylint pylint-exit anybadge
   script:
@@ -66,6 +74,10 @@ lint-job:
 pages:
   stage: test
   image: alpine:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never                                  # Do not run this job when a tag is created manually
+    - if: $CI_COMMIT_BRANCH == 'dev'  # Run this job when commits are pushed or merged to 'dev' branch
   script:
     - echo
   needs:
@@ -74,9 +86,6 @@ pages:
   artifacts:
     paths:
       - pylint
-  only:
-    refs:
-      - dev
 
 
 # Windows image should be used in the Windows server based docker later
