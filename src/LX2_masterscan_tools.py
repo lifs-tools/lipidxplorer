@@ -14,8 +14,6 @@ log = logging.getLogger(Path(__file__).stem)
 from ms_deisotope import MSFileLoader
 from lx.spectraContainer import MasterScan, SurveyEntry, MSMSEntry
 
-from LX1_masterscan import make_lx_masterscan
-
 
 def spectra_2_df_single(mzml, options):
     time_range = options["timerange"]
@@ -495,6 +493,8 @@ def main():
         "MScalibration": [680.4802],
         "MSMScalibration": None,
     }
+    from LX1_masterscan import make_lx_masterscan
+
     scan = make_lx_masterscan(options, lx_version=2)
     if False:
         import pickle
