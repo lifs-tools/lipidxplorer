@@ -827,12 +827,17 @@ def mkSurveyLinear(
     
     if kwargs.get("make_intermediate_output", False):
         # datafreame before collapese
-        sc.saveSC('lx1_masterscan_aligned_spectra.pkl')
+        from pathlib import Path
+        from lx.spectraTools import saveSC
+        destination = Path(sc.options['importDir']) / Path("lx1_masterscan_aligned_spectra.pkl")
+        saveSC(sc, destination)
 
     if collapse:
         sc.listSurveyEntry = collape_join_adjecent_clusters(sc.listSurveyEntry)
         if kwargs.get("make_intermediate_output", False):
-            sc.saveSC('lx1_masterscan_collapsed_spectra.pkl')
+            destination = Path(sc.options['importDir']) / Path("lx1_masterscan_collapsed_spectra.pkl")
+            saveSC(sc, destination)
+
 
 
 

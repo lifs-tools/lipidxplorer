@@ -1,11 +1,13 @@
 # Test Step 1: Check the master scan
 import pytest
 import pandas as pd
+from pathlib import Path
 from lx.spectraImport import doImport, lpdxImportDEF_new
 from lx.spectraTools import loadSC
 from x_masterscan import compareMasterScans
 
 from utils import masterscan_2_df
+from tools.sc2df import scan2df
 
 from utils import (
     expected_ms_path,
@@ -14,6 +16,7 @@ from utils import (
     proy_path,
     read_options,
 )
+
 from LX1_masterscan import make_lx_masterscan
 
 
@@ -54,16 +57,52 @@ def test_make_lx1_masterscan_partials():
     )  # original lx1
 
     # lx1_spectra_peak_groups.pkl contains peak contains clustering info for each specta
-    reference = pd.read_pickle()
 
+    refpath = Path(options['importDir']) / Path("lx1_spectra_peak_groups_ref.pkl")
+    partial = Path(options['importDir']) / Path("lx1_spectra_peak_groups.pkl")
+    lx1_spectra_peak_groups_ref = pd.read_pickle(refpath)
+    lx1_spectra_peak_groups = pd.read_pickle(partial)
+    assert lx1_spectra_peak_groups_ref.equals(lx1_spectra_peak_groups ) # NOTE use df.compare to find what is different between the two
+    partial.unlink() # deletes the file
 
     # lx1_spectra_peak_averaged contains the averaged peak for each spectra
+    refpath = Path(options['importDir']) / Path("lx1_spectra_peak_averaged_ref.pkl")
+    partial = Path(options['importDir']) / Path("lx1_spectra_peak_averaged.pkl")
+    lx1_spectra_peak_averaged_ref = pd.read_pickle(refpath)
+    lx1_spectra_peak_averaged = pd.read_pickle(partial)
+    assert lx1_spectra_peak_averaged_ref.equals(lx1_spectra_peak_averaged ) # NOTE use df.compare to find what is different between the two
+    partial.unlink() # deletes the file
 
     # lx1_spectra_peak_recalibrated after recalibration
+    refpath = Path(options['importDir']) / Path("lx1_spectra_peak_recalibrated_ref.pkl")
+    partial = Path(options['importDir']) / Path("lx1_spectra_peak_recalibrated.pkl")
+    if partial.is_file(): #optional
+        lx1_spectra_peak_recalibrated_ref = pd.read_pickle(refpath)
+        lx1_spectra_peak_recalibrated = pd.read_pickle(partial)
+        assert lx1_spectra_peak_recalibrated_ref.equals(lx1_spectra_peak_recalibrated ) # NOTE use df.compare to find what is different between the two
+        partial.unlink() # deletes the file
 
     # convert lx1_masterscan_aligned_spectra using scan2df
+    refpath = Path(options['importDir']) / Path("lx1_masterscan_aligned_spectra_ref.pkl")
+    partial = Path(options['importDir']) / Path("lx1_masterscan_aligned_spectra.pkl")
+    lx1_masterscan_aligned_spectra_ref = pd.read_pickle(refpath)
+    lx1_masterscan_aligned_spectra = scan2df(partial) #masterscan_2_df(partial) is more messy
+    assert lx1_masterscan_aligned_spectra_ref.equals(lx1_masterscan_aligned_spectra)
+    partial.unlink()
 
-    expected = loadSC(expected_ms_path)
-    expected.listSurveyEntry = expected.listSurveyEntry[:100]
-    masterscan.listSurveyEntry = masterscan.listSurveyEntry[:100]
-    assert compareMasterScans(masterscan, expected)
+
+
+    # lx1_masterscan_collapsed_spectra if exists
+    refpath = Path(options['importDir']) / Path("lx1_masterscan_collapsed_spectra_ref.pkl")
+    partial = Path(options['importDir']) / Path("lx1_masterscan_collapsed_spectra.pkl")
+    if partial.is_file(): #optional
+        lx1_masterscan_collapsed_spectra_ref = pd.read_pickle(refpath)
+        lx1_masterscan_collapsed_spectra = scan2df(partial)
+        assert lx1_masterscan_collapsed_spectra_ref.equals(lx1_masterscan_collapsed_spectra)
+        partial.unlink()
+
+
+
+
+
+

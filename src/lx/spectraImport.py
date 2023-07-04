@@ -573,9 +573,11 @@ def doImport(
 
     # intermediate output
     if kwargs.get("make_intermediate_output", False):
+        import pandas as pd
+        from pathlib import Path
         df = pd.concat(peaks_df_list)
 
-        df.to_pickle("lx1_spectra_peak_groups.pkl")
+        df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_groups.pkl"))
 
         lpm = (
             (scan_name, pm.precurmass, pm.intensity)
@@ -584,7 +586,7 @@ def doImport(
         )
 
         lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
-        lpm_df.to_pickle("lx1_spectra_peak_averaged.pkl")
+        lpm_df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_averaged.pkl"))
 
     if (not scan.options.isEmpty("precursorMassShift")) and scan.options[
         "precursorMassShift"
@@ -613,7 +615,7 @@ def doImport(
         )
 
         lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
-        lpm_df.to_pickle("lx1_spectra_peak_recalibrated.pkl")
+        lpm_df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_recalibrated.pkl")
 
     scan.listSamples.sort()
 
