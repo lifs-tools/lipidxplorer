@@ -1,9 +1,8 @@
-# Test Step 1: Check the master scan
 import pytest
 import pandas as pd
 from pathlib import Path
 
-from tools.sc2df import scan2df
+from src.tools.sc2df import scan2df
 
 from utils import (
     make_masterscan,
@@ -14,6 +13,7 @@ from utils import (
 
 ROOT_SMALL_TEST = r"tests/resources/small_test/"
 EXPECTED_OUTPUT_PATH = r"tests/resources/small_test/small_test-out.csv"
+
 
 def test_make_lx1_masterscan_partials():
     """this tests lx1 it has intermediate results
@@ -119,9 +119,3 @@ def test_make_lx1_masterscan_partials():
             lx1_masterscan_collapsed_spectra
         )
         partial.unlink()
-
-
-
-
-
-
