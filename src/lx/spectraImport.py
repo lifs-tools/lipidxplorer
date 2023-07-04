@@ -668,15 +668,7 @@ def doImport(
         )
 
     if kwargs.get("make_intermediate_output", False):
-
-        lpm = (
-            (scan_name, pm.precurmass, pm.intensity)
-            for scan_name, item in scan.dictSamples.items()
-            for pm in item.listPrecurmass
-        )
-
-        lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
-        lpm_df.to_pickle("lx1_spectra_peak_recalibrated.pkl")
+        pass # generate in mkSurveyLinear method
 
     ### aling the fragment spectra ###
 
