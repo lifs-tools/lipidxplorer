@@ -25,9 +25,3 @@ def scan2df(sc_filepath):
     df = pd.DataFrame(listSurveyEntry2dicts(scan.listSurveyEntry))
 
     return df
-
-
-# Usage example
-pickle_file = r"c:\Users\mirandaa\Downloads\LX1 Dump-Out\LX1 Dump-Out\Trim.sc"
-df = scan2df(pickle_file)
-print(df)
