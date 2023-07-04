@@ -370,6 +370,7 @@ def mkSurveyLinear(
     checkoccupation=True,
     bin_res=False,
     collapse=False,
+    **kwargs
 ):
     """Align the MS spectra."""
 
@@ -823,8 +824,16 @@ def mkSurveyLinear(
                 )
 
         del listMSSpec
+    
+    if kwargs.get("make_intermediate_output", False):
+        # datafreame before collapese
+        sc.saveSC('lx1_masterscan_aligned_spectra.pkl')
+
     if collapse:
         sc.listSurveyEntry = collape_join_adjecent_clusters(sc.listSurveyEntry)
+        if kwargs.get("make_intermediate_output", False):
+            sc.saveSC('lx1_masterscan_collapsed_spectra.pkl')
+
 
 
 def mkSurveyHierarchical(

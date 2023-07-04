@@ -575,7 +575,7 @@ def doImport(
     if kwargs.get("make_intermediate_output", False):
         df = pd.concat(peaks_df_list)
 
-        df.to_pickle("lx1_bins_v1.pkl")
+        df.to_pickle("lx1_spectra_peak_groups.pkl")
 
         lpm = (
             (scan_name, pm.precurmass, pm.intensity)
@@ -584,7 +584,7 @@ def doImport(
         )
 
         lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
-        lpm_df.to_pickle("lx1_before_shift_or_recalibrate.pkl")
+        lpm_df.to_pickle("lx1_spectra_peak_averaged.pkl")
 
     if (not scan.options.isEmpty("precursorMassShift")) and scan.options[
         "precursorMassShift"
@@ -603,6 +603,17 @@ def doImport(
             scan.shiftPrecursorsInRawFilterLine(
                 scan.options["precursorMassShiftOrbi"]
             )
+
+    if kwargs.get("make_intermediate_output", False):
+
+        lpm = (
+            (scan_name, pm.precurmass, pm.intensity)
+            for scan_name, item in scan.dictSamples.items()
+            for pm in item.listPrecurmass
+        )
+
+        lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
+        lpm_df.to_pickle("lx1_spectra_peak_recalibrated.pkl")
 
     scan.listSamples.sort()
 
@@ -651,7 +662,19 @@ def doImport(
             minocc=scan.options["MSminOccupation"],
             bin_res=scan.options["alignmentMethodMS"] == "calctol",
             collapse=scan.options["alignmentMethodMS"] == "calctol",
+            make_intermediate_output = True
         )
+
+    if kwargs.get("make_intermediate_output", False):
+
+        lpm = (
+            (scan_name, pm.precurmass, pm.intensity)
+            for scan_name, item in scan.dictSamples.items()
+            for pm in item.listPrecurmass
+        )
+
+        lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
+        lpm_df.to_pickle("lx1_spectra_peak_recalibrated.pkl")
 
     ### aling the fragment spectra ###
 
