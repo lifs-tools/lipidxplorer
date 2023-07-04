@@ -884,6 +884,7 @@ def mkMSMSEntriesLinear_new(
     relative=None,
     bin_res=False,
     collapse=False,
+    **kwargs
 ):
     ################################################################
     ###	merge MS/MS experiments if there are more than one for a ###
@@ -892,6 +893,7 @@ def mkMSMSEntriesLinear_new(
 
     secondStep = True
     numLoops = 3
+    
 
     msmsThreshold = scan.options["MSMSthreshold"]
     if bin_res:
@@ -974,6 +976,9 @@ def mkMSMSEntriesLinear_new(
                 res_by_fullbin=scan.options["alignmentMethodMSMS"]
                 == "calctol",
             )
+
+            if kwargs.get("make_intermediate_output", False):
+                pass
 
             # listClusters = r_linearAlignment(
             #     list(dictSpecEntry.keys()),

@@ -569,7 +569,6 @@ def doImport(
             elif nb_msms_peaks[-1] == 0:
                 print(f" File {i[0]} contains 0 MS2 peaks after alignment")
 
-    import pandas as pd
 
     # intermediate output
     if kwargs.get("make_intermediate_output", False):
@@ -664,7 +663,7 @@ def doImport(
             minocc=scan.options["MSminOccupation"],
             bin_res=scan.options["alignmentMethodMS"] == "calctol",
             collapse=scan.options["alignmentMethodMS"] == "calctol",
-            make_intermediate_output = True
+            **kwargs
         )
 
     if kwargs.get("make_intermediate_output", False):
@@ -693,6 +692,7 @@ def doImport(
                 isPIS=options["pisSpectra"],
                 bin_res=options["alignmentMethodMSMS"] == "calctol",
                 collapse=scan.options["alignmentMethodMSMS"] == "calctol",
+                **kwargs
             )
 
     # blanks = potential_blanks(scan.listSurveyEntry, 25) # be careguk not to confiuse blanks with internal standards
