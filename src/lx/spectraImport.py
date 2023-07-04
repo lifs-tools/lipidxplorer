@@ -615,7 +615,7 @@ def doImport(
         )
 
         lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
-        lpm_df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_recalibrated.pkl")
+        lpm_df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_recalibrated.pkl"))
 
     scan.listSamples.sort()
 
