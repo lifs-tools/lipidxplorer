@@ -2619,7 +2619,7 @@ class TypeTolerance:
 
 # all functions below are for the use withing a query
 def func(float):
-    return float**2
+    return float ** 2
 
 
 def isEven(float):

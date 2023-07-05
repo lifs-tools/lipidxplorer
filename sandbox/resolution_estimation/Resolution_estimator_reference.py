@@ -468,7 +468,7 @@ import numpy as np
 
 
 def func(x, a, b, c):
-    return a * (x**-b) + c  # this does not work a*np.exp(-b*x)+c
+    return a * (x ** -b) + c  # this does not work a*np.exp(-b*x)+c
 
 
 x = sel_df.m

@@ -3590,12 +3590,7 @@ intensity."""
                             # this is normal gray: (230, 224, 218, 255)
                             if not self.dict_button_save[
                                 key
-                            ].GetBackgroundColour() == (
-                                250,
-                                80,
-                                80,
-                                215,
-                            ):
+                            ].GetBackgroundColour() == (250, 80, 80, 215,):
                                 self.dict_button_save[key].SetBackgroundColour(
                                     (250, 80, 80, 215)
                                 )
@@ -3864,10 +3859,7 @@ intensity."""
                                     strCentroid = ""
                                 strStartWiff = (
                                     'mzWiff -FPC1 %s --mzXML "%s"'
-                                    % (
-                                        strCentroid,
-                                        os.path.join(root, f),
-                                    )
+                                    % (strCentroid, os.path.join(root, f),)
                                 )  # s, wiffOut)
 
                             print(strStartWiff)
@@ -5044,7 +5036,7 @@ intensity."""
             )
 
             def make_save_mastersscan(options):
-                masterscan = LX1_masterscan.make_lx1_masterscan(options)
+                masterscan = LX1_masterscan.make_lx_masterscan(options)
                 idp = Path(options["importDir"])
                 # filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
                 filename = options["masterScanRun"]
@@ -6453,12 +6445,7 @@ intensity."""
                 )
                 str += (
                     "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n"
-                    % (
-                        Mtx[0][3],
-                        Mtx[1][2],
-                        Mtx[2][1],
-                        Mtx[3][0],
-                    )
+                    % (Mtx[0][3], Mtx[1][2], Mtx[2][1], Mtx[3][0],)
                 )
                 str += (
                     "     F0N4: %.4f, F1N3: %.4f, F2N2: %.4f, F3N1: %.4f, F4N0: %.4f\n"
@@ -6499,12 +6486,7 @@ intensity."""
                 )
                 str += (
                     "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n"
-                    % (
-                        Mtx[0][3],
-                        Mtx[1][2],
-                        Mtx[2][1],
-                        Mtx[3][0],
-                    )
+                    % (Mtx[0][3], Mtx[1][2], Mtx[2][1], Mtx[3][0],)
                 )
                 str += (
                     "     F0N4: %.4f, F1N3: %.4f, F2N2: %.4f, F3N1: %.4f, F4N0: %.4f\n"

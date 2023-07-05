@@ -569,13 +569,14 @@ def doImport(
             elif nb_msms_peaks[-1] == 0:
                 print(f" File {i[0]} contains 0 MS2 peaks after alignment")
 
-    import pandas as pd
 
     # intermediate output
     if kwargs.get("make_intermediate_output", False):
+        import pandas as pd
+        from pathlib import Path
         df = pd.concat(peaks_df_list)
 
-        df.to_pickle("lx1_bins_v1.pkl")
+        df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_groups.pkl"))
 
         lpm = (
             (scan_name, pm.precurmass, pm.intensity)
@@ -584,7 +585,7 @@ def doImport(
         )
 
         lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
-        lpm_df.to_pickle("lx1_before_shift_or_recalibrate.pkl")
+        lpm_df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_averaged.pkl"))
 
     if (not scan.options.isEmpty("precursorMassShift")) and scan.options[
         "precursorMassShift"
@@ -603,6 +604,17 @@ def doImport(
             scan.shiftPrecursorsInRawFilterLine(
                 scan.options["precursorMassShiftOrbi"]
             )
+
+    if kwargs.get("make_intermediate_output", False):
+
+        lpm = (
+            (scan_name, pm.precurmass, pm.intensity)
+            for scan_name, item in scan.dictSamples.items()
+            for pm in item.listPrecurmass
+        )
+
+        lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
+        lpm_df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_recalibrated.pkl"))
 
     scan.listSamples.sort()
 
@@ -651,7 +663,11 @@ def doImport(
             minocc=scan.options["MSminOccupation"],
             bin_res=scan.options["alignmentMethodMS"] == "calctol",
             collapse=scan.options["alignmentMethodMS"] == "calctol",
+            **kwargs
         )
+
+    if kwargs.get("make_intermediate_output", False):
+        pass # generate in mkSurveyLinear method
 
     ### aling the fragment spectra ###
 
@@ -676,6 +692,7 @@ def doImport(
                 isPIS=options["pisSpectra"],
                 bin_res=options["alignmentMethodMSMS"] == "calctol",
                 collapse=scan.options["alignmentMethodMSMS"] == "calctol",
+                **kwargs
             )
 
     # blanks = potential_blanks(scan.listSurveyEntry, 25) # be careguk not to confiuse blanks with internal standards

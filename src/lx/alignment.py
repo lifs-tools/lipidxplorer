@@ -370,6 +370,7 @@ def mkSurveyLinear(
     checkoccupation=True,
     bin_res=False,
     collapse=False,
+    **kwargs
 ):
     """Align the MS spectra."""
 
@@ -823,8 +824,21 @@ def mkSurveyLinear(
                 )
 
         del listMSSpec
+    
+    if kwargs.get("make_intermediate_output", False):
+        # datafreame before collapese
+        from pathlib import Path
+        from lx.spectraTools import saveSC
+        destination = Path(sc.options['importDir']) / Path("lx1_masterscan_aligned_spectra.pkl")
+        saveSC(sc, destination)
+
     if collapse:
         sc.listSurveyEntry = collape_join_adjecent_clusters(sc.listSurveyEntry)
+        if kwargs.get("make_intermediate_output", False):
+            destination = Path(sc.options['importDir']) / Path("lx1_masterscan_collapsed_spectra.pkl")
+            saveSC(sc, destination)
+
+
 
 
 def mkSurveyHierarchical(
@@ -870,6 +884,7 @@ def mkMSMSEntriesLinear_new(
     relative=None,
     bin_res=False,
     collapse=False,
+    **kwargs
 ):
     ################################################################
     ###	merge MS/MS experiments if there are more than one for a ###
@@ -878,6 +893,7 @@ def mkMSMSEntriesLinear_new(
 
     secondStep = True
     numLoops = 3
+    
 
     msmsThreshold = scan.options["MSMSthreshold"]
     if bin_res:
@@ -960,6 +976,9 @@ def mkMSMSEntriesLinear_new(
                 res_by_fullbin=scan.options["alignmentMethodMSMS"]
                 == "calctol",
             )
+
+            if kwargs.get("make_intermediate_output", False):
+                pass
 
             # listClusters = r_linearAlignment(
             #     list(dictSpecEntry.keys()),

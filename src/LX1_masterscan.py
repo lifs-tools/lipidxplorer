@@ -14,7 +14,7 @@ logging.basicConfig(
 )
 log = logging.getLogger(Path(__file__).stem)
 
-from LX2_masterscan import (
+from LX2_masterscan_tools import (
     ms2entry_factory,
     se_factory,
     spectra_2_df,
@@ -139,14 +139,17 @@ def compare_grouping(mzml, options):
     return peaks
 
 
-def make_lx1_masterscan(options) -> MasterScan:
-    # get spectra
-    options["lx2_polarity"] = None  # to select scans by polaority
-    options[
-        "lx2_drop_fuzzy"
-    ] = None  # to drop the first few MS1 scans that dont have at least 10% of the average intensity
-    options["lx2_include_text"] = None  # all scans should include this text
-    options["lx2_exclude_text"] = None  # all scans should exlude this text
+def make_lx_masterscan(options, lx_version=0) -> MasterScan:
+    if lx_version == 2:
+        # get spectra
+        options["lx2_polarity"] = None  # to select scans by polaority
+        options[
+            "lx2_drop_fuzzy"
+        ] = None  # to drop the first few MS1 scans that dont have at least 10% of the average intensity
+        options[
+            "lx2_include_text"
+        ] = None  # all scans should include this text
+        options["lx2_exclude_text"] = None  # all scans should exlude this text
 
     spectra_dfs = spectra_2_df(
         options
@@ -156,7 +159,7 @@ def make_lx1_masterscan(options) -> MasterScan:
     # suggested_selection_window = suggest_selection_window(spectra_dfs[0])
 
     # agg ms1 per spectra
-    use_lx2 = options._data.get("MSresolution", "") == ""
+    use_lx2 = options._data.get("MSresolution", "") == "" or lx_version == 2
 
     ms1_dfs = {}
     for (
@@ -1079,6 +1082,6 @@ if __name__ == "__main__":
     with open("optoins.pkl", "rb") as f:
         options = pickle.load(f)
 
-    masterscan = make_lx1_masterscan(options)
+    masterscan = make_lx_masterscan(options)
     with open("tmp_lx1_and_lx2.sc", "wb") as f:
         pickle.dump(masterscan, f)

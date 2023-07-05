@@ -466,6 +466,7 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                     val.content["sample"],
                     val.mass,
                     val.content["intensity"],
+                    0
                 )
                 for idx, cl in enumerate(listClusters)
                 for val in cl.values()
@@ -479,6 +480,7 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                     2: "sample",
                     3: "mass",
                     4: "intensity",
+                    5: "precursor",
                 },
                 inplace=True,
             )

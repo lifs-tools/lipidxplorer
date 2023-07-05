@@ -912,10 +912,8 @@ class ThermoRawfile(object):
     def GetNumberOfSourceFragmentationMassRangesFromScanNum(self, scanNumber):
         """This function gets the number of source fragmentation mass ranges in the scan."""
         result = c_long()
-        error = (
-            self.source.GetNumberOfSourceFragmentationMassRangesFromScanNum(
-                c_long(scanNumber), byref(result)
-            )
+        error = self.source.GetNumberOfSourceFragmentationMassRangesFromScanNum(
+            c_long(scanNumber), byref(result)
         )
         if error:
             raise IOError(
