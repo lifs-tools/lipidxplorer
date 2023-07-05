@@ -151,7 +151,7 @@ def magnitude(a):
 
     sum = 0
     for coord in a:
-        sum += coord**2
+        sum += coord ** 2
     return sqrt(sum)
 
 

@@ -13,3 +13,4 @@ dist.zip
 tmp*
 .coverage
 ~*
+src/lx/mfql/parsetab.py

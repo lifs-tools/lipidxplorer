@@ -3,13 +3,11 @@ from pathlib import Path
 from utils import (
     read_options,
     make_MFQL_result,
-    makeResultsString,
+    make_masterscan,
     compareResults,
     compareMasterScans,
 )
-from LX1_masterscan import make_lx1_masterscan
-from LX2_masterscan import make_lx2_masterscan
-import pickle
+from LX1_masterscan import make_lx_masterscan
 
 
 @pytest.fixture
@@ -21,36 +19,27 @@ def get_options():
 
 
 @pytest.fixture
-def get_no_res_options():
-    options = read_options(
-        r"tests/resources/ms2_strained/project_data/PRM_import.lxp"
-    )
+def get_masterscan(get_options):
+    # import pickle
+    # with open(r"tests/resources/ms2_strained/reference/masterscan_1.pkl", "rb") as f:
+    #     reference = pickle.load(f)
+    return make_masterscan(get_options, lx_version=1)
+
+
+@pytest.fixture
+def get_lx1_refactored_masterscan(get_options):
+    return make_lx_masterscan(get_options, lx_version=1)
+
+
+@pytest.fixture
+def get_lx2_masterscan(get_options):
+    options = get_options  # just to validate that that info is not being used
     options["MSresolution"] = ""
     options["MSMSresolution"] = ""
     options["MSresolutionDelta"] = ""
     options["MSMSresolutionDelta"] = ""
     options["lx2_MSresolution"] = True
-    return options
-
-
-@pytest.fixture
-def get_masterscan(get_options):
-    return make_lx1_masterscan(get_options)
-
-
-@pytest.fixture
-def get_lx2_masterscan(get_options):
-    return make_lx2_masterscan(get_options)
-
-
-@pytest.fixture
-def get_no_res_masterscan(get_no_res_options):
-    return make_lx1_masterscan(get_no_res_options)
-
-
-@pytest.fixture
-def get_no_res_lx2_masterscan(get_no_res_options):
-    return make_lx2_masterscan(get_no_res_options)
+    return make_lx_masterscan(options, lx_version=2)
 
 
 @pytest.fixture
@@ -61,55 +50,52 @@ def getMfqlFiles():
 
 
 # TODO: @Jacobo
-@pytest.mark.skip(reason="AssertionError")
-def test_masterscan_manual(get_options, get_masterscan, get_lx2_masterscan):
-    assert get_options["MSresolution"]
-    masterscan = get_masterscan
-    lx2masterscan = get_lx2_masterscan
+@pytest.mark.skip(reason="not validated yet")
+def test_masterscan_lx_vs_lx1(get_masterscan, get_lx1_refactored_masterscan):
     # with open(r"tests/resources/ms2_strained/reference/masterscan_1.pkl", "rb") as f:
     #     reference = pickle.load(f)
-    assert compareMasterScans(masterscan, lx2masterscan)
+    assert compareMasterScans(get_masterscan, get_lx1_refactored_masterscan)
 
 
 # TODO: @Jacobo
-@pytest.mark.skip(
-    reason="Please handle LX1_masterscan.py:388 no averaging, not enough scans"
-)
-def test_masterescan_automatic(
-    get_no_res_options, get_no_res_masterscan, get_no_res_lx2_masterscan
+@pytest.mark.skip(reason="not validated yet")
+def test_masterescan_lx_vs_lx2(get_masterscan, get_lx2_masterscan):
+
+    assert compareMasterScans(get_masterscan, get_lx2_masterscan)
+
+
+# TODO: @Jacobo
+@pytest.mark.skip(reason="not validated yet")
+def test_mfql_lx_vs_lx1(
+    get_masterscan, get_lx1_refactored_masterscan, get_options, getMfqlFiles
 ):
-    assert not get_no_res_options._data["MSresolution"]
-    masterscan = get_no_res_masterscan
-    lx2masterscan = get_no_res_lx2_masterscan
-    # with open(r"tests/resources/ms2_strained/reference/masterscan_2.pkl", "rb") as f:
-    #     reference = pickle.load(f)
-    assert compareMasterScans(masterscan, lx2masterscan)
 
-
-# TODO: @Jacobo
-@pytest.mark.skip(reason="ValueError: too many values to unpack")
-def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
-    with open(
-        r"tests/resources/ms2_strained/reference/result_1.pkl", "rb"
-    ) as f:
-        reference = pickle.load(f)
-    result = make_MFQL_result(
+    result1 = make_MFQL_result(
         get_masterscan, getMfqlFiles, get_options, log_steps=True
     )
-    assert compareResults(result, reference)
+
+    result2 = make_MFQL_result(
+        get_lx1_refactored_masterscan,
+        getMfqlFiles,
+        get_options,
+        log_steps=True,
+    )
+
+    assert compareResults(result1, result2)
 
 
 # TODO: @Jacobo
-@pytest.mark.skip(reason="ValueError: too many values to unpack")
-def test_mfql_automatic(
-    get_no_res_masterscan, get_no_res_options, getMfqlFiles
+@pytest.mark.skip(reason="not validated yet")
+def test_mfql_lx_vs_lx2(
+    get_masterscan, get_lx2_masterscan, get_options, getMfqlFiles
 ):
-    with open(
-        r"tests/resources/ms2_strained/reference/result_2.pkl", "rb"
-    ) as f:
-        reference = pickle.load(f)
-    result = make_MFQL_result(
-        get_no_res_masterscan, getMfqlFiles, get_no_res_options, log_steps=True
+
+    result1 = make_MFQL_result(
+        get_masterscan, getMfqlFiles, get_options, log_steps=True
     )
-    # to see results print(makeResultsString(result, get_options))
-    assert compareResults(result, reference)
+
+    result2 = make_MFQL_result(
+        get_lx2_masterscan, getMfqlFiles, get_options, log_steps=True
+    )
+
+    assert compareResults(result1, result2)

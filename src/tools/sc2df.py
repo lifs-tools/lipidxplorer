@@ -18,16 +18,10 @@ def listSurveyEntry2dicts(listSurveyEntry):
 
 def scan2df(sc_filepath):
     # Read the pickle file
-    with open(pickle_file, "rb") as f:
+    with open(sc_filepath, "rb") as f:
         scan = pickle.load(f)
 
     # Create a DataFrame from the list
     df = pd.DataFrame(listSurveyEntry2dicts(scan.listSurveyEntry))
 
     return df
-
-
-# Usage example
-pickle_file = r"c:\Users\mirandaa\Downloads\LX1 Dump-Out\LX1 Dump-Out\Trim.sc"
-df = scan2df(pickle_file)
-print(df)
