@@ -46,7 +46,7 @@ def test_make_lx1_masterscan_partials():
     masterscan = make_masterscan(
         options, make_intermediate_output=True
     )  # original lx1
-
+########################
     # lx1_spectra_peak_groups.pkl contains peak contains clustering info for each specta
 
     refpath = Path(options["importDir"]) / Path(
@@ -59,7 +59,7 @@ def test_make_lx1_masterscan_partials():
         lx1_spectra_peak_groups
     )  # NOTE use df.compare to find what is different between the two
     partial.unlink()  # deletes the file
-
+###########################
     # lx1_spectra_peak_averaged contains the averaged peak for each spectra
     refpath = Path(options["importDir"]) / Path(
         "lx1_spectra_peak_averaged_ref.pkl"
@@ -73,7 +73,7 @@ def test_make_lx1_masterscan_partials():
         lx1_spectra_peak_averaged
     )  # NOTE use df.compare to find what is different between the two
     partial.unlink()  # deletes the file
-
+############################
     # lx1_spectra_peak_recalibrated after recalibration
     refpath = Path(options["importDir"]) / Path(
         "lx1_spectra_peak_recalibrated_ref.pkl"
@@ -88,8 +88,8 @@ def test_make_lx1_masterscan_partials():
             lx1_spectra_peak_recalibrated
         )  # NOTE use df.compare to find what is different between the two
         partial.unlink()  # deletes the file
-
-    # convert lx1_masterscan_aligned_spectra using scan2df
+############################
+    # lx1_masterscan_aligned_spectra after multi spectra alignment
     refpath = Path(options["importDir"]) / Path(
         "lx1_masterscan_aligned_spectra_ref.pkl"
     )
@@ -104,8 +104,8 @@ def test_make_lx1_masterscan_partials():
         lx1_masterscan_aligned_spectra
     )
     partial.unlink()
-
-    # lx1_masterscan_collapsed_spectra if exists
+###########################
+    # lx1_masterscan_collapsed_spectra mpotential missalignment correction
     refpath = Path(options["importDir"]) / Path(
         "lx1_masterscan_collapsed_spectra_ref.pkl"
     )
@@ -119,3 +119,10 @@ def test_make_lx1_masterscan_partials():
             lx1_masterscan_collapsed_spectra
         )
         partial.unlink()
+
+
+###################
+    # start ms2
+    # ms2 peaks are read in from each spectra but not grouped
+
+    
