@@ -463,10 +463,10 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                 (
                     specName,
                     idx,
-                    val.content["sample"],
+                    float(val.content["sample"]),
                     val.mass,
                     val.content["intensity"],
-                    0
+                    0.0
                 )
                 for idx, cl in enumerate(listClusters)
                 for val in cl.values()
@@ -477,13 +477,17 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                 columns={
                     0: "specName",
                     1: "cluster",
-                    2: "sample",
+                    2: "sample_or_retention_time",
                     3: "mass",
                     4: "intensity",
                     5: "precursor",
                 },
                 inplace=True,
             )
+            df["specName"] = df["specName"].astype('category')
+            df["cluster"] = df["cluster"].astype('category')
+            df["sample_or_retention_time"] = df["sample_or_retention_time"].astype('category')
+            df["precursor"] = df["precursor"].astype('category')
             peaks_df_list.append(df)
         # free memory
         del listClusters
@@ -527,6 +531,42 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
                         lpdxSample.listMsms[-1].entries.append(
                             (mz, it, it_rel, res, bl, ns, cg)
                         )
+        
+        if (
+            kwargs.get("peaks_df_list", None) is not None
+        ):
+            peaks = (
+                        (
+                            specName,
+                            -1,
+                            ms2.retentionTime,
+                            entry[0],
+                            entry[1],
+                            ms2.precurmass
+                        )
+            for ms2 in lpdxSample.listMsms 
+            for entry in ms2.entries)
+
+            df_ms2 = pd.DataFrame(peaks)
+            df_ms2.rename(
+                columns={
+                    0: "specName",
+                    1: "cluster",
+                    2: "sample_or_retention_time",
+                    3: "mass",
+                    4: "intensity",
+                    5: "precursor",
+                },
+                inplace=True,
+            )
+            df_ms2["specName"] = df_ms2["specName"].astype('category')
+            df_ms2["cluster"] = df_ms2["cluster"].astype('category')
+            df_ms2["sample_or_retention_time"] = df_ms2["sample_or_retention_time"].astype('category')
+            df_ms2["precursor"] = df_ms2["precursor"].astype('category')
+            peaks_df_list.append(df_ms2) # the last entry
+
+
+                    
 
     # if there was no MS/MS, take the survey m/z from the precursor masses
     if lpdxSample.listPrecurmass == []:
