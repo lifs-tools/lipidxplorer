@@ -48,15 +48,17 @@ def test_make_lx1_masterscan_partials():
     )  # original lx1
 ########################
     # lx1_spectra_peak_groups.pkl contains peak contains clustering info for each specta
+    # and ms2 data (not clustered)
 
     refpath = Path(options["importDir"]) / Path(
         "lx1_spectra_peak_groups_ref.pkl"
     )
     partial = Path(options["importDir"]) / Path("lx1_spectra_peak_groups.pkl")
-    lx1_spectra_peak_groups_ref = pd.read_pickle(refpath)
-    lx1_spectra_peak_groups = pd.read_pickle(partial)
-    assert lx1_spectra_peak_groups_ref.equals(
-        lx1_spectra_peak_groups
+    lx1_spectra_peak_groups_and_ms2_ref = pd.read_pickle(refpath)
+    lx1_spectra_peak_groups_and_ms2 = pd.read_pickle(partial)
+
+    assert lx1_spectra_peak_groups_and_ms2_ref.equals(
+        lx1_spectra_peak_groups_and_ms2
     )  # NOTE use df.compare to find what is different between the two
     partial.unlink()  # deletes the file
 ###########################
@@ -124,5 +126,68 @@ def test_make_lx1_masterscan_partials():
 ###################
     # start ms2
     # ms2 peaks are read in from each spectra but not grouped
+    # see lx1_spectra_peak_groups file 
+####################
+    # grouping of ms2 spectra "lx1_ms2_groups.pkl"
+    refpath = Path(options["importDir"]) / Path(
+        "lx1_ms2_groups_ref.pkl"
+    )
+    partial = Path(options["importDir"]) / Path(
+        "lx1_ms2_groups.pkl"
+    )
+    if partial.is_file():  # optional
+        lx1_ms2_groups_ref= pd.read_pickle(refpath)
+        lx1_ms2_groups = pd.read_pickle(partial)
+        assert lx1_ms2_groups_ref.equals(
+            lx1_ms2_groups
+        )
+        partial.unlink()
 
-    
+##################### lx1_ms2_averages
+    refpath = Path(options["importDir"]) / Path(
+        "lx1_ms2_averages_ref.pkl"
+    )
+    partial = Path(options["importDir"]) / Path(
+        "lx1_ms2_averages.pkl"
+    )
+    if partial.is_file():  # optional
+        make_lx1_ms2_averages_ref = pd.read_pickle(refpath)
+        make_lx1_ms2_averages = pd.read_pickle(partial)
+        assert make_lx1_ms2_averages_ref.equals(
+            make_lx1_ms2_averages
+        )
+        partial.unlink()
+
+
+#################### lx1_ms2_averages_collapse
+    refpath = Path(options["importDir"]) / Path(
+        "lx1_ms2_averages_collapse_ref.pkl"
+    )
+    partial = Path(options["importDir"]) / Path(
+        "lx1_ms2_averages_collapse.pkl"
+    )
+    if partial.is_file():  # optional
+        make_lx1_ms2_averages_collapse_ref = pd.read_pickle(refpath)
+        make_lx1_ms2_averages_collapse = pd.read_pickle(partial)
+        assert make_lx1_ms2_averages_collapse_ref.equals(
+            make_lx1_ms2_averages_collapse
+        )
+        partial.unlink()
+
+################## lx1_ms2_to_ms1
+    refpath = Path(options["importDir"]) / Path(
+        "lx1_ms2_to_ms1_ref.pkl"
+    )
+    partial = Path(options["importDir"]) / Path(
+        "lx1_ms2_to_ms1.pkl"
+    )
+    if partial.is_file():  # optional
+        make_lx1_ms2_to_ms1_ref = pd.read_pickle(refpath)
+        make_lx1_ms2_to_ms1 = pd.read_pickle(partial)
+        assert make_lx1_ms2_to_ms1_ref.equals(
+            make_lx1_ms2_to_ms1
+        )
+        partial.unlink()
+
+
+
