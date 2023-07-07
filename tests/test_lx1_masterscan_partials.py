@@ -143,7 +143,7 @@ def test_make_lx1_masterscan_partials():
         )
         partial.unlink()
 
-##################### lx1_ms2_averages
+##################### lx1_ms2_averages NOTE: these might be collapse d
     refpath = Path(options["importDir"]) / Path(
         "lx1_ms2_averages_ref.pkl"
     )
@@ -159,20 +159,6 @@ def test_make_lx1_masterscan_partials():
         partial.unlink()
 
 
-#################### lx1_ms2_averages_collapse
-    refpath = Path(options["importDir"]) / Path(
-        "lx1_ms2_averages_collapse_ref.pkl"
-    )
-    partial = Path(options["importDir"]) / Path(
-        "lx1_ms2_averages_collapse.pkl"
-    )
-    if partial.is_file():  # optional
-        make_lx1_ms2_averages_collapse_ref = pd.read_pickle(refpath)
-        make_lx1_ms2_averages_collapse = pd.read_pickle(partial)
-        assert make_lx1_ms2_averages_collapse_ref.equals(
-            make_lx1_ms2_averages_collapse
-        )
-        partial.unlink()
 
 ################## lx1_ms2_to_ms1
     refpath = Path(options["importDir"]) / Path(
