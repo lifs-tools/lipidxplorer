@@ -861,20 +861,102 @@ def mkSurveyHierarchical(
     cl = hclusterHeuristic(sc.listSamples, sc.dictSamples, resolution)
 
 
-def r_mkMSMSEntriesLinear_new(
-    scan,
-    listPolarity,
-    numLoops=None,
-    isPIS=False,
-    relative=None,
-    bin_res=False,
-    collapse=False,
-):
-    # do for each polarity
-    # scan.options["MSMSresolution"]
-    # scan.options["selectionWindow"]
-    pass
+def make_lx1_ms2_to_ms1(msmsLists, scan):
+    import pandas as pd 
+    from pathlib import Path
+    def peaks_generator():
+        for precursor_str, surveyEntries in msmsLists.items():
+            for se in surveyEntries[0].se:
+                ms1_mass = se.precurmass
+                ms2_precursor = precursor_str
+                yield (ms1_mass, ms2_precursor)
+    df = pd.DataFrame(peaks_generator())
+    df.rename(
+        columns={
+            0: "ms1_mass",
+            1: "ms2_precursor",
+            },
+        inplace=True,)
+    destination = Path(scan.options["importDir"]) / Path("lx1_ms2_to_ms1.pkl")
+    df.to_pickle(destination)
 
+
+def make_lx1_ms2_averages(msmsLists, scan):
+    import pandas as pd
+    from  pathlib import Path
+    def peaks_generator():
+        for precursor_str, cluster in msmsLists.items():
+            precurmass = precursor_str
+            for avgpeak in cluster:
+                avgmass = avgpeak.mass
+                for peak in avgpeak.peaks:
+                    mass = peak[0]
+                    for spectra, inty in peak[1].items():
+                        peak = (
+                            spectra,
+                            avgmass,
+                            None,
+                            mass,
+                            inty,
+                            precurmass
+                        )
+                        yield peak
+    df = pd.DataFrame(peaks_generator())
+    df.rename(
+        columns={
+            0: "specName",
+            1: "cluster",
+            2: "retention_times_str",
+            3: "mass",
+            4: "intensity",
+            5: "precursor",
+        },
+        inplace=True,
+        )
+    df["specName"] = df["specName"].astype('category')
+    df["cluster"] = df["cluster"].astype('category')
+    df["retention_times_str"] = df["retention_times_str"].astype('category')
+    df["precursor"] = df["precursor"].astype('category')
+    destination = Path(scan.options["importDir"]) / Path("lx1_ms2_averages.pkl")
+    df.to_pickle(destination)
+
+def make_lx1_ms2_groups(listClusters, scan):
+    import pandas as pd
+    from pathlib import Path
+    def peaks_generator():
+        for cluster_no, cluster in enumerate(listClusters):
+            for filename, spectra in cluster.items():
+                cluster = cluster_no #spectra.mass #NOTE listClusters[-1] does not have same mass in cluster
+                precurmass = spectra.mass # spectra.content['MSMS'].precurmass
+                scans_str = ' '.join(map(str,spectra.content['MSMS'].retentionTime))
+                for mass, inty in spectra.content['MSMS'].entries:
+                    peak = (
+                        filename,
+                        cluster,
+                        scans_str,
+                        mass,
+                        inty,
+                        precurmass
+                    )
+                    yield peak
+    df = pd.DataFrame(peaks_generator())
+    df.rename(
+        columns={
+            0: "specName",
+            1: "cluster",
+            2: "retention_times_str",
+            3: "mass",
+            4: "intensity",
+            5: "precursor",
+        },
+        inplace=True,
+        )
+    df["specName"] = df["specName"].astype('category')
+    df["cluster"] = df["cluster"].astype('category')
+    df["retention_times_str"] = df["retention_times_str"].astype('category')
+    df["precursor"] = df["precursor"].astype('category')
+    destination = Path(scan.options["importDir"]) / Path("lx1_ms2_groups.pkl")
+    df.to_pickle(destination)
 
 def mkMSMSEntriesLinear_new(
     scan,
@@ -978,7 +1060,8 @@ def mkMSMSEntriesLinear_new(
             )
 
             if kwargs.get("make_intermediate_output", False):
-                pass
+                make_lx1_ms2_groups(listClusters, scan)
+
 
             # listClusters = r_linearAlignment(
             #     list(dictSpecEntry.keys()),
@@ -1228,6 +1311,9 @@ def mkMSMSEntriesLinear_new(
 
             ###################################
             ### Start association algorithm ###
+
+            if kwargs.get("make_intermediate_output", False):
+                make_lx1_ms2_averages(msmsLists, scan)
             if msmsLists != {}:
                 print(
                     "Associate MSMSEntry objects to the according SurveyEntry objects (precursor masses)"
@@ -1393,12 +1479,15 @@ def mkMSMSEntriesLinear_new(
                                             " -> is no SurveyEntry",
                                         )
                                         exit(0)
-
+                
             else:
                 print("No MS/MS spectra present")
 
                 ### End association algorithm ###
                 ###################################
+            
+            if kwargs.get("make_intermediate_output", False):
+                make_lx1_ms2_to_ms1(msmsLists, scan)
 
     for i in scan.listSamples:
         if (
