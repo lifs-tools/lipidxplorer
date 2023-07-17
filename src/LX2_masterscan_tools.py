@@ -15,7 +15,8 @@ from ms_deisotope import MSFileLoader
 from lx.spectraContainer import MasterScan, SurveyEntry, MSMSEntry
 
 
-def spectra_2_df_single(mzml, options):
+
+def spectra_2_df_single(mzml, options, **kwargs):
     time_range = options["timerange"]
     ms1_mass_range = options["MSmassrange"]
     ms2_mass_range = options["MSMSmassrange"]
@@ -27,7 +28,7 @@ def spectra_2_df_single(mzml, options):
     exclude_text = options._data.get("lx2_exclude_text", None)
 
     spectra_df = path2df(
-        mzml, *time_range, *ms1_mass_range, *ms2_mass_range, polarity
+        mzml, *time_range, *ms1_mass_range, *ms2_mass_range, **kwargs
     )
     if drop_fuzzy:
         spectra_df = drop_fuzzy(spectra_df)
@@ -46,7 +47,7 @@ def spectra_2_df_single(mzml, options):
 
 
 def spectra_2_df(options):
-    mzmls = mz_ml_paths(options)
+    mzmls = get_mz_ml_paths(options)
     print(mzmls)
     return [spectra_2_df_single(mzml, options) for mzml in mzmls]
 
@@ -76,7 +77,7 @@ def drop_fuzzy(spectra_df):
     return spectra_df.loc[~spectra_df.scan_id.isin(to_drop)]
 
 
-def mz_ml_paths(options):
+def get_mz_ml_paths(options):
     p = Path(options["importDir"])
     mzmls = list(p.glob("*.[mM][zZ][mM][lL]"))
     if not mzmls:
@@ -181,6 +182,8 @@ def add_group_no_ms2_df(ms2_df, occupancy=1):
 
 def path2df(
     path,
+    only_ms1_scans = True,
+    only_ms2_scans = False,
     time_start=0,
     time_end=float("inf"),
     ms1_start=0,
@@ -193,31 +196,34 @@ def path2df(
     with MSFileLoader(str(path)) as r:
         r.get_scan_by_time(time_start / 60)
         r.start_from_scan(r.get_scan_by_time(time_start / 60).id)
+        _categorical_cols = ["stem","scan_id""filter_string", "precursor_id", "precursor_mz", "polarity"]
         for b in r:
             if not (time_start / 60 < b.precursor.scan_time < time_end / 60):
                 continue
             if polarity and b.precursor.polarity != polarity:
                 continue
-            a = b.precursor.arrays
-            df = pd.DataFrame(
-                {
-                    "mz": a.mz.astype("float32"),
-                    "inty": a.intensity.astype("float32"),
-                    "stem": path.stem,
-                    "scan_id": b.precursor.scan_id,
-                    "filter_string": b.precursor.annotations["filter string"]
-                    if b.precursor.annotations
-                    else b.precursor._data["filterLine"],
-                    "precursor_id": None,
-                    "precursor_mz": 0,
-                    "polarity": b.precursor.polarity,
-                }
-            )
-            df = df[df.mz.between(ms1_start, ms1_end) & df.inty > 0]
-            # df["scan_id"] = b.precursor.scan_id
-            # df["filter_string"] = b.precursor.annotations["filter string"]
-            # df["precursor_id"] = np.nan
-            dfs.append(df)
+            
+            if not only_ms2_scans:
+                a = b.precursor.arrays
+                df = pd.DataFrame(
+                    {
+                        "mz": a.mz.astype("float32"),
+                        "inty": a.intensity.astype("float32"),
+                        "stem": path.stem,
+                        "scan_id": b.precursor.scan_id,
+                        "filter_string": b.precursor.annotations["filter string"]
+                        if b.precursor.annotations
+                        else b.precursor._data["filterLine"],
+                        "precursor_id": None,
+                        "precursor_mz": 0,
+                        "polarity": b.precursor.polarity,
+                    }
+                )
+                df = df[df.mz.between(ms1_start, ms1_end) & df.inty > 0]
+                for col in _categorical_cols:
+                    df[col] = df[col].astype("category")
+                dfs.append(df)
+            if only_ms1_scans: continue
             for p in b.products:
                 if not (time_start / 60 < p.scan_time < time_end / 60):
                     continue
