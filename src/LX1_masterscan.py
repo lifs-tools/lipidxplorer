@@ -21,10 +21,11 @@ from LX2_masterscan_tools import (
     spectra_2_df_single,
 )
 from lx.spectraContainer import MasterScan
-
+import warnings
 
 def make_lx_spectra(mzml, options):
     # all peaks - time and mass range
+    warnings.warn("deprecated", DeprecationWarning)
     spectra_df = spectra_2_df_single(Path(mzml), options)
     ms1_peaks = spectra_df.loc[spectra_df.precursor_id.isna()]
     bins = make_lx1_bins(ms1_peaks, options)
@@ -380,7 +381,6 @@ def make_lx1_bins(ms1_peaks, options):
             ms1_peaks.groupby(bins2)["mz"].transform("mean"), options
         )
     )
-
     return bins3
 
 
