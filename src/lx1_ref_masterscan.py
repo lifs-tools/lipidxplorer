@@ -220,12 +220,15 @@ def find_reference_masses(df, tolerance, recalibration_masses):
     df_indices = np.searchsorted(df['mz'], recalibration_masses, side='left')
     matching_masses = df['mz'].iloc[df_indices].values
     differences = matching_masses - recalibration_masses.values
+    warnings.warn("tolerance is not used apropriately")
     mask = differences < tolerance
     return matching_masses[mask], differences[mask]
 
 def recalibrate(df, matching_masses, reference_distance):
     df['mz'] = df['mz'] - np.interp(df['mz'], matching_masses, reference_distance)
     return df
+
+
 
 
 
