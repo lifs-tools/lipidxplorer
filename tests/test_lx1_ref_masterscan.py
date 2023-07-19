@@ -82,7 +82,6 @@ def test_group_ms1_peaks(options):
 def test_recalibrate_ms1_peaks(options):
     df = pd.read_pickle(group_ms1_peaks_REF)
     tolerance = options["MSresolution"].tolerance
-    warnings.warn("tolerance is not used apropriately")
     calibration_masses = options["MScalibration"]
     matching_masses, reference_distance = find_reference_masses(df, tolerance, calibration_masses)
     df = recalibrate(df, matching_masses, reference_distance)

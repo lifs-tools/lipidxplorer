@@ -124,7 +124,7 @@ def bin_linear_alignment(masses, tolerance):
 
     for i, mass in enumerate(masses):
         if up_to is None:
-            # up_to = mass + tolerance.getTinDA(mass) this is how its done in some places, but reuslt are not identical to below
+            # NOTE up_to = mass + tolerance.getTinDA(mass) this is how its done in some places, but reuslt are not identical to below
             up_to = mass + mass / tolerance
         if mass <= up_to:
             result[i] = up_to
@@ -220,8 +220,7 @@ def find_reference_masses(df, tolerance, recalibration_masses):
     df_indices = np.searchsorted(df['mz'], recalibration_masses, side='left')
     matching_masses = df['mz'].iloc[df_indices].values
     differences = matching_masses - recalibration_masses.values
-    warnings.warn("tolerance is not used apropriately")
-    mask = differences < tolerance
+    mask = differences < (matching_masses / tolerance)
     return matching_masses[mask], differences[mask]
 
 def recalibrate(df, matching_masses, reference_distance):
