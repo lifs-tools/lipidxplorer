@@ -436,6 +436,7 @@ def agg_ms2_spectra_df(df, occupancy=0, calibration=None):
 
 
 def mass_inty_generator_ms1(ms1_df, occupancy=1):
+    warnings.warn("use lx1 ref masterscan instead", DeprecationWarning)
     add_group_no_ms1_df(ms1_df, occupancy=occupancy)
     for _, df in ms1_df.groupby(ms1_df.group_no):
         msmass = float(df.mz_mean.mean())
@@ -445,6 +446,7 @@ def mass_inty_generator_ms1(ms1_df, occupancy=1):
 
 
 def se_factory(msmass, dictIntensity, samples, polarity, massWindow=0):
+    warnings.warn("use lx1 ref masterscan instead", DeprecationWarning)
     holder = {s: 0 for s in samples}
     holder.update(dictIntensity)
     se = SurveyEntry(
