@@ -214,7 +214,28 @@ def filter_intensity(df, MSthreshold = 0):
 
 ###### recalibrate 
 
+def find_closest():
+    raise NotImplementedError("This function is not yet implemented.")
+    # ser1 = pd.Series(list(MS2_dict.keys()), name="ser1")
+    # ser1.sort_values(inplace=True)
+    # tol = 0.001
+
+    # precur_map_df = pd.merge_asof(
+    #     ser1,
+    #     ser2,
+    #     left_on="ser1",
+    #     right_on="ser2",
+    #     direction="nearest",
+    #     tolerance=tol,
+    # )
+
+    ######### vs
+    # df_indices = np.searchsorted(df['mz'], recalibration_masses, side='left')
+    # matching_masses = df['mz'].iloc[df_indices].values
+    return None
+
 def find_reference_masses(df, tolerance, recalibration_masses):
+    # TODO make find_closest function... see above
     recalibration_masses = pd.Series(recalibration_masses)
     recalibration_masses.sort_values(inplace=True)
     # Find the indices of the closest float values in the right DataFrame for each value in the left DataFrame
@@ -316,10 +337,79 @@ def add_massWindow(df):
     df["masswindow"] = result
     return df
 
+def filter_occupation(df, minOccupation):
+    # check occupation spectracontainer.py masterscan.chekoccupation
+    # occupation is the % of peak intensities abvove "thrsld: "
+    threshold_denominator = ms1_agg_peaks.stem.unique().shape[
+        0
+    ]  # same as len(res)
+    threshold = minOccupation
+    bin_peak_count = ms1_agg_peaks.groupby("bins")["inty"].transform("count")
+    tf_mask = (bin_peak_count / threshold_denominator) >= threshold
+    return tf_mask
+
+def add_aggregated_mass(df):
+    #NOTE not sure why this is done here, maybe its the way its done in lx1
+    df["mass"] = df.groupby("_group")["mz"].transform(
+        "mean"
+    )
+    return df
 
 
 
+#### build masterscan
+def df2listSurveyEntry(df):
+    listSurveyEntry = [
+        se_factory(msmass, dictIntensity, samples, polarity, massWindow)
+        for msmass, dictIntensity, polarity, massWindow in mass_inty_generator_ms1_agg(
+            df, polarity
+        )
+    ]
 
+    # TODO: need to optimised (most time spent)
+    return sorted(listSurveyEntry, key=lambda x: x.precurmass)
+
+
+def se_factory(msmass, dictIntensity, samples, polarity, massWindow=0):
+    holder = {s: 0 for s in samples}
+    holder.update(dictIntensity)
+    se = SurveyEntry(
+        msmass=msmass,
+        smpl=holder,
+        peaks=[],
+        charge=None,
+        polarity=polarity,
+        dictScans={
+            s: 1 for s in samples
+        },  # needed for the intensity threshold (thrshl / sqrt(nb. of scans))
+        msms=None,
+        dictBasePeakIntensity={s: 1 for s in samples},
+    )
+    se.massWindow = (
+        massWindow  # used for isotopic c orrection when no resolution is given
+    )
+    return se
+
+def mass_inty_generator_ms1(ms1_df, occupancy=1):
+    add_group_no_ms1_df(ms1_df, occupancy=occupancy)
+    for _, df in ms1_df.groupby(ms1_df.group_no):
+        msmass = float(df.mz_mean.mean())
+        dictIntensity = df.set_index("stem_first")["inty_mean"].to_dict()
+        polarity = df.polarity_first.to_list()[0]
+        yield msmass, dictIntensity, polarity
+
+def build_masterscan(options, listSurveyEntry, stems):
+    listSurveyEntry = list(sorted(listSurveyEntry, key=lambda x: x.precurmass))
+    scan = MasterScan(options)
+    scan.listSurveyEntry = listSurveyEntry
+    scan.sampleOccThr["MS"] = [
+        (0.0, [])
+    ]  # to avoid bug at def checkOccupation
+    scan.sampleOccThr["MSMS"] = [(0.0, [])]
+
+    # for printing we need
+    scan.listSamples = stems
+    return scan
 
 
 

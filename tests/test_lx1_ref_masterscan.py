@@ -127,12 +127,21 @@ def test_add_mass_window():
     df = add_massWindow(df)
     assert False
 
-def test_filter_occupation():
+def test_filter_occupation(options):
+    minOccupation = options["MSminOccupation"]
+    df = pd.read_pickle(align_ms1_scans_ref_REF)
+    mask = filter_occupation(df, minOccupation)
+    df = df[mask]
     assert False
 
-def test_alignment_mass():
+def test_aggregated_mass():
+    df = pd.read_pickle(align_ms1_scans_ref_REF)
+    df = add_aggregated_mass(df)
     assert False
 
+def test_build_masterscan():
+    build_masterscan(options, listSurveyEntry, samples)
+    assert False
 
 def test_tsim_detection():
     assert False
