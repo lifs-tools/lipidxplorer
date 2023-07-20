@@ -12,7 +12,9 @@ from lx1_ref_masterscan import (
     filter_repetition_rate,
     filter_intensity,
     find_reference_masses,
-    recalibrate
+    recalibrate,
+    align_spectra,
+    collapsae_spectra_groups
 )
 
 ROOT_PATH = r'tests\resources\small_test'
@@ -20,6 +22,7 @@ OPTIONS_PATH = ROOT_PATH + r"\small_test-project.lxp"
 SPECTRA_PATH = ROOT_PATH + r"\190321_Serum_Lipidextract_368723_01.mzML"
 ms1_peaks_REF = ROOT_PATH + r"\test_get_ms1_peaks_ref.pkl"
 group_ms1_peaks_REF = ROOT_PATH + r'\test_group_ms1_peaks_ref.pkl'
+align_ms1_scans_ref_REF = ROOT_PATH + r'\test_align_ms1_scans_ref.pkl'
 
 @pytest.fixture
 def options():
@@ -64,7 +67,8 @@ def test_get_ms1_peaks(settings):
 
 def test_group_ms1_peaks(options):
     df = pd.read_pickle(ms1_peaks_REF)
-    df = add_lx1_bins(df, options)
+    tolerance = options["MSresolution"].tolerance
+    df = add_lx1_bins(df, tolerance)
     df = merge_peaks_from_scan(df)
     assert df.shape == (65897, 14)
     df, lx_data = aggregate_groups(df)
@@ -88,11 +92,45 @@ def test_recalibrate_ms1_peaks(options):
     assert df
 
 
-def test_align_ms1_scans():
+def test_align_ms1_scans(options):
+    df1 = pd.read_pickle(group_ms1_peaks_REF)
+    # making a modified spectra
+    df2 = pd.read_pickle(group_ms1_peaks_REF)
+    df2 = df2.sample(frac=0.9, replace=True, random_state=1)
+    df2 = recalibrate(df2, [500.0,800.0], [0.001,-0.002])
+    df2['inty'] = df2['inty'] * 0.85
+
+    df1["stem"] = 'filename1'
+    df1["stem"] = df1["stem"].astype("category")
+
+    df2["stem"] = 'filename2'
+    df2["stem"] = df1["stem"].astype("category")
+
+    df = pd.concat([df1,df2])
+
+    tolerance = options["MSresolution"].tolerance
+    resolutionDelta = options["MSresolutionDelta"]
+
+    df = align_spectra(df, tolerance, resolutionDelta)
+    assert not df1.equals(df2)
+    df_ref = pd.read_pickle(align_ms1_scans_ref_REF)
+    assert df_ref.equals(df)
+
+
+def test_collapse_ms1_scans():
+    df = pd.read_pickle(align_ms1_scans_ref_REF)
+    df = collapsae_spectra_groups(df)
     assert False
 
+def test_add_mass_window():
+    df = pd.read_pickle(align_ms1_scans_ref_REF)
+    df = add_massWindow(df)
+    assert False
 
-def test_colapse_ms1_scans():
+def test_filter_occupation():
+    assert False
+
+def test_alignment_mass():
     assert False
 
 

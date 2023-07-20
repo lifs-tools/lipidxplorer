@@ -103,33 +103,34 @@ def spectra2df(
 
 ############## LX1 style grouping of ms1 scans
 
-def add_lx1_bins(df, options):
-    '''returns the reordered dataframe withadded group column '''
+def add_lx1_bins(df, tolerance, resolutionDelta = 0):
+    '''returns the reordered dataframe withadded group column'''
     df.sort_values("mz", inplace=True)
-    tolerance = options["MSresolution"].tolerance
     # binning is done 3 times in lx1, between each fadi filter is performed, we do it at the end intead
-    bins1 = bin_linear_alignment(df['mz'], tolerance)
-    bins2 = bin_linear_alignment(df.groupby(bins1)["mz"].transform("mean"), tolerance)
-    bins3 = bin_linear_alignment(df.groupby(bins2)["mz"].transform("mean"), tolerance)
+    bins1 = bin_linear_alignment(df['mz'], tolerance, resolutionDelta)
+    bins2 = bin_linear_alignment(df.groupby(bins1)["mz"].transform("mean"), tolerance, resolutionDelta)
+    bins3 = bin_linear_alignment(df.groupby(bins2)["mz"].transform("mean"), tolerance, resolutionDelta)
 
     df['_group'] = bins3
     return df 
 
-def bin_linear_alignment(masses, tolerance):
+def bin_linear_alignment(masses, tolerance, resolutionDelta = 0):
     '''groups the masses like in lx1'''
     assert masses.is_monotonic_increasing, "The 'masses' Series must be sorted in ascending order."
-    
+    minmass = masses.min()
+
     up_to = None
     result = np.empty(len(masses), dtype=float)
 
     for i, mass in enumerate(masses):
+        delta = (mass - minmass) * resolutionDelta
         if up_to is None:
             # NOTE up_to = mass + tolerance.getTinDA(mass) this is how its done in some places, but reuslt are not identical to below
-            up_to = mass + mass / tolerance
+            up_to = mass + mass / (tolerance + delta)
         if mass <= up_to:
             result[i] = up_to
         else:
-            up_to = mass + mass / tolerance
+            up_to = mass + mass / (tolerance + delta)
             result[i] = up_to
 
     return result
@@ -226,6 +227,96 @@ def find_reference_masses(df, tolerance, recalibration_masses):
 def recalibrate(df, matching_masses, reference_distance):
     df['mz'] = df['mz'] - np.interp(df['mz'], matching_masses, reference_distance)
     return df
+
+###### spectra alignment
+
+def align_spectra(df, tolerance, resolutionDelta):
+    assert "stem" in df, "The DataFramemust contain a column named 'stem'."
+    df.sort_values("mz", inplace=True)
+    df = add_lx1_bins(df, tolerance, resolutionDelta=resolutionDelta)
+    return df
+
+def collapsable_adjacent_groups(df, headers_column ,group_column, close_enogh_da=0.001):
+    '''tries to merge adjacent groups that might have been splip by the low tolerance, its a work arownd for bad results'''
+    #TODO make this more elegant if needed
+    cluster_column = group_column
+    accross_column = headers_column
+    df.sort_values("mz", ascending=False, inplace=True)
+    df[cluster_column] = df[cluster_column].factorize()[0]
+    df["_accross_column_f"] = df[accross_column].factorize()[0]
+    grouped = df.groupby(cluster_column)
+    grouped_stats = grouped.agg({"mz": ["max", "min", "std"]})
+    close_mz = grouped_stats[("mz", "min")] - grouped_stats[
+        ("mz", "max")
+    ].shift(-1) < grouped_stats[("mz", "std")] + grouped_stats[
+        ("mz", "std")
+    ].shift(
+        -1
+    )
+    close_enough_mz = (
+        grouped_stats[("mz", "min")] - grouped_stats[("mz", "max")].shift(-1)
+        < close_enogh_da
+    )
+
+    close_mz = close_mz | close_enough_mz
+    if not close_mz.any():
+        return None
+
+    close_mz_groups = close_mz[close_mz | close_mz.shift(1)].index.to_numpy()
+    close_sets = (
+        df.loc[df[cluster_column].isin(close_mz_groups)]
+        .groupby(cluster_column)["_accross_column_f"]
+        .apply(lambda s: set(s))
+    )
+
+    collapsable_map = {}
+    prev_set = set()
+    prev_idx = close_mz[close_mz].index[0]
+    base_idx = prev_idx
+    for idx, curr_set in close_sets.iteritems():
+        if (
+            close_mz[prev_idx]
+            and idx - prev_idx <= 1
+            and not curr_set.intersection(prev_set)
+        ):
+            collapsable_map[idx] = base_idx
+            prev_set.update(curr_set)
+        else:
+            prev_set = curr_set
+            base_idx = idx
+        prev_idx = idx
+    return collapsable_map
+
+def collapsae_spectra_groups(df):
+    collapsable_map = collapsable_adjacent_groups(df, 'stem' ,'_group')
+    df["_group"].replace(collapsable_map, inplace=True)
+    return df
+
+def add_massWindow(df):
+    '''masswindow is actually the tolerance by resolution delta, see :bin_linear_alignment,
+    it is not used but required to make the surveryentries in the masterscan 
+    '''
+    masses = df['mz']
+    minmass = masses.min()
+
+    up_to = None
+    result = np.empty(len(masses), dtype=float)
+
+    for i, mass in enumerate(masses):
+        delta = (mass - minmass) * resolutionDelta
+        if up_to is None:
+            # NOTE up_to = mass + tolerance.getTinDA(mass) this is how its done in some places, but reuslt are not identical to below
+            up_to = mass + mass / (tolerance + delta)
+        if mass <= up_to:
+            result[i] = up_to
+        else:
+            up_to = mass + mass / (tolerance + delta)
+            result[i] = up_to
+    
+    df["masswindow"] = result
+    return df
+
+
 
 
 
