@@ -1,8 +1,11 @@
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from collections import OrderedDict
 from ms_deisotope import MSFileLoader
 import logging, sys, warnings
+
+from lx.spectraContainer import MasterScan, SurveyEntry, MSMSEntry
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,7 +38,7 @@ def spectra2df(
     ms1_end=float("inf"),
     ms2_start=0,
     ms2_end=float("inf"),
-    polarity=None,
+    polarity=1,
 ):
     assert read_ms1_scans or read_ms2_scans, ' must read ms1 or ms2 scans'
     path = Path(path)
@@ -48,6 +51,7 @@ def spectra2df(
             if not (time_start / 60 < b.precursor.scan_time < time_end / 60):
                 continue
             if polarity and b.precursor.polarity != polarity:
+                warnings.warn(f'polarity {polarity} nof found in spectra {path}')
                 continue
             
             if read_ms1_scans:
@@ -104,7 +108,7 @@ def spectra2df(
 ############## LX1 style grouping of ms1 scans
 
 def add_lx1_bins(df, tolerance, resolutionDelta = 0):
-    '''returns the reordered dataframe withadded group column'''
+    '''returns the reordered dataframe with added _group column'''
     df.sort_values("mz", inplace=True)
     # binning is done 3 times in lx1, between each fadi filter is performed, we do it at the end intead
     bins1 = bin_linear_alignment(df['mz'], tolerance, resolutionDelta)
@@ -185,6 +189,7 @@ def aggregate_groups(df):
         columns={"_weigted_mass_mean": "mz", "_merged_inty_mean": "inty"},
         inplace=True,
     )
+    agg_df.reset_index(inplace = True)
     log.info('aggregated dataframe contains metadata in "lx_data" atribute... eg df.lx_data')
     lx_data = {}
     scan_count = df['scan_id'].unique().shape[0]
@@ -308,12 +313,12 @@ def collapsable_adjacent_groups(df, headers_column ,group_column, close_enogh_da
         prev_idx = idx
     return collapsable_map
 
-def collapsae_spectra_groups(df):
+def collapse_spectra_groups(df):
     collapsable_map = collapsable_adjacent_groups(df, 'stem' ,'_group')
     df["_group"].replace(collapsable_map, inplace=True)
     return df
 
-def add_massWindow(df):
+def add_massWindow(df, tolerance, resolutionDelta):
     '''masswindow is actually the tolerance by resolution delta, see :bin_linear_alignment,
     it is not used but required to make the surveryentries in the masterscan 
     '''
@@ -340,11 +345,11 @@ def add_massWindow(df):
 def filter_occupation(df, minOccupation):
     # check occupation spectracontainer.py masterscan.chekoccupation
     # occupation is the % of peak intensities abvove "thrsld: "
-    threshold_denominator = ms1_agg_peaks.stem.unique().shape[
+    threshold_denominator = df['stem'].unique().shape[
         0
     ]  # same as len(res)
     threshold = minOccupation
-    bin_peak_count = ms1_agg_peaks.groupby("bins")["inty"].transform("count")
+    bin_peak_count = df.groupby("_group")["inty"].transform("count")
     tf_mask = (bin_peak_count / threshold_denominator) >= threshold
     return tf_mask
 
@@ -358,7 +363,8 @@ def add_aggregated_mass(df):
 
 
 #### build masterscan
-def df2listSurveyEntry(df):
+def df2listSurveyEntry(df, polarity, samples):
+
     listSurveyEntry = [
         se_factory(msmass, dictIntensity, samples, polarity, massWindow)
         for msmass, dictIntensity, polarity, massWindow in mass_inty_generator_ms1_agg(
@@ -368,6 +374,16 @@ def df2listSurveyEntry(df):
 
     # TODO: need to optimised (most time spent)
     return sorted(listSurveyEntry, key=lambda x: x.precurmass)
+
+def mass_inty_generator_ms1_agg(df, polarity):
+    for mass, gdf in df.groupby("_group"):
+        # dictIntensity = gdf.set_index("stem")["lx1_bad_inty"].to_dict()
+        dictIntensity = gdf.set_index("stem")["inty"].to_dict()
+        # dictIntensity.update({f"{k}_lx2": v for k, v in dictIntensity_lx2.items()})
+        dictIntensity = OrderedDict(sorted(dictIntensity.items()))
+        massWindow = float(gdf['masswindow'].mean())
+        mass = float(gdf.mz.mean())
+        yield (mass, dictIntensity, polarity, massWindow)
 
 
 def se_factory(msmass, dictIntensity, samples, polarity, massWindow=0):
