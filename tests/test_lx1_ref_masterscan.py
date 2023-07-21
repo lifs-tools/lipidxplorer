@@ -3,7 +3,8 @@ import pandas as pd
 import warnings
 
 from utils import read_options
-from lx1_ref_masterscan import (
+
+from lx1_refactored import (
     spectra2df_settings,
     spectra2df,
     add_lx1_bins,
@@ -19,7 +20,7 @@ from lx1_ref_masterscan import (
     filter_occupation,
     add_aggregated_mass,
     build_masterscan,
-    df2listSurveyEntry
+    df2listSurveyEntry,
 )
 
 ROOT_PATH = r"tests\resources\small_test"
@@ -160,9 +161,9 @@ def test_aggregated_mass():
 
 def test_build_masterscan(options):
     df = pd.read_pickle(align_ms1_scans_ref_REF)
-    df['masswindow'] = -1 # # NOTE use :add_massWindow instead
+    df["masswindow"] = -1  # # NOTE use :add_massWindow instead
     polarity = 1
-    samples = df['stem'].unique().tolist()
+    samples = df["stem"].unique().tolist()
     listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
     scan = build_masterscan(options, listSurveyEntry, samples)
     assert scan
