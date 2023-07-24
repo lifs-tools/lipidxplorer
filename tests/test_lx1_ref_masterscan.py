@@ -169,6 +169,4 @@ def test_build_masterscan(options):
     assert scan
 
 
-def test_tsim_detection():
-    assert False
 

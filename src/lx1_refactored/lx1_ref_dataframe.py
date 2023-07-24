@@ -16,6 +16,9 @@ logging.basicConfig(
 )
 log = logging.getLogger(Path(__file__).stem)
 
+def filter_line_parser(filterlines):
+    return None
+
 def spectra2df_settings(options):
     res = {}
     time_range = options["timerange"]
@@ -33,6 +36,7 @@ def spectra2df(
     path,
     read_ms1_scans = True,
     read_ms2_scans = True,
+    read_sim_scans = False,
     time_start=0,
     time_end=float("inf"),
     ms1_start=0,
@@ -41,7 +45,7 @@ def spectra2df(
     ms2_end=float("inf"),
     polarity=1,
 ):
-    assert read_ms1_scans or read_ms2_scans, ' must read ms1 or ms2 scans'
+    assert read_ms1_scans or read_ms2_scans or read_sim_scans , ' must read ms1 or ms2 scans os SIM scans'
     path = Path(path)
     dfs = []
     with MSFileLoader(str(path)) as r:
@@ -52,7 +56,7 @@ def spectra2df(
             if not (time_start / 60 < b.precursor.scan_time < time_end / 60):
                 continue
             if polarity and b.precursor.polarity != polarity:
-                warnings.warn(f'polarity {polarity} nof found in spectra {path}')
+                warnings.warn(f'polarity {polarity} not found in spectra {path}')
                 continue
             
             if read_ms1_scans:
