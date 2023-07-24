@@ -1,27 +1,14 @@
-import pytest
 import pandas as pd
-import warnings
+import pytest
+from lx1_refactored import (add_aggregated_mass, add_lx1_bins, add_massWindow,
+                            aggregate_groups, align_spectra, build_masterscan,
+                            collapse_spectra_groups, df2listSurveyEntry,
+                            filter_intensity, filter_occupation,
+                            filter_repetition_rate, find_reference_masses,
+                            merge_peaks_from_scan, recalibrate, spectra2df,
+                            spectra2df_settings)
 
 from utils import read_options
-
-from lx1_refactored import (
-    spectra2df_settings,
-    spectra2df,
-    add_lx1_bins,
-    merge_peaks_from_scan,
-    aggregate_groups,
-    filter_repetition_rate,
-    filter_intensity,
-    find_reference_masses,
-    recalibrate,
-    align_spectra,
-    collapse_spectra_groups,
-    add_massWindow,
-    filter_occupation,
-    add_aggregated_mass,
-    build_masterscan,
-    df2listSurveyEntry,
-)
 
 ROOT_PATH = r"tests\resources\small_test"
 OPTIONS_PATH = ROOT_PATH + r"\small_test-project.lxp"
