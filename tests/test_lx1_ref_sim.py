@@ -11,12 +11,14 @@ def test_read_sim_spectra():
         'read_sim_scans' : True,
         'read_ms1_scans' : False,
         'read_ms2_scans' : False,
+        'polarity': -1,
         "time_start": 33.0,
         "time_end": 1080.0,
         "ms1_start": 360.0,
         "ms1_end": 1000.0,
         "ms2_start": 150.0,
         "ms2_end": 1000.0,
+
     }
     df = spectra2df(SIM_PATH, **settings)
     assert False

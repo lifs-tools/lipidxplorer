@@ -32,6 +32,28 @@ def spectra2df_settings(options):
     res['ms2_end'] = float("inf") if not ms2_mass_range else ms2_mass_range[1]
     return  res
 
+def scan2Df(scan, path, mz_start, mz_end):
+    _categorical_cols = ["stem","scan_id","filter_string", "precursor_id", "precursor_mz", "polarity"]
+    a = scan.arrays
+    df = pd.DataFrame(
+        {
+            "mz": a.mz.astype("float32"),
+            "inty": a.intensity.astype("float32"),
+            "stem": path.stem,
+            "scan_id": scan.scan_id,
+            "filter_string": scan.annotations["filter string"]
+            if scan.annotations
+            else scan._data["filterLine"],
+            "precursor_id": scan.precursor_information.precursor.scan_id if scan.precursor_information else np.NaN ,
+            "precursor_mz": scan.precursor_information.mz if scan.precursor_information else 0,
+            "polarity": scan.polarity,
+        }
+    )
+    df = df[df.mz.between(mz_start, mz_end) & df.inty > 0]
+    for col in _categorical_cols:
+        df[col] = df[col].astype("category")
+    return df
+
 def spectra2df(
     path,
     read_ms1_scans = True,
@@ -51,61 +73,37 @@ def spectra2df(
     with MSFileLoader(str(path)) as r:
         r.get_scan_by_time(time_start / 60)
         r.start_from_scan(r.get_scan_by_time(time_start / 60).id)
-        _categorical_cols = ["stem","scan_id","filter_string", "precursor_id", "precursor_mz", "polarity"]
+        
         for b in r:
             if not (time_start / 60 < b.precursor.scan_time < time_end / 60):
                 continue
-            if polarity and b.precursor.polarity != polarity:
+            if b.precursor.polarity != polarity:
                 warnings.warn(f'polarity {polarity} not found in spectra {path}')
                 continue
             
-            if read_ms1_scans:
-                a = b.precursor.arrays
-                df = pd.DataFrame(
-                    {
-                        "mz": a.mz.astype("float32"),
-                        "inty": a.intensity.astype("float32"),
-                        "stem": path.stem,
-                        "scan_id": b.precursor.scan_id,
-                        "filter_string": b.precursor.annotations["filter string"]
-                        if b.precursor.annotations
-                        else b.precursor._data["filterLine"],
-                        "precursor_id": np.NaN,
-                        "precursor_mz": 0,
-                        "polarity": b.precursor.polarity,
-                    }
-                )
-                df = df[df.mz.between(ms1_start, ms1_end) & df.inty > 0]
-                for col in _categorical_cols:
-                    df[col] = df[col].astype("category")
+            #check if its a sim scan
+            scan = b.precursor
+            filter_string =  scan.annotations["filter string"] if scan.annotations else scan._data["filterLine"]
+            isSim = ' sim ' in filter_string.lower()
+
+            if read_ms1_scans and not isSim: 
+                df = scan2Df(b.precursor, path, ms1_start, ms1_end)
+                dfs.append(df)
+            if read_sim_scans and isSim:   
+                df = scan2Df(b.precursor, path, ms1_start, ms1_end)
                 dfs.append(df)
             
             # read the ms2 scans
-            if not read_ms2_scans: continue
-            for p in b.products:
-                if not (time_start / 60 < p.scan_time < time_end / 60):
-                    continue
-                if not (ms1_start < p.precursor_information.mz < ms1_end):
-                    continue
-                a = p.arrays
-                df = pd.DataFrame(
-                    {
-                        "mz": a.mz.astype("float32"),
-                        "inty": a.intensity.astype("float32"),
-                        "stem": path.stem,
-                        "scan_id": p.scan_id,
-                        "filter_string": p.annotations["filter string"]
-                        if p.annotations
-                        else p._data["filterLine"],
-                        "precursor_id": b.precursor.scan_id,
-                        "precursor_mz": p.precursor_information.mz,
-                        "polarity": p.polarity,
-                    }
-                )
-                df = df[(df.mz.between(ms2_start, ms2_end)) & df.inty > 0]
-                for col in _categorical_cols:
-                    df[col] = df[col].astype("category")
-                dfs.append(df)
+            if read_ms2_scans: 
+                for p in b.products:
+                    if not (time_start / 60 < p.scan_time < time_end / 60):
+                        continue
+                    if not (ms1_start < p.precursor_information.mz < ms1_end):
+                        continue
+                    df = scan2Df(p, path, ms2_start, ms2_end)
+                    dfs.append(df)
+            
+
     df = pd.concat(dfs)
     log.info(f"spectra {path.stem}, size: {df.shape}")
     return df
