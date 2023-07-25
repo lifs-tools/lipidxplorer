@@ -1,7 +1,4 @@
-from .lx1_ref_masterscan import (
-    build_masterscan,
-    df2listSurveyEntry
-)
+from .lx1_ref_masterscan import build_masterscan, df2listSurveyEntry
 
 from .lx1_ref_dataframe import (
     spectra2df_settings,
@@ -18,5 +15,6 @@ from .lx1_ref_dataframe import (
     add_massWindow,
     filter_occupation,
     add_aggregated_mass,
-
+    parse_filter_string,
+    trim_and_join_scans
 )

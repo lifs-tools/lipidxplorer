@@ -16,24 +16,71 @@ logging.basicConfig(
 )
 log = logging.getLogger(Path(__file__).stem)
 
-def filter_line_parser(filterlines):
-    return None
+
+def parse_filter_string(df, trim_overlap = None):
+    pat = r"(.*)\[(\d+\.\d*)-(\d+\.\d*)\]"
+    filter_strings = pd.Series(df["filter_string"].unique())
+    filter_string_df = filter_strings.str.extract(pat)
+    filter_string_df.columns = ["_prefix", "_from_mz", "_to_mz"]
+    filter_string_df["_prefix"] = filter_string_df["_prefix"].astype("category")
+    filter_string_df["_from_mz"] = filter_string_df["_from_mz"].astype("float32")
+    filter_string_df["_to_mz"] = filter_string_df["_to_mz"].astype("float32")
+    filter_string_df["filter_string"] = filter_strings
+    filter_string_df["_is_lock"] = filter_string_df["_prefix"].str.contains("lock")
+
+    assert (filter_string_df["_from_mz"] < filter_string_df["_to_mz"]).all(), 'filterstring is not in oreder'
+    filter_string_df["_overlaps_next"]  = (filter_string_df["_from_mz"] <= filter_string_df["_from_mz"].shift(-1))  & (filter_string_df["_to_mz"] <= filter_string_df["_to_mz"].shift(-1))
+    
+    if trim_overlap is None:
+        filter_string_df["_trim_overlap"]  = (filter_string_df["_to_mz"] - filter_string_df["_from_mz"].shift(-1)) / 2
+    else:
+        filter_string_df["_trim_overlap"] = trim_overlap
+
+    return filter_string_df
+
+def trim_and_join_scans(df, filter_string_df, replace_filter_string = False):
+    merge = df.merge(filter_string_df, on= "filter_string")
+    mask = merge['mz'].between(merge['_from_mz'] + merge['_trim_overlap'], merge['_to_mz'] - merge['_trim_overlap'])
+    if replace_filter_string:
+        new_names = filter_string_replacements(filter_string_df)
+        df["filter_string"]  = df["filter_string"].replace(new_names)
+
+    return df[mask]
+
+def filter_string_replacements(filter_string_df):
+    filter_string_df['_group'] = (~filter_string_df["_overlaps_next"]).cumsum() + 1
+    filter_string_df['_group'] = filter_string_df['_group'].shift()
+    filter_string_df.at[0,'_group'] = 1 if filter_string_df.at[0,'_overlaps_next'] else 0
+    filter_string_df['_from_mz'] = filter_string_df.groupby('_group')['_from_mz'].transform('min')
+    filter_string_df['_to_mz'] = filter_string_df.groupby('_group')['_to_mz'].transform('max')
+    filter_string_df['new_filter_string'] = filter_string_df.apply(lambda row:f'{row["_prefix"]}[{row["_from_mz"]}-{row["_to_mz"]}]', axis =1)
+    new_names = filter_string_df.set_index("filter_string")['new_filter_string'].to_dict()
+    return new_names
+
 
 def spectra2df_settings(options):
     res = {}
     time_range = options["timerange"]
-    res['time_start'] = 0 if not time_range else time_range[0]
-    res['time_end'] = float("inf") if not time_range else time_range[1]
+    res["time_start"] = 0 if not time_range else time_range[0]
+    res["time_end"] = float("inf") if not time_range else time_range[1]
     ms1_mass_range = options["MSmassrange"]
-    res['ms1_start'] = 0 if not ms1_mass_range else ms1_mass_range[0]
-    res['ms1_end'] = float("inf") if not ms1_mass_range else ms1_mass_range[1]
+    res["ms1_start"] = 0 if not ms1_mass_range else ms1_mass_range[0]
+    res["ms1_end"] = float("inf") if not ms1_mass_range else ms1_mass_range[1]
     ms2_mass_range = options["MSMSmassrange"]
-    res['ms2_start'] = 0 if not ms2_mass_range else ms2_mass_range[0]
-    res['ms2_end'] = float("inf") if not ms2_mass_range else ms2_mass_range[1]
-    return  res
+    res["ms2_start"] = 0 if not ms2_mass_range else ms2_mass_range[0]
+    res["ms2_end"] = float("inf") if not ms2_mass_range else ms2_mass_range[1]
+    return res
+
 
 def scan2Df(scan, path, mz_start, mz_end):
-    _categorical_cols = ["stem","scan_id","filter_string", "precursor_id", "precursor_mz", "polarity"]
+    _categorical_cols = [
+        "stem",
+        "scan_id",
+        "filter_string",
+        "precursor_id",
+        "precursor_mz",
+        "polarity",
+    ]
     a = scan.arrays
     df = pd.DataFrame(
         {
@@ -44,8 +91,12 @@ def scan2Df(scan, path, mz_start, mz_end):
             "filter_string": scan.annotations["filter string"]
             if scan.annotations
             else scan._data["filterLine"],
-            "precursor_id": scan.precursor_information.precursor.scan_id if scan.precursor_information else np.NaN ,
-            "precursor_mz": scan.precursor_information.mz if scan.precursor_information else 0,
+            "precursor_id": scan.precursor_information.precursor.scan_id
+            if scan.precursor_information
+            else np.NaN,
+            "precursor_mz": scan.precursor_information.mz
+            if scan.precursor_information
+            else 0,
             "polarity": scan.polarity,
         }
     )
@@ -54,11 +105,12 @@ def scan2Df(scan, path, mz_start, mz_end):
         df[col] = df[col].astype("category")
     return df
 
+
 def spectra2df(
     path,
-    read_ms1_scans = True,
-    read_ms2_scans = True,
-    read_sim_scans = False,
+    read_ms1_scans=True,
+    read_ms2_scans=True,
+    read_sim_scans=False,
     time_start=0,
     time_end=float("inf"),
     ms1_start=0,
@@ -67,34 +119,42 @@ def spectra2df(
     ms2_end=float("inf"),
     polarity=1,
 ):
-    assert read_ms1_scans or read_ms2_scans or read_sim_scans , ' must read ms1 or ms2 scans os SIM scans'
+    assert (
+        read_ms1_scans or read_ms2_scans or read_sim_scans
+    ), " must read ms1 or ms2 scans os SIM scans"
     path = Path(path)
     dfs = []
     with MSFileLoader(str(path)) as r:
         r.get_scan_by_time(time_start / 60)
         r.start_from_scan(r.get_scan_by_time(time_start / 60).id)
-        
+
         for b in r:
             if not (time_start / 60 < b.precursor.scan_time < time_end / 60):
                 continue
             if b.precursor.polarity != polarity:
-                warnings.warn(f'polarity {polarity} not found in spectra {path}')
+                warnings.warn(
+                    f"polarity {polarity} not found in spectra {path}"
+                )
                 continue
-            
-            #check if its a sim scan
-            scan = b.precursor
-            filter_string =  scan.annotations["filter string"] if scan.annotations else scan._data["filterLine"]
-            isSim = ' sim ' in filter_string.lower()
 
-            if read_ms1_scans and not isSim: 
+            # check if its a sim scan
+            scan = b.precursor
+            filter_string = (
+                scan.annotations["filter string"]
+                if scan.annotations
+                else scan._data["filterLine"]
+            )
+            isSim = " sim " in filter_string.lower()
+
+            if read_ms1_scans and not isSim:
                 df = scan2Df(b.precursor, path, ms1_start, ms1_end)
                 dfs.append(df)
-            if read_sim_scans and isSim:   
+            if read_sim_scans and isSim:
                 df = scan2Df(b.precursor, path, ms1_start, ms1_end)
                 dfs.append(df)
-            
+
             # read the ms2 scans
-            if read_ms2_scans: 
+            if read_ms2_scans:
                 for p in b.products:
                     if not (time_start / 60 < p.scan_time < time_end / 60):
                         continue
@@ -102,28 +162,36 @@ def spectra2df(
                         continue
                     df = scan2Df(p, path, ms2_start, ms2_end)
                     dfs.append(df)
-            
 
     df = pd.concat(dfs)
     log.info(f"spectra {path.stem}, size: {df.shape}")
     return df
 
+
 ############## LX1 style grouping of ms1 scans
 
-def add_lx1_bins(df, tolerance, resolutionDelta = 0):
-    '''returns the reordered dataframe with added _group column'''
+
+def add_lx1_bins(df, tolerance, resolutionDelta=0):
+    """returns the reordered dataframe with added _group column"""
     df.sort_values("mz", inplace=True)
     # binning is done 3 times in lx1, between each fadi filter is performed, we do it at the end intead
-    bins1 = bin_linear_alignment(df['mz'], tolerance, resolutionDelta)
-    bins2 = bin_linear_alignment(df.groupby(bins1)["mz"].transform("mean"), tolerance, resolutionDelta)
-    bins3 = bin_linear_alignment(df.groupby(bins2)["mz"].transform("mean"), tolerance, resolutionDelta)
+    bins1 = bin_linear_alignment(df["mz"], tolerance, resolutionDelta)
+    bins2 = bin_linear_alignment(
+        df.groupby(bins1)["mz"].transform("mean"), tolerance, resolutionDelta
+    )
+    bins3 = bin_linear_alignment(
+        df.groupby(bins2)["mz"].transform("mean"), tolerance, resolutionDelta
+    )
 
-    df['_group'] = bins3
-    return df 
+    df["_group"] = bins3
+    return df
 
-def bin_linear_alignment(masses, tolerance, resolutionDelta = 0):
-    '''groups the masses like in lx1'''
-    assert masses.is_monotonic_increasing, "The 'masses' Series must be sorted in ascending order."
+
+def bin_linear_alignment(masses, tolerance, resolutionDelta=0):
+    """groups the masses like in lx1"""
+    assert (
+        masses.is_monotonic_increasing
+    ), "The 'masses' Series must be sorted in ascending order."
     minmass = masses.min()
 
     up_to = None
@@ -142,12 +210,15 @@ def bin_linear_alignment(masses, tolerance, resolutionDelta = 0):
 
     return result
 
-def merge_peaks_from_scan(df):
-    '''when a single scan has more than one peak in a group
-    use the average value, of the peaks'''
-    assert '_group' in df, "The DataFrame or Series must contain a column named 'group'."
 
-    # use weighted mass 
+def merge_peaks_from_scan(df):
+    """when a single scan has more than one peak in a group
+    use the average value, of the peaks"""
+    assert (
+        "_group" in df
+    ), "The DataFrame or Series must contain a column named 'group'."
+
+    # use weighted mass
     df["_inty_x_mass"] = df["mz"] * df["inty"]
 
     # merge mutiple peaks from single scan
@@ -162,11 +233,14 @@ def merge_peaks_from_scan(df):
     # TODO make a weighted intensity based on standard deviation... but not now
     # NOTE lx1 adds the intesities of close peaks... see alignmebt.py mk survey linear:643
     # NOTE LX! does a bad averagin if peaks see readspectra:add_sample:401
-    log.info('columns starting with _ "underscore" are pof processing and can be discarded')
+    log.info(
+        'columns starting with _ "underscore" are pof processing and can be discarded'
+    )
     return df
 
+
 def aggregate_groups(df):
-    '''get the averege value for each group'''
+    """get the averege value for each group"""
 
     # aggregate results
     agg_df = (
@@ -174,7 +248,7 @@ def aggregate_groups(df):
             df["_group_enumerate"] == 0
         ]  # use only the first of merged masses
         .assign(
-            _mass_intensity=lambda x: x['mz'] * x['_merged_inty']
+            _mass_intensity=lambda x: x["mz"] * x["_merged_inty"]
         )  # for the weighted average intensity
         .groupby("_group")
         .agg(
@@ -192,35 +266,43 @@ def aggregate_groups(df):
         columns={"_weigted_mass_mean": "mz", "_merged_inty_mean": "inty"},
         inplace=True,
     )
-    agg_df.reset_index(inplace = True)
-    log.info('aggregated dataframe contains metadata in "lx_data" atribute... eg df.lx_data')
+    agg_df.reset_index(inplace=True)
+    log.info(
+        'aggregated dataframe contains metadata in "lx_data" atribute... eg df.lx_data'
+    )
     lx_data = {}
-    scan_count = df['scan_id'].unique().shape[0]
-    lx_data['scan_count'] = scan_count
-    #NOTE lx1 intensity is wrong because it uses the total number of scans, instead of the numebr of scans with a peak
-    warnings.warn('incorrect calculation of intensity')
+    scan_count = df["scan_id"].unique().shape[0]
+    lx_data["scan_count"] = scan_count
+    # NOTE lx1 intensity is wrong because it uses the total number of scans, instead of the numebr of scans with a peak
+    warnings.warn("incorrect calculation of intensity")
     return agg_df, lx_data
 
+
 ##### filter the data
-def filter_repetition_rate(df, scan_count = None, MSfilter = 0):
-    '''returns a boolean list as in df'''
-    if scan_count is None: # use default
-        scan_count = df['_merged_mass_count'].max()
-        log.warning('scan_count was not provided , using the maximum or _merged_mass_count instead , this may not be correct')
+def filter_repetition_rate(df, scan_count=None, MSfilter=0):
+    """returns a boolean list as in df"""
+    if scan_count is None:  # use default
+        scan_count = df["_merged_mass_count"].max()
+        log.warning(
+            "scan_count was not provided , using the maximum or _merged_mass_count instead , this may not be correct"
+        )
 
     # apply fadi filters, in lx1 its done between each bin  process
     fadi_denominator = scan_count
     mask_repetition_rate_filter = (
-        df['_merged_mass_count'] / fadi_denominator >= MSfilter
+        df["_merged_mass_count"] / fadi_denominator >= MSfilter
     )
     return mask_repetition_rate_filter
-    
-def filter_intensity(df, MSthreshold = 0):
+
+
+def filter_intensity(df, MSthreshold=0):
     # NOTE intensity threshold is done in add_Sample... but lets do it here
-    mask_inty = df['inty'] > MSthreshold
+    mask_inty = df["inty"] > MSthreshold
     return mask_inty
 
-###### recalibrate 
+
+###### recalibrate
+
 
 def find_closest():
     raise NotImplementedError("This function is not yet implemented.")
@@ -242,22 +324,28 @@ def find_closest():
     # matching_masses = df['mz'].iloc[df_indices].values
     return None
 
+
 def find_reference_masses(df, tolerance, recalibration_masses):
     # TODO make find_closest function... see above
     recalibration_masses = pd.Series(recalibration_masses)
     recalibration_masses.sort_values(inplace=True)
     # Find the indices of the closest float values in the right DataFrame for each value in the left DataFrame
-    df_indices = np.searchsorted(df['mz'], recalibration_masses, side='left')
-    matching_masses = df['mz'].iloc[df_indices].values
+    df_indices = np.searchsorted(df["mz"], recalibration_masses, side="left")
+    matching_masses = df["mz"].iloc[df_indices].values
     differences = matching_masses - recalibration_masses.values
     mask = differences < (matching_masses / tolerance)
     return matching_masses[mask], differences[mask]
 
+
 def recalibrate(df, matching_masses, reference_distance):
-    df['mz'] = df['mz'] - np.interp(df['mz'], matching_masses, reference_distance)
+    df["mz"] = df["mz"] - np.interp(
+        df["mz"], matching_masses, reference_distance
+    )
     return df
 
+
 ###### spectra alignment
+
 
 def align_spectra(df, tolerance, resolutionDelta):
     assert "stem" in df, "The DataFramemust contain a column named 'stem'."
@@ -265,9 +353,12 @@ def align_spectra(df, tolerance, resolutionDelta):
     df = add_lx1_bins(df, tolerance, resolutionDelta=resolutionDelta)
     return df
 
-def collapsable_adjacent_groups(df, headers_column ,group_column, close_enogh_da=0.001):
-    '''tries to merge adjacent groups that might have been splip by the low tolerance, its a work arownd for bad results'''
-    #TODO make this more elegant if needed
+
+def collapsable_adjacent_groups(
+    df, headers_column, group_column, close_enogh_da=0.001
+):
+    """tries to merge adjacent groups that might have been splip by the low tolerance, its a work arownd for bad results"""
+    # TODO make this more elegant if needed
     cluster_column = group_column
     accross_column = headers_column
     df.sort_values("mz", ascending=False, inplace=True)
@@ -316,16 +407,18 @@ def collapsable_adjacent_groups(df, headers_column ,group_column, close_enogh_da
         prev_idx = idx
     return collapsable_map
 
+
 def collapse_spectra_groups(df):
-    collapsable_map = collapsable_adjacent_groups(df, 'stem' ,'_group')
+    collapsable_map = collapsable_adjacent_groups(df, "stem", "_group")
     df["_group"].replace(collapsable_map, inplace=True)
     return df
 
+
 def add_massWindow(df, tolerance, resolutionDelta):
-    '''masswindow is actually the tolerance by resolution delta, see :bin_linear_alignment,
+    """masswindow is actually the tolerance by resolution delta, see :bin_linear_alignment,
     it is not used but required to make the surveryentries in the masterscan 
-    '''
-    masses = df['mz']
+    """
+    masses = df["mz"]
     minmass = masses.min()
 
     up_to = None
@@ -341,29 +434,23 @@ def add_massWindow(df, tolerance, resolutionDelta):
         else:
             up_to = mass + mass / (tolerance + delta)
             result[i] = up_to
-    
+
     df["masswindow"] = result
     return df
+
 
 def filter_occupation(df, minOccupation):
     # check occupation spectracontainer.py masterscan.chekoccupation
     # occupation is the % of peak intensities abvove "thrsld: "
-    threshold_denominator = df['stem'].unique().shape[
-        0
-    ]  # same as len(res)
+    threshold_denominator = df["stem"].unique().shape[0]  # same as len(res)
     threshold = minOccupation
     bin_peak_count = df.groupby("_group")["inty"].transform("count")
     tf_mask = (bin_peak_count / threshold_denominator) >= threshold
     return tf_mask
 
+
 def add_aggregated_mass(df):
-    #NOTE not sure why this is done here, maybe its the way its done in lx1
-    df["mass"] = df.groupby("_group")["mz"].transform(
-        "mean"
-    )
+    # NOTE not sure why this is done here, maybe its the way its done in lx1
+    df["mass"] = df.groupby("_group")["mz"].transform("mean")
     return df
-
-
-
-
 
