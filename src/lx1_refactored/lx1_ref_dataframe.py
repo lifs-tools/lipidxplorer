@@ -7,6 +7,10 @@ import numpy as np
 import pandas as pd
 from lx.spectraContainer import MasterScan, MSMSEntry, SurveyEntry
 from ms_deisotope import MSFileLoader
+from ms_deisotope.output.mzml import MzMLSerializer
+from ms_deisotope.data_source.scan.base import RawDataArrays
+from ms_deisotope.data_source.memory import make_scan
+from ms_deisotope.data_source.metadata import file_information
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,13 +54,16 @@ def trim_and_join_scans(df, filter_string_df, replace_filter_string = False):
 def filter_string_replacements(filter_string_df):
     filter_string_df['_group'] = (~filter_string_df["_overlaps_next"]).cumsum() + 1
     filter_string_df['_group'] = filter_string_df['_group'].shift()
-    filter_string_df.at[0,'_group'] = 1 if filter_string_df.at[0,'_overlaps_next'] else 0
+    filter_string_df.iloc[0].at['_group'] = 1 if filter_string_df.at[0,'_overlaps_next'] else 0
     filter_string_df['_from_mz'] = filter_string_df.groupby('_group')['_from_mz'].transform('min')
     filter_string_df['_to_mz'] = filter_string_df.groupby('_group')['_to_mz'].transform('max')
     filter_string_df['new_filter_string'] = filter_string_df.apply(lambda row:f'{row["_prefix"]}[{row["_from_mz"]}-{row["_to_mz"]}]', axis =1)
     new_names = filter_string_df.set_index("filter_string")['new_filter_string'].to_dict()
     return new_names
 
+def recalibrate_with_ms1(df):
+    # https://git.mpi-cbg.de/labShevchenko/PeakStrainer/-/blob/master/lib/simStitching/simStitcher.py#L198
+    raise NotImplementedError()
 
 def spectra2df_settings(options):
     res = {}
@@ -453,4 +460,37 @@ def add_aggregated_mass(df):
     # NOTE not sure why this is done here, maybe its the way its done in lx1
     df["mass"] = df.groupby("_group")["mz"].transform("mean")
     return df
+
+def dataframe2mzml(df, source, destination = None):
+    # NOTE https://github.com/mobiusklein/ms_deisotope/blob/master/src/ms_deisotope/data_source/text.py
+    # https://github.com/mobiusklein/ms_deisotope/blob/master/examples/csv_to_mzml.py 
+    # see https://git.mpi-cbg.de/labShevchenko/simtrim/-/blob/master/simtrim/simtrim.py#L35
+    # or https://mobiusklein.github.io/ms_deisotope/docs/_build/html/output/mzml.html
+    source = Path(source)
+    if destination is None:
+        destination = Path(str(source.with_suffix('')) + '-trim' + str(source.suffix))
+
+    with MzMLSerializer(open(destination, 'wb'), 1, deconvoluted=False,
+                        sample_name=destination.stem, build_extra_index=False) as writer:
+        # writer.copy_metadata_from(source) #NOTE not sure if is needed
+        writer.add_file_contents(file_information.MS_MSn_Spectrum.name)
+        writer.add_data_processing(writer.build_processing_method())
+
+        index = 0
+        for filter_string, gdf in df.groupby("filter_string"):
+            signal = RawDataArrays(gdf['mz'].values, gdf['inty'].values)
+            # Create a new spectrum
+            index += 1
+            scan = make_scan(
+                signal, 1, f"index={index}", 0, 0, is_profile=False,
+                polarity=gdf.iloc[0].at['polarity'],annotations = {"filter string":filter_string },
+                precursor_information=None)
+            scan.pick_peaks()
+                
+            # Write the spectrum to the MzML file
+            writer.save(scan)
+
+    return destination
+
+
 

@@ -1,7 +1,8 @@
 import pytest
 import pandas as pd
+from pathlib import Path
 
-from lx1_refactored import spectra2df, parse_filter_string, trim_and_join_scans
+from lx1_refactored import spectra2df, parse_filter_string, trim_and_join_scans, recalibrate_with_ms1, dataframe2mzml
 
 
 
@@ -48,14 +49,18 @@ def test_trim_sims():
     df = trim_and_join_scans(df, filter_string_df, replace_filter_string = True)
     assert df.shape != ref_shape and ref != df["filter_string"].unique().shape
 
-
+@pytest.mark.skip(reason="YAGNI, tested and seldom used in original codebase")  
 def test_recalibrate_with_ms1():
+    recalibrate_with_ms1(None)
     assert False
-
 
 def test_output_mzml():
-    # see https://git.mpi-cbg.de/labShevchenko/simtrim/-/blob/master/simtrim/simtrim.py
-
-    assert False
+    df = pd.read_pickle(ref_SIM_SPECTRA)
+    filter_string_df = parse_filter_string(df, trim_overlap=15.0)
+    df = trim_and_join_scans(df, filter_string_df, replace_filter_string = True)
+    destination = dataframe2mzml(df, SIM_PATH)
+    dest = Path(destination)
+    assert dest.is_file()
+    dest.unlink()
 
 
