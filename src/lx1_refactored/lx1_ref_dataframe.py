@@ -1,16 +1,16 @@
 import logging
 import sys
 import warnings
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from lx.spectraContainer import MasterScan, MSMSEntry, SurveyEntry
 from ms_deisotope import MSFileLoader
-from ms_deisotope.output.mzml import MzMLSerializer
-from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.data_source.memory import make_scan
 from ms_deisotope.data_source.metadata import file_information
+from ms_deisotope.data_source.scan.base import RawDataArrays
+from ms_deisotope.output.mzml import MzMLSerializer
 
 logging.basicConfig(
     level=logging.INFO,
@@ -468,7 +468,12 @@ def dataframe2mzml(df, source, destination = None):
     # or https://mobiusklein.github.io/ms_deisotope/docs/_build/html/output/mzml.html
     source = Path(source)
     if destination is None:
-        destination = Path(str(source.with_suffix('')) + '-trim' + str(source.suffix))
+        # Get the current date and time
+        current_datetime = datetime.now()
+
+        # Format the date and time as a string in a tight format
+        tight_datetime_string = current_datetime.strftime("%Y%m%d%H%M%S")
+        destination = Path(str(source.with_suffix('')) + tight_datetime_string + str(source.suffix))
 
     with MzMLSerializer(open(destination, 'wb'), 1, deconvoluted=False,
                         sample_name=destination.stem, build_extra_index=False) as writer:
