@@ -6,8 +6,8 @@ from lx1_refactored import spectra2df, parse_filter_string, trim_and_join_scans,
 
 
 
-SIM_PATH = r"tests\resources\t_sim\sim_sample.mzML"
-ref_SIM_SPECTRA = r"tests\resources\t_sim\ref_SIM_SPECTRA.pkl"
+SIM_PATH = r"tests\resources\t_sim\spectra\sim_sample.mzML"
+ref_SIM_SPECTRA = r"tests\resources\t_sim\reference\ref_SIM_SPECTRA.pkl"
 
 
 def test_read_sim_spectra():
@@ -62,5 +62,10 @@ def test_output_mzml():
     dest = Path(destination)
     assert dest.is_file()
     dest.unlink()
+
+def test_output_mzxml():
+    assert False
+
+
 
 

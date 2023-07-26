@@ -9,6 +9,7 @@ import pandas as pd
 from ms_deisotope import MSFileLoader
 from ms_deisotope.data_source.memory import make_scan
 from ms_deisotope.data_source.metadata import file_information
+from ms_deisotope.data_source.metadata.scan_traits import ScanEventInformation, ScanAcquisitionInformation, unitfloat
 from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
 
@@ -466,7 +467,12 @@ def dataframe2mzml(df, source, destination = None):
     # https://github.com/mobiusklein/ms_deisotope/blob/master/examples/csv_to_mzml.py 
     # see https://git.mpi-cbg.de/labShevchenko/simtrim/-/blob/master/simtrim/simtrim.py#L35
     # or https://mobiusklein.github.io/ms_deisotope/docs/_build/html/output/mzml.html
+    source_reader = MSFileLoader(source)
+    scan1 = next(source_reader)
+    scan1 = scan1.precursor
+    scan1.pick_peaks()
     source = Path(source)
+    
     if destination is None:
         # Get the current date and time
         current_datetime = datetime.now()
@@ -481,19 +487,23 @@ def dataframe2mzml(df, source, destination = None):
         writer.add_file_contents(file_information.MS_MSn_Spectrum.name)
         writer.add_data_processing(writer.build_processing_method())
 
+        writer.save(scan1)
         index = 0
         for filter_string, gdf in df.groupby("filter_string"):
             signal = RawDataArrays(gdf['mz'].values, gdf['inty'].values)
+            scanEventInformation = ScanEventInformation(unitfloat(0, "minute"), [], traits = {"filter string": filter_string})
+            acquisition_information = ScanAcquisitionInformation('no combination', [scanEventInformation, ])
             # Create a new spectrum
             index += 1
             scan = make_scan(
                 signal, 1, f"index={index}", 0, 0, is_profile=False,
-                polarity=gdf.iloc[0].at['polarity'],annotations = {"filter string":filter_string },
+                polarity=gdf.iloc[0].at['polarity'],acquisition_information = acquisition_information,
                 precursor_information=None)
             scan.pick_peaks()
                 
             # Write the spectrum to the MzML file
             writer.save(scan)
+            
 
     return destination
 
