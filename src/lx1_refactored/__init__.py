@@ -16,7 +16,7 @@ from .lx1_ref_dataframe import (
     filter_occupation,
     add_aggregated_mass,
     parse_filter_string,
-    trim_and_join_scans,
+    stitch_sim_scans,
     recalibrate_with_ms1,
-    dataframe2mzml
+    dataframe2mzml,
 )

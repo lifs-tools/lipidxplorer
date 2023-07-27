@@ -9,7 +9,11 @@ import pandas as pd
 from ms_deisotope import MSFileLoader
 from ms_deisotope.data_source.memory import make_scan
 from ms_deisotope.data_source.metadata import file_information
-from ms_deisotope.data_source.metadata.scan_traits import ScanEventInformation, ScanAcquisitionInformation, unitfloat
+from ms_deisotope.data_source.metadata.scan_traits import (
+    ScanEventInformation,
+    ScanAcquisitionInformation,
+    unitfloat,
+)
 from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
 
@@ -22,49 +26,84 @@ logging.basicConfig(
 log = logging.getLogger(Path(__file__).stem)
 
 
-def parse_filter_string(df, trim_overlap = None):
+def parse_filter_string(df, trim_overlap=None):
     pat = r"(.*)\[(\d+\.\d*)-(\d+\.\d*)\]"
     filter_strings = pd.Series(df["filter_string"].unique())
     filter_string_df = filter_strings.str.extract(pat)
     filter_string_df.columns = ["_prefix", "_from_mz", "_to_mz"]
-    filter_string_df["_prefix"] = filter_string_df["_prefix"].astype("category")
-    filter_string_df["_from_mz"] = filter_string_df["_from_mz"].astype("float32")
+    filter_string_df["_prefix"] = filter_string_df["_prefix"].astype(
+        "category"
+    )
+    filter_string_df["_from_mz"] = filter_string_df["_from_mz"].astype(
+        "float32"
+    )
     filter_string_df["_to_mz"] = filter_string_df["_to_mz"].astype("float32")
     filter_string_df["filter_string"] = filter_strings
-    filter_string_df["_is_lock"] = filter_string_df["_prefix"].str.contains("lock")
+    filter_string_df["_is_lock"] = filter_string_df["_prefix"].str.contains(
+        "lock"
+    )
 
-    assert (filter_string_df["_from_mz"] < filter_string_df["_to_mz"]).all(), 'filterstring is not in oreder'
-    filter_string_df["_overlaps_next"]  = (filter_string_df["_from_mz"] <= filter_string_df["_from_mz"].shift(-1))  & (filter_string_df["_to_mz"] <= filter_string_df["_to_mz"].shift(-1))
-    
+    assert (
+        filter_string_df["_from_mz"] < filter_string_df["_to_mz"]
+    ).all(), "filterstring is not in oreder"
+    filter_string_df["_overlaps_next"] = (
+        filter_string_df["_from_mz"] <= filter_string_df["_from_mz"].shift(-1)
+    ) & (filter_string_df["_to_mz"] <= filter_string_df["_to_mz"].shift(-1))
+
     if trim_overlap is None:
-        filter_string_df["_trim_overlap"]  = (filter_string_df["_to_mz"] - filter_string_df["_from_mz"].shift(-1)) / 2
+        filter_string_df["_trim_overlap"] = filter_string_df[
+            "_to_mz"
+        ] - filter_string_df["_from_mz"].shift(-1)
+        filter_string_df["_trim_overlap"] = (
+            filter_string_df["_trim_overlap"] / 2
+        )
     else:
         filter_string_df["_trim_overlap"] = trim_overlap
 
     return filter_string_df
 
-def trim_and_join_scans(df, filter_string_df, replace_filter_string = False):
-    merge = df.merge(filter_string_df, on= "filter_string")
-    mask = merge['mz'].between(merge['_from_mz'] + merge['_trim_overlap'], merge['_to_mz'] - merge['_trim_overlap'])
+
+def stitch_sim_scans(df, filter_string_df, replace_filter_string=False):
+    merge = df.merge(filter_string_df, on="filter_string")
+    mask = merge["mz"].between(
+        merge["_from_mz"] + merge["_trim_overlap"],
+        merge["_to_mz"] - merge["_trim_overlap"],
+    )
     if replace_filter_string:
         new_names = filter_string_replacements(filter_string_df)
-        df["filter_string"]  = df["filter_string"].replace(new_names)
+        df["filter_string"] = df["filter_string"].replace(new_names)
 
     return df[mask]
 
+
 def filter_string_replacements(filter_string_df):
-    filter_string_df['_group'] = (~filter_string_df["_overlaps_next"]).cumsum() + 1
-    filter_string_df['_group'] = filter_string_df['_group'].shift()
-    filter_string_df.iloc[0].at['_group'] = 1 if filter_string_df.at[0,'_overlaps_next'] else 0
-    filter_string_df['_from_mz'] = filter_string_df.groupby('_group')['_from_mz'].transform('min')
-    filter_string_df['_to_mz'] = filter_string_df.groupby('_group')['_to_mz'].transform('max')
-    filter_string_df['new_filter_string'] = filter_string_df.apply(lambda row:f'{row["_prefix"]}[{row["_from_mz"]}-{row["_to_mz"]}]', axis =1)
-    new_names = filter_string_df.set_index("filter_string")['new_filter_string'].to_dict()
+    filter_string_df["_group"] = (
+        ~filter_string_df["_overlaps_next"]
+    ).cumsum() + 1
+    filter_string_df["_group"] = filter_string_df["_group"].shift()
+    filter_string_df.iloc[0].at["_group"] = (
+        1 if filter_string_df.at[0, "_overlaps_next"] else 0
+    )
+    filter_string_df["_from_mz"] = filter_string_df.groupby("_group")[
+        "_from_mz"
+    ].transform("min")
+    filter_string_df["_to_mz"] = filter_string_df.groupby("_group")[
+        "_to_mz"
+    ].transform("max")
+    filter_string_df["new_filter_string"] = filter_string_df.apply(
+        lambda row: f'{row["_prefix"]}[{row["_from_mz"]}-{row["_to_mz"]}]',
+        axis=1,
+    )
+    new_names = filter_string_df.set_index("filter_string")[
+        "new_filter_string"
+    ].to_dict()
     return new_names
+
 
 def recalibrate_with_ms1(df):
     # https://git.mpi-cbg.de/labShevchenko/PeakStrainer/-/blob/master/lib/simStitching/simStitcher.py#L198
     raise NotImplementedError()
+
 
 def spectra2df_settings(options):
     res = {}
@@ -462,9 +501,10 @@ def add_aggregated_mass(df):
     df["mass"] = df.groupby("_group")["mz"].transform("mean")
     return df
 
-def dataframe2mzml(df, source, destination = None):
+
+def dataframe2mzml(df, source, destination=None):
     # NOTE https://github.com/mobiusklein/ms_deisotope/blob/master/src/ms_deisotope/data_source/text.py
-    # https://github.com/mobiusklein/ms_deisotope/blob/master/examples/csv_to_mzml.py 
+    # https://github.com/mobiusklein/ms_deisotope/blob/master/examples/csv_to_mzml.py
     # see https://git.mpi-cbg.de/labShevchenko/simtrim/-/blob/master/simtrim/simtrim.py#L35
     # or https://mobiusklein.github.io/ms_deisotope/docs/_build/html/output/mzml.html
     source_reader = MSFileLoader(source)
@@ -472,17 +512,26 @@ def dataframe2mzml(df, source, destination = None):
     scan1 = scan1.precursor
     scan1.pick_peaks()
     source = Path(source)
-    
+
     if destination is None:
         # Get the current date and time
         current_datetime = datetime.now()
 
         # Format the date and time as a string in a tight format
         tight_datetime_string = current_datetime.strftime("%Y%m%d%H%M%S")
-        destination = Path(str(source.with_suffix('')) + tight_datetime_string + str(source.suffix))
+        destination = Path(
+            str(source.with_suffix(""))
+            + tight_datetime_string
+            + str(source.suffix)
+        )
 
-    with MzMLSerializer(open(destination, 'wb'), 1, deconvoluted=False,
-                        sample_name=destination.stem, build_extra_index=False) as writer:
+    with MzMLSerializer(
+        open(destination, "wb"),
+        1,
+        deconvoluted=False,
+        sample_name=destination.stem,
+        build_extra_index=False,
+    ) as writer:
         # writer.copy_metadata_from(source) #NOTE not sure if is needed
         writer.add_file_contents(file_information.MS_MSn_Spectrum.name)
         writer.add_data_processing(writer.build_processing_method())
@@ -490,22 +539,32 @@ def dataframe2mzml(df, source, destination = None):
         writer.save(scan1)
         index = 0
         for filter_string, gdf in df.groupby("filter_string"):
-            signal = RawDataArrays(gdf['mz'].values, gdf['inty'].values)
-            scanEventInformation = ScanEventInformation(unitfloat(0, "minute"), [], traits = {"filter string": filter_string})
-            acquisition_information = ScanAcquisitionInformation('no combination', [scanEventInformation, ])
+            signal = RawDataArrays(gdf["mz"].values, gdf["inty"].values)
+            scanEventInformation = ScanEventInformation(
+                unitfloat(0, "minute"),
+                [],
+                traits={"filter string": filter_string},
+            )
+            acquisition_information = ScanAcquisitionInformation(
+                "no combination", [scanEventInformation,]
+            )
             # Create a new spectrum
             index += 1
             scan = make_scan(
-                signal, 1, f"index={index}", 0, 0, is_profile=False,
-                polarity=gdf.iloc[0].at['polarity'],acquisition_information = acquisition_information,
-                precursor_information=None)
+                signal,
+                1,
+                f"index={index}",
+                0,
+                0,
+                is_profile=False,
+                polarity=gdf.iloc[0].at["polarity"],
+                acquisition_information=acquisition_information,
+                precursor_information=None,
+            )
             scan.pick_peaks()
-                
+
             # Write the spectrum to the MzML file
             writer.save(scan)
-            
 
     return destination
-
-
 
