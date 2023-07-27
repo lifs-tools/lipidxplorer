@@ -8,6 +8,7 @@ from lx1_refactored import (
     stitch_sim_scans,
     recalibrate_with_ms1,
     dataframe2mzml,
+    sim_trim
 )
 
 
@@ -48,7 +49,7 @@ def test_trim_and_join_spectra():
     assert filter_string_df.shape == (33, 7)
 
 
-def test_trim_stitcher():
+def test_sim_stitcher():
     df = pd.read_pickle(ref_SIM_SPECTRA)
     ref = df["filter_string"].unique().shape
     ref_shape = df.shape
@@ -56,6 +57,13 @@ def test_trim_stitcher():
     df = stitch_sim_scans(df, filter_string_df, replace_filter_string=True)
     assert df.shape != ref_shape and ref != df["filter_string"].unique().shape
 
+def test_sim_trim():
+    simrtim = sim_trim(SIM_PATH, 18)
+    dest = Path(simrtim)
+
+    assert dest.is_file()
+    dest.unlink()
+    Path(simrtim + '-idx.json').unlink()
 
 @pytest.mark.skip(
     reason="YAGNI, not tested and never used in original codebase"

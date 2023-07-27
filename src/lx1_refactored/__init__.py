@@ -19,4 +19,5 @@ from .lx1_ref_dataframe import (
     stitch_sim_scans,
     recalibrate_with_ms1,
     dataframe2mzml,
+    sim_trim,
 )
