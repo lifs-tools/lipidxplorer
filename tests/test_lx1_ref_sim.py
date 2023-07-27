@@ -82,7 +82,6 @@ def test_output_mzml():
     assert dest.is_file()
     dest.unlink()
 
-
 def test_output_mzxml():
     df = pd.read_pickle(ref_SIM_SPECTRA)
     res = write2templateMzXML(SIM_PATH+'.mzxml',df)
