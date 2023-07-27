@@ -1,5 +1,7 @@
 from .lx1_ref_masterscan import build_masterscan, df2listSurveyEntry
 
+from .bad_mzxml_writer.Write2templateMzXML import write2templateMzXML
+
 from .lx1_ref_dataframe import (
     spectra2df_settings,
     spectra2df,

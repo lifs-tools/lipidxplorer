@@ -8,7 +8,8 @@ from lx1_refactored import (
     stitch_sim_scans,
     recalibrate_with_ms1,
     dataframe2mzml,
-    sim_trim
+    sim_trim,
+    write2templateMzXML,
 )
 
 
@@ -60,7 +61,6 @@ def test_sim_stitcher():
 def test_sim_trim():
     simrtim = sim_trim(SIM_PATH, 18)
     dest = Path(simrtim)
-
     assert dest.is_file()
     dest.unlink()
     Path(simrtim + '-idx.json').unlink()
@@ -84,5 +84,9 @@ def test_output_mzml():
 
 
 def test_output_mzxml():
-    assert False
+    df = pd.read_pickle(ref_SIM_SPECTRA)
+    res = write2templateMzXML(SIM_PATH+'.mzxml',df)
+    dest = Path(SIM_PATH+'.mzxml')
+    assert dest.is_file()
+    dest.unlink()
 
