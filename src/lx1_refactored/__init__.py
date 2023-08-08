@@ -23,3 +23,5 @@ from .lx1_ref_dataframe import (
     dataframe2mzml,
     sim_trim,
 )
+
+from .lx2_dataframe import add_bins

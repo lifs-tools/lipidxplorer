@@ -1,11 +1,15 @@
+import pandas as pd
 import pytest
 from legacy.lx2_masterscan import lx2_spectra
-from lx1_refactored import spectra2df
+from lx1_refactored import (add_bins, aggregate_groups, filter_intensity,
+                            filter_repetition_rate, merge_peaks_from_scan,
+                            spectra2df)
 
 ROOT_PATH = r"tests\resources\small_test"
 OPTIONS_PATH = ROOT_PATH + r"\small_test-project.lxp"
 SPECTRA_PATH = ROOT_PATH + r"\190321_Serum_Lipidextract_368723_01.mzML"
-
+ms1_peaks_REF = ROOT_PATH + r"\test_get_ms1_peaks_ref.pkl"
+lx2_group_ms1_peaks_REF = ROOT_PATH + r"\test_get_lx2_ms1_peaks_ref.pkl"
 
 def test_get_ms1_peaks():
     # options = read_options(OPTIONS_PATH) # Note only here as reference
@@ -41,16 +45,41 @@ def test_get_ms2_peaks():
     assert df.shape == (302188, 8)
 
 
+def test_group_ms1_peaks():
+    options = {"MSfilter":0.7, "MSthreshold":0.5}
+    df = pd.read_pickle(ms1_peaks_REF)
+    df = add_bins(df)
+    df = merge_peaks_from_scan(df)
+    assert df.shape == (65897, 14) # NOTE same for LX1 test
+    df, lx_data = aggregate_groups(df)
+    assert df.shape == (117, 7)#(6707, 7)
+    mask = filter_repetition_rate(
+        df, lx_data["scan_count"], options["MSfilter"]
+    )
+    df = df[mask]
+    assert df.shape == (89, 7)
+    mask = filter_intensity(df, options["MSthreshold"])
+    df = df[mask]
+    assert df.shape == (89, 7)
+    df_ref = pd.read_pickle(lx2_group_ms1_peaks_REF)
+    assert df_ref.equals(df)
+
+@pytest.mark.skip(
+    reason="not important now"
+)
 def test_drop_fuzzy():
+    # TODO look into lx1_ref_masterscab:make_lx_spectra
     assert False
 
-
+@pytest.mark.skip(
+    reason="not important now"
+)
 def test_include_text():
     assert False
 
-# @pytest.mark.skip(
-#     reason="not important now"
-# )
+@pytest.mark.skip(
+    reason="not important now"
+)
 def test_exclude_text():
     assert False
 
