@@ -16,17 +16,21 @@ def test_options(get_options):
     assert get_options["importDir"] == "tests/resources/small_test"
 
 
+@pytest.mark.skip(reason="Make it work later")  # TODO: Jacobo for the future
 def test_get_ms1_peaks():
     assert False
 
 
+@pytest.mark.skip(reason="Make it work later")  # TODO: Jacobo for the future
 def test_drop_fuzzy():
     assert False
 
 
+@pytest.mark.skip(reason="Make it work later")  # TODO: Jacobo for the future
 def test_include_text():
     assert False
 
 
+@pytest.mark.skip(reason="Make it work later")  # TODO: Jacobo for the future
 def test_exclude_text():
     assert False

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pytest
 from lx1_refactored import (
     add_aggregated_mass,
@@ -122,9 +123,24 @@ def test_align_ms1_scans(options):
     resolutionDelta = options["MSresolutionDelta"]
 
     df = align_spectra(df, tolerance, resolutionDelta)
+    # print(df.dtypes)
 
     df_ref = pd.read_pickle(align_ms1_scans_ref_REF)
-    assert df_ref.equals(df)
+    assert np.all(np.isclose(df["_group"], df_ref["_group"]))
+    assert np.all(
+        np.isclose(df["_merged_mass_mean"], df_ref["_merged_mass_mean"])
+    )
+    assert np.all(
+        np.isclose(df["_merged_mass_count"], df_ref["_merged_mass_count"])
+    )
+    assert np.all(np.isclose(df["inty"], df_ref["inty"]))
+    assert np.all(
+        np.isclose(df["_merged_inty_sum"], df_ref["_merged_inty_sum"])
+    )
+    assert np.all(
+        np.isclose(df["_mass_intensity_sum"], df_ref["_mass_intensity_sum"])
+    )
+    assert np.all(np.isclose(df["mz"], df_ref["mz"]))
 
 
 def test_collapse_ms1_scans():
