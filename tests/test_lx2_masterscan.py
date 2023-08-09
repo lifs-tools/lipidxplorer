@@ -3,13 +3,15 @@ import pytest
 from legacy.lx2_masterscan import lx2_spectra
 from lx1_refactored import (add_bins, aggregate_groups, filter_intensity,
                             filter_repetition_rate, merge_peaks_from_scan,
-                            spectra2df)
+                            spectra2df, recalibrate)
+from lx1_refactored.lx2_dataframe import align_spectra
 
 ROOT_PATH = r"tests\resources\small_test"
 OPTIONS_PATH = ROOT_PATH + r"\small_test-project.lxp"
 SPECTRA_PATH = ROOT_PATH + r"\190321_Serum_Lipidextract_368723_01.mzML"
 ms1_peaks_REF = ROOT_PATH + r"\test_get_ms1_peaks_ref.pkl"
 lx2_group_ms1_peaks_REF = ROOT_PATH + r"\test_get_lx2_ms1_peaks_ref.pkl"
+lx2_align_ms1_scans_ref_REF = ROOT_PATH + r"\test_lx2_align_ms1_scans_ref.pkl"
 
 def test_get_ms1_peaks():
     # options = read_options(OPTIONS_PATH) # Note only here as reference
@@ -62,6 +64,28 @@ def test_group_ms1_peaks():
     df = df[mask]
     assert df.shape == (1729, 7)
     df_ref = pd.read_pickle(lx2_group_ms1_peaks_REF)
+    assert df_ref.equals(df)
+
+def test_align_ms1_scans():
+    df1 = pd.read_pickle(lx2_group_ms1_peaks_REF)
+    # making a modified spectra
+    df2 = pd.read_pickle(lx2_group_ms1_peaks_REF)
+    df2 = df2.sample(frac=0.9, replace=True, random_state=1)
+    df2 = recalibrate(df2, [500.0, 800.0], [0.001, -0.002])
+    df2["inty"] = df2["inty"] * 0.85
+
+    df1["stem"] = "filename1"
+    df1["stem"] = df1["stem"].astype("category")
+
+    df2["stem"] = "filename2"
+    df2["stem"] = df2["stem"].astype("category")
+    assert not df1.equals(df2)
+
+    df = pd.concat([df1, df2])
+
+    df = align_spectra(df)
+
+    df_ref = pd.read_pickle(lx2_align_ms1_scans_ref_REF)
     assert df_ref.equals(df)
 
 @pytest.mark.skip(

@@ -6,11 +6,14 @@ import numpy as np
 def add_bins(df, expected_group_count = None):
     """groups the masses like in lx1"""
     if expected_group_count is None:
-        expected_group_count = df['scan_id'].unique().shape[0]
+        if df['stem'].unique().shape[0] == 1:
+            expected_group_count = df['scan_id'].unique().shape[0]
+        else: 
+            expected_group_count = df['stem'].unique().shape[0]
     eg_count = expected_group_count
 
     assert (
-        df['filter_string'].unique().shape[0] == 1
+        'filter_string'not in df or df['filter_string'].unique().shape[0] == 1
     ), "only one filterstring to bin over"
     df = df.sort_values('mz')  
     groups, bins_info= get_bins(df['mz'], expected_group_count)
@@ -109,3 +112,11 @@ def get_weighted_masses(gdf_mz):
         2 * np.pi * sigma**2
     )
     return weights * x
+
+def align_spectra(df):
+    """returns the reordered dataframe with added _group column"""
+    df.sort_values("mz", inplace=True)
+    expected_group_count = df['stem'].unique().shape[0]
+    df = add_bins(df, expected_group_count)
+    return df
+
