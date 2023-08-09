@@ -13,9 +13,9 @@ def add_bins(df, expected_group_count = None):
         df['filter_string'].unique().shape[0] == 1
     ), "only one filterstring to bin over"
     df = df.sort_values('mz')  
-    bins_info= get_bins(df['mz'], expected_group_count)
+    groups, bins_info= get_bins(df['mz'], expected_group_count)
     
-    df["_group"] = bins_info[0]
+    df["_group"] = groups.values
     # TODO merge peaks from single scan
     # df['scan_peak_count'] = df.groupby(["_group", 'scan_id']).cumcount()
     # df["weights"] = df.groupby("_group")["mz"].apply(get_weighted_masses)

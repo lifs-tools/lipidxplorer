@@ -52,15 +52,15 @@ def test_group_ms1_peaks():
     df = merge_peaks_from_scan(df)
     assert df.shape == (65897, 14) # NOTE same for LX1 test
     df, lx_data = aggregate_groups(df)
-    assert df.shape == (117, 7)#(6707, 7)
+    assert df.shape == (3046, 7)#(6707, 7)
     mask = filter_repetition_rate(
         df, lx_data["scan_count"], options["MSfilter"]
     )
     df = df[mask]
-    assert df.shape == (89, 7)
+    assert df.shape == (1729, 7)
     mask = filter_intensity(df, options["MSthreshold"])
     df = df[mask]
-    assert df.shape == (89, 7)
+    assert df.shape == (1729, 7)
     df_ref = pd.read_pickle(lx2_group_ms1_peaks_REF)
     assert df_ref.equals(df)
 
