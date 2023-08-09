@@ -1,8 +1,10 @@
-import os
+import logging
+import sys
+import warnings
 from pathlib import Path
-import pandas as pd
+
 import numpy as np
-import logging, sys
+import pandas as pd
 
 logging.basicConfig(
     level=logging.INFO,
@@ -12,8 +14,7 @@ logging.basicConfig(
 )
 log = logging.getLogger(Path(__file__).stem)
 from ms_deisotope import MSFileLoader
-from lx.spectraContainer import MasterScan, SurveyEntry, MSMSEntry
-
+from lx.spectraContainer import SurveyEntry, MSMSEntry
 
 
 def spectra_2_df_single(mzml, options, **kwargs):
@@ -28,7 +29,7 @@ def spectra_2_df_single(mzml, options, **kwargs):
     exclude_text = options._data.get("lx2_exclude_text", None)
 
     spectra_df = path2df(
-        mzml, *time_range, *ms1_mass_range, *ms2_mass_range, **kwargs
+        mzml, *time_range, *ms1_mass_range, *ms2_mass_range, polarity, **kwargs
     )
     if drop_fuzzy:
         spectra_df = drop_fuzzy(spectra_df)
@@ -182,8 +183,6 @@ def add_group_no_ms2_df(ms2_df, occupancy=1):
 
 def path2df(
     path,
-    only_ms1_scans = True,
-    only_ms2_scans = False,
     time_start=0,
     time_end=float("inf"),
     ms1_start=0,
@@ -191,18 +190,27 @@ def path2df(
     ms2_start=0,
     ms2_end=float("inf"),
     polarity=None,
+    only_ms1_scans=True,
+    only_ms2_scans=False,
 ):
     dfs = []
     with MSFileLoader(str(path)) as r:
         r.get_scan_by_time(time_start / 60)
         r.start_from_scan(r.get_scan_by_time(time_start / 60).id)
-        _categorical_cols = ["stem","scan_id""filter_string", "precursor_id", "precursor_mz", "polarity"]
+        _categorical_cols = [
+            "stem",
+            "scan_id",
+            "filter_string",
+            "precursor_id",
+            "precursor_mz",
+            "polarity",
+        ]
         for b in r:
             if not (time_start / 60 < b.precursor.scan_time < time_end / 60):
                 continue
             if polarity and b.precursor.polarity != polarity:
                 continue
-            
+
             if not only_ms2_scans:
                 a = b.precursor.arrays
                 df = pd.DataFrame(
@@ -211,7 +219,9 @@ def path2df(
                         "inty": a.intensity.astype("float32"),
                         "stem": path.stem,
                         "scan_id": b.precursor.scan_id,
-                        "filter_string": b.precursor.annotations["filter string"]
+                        "filter_string": b.precursor.annotations[
+                            "filter string"
+                        ]
                         if b.precursor.annotations
                         else b.precursor._data["filterLine"],
                         "precursor_id": None,
@@ -223,7 +233,8 @@ def path2df(
                 for col in _categorical_cols:
                     df[col] = df[col].astype("category")
                 dfs.append(df)
-            if only_ms1_scans: continue
+            if only_ms1_scans:
+                continue
             for p in b.products:
                 if not (time_start / 60 < p.scan_time < time_end / 60):
                     continue
