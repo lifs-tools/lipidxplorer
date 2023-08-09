@@ -13,8 +13,8 @@ from lx1_refactored import (
 )
 
 
-SIM_PATH = r"tests\resources\t_sim\spectra\sim_sample.mzML"
-ref_SIM_SPECTRA = r"tests\resources\t_sim\reference\ref_SIM_SPECTRA.pkl"
+SIM_PATH = r"tests/resources/t_sim/spectra/sim_sample.mzML"
+ref_SIM_SPECTRA = r"tests/resources/t_sim/reference/ref_SIM_SPECTRA.pkl"
 
 
 def test_read_sim_spectra():
@@ -39,7 +39,7 @@ def test_read_sim_spectra():
 def test_parse_filter_string():
     df = pd.read_pickle(ref_SIM_SPECTRA)
     filter_string_df = parse_filter_string(df)
-    assert filter_string_df.shape == (33, 5)
+    assert filter_string_df.shape == (33, 7)
 
 
 def test_trim_and_join_spectra():
@@ -58,12 +58,14 @@ def test_sim_stitcher():
     df = stitch_sim_scans(df, filter_string_df, replace_filter_string=True)
     assert df.shape != ref_shape and ref != df["filter_string"].unique().shape
 
+
 def test_sim_trim():
     simrtim = sim_trim(SIM_PATH, 18)
     dest = Path(simrtim)
     assert dest.is_file()
     dest.unlink()
-    Path(simrtim + '-idx.json').unlink()
+    Path(simrtim + "-idx.json").unlink()
+
 
 @pytest.mark.skip(
     reason="YAGNI, not tested and never used in original codebase"
@@ -82,10 +84,10 @@ def test_output_mzml():
     assert dest.is_file()
     dest.unlink()
 
+
 def test_output_mzxml():
     df = pd.read_pickle(ref_SIM_SPECTRA)
-    res = write2templateMzXML(SIM_PATH+'.mzxml',df)
-    dest = Path(SIM_PATH+'.mzxml')
+    res = write2templateMzXML(SIM_PATH + ".mzxml", df)
+    dest = Path(SIM_PATH + ".mzxml")
     assert dest.is_file()
     dest.unlink()
-
