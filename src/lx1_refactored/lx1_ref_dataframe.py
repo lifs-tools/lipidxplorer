@@ -326,7 +326,7 @@ def aggregate_groups(df):
 
 
 ##### filter the data
-def filter_repetition_rate(df, scan_count=None, MSfilter=0):
+def filter_repetition_rate(df, scan_count=None, MSfilter=0.0):
     """returns a boolean list as in df"""
     if scan_count is None:  # use default
         scan_count = df["_merged_mass_count"].max()
@@ -342,7 +342,7 @@ def filter_repetition_rate(df, scan_count=None, MSfilter=0):
     return mask_repetition_rate_filter
 
 
-def filter_intensity(df, MSthreshold=0):
+def filter_intensity(df, MSthreshold=0.0):
     # NOTE intensity threshold is done in add_Sample... but lets do it here
     mask_inty = df["inty"] > MSthreshold
     return mask_inty
