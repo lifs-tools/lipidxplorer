@@ -3,7 +3,7 @@ import pytest
 from utils import read_options
 
 
-OPTIONS_PATH = r"tests\resources\small_test\small_test-project.lxp"
+OPTIONS_PATH = r"tests/resources/small_test/small_test-project.lxp"
 
 
 @pytest.fixture

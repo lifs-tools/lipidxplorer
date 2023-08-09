@@ -1,21 +1,32 @@
 import pandas as pd
 import pytest
-from lx1_refactored import (add_aggregated_mass, add_lx1_bins, add_massWindow,
-                            aggregate_groups, align_spectra, build_masterscan,
-                            collapse_spectra_groups, df2listSurveyEntry,
-                            filter_intensity, filter_occupation,
-                            filter_repetition_rate, find_reference_masses,
-                            merge_peaks_from_scan, recalibrate, spectra2df,
-                            spectra2df_settings)
+from lx1_refactored import (
+    add_aggregated_mass,
+    add_lx1_bins,
+    add_massWindow,
+    aggregate_groups,
+    align_spectra,
+    build_masterscan,
+    collapse_spectra_groups,
+    df2listSurveyEntry,
+    filter_intensity,
+    filter_occupation,
+    filter_repetition_rate,
+    find_reference_masses,
+    merge_peaks_from_scan,
+    recalibrate,
+    spectra2df,
+    spectra2df_settings,
+)
 
 from utils import read_options
 
-ROOT_PATH = r"tests\resources\small_test"
-OPTIONS_PATH = ROOT_PATH + r"\small_test-project.lxp"
-SPECTRA_PATH = ROOT_PATH + r"\190321_Serum_Lipidextract_368723_01.mzML"
-ms1_peaks_REF = ROOT_PATH + r"\test_get_ms1_peaks_ref.pkl"
-group_ms1_peaks_REF = ROOT_PATH + r"\test_group_ms1_peaks_ref.pkl"
-align_ms1_scans_ref_REF = ROOT_PATH + r"\test_align_ms1_scans_ref.pkl"
+ROOT_PATH = r"tests/resources/small_test"
+OPTIONS_PATH = ROOT_PATH + r"/small_test-project.lxp"
+SPECTRA_PATH = ROOT_PATH + r"/190321_Serum_Lipidextract_368723_01.mzML"
+ms1_peaks_REF = ROOT_PATH + r"/test_get_ms1_peaks_ref.pkl"
+group_ms1_peaks_REF = ROOT_PATH + r"/test_group_ms1_peaks_ref.pkl"
+align_ms1_scans_ref_REF = ROOT_PATH + r"/test_align_ms1_scans_ref.pkl"
 
 
 @pytest.fixture
@@ -154,6 +165,3 @@ def test_build_masterscan(options):
     listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
     scan = build_masterscan(options, listSurveyEntry, samples)
     assert scan
-
-
-
