@@ -17,6 +17,12 @@ from ms_deisotope import MSFileLoader
 from lx.spectraContainer import SurveyEntry, MSMSEntry
 
 
+#========================
+
+warnings.warn("this whoile module is depriated only use as reference", DeprecationWarning) 
+
+#========================
+
 def spectra_2_df_single(mzml, options, **kwargs):
     time_range = options["timerange"]
     ms1_mass_range = options["MSmassrange"]
@@ -79,6 +85,7 @@ def drop_fuzzy(spectra_df):
 
 
 def get_mz_ml_paths(options):
+    warnings.warn("use lx1 ref dataframe instead", DeprecationWarning) 
     p = Path(options["importDir"])
     mzmls = list(p.glob("*.[mM][zZ][mM][lL]"))
     if not mzmls:
@@ -90,6 +97,7 @@ def get_mz_ml_paths(options):
 
 
 def recalibrate_mzs(mzs, cals):
+    warnings.warn("use lx1 ref dataframe instead", DeprecationWarning)
     if not cals or mzs.empty:
         return mzs
     cal_matchs = [mzs.loc[mzs.sub(cal).abs().idxmin()] for cal in cals]
@@ -504,6 +512,7 @@ def ms2entry_factory(mass, dictIntensity, samples, polarity):
 
 
 def main():
+    ''''this whole file is depricated us lx1_red datafram or mastersscan'''
     options = {  # NOTE to initialize Masterscan(options) a dictionalry is not enough
         "importDir": r"D:\fork\lipidxplorer-evaluation\190731_benchmark_data_files_infos\190731_mzML_no_zlib",
         "timerange": (33.0, 1080.0),
