@@ -8,7 +8,7 @@ from lx1_refactored import (
     filter_intensity,
     filter_repetition_rate,
     merge_peaks_from_scan,
-    spectra2df,
+    spectra_as_df,
     recalibrate,
 )
 from lx1_refactored.lx2_dataframe import align_spectra
@@ -35,7 +35,7 @@ def test_get_ms1_peaks():
         "ms2_start": 150.0,
         "ms2_end": 1000.0,
     }
-    df = spectra2df(SPECTRA_PATH, **settings)
+    df = spectra_as_df(SPECTRA_PATH, **settings)
     assert df.shape == (65897, 8)
 
 
@@ -52,7 +52,7 @@ def test_get_ms2_peaks():
         "ms2_start": 150.0,
         "ms2_end": 1000.0,
     }
-    df = spectra2df(SPECTRA_PATH, **settings)
+    df = spectra_as_df(SPECTRA_PATH, **settings)
     assert df.shape == (302188, 8)
 
 
@@ -142,14 +142,12 @@ def test_exclude_text():
 @pytest.mark.skip(reason="YAGNI, not used, is legacy")
 def test_readfile():
     spectra_path = r"tests/resources/benchmark128/spectra/190321_Serum_Lipidextract_368723_01.mzML"
-    options = (
-        {  # NOTE to initialize Masterscan(options) a dictionalry is not enough
-            "timerange": (33.0, 1080.0),
-            "MSmassrange": (360.0, 1000.0),
-            "MSMSmassrange": (150.0, 1000.0),
-            "MScalibration": [680.4802],
-            "MSMScalibration": None,
-        }
-    )
+    options = {  # NOTE to initialize Masterscan(options) a dictionalry is not enough
+        "timerange": (33.0, 1080.0),
+        "MSmassrange": (360.0, 1000.0),
+        "MSMSmassrange": (150.0, 1000.0),
+        "MScalibration": [680.4802],
+        "MSMScalibration": None,
+    }
     scan = lx2_spectra(spectra_path, options)
     assert scan is not None

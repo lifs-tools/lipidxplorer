@@ -16,8 +16,11 @@ from lx1_refactored import (
     find_reference_masses,
     merge_peaks_from_scan,
     recalibrate,
-    spectra2df,
-    spectra2df_settings,
+    spectra_as_df,
+    get_settings,
+    spectra_2_DF,
+    aligned_spectra_df,
+    make_masterscan
 )
 
 from utils import read_options
@@ -38,7 +41,7 @@ def options():
 
 @pytest.fixture
 def settings(options):
-    return spectra2df_settings(options)
+    return get_settings(options)
 
 
 def test_spectra2df_settings(settings):
@@ -62,7 +65,7 @@ def test_spectra2df_settings(settings):
 
 def test_get_ms1_peaks(settings):
     settings["read_ms2_scans"] = False
-    df = spectra2df(SPECTRA_PATH, **settings)
+    df = spectra_as_df(SPECTRA_PATH, **settings)
     assert df.shape == (65897, 8)
     assert df.scan_id.unique().shape[0] == 31
     assert df.filter_string.unique().shape[0] == 1
@@ -181,3 +184,19 @@ def test_build_masterscan(options):
     listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
     scan = build_masterscan(options, listSurveyEntry, samples)
     assert scan
+
+
+def test_spectra_2_DF(options):
+    df, lx_data = spectra_2_DF(SPECTRA_PATH, options)
+    df_ref = pd.read_pickle(align_ms1_scans_ref_REF)
+    assert df
+
+
+def test_aligned_spectra_df(options):
+    df = aligned_spectra_df(options)
+    assert False
+
+def test_make_masterscan(options):
+    scan = make_masterscan(options)
+    assert False
+

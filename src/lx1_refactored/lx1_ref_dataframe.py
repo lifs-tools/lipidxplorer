@@ -10,13 +10,11 @@ from ms_deisotope import MSFileLoader
 from ms_deisotope.data_source.memory import make_scan
 from ms_deisotope.data_source.metadata import file_information
 from ms_deisotope.data_source.metadata.scan_traits import (
-    ScanEventInformation,
-    ScanAcquisitionInformation,
-    unitfloat,
-)
+    ScanAcquisitionInformation, ScanEventInformation, unitfloat)
 from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
 
+from lx1_ref_masterscan import df2listSurveyEntry, build_masterscan
 logging.basicConfig(
     level=logging.INFO,
     stream=sys.stdout,
@@ -104,8 +102,34 @@ def recalibrate_with_ms1(df):
     # https://git.mpi-cbg.de/labShevchenko/PeakStrainer/-/blob/master/lib/simStitching/simStitcher.py#L198
     raise NotImplementedError()
 
+def drop_fuzzy(df):
+    '''drop the first few scans that have a lot total ion count '''
+    raise NotImplementedError()
+    # fraction_of_average_intensity = 0.1
+    # spectras_sum_inty = (
+    #     spectra_df.loc[spectra_df.precursor_id.isna()]
+    #     .groupby("scan_id")["inty"]
+    #     .sum()
+    # )
+    # sum_inty_mean = spectras_sum_inty.mean()
+    # spectras_sum_inty = spectras_sum_inty.to_dict()
 
-def spectra2df_settings(options):
+    # to_drop = []
+    # for (
+    #     scan_id
+    # ) in spectra_df.scan_id.drop_duplicates():  # this maintains order
+    #     if (
+    #         spectras_sum_inty[scan_id]
+    #         < sum_inty_mean * fraction_of_average_intensity
+    #     ):  # one order
+    #         to_drop.append(scan_id)
+    #     else:
+    #         break
+
+    # return spectra_df.loc[~spectra_df.scan_id.isin(to_drop)]
+
+
+def get_settings(options):
     res = {}
     time_range = options["timerange"]
     res["time_start"] = 0 if not time_range else time_range[0]
@@ -119,7 +143,7 @@ def spectra2df_settings(options):
     return res
 
 
-def scan2Df(scan, path, mz_start, mz_end):
+def scan_to_DF(scan, path, mz_start, mz_end):
     _categorical_cols = [
         "stem",
         "scan_id",
@@ -153,7 +177,7 @@ def scan2Df(scan, path, mz_start, mz_end):
     return df
 
 
-def spectra2df(
+def spectra_as_df(
     path,
     read_ms1_scans=True,
     read_ms2_scans=True,
@@ -194,10 +218,10 @@ def spectra2df(
             isSim = " sim " in filter_string.lower()
 
             if read_ms1_scans and not isSim:
-                df = scan2Df(b.precursor, path, ms1_start, ms1_end)
+                df = scan_to_DF(b.precursor, path, ms1_start, ms1_end)
                 dfs.append(df)
             if read_sim_scans and isSim:
-                df = scan2Df(b.precursor, path, ms1_start, ms1_end)
+                df = scan_to_DF(b.precursor, path, ms1_start, ms1_end)
                 dfs.append(df)
 
             # read the ms2 scans
@@ -207,7 +231,7 @@ def spectra2df(
                         continue
                     if not (ms1_start < p.precursor_information.mz < ms1_end):
                         continue
-                    df = scan2Df(p, path, ms2_start, ms2_end)
+                    df = scan_to_DF(p, path, ms2_start, ms2_end)
                     dfs.append(df)
 
     df = pd.concat(dfs)
@@ -640,3 +664,63 @@ def sim_trim(path, da = None):
     
     return dest
 
+def spectra_2_DF(spectra_path, options):
+    '''convert a spectra mzml, with multiple scans, into a dataframe an average ms1 dataframe'''
+    settings = get_settings(options)
+    settings["read_ms2_scans"] = False
+    df = spectra_as_df(spectra_path, **settings)
+
+    tolerance = options["MSresolution"].tolerance
+    df = add_lx1_bins(df, tolerance)
+    df = merge_peaks_from_scan(df)
+
+    df, lx_data = aggregate_groups(df)
+    mask = filter_repetition_rate(
+        df, lx_data["scan_count"], options["MSfilter"]
+    )
+    df = df[mask]
+    mask = filter_intensity(df, options["MSthreshold"])
+    df = df[mask]
+
+    calibration_masses = options["MScalibration"]
+    matching_masses, reference_distance = find_reference_masses(
+        df, tolerance, calibration_masses
+    )
+    df = recalibrate(df, matching_masses, reference_distance)
+
+    return df, lx_data
+
+def align_ms1_dfs(dfs, options):
+    '''aling multiple dataframes, from multiple spectra, into single dataframe'''
+    df = pd.concat(dfs)
+    tolerance = options["MSresolution"].tolerance
+    resolutionDelta = options["MSresolutionDelta"]
+
+    df = align_spectra(df, tolerance, resolutionDelta)
+    return df
+
+def get_mz_ml_paths(options):
+    p = Path(options["importDir"])
+    mzmls = list(p.glob("*.[mM][zZ][mM][lL]"))
+    if not mzmls:
+        log.warning("no mzml files found in {}".format(p))
+        log.warning("using all mzXML files in {}".format(p))
+        mzmls = list(p.glob("*.[mM][zZ][xX][mM][lL]"))
+
+    return mzmls
+
+def aligned_spectra_df(options):
+    mzmls = get_mz_ml_paths(options)
+    dfs_and_info = [spectra_2_DF(spectra_path, options) for spectra_path in mzmls]
+    dfs, df_infos = zip(*dfs_and_info)
+    df = align_ms1_dfs(dfs, options)
+    return df, df_infos
+
+def make_masterscan(options):
+    df, df_infos = aligned_spectra_df(options)
+    df["masswindow"] = -1  # # NOTE use :add_massWindow instead
+    polarity = 1
+    samples = df["stem"].unique().tolist()
+    listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
+    scan = build_masterscan(options, listSurveyEntry, samples)
+    return scan

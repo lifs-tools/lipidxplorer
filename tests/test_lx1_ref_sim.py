@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 
 from lx1_refactored import (
-    spectra2df,
+    spectra_as_df,
     parse_filter_string,
     stitch_sim_scans,
     recalibrate_with_ms1,
@@ -30,7 +30,7 @@ def test_read_sim_spectra():
         "ms2_start": 150.0,
         "ms2_end": 1000.0,
     }
-    df = spectra2df(SIM_PATH, **settings)
+    df = spectra_as_df(SIM_PATH, **settings)
     assert df.shape == (12399, 8)
     df_ref = pd.read_pickle(ref_SIM_SPECTRA)
     assert df_ref.equals(df)

@@ -3,8 +3,8 @@ from .lx1_ref_masterscan import build_masterscan, df2listSurveyEntry
 from .bad_mzxml_writer.Write2templateMzXML import write2templateMzXML
 
 from .lx1_ref_dataframe import (
-    spectra2df_settings,
-    spectra2df,
+    get_settings,
+    spectra_as_df,
     add_lx1_bins,
     merge_peaks_from_scan,
     aggregate_groups,
@@ -22,6 +22,9 @@ from .lx1_ref_dataframe import (
     recalibrate_with_ms1,
     dataframe2mzml,
     sim_trim,
+    spectra_2_DF,
+    aligned_spectra_df,
+    make_masterscan
 )
 
 from .lx2_dataframe import add_bins
