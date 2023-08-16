@@ -18,9 +18,9 @@ from lx1_refactored import (
     recalibrate,
     spectra_as_df,
     get_settings,
-    spectra_2_DF,
-    aligned_spectra_df,
-    make_masterscan
+    spectra_2_DF_lx1,
+    aligned_spectra_df_lx1,
+    make_masterscan_lx1
 )
 
 from utils import read_options
@@ -186,21 +186,21 @@ def test_build_masterscan(options):
     assert scan
 
 
-def test_spectra_2_DF(options):
-    df, lx_data = spectra_2_DF(SPECTRA_PATH, options)
+def test_spectra_2_DF_lx1(options):
+    df, lx_data = spectra_2_DF_lx1(SPECTRA_PATH, options)
     df_ref = pd.read_pickle(group_ms1_peaks_REF)
     cols = ['mz','inty']
     assert (df[cols] - df_ref[cols]).describe().loc['mean'].abs().sum() < 0.01 # to have a little wiggle room, like no close
     assert (df[cols] - df_ref[cols]).describe().loc['std'].abs().sum() < 0.01
 
 
-def test_aligned_spectra_df(options):
-    df, df_infos = aligned_spectra_df(options)
+def test_aligned_spectra_df_lx1(options):
+    df, df_infos = aligned_spectra_df_lx1(options)
     df_ref = pd.read_pickle(align_ms1_scans_ref_REF)
     cols = ['mz','inty']
     assert df.shape == (3415, 8)
 
 def test_make_masterscan(options):
-    scan = make_masterscan(options)
+    scan = make_masterscan_lx1(options)
     assert scan
 

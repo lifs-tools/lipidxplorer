@@ -665,7 +665,7 @@ def sim_trim(path, da = None):
     
     return dest
 
-def spectra_2_DF(spectra_path, options, add_stem=True):
+def spectra_2_DF_lx1(spectra_path, options, add_stem=True):
     '''convert a spectra mzml, with multiple scans, into a dataframe an average ms1 dataframe'''
     settings = get_settings(options)
     settings["ms_level"] = settings.get("ms_level",MS_level.ms1)
@@ -721,7 +721,7 @@ def get_mz_ml_paths(options):
 
     return mzmls
 
-def aligned_spectra_df(options):
+def aligned_spectra_df_lx1(options):
     mzmls = get_mz_ml_paths(options)
     dfs_and_info = [spectra_2_DF(spectra_path, options) for spectra_path in mzmls]
     dfs, df_infos = zip(*dfs_and_info)
@@ -729,7 +729,7 @@ def aligned_spectra_df(options):
     df = align_ms1_dfs(dfs, options)
     return df, df_infos
 
-def make_masterscan(options):
+def make_masterscan_lx1(options):
     df, df_infos = aligned_spectra_df(options)
     df["masswindow"] = -1  # # NOTE use :add_massWindow instead
     polarity = df_infos[0]['polarity']
