@@ -22,9 +22,9 @@ from .lx1_ref_dataframe import (
     recalibrate_with_ms1,
     dataframe2mzml,
     sim_trim,
-    spectra_2_DF,
-    aligned_spectra_df,
-    make_masterscan
+    spectra_2_DF_lx1,
+    aligned_spectra_df_lx1,
+    make_masterscan_lx1
 )
 
 from .lx2_dataframe import add_bins
