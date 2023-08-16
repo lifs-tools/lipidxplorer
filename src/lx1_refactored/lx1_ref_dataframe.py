@@ -14,7 +14,8 @@ from ms_deisotope.data_source.metadata.scan_traits import (
 from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
 
-from lx1_ref_masterscan import df2listSurveyEntry, build_masterscan
+from .lx1_ref_masterscan import df2listSurveyEntry, build_masterscan
+
 logging.basicConfig(
     level=logging.INFO,
     stream=sys.stdout,
