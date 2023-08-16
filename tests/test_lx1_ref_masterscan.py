@@ -188,13 +188,19 @@ def test_build_masterscan(options):
 
 def test_spectra_2_DF(options):
     df, lx_data = spectra_2_DF(SPECTRA_PATH, options)
-    df_ref = pd.read_pickle(align_ms1_scans_ref_REF)
-    assert df
+    df_ref = pd.read_pickle(group_ms1_peaks_REF)
+    cols = ['mz','inty']
+    assert (df[cols] - df_ref[cols]).describe().loc['mean'].abs().sum() < 0.01 # to have a little wiggle room, like no close
+    assert (df[cols] - df_ref[cols]).describe().loc['std'].abs().sum() < 0.01
 
 
 def test_aligned_spectra_df(options):
-    df = aligned_spectra_df(options)
-    assert False
+    df, df_infos = aligned_spectra_df(options)
+    df_ref = pd.read_pickle(align_ms1_scans_ref_REF)
+    cols = ['mz','inty']
+    assert (df[cols] - df_ref[cols]).describe().loc['mean'].abs().sum() < 0.01 # to have a little wiggle room, like no close
+    assert (df[cols] - df_ref[cols]).describe().loc['std'].abs().sum() < 0.01
+
 
 def test_make_masterscan(options):
     scan = make_masterscan(options)
