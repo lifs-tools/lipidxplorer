@@ -306,7 +306,7 @@ def merge_peaks_from_scan(df):
     # NOTE lx1 adds the intesities of close peaks... see alignmebt.py mk survey linear:643
     # NOTE LX! does a bad averagin if peaks see readspectra:add_sample:401
     log.info(
-        'columns starting with _ "underscore" are pof processing and can be discarded'
+        'columns starting with _ "underscore" are for processing and can be discarded'
     )
     return df
 
@@ -420,7 +420,7 @@ def recalibrate(df, matching_masses, reference_distance):
 
 
 def align_spectra(df, tolerance, resolutionDelta):
-    assert "stem" in df, "The DataFramemust contain a column named 'stem'."
+    assert "stem" in df, "The DataFrame must contain a column named 'stem'."
     df.sort_values("mz", inplace=True)
     df = add_lx1_bins(df, tolerance, resolutionDelta=resolutionDelta)
     return df
@@ -665,7 +665,7 @@ def sim_trim(path, da = None):
     
     return dest
 
-def spectra_2_DF(spectra_path, options):
+def spectra_2_DF(spectra_path, options, add_stem=True):
     '''convert a spectra mzml, with multiple scans, into a dataframe an average ms1 dataframe'''
     settings = get_settings(options)
     settings["read_ms2_scans"] = False
@@ -676,6 +676,11 @@ def spectra_2_DF(spectra_path, options):
     df = merge_peaks_from_scan(df)
 
     df, lx_data = aggregate_groups(df)
+    lx_data["stem"] = Path(spectra_path).stem
+    if add_stem:
+        df["stem"] = lx_data["stem"]
+        df["stem"] = df["stem"].astype("category")
+
     mask = filter_repetition_rate(
         df, lx_data["scan_count"], options["MSfilter"]
     )
