@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from pathlib import Path
 
-from src.tools.sc2df import scan2df
+from lx1_refactored.tools import masterscan_2_df as scan2df
 
 from utils import (
     make_masterscan,

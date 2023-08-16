@@ -16,7 +16,7 @@ def listSurveyEntry2dicts(listSurveyEntry):
             }
 
 
-def scan2df(sc_filepath):
+def masterscan_2_df(sc_filepath):
     # Read the pickle file
     with open(sc_filepath, "rb") as f:
         scan = pickle.load(f)
