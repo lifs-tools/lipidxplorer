@@ -1,5 +1,7 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+from .lx1_ref_dataframe import get_settings, spectra_as_df, merge_peaks_from_scan, aggregate_groups, filter_repetition_rate
 
 
 # see compare_grouping from LX1 masterscan
@@ -120,3 +122,39 @@ def align_spectra(df):
     df = add_bins(df, expected_group_count)
     return df
 
+def spectra_2_DF(spectra_path, options, add_stem=True):
+    """convert a spectra mzml, with multiple scans, into a dataframe an average ms1 dataframe"""
+    settings = get_settings(options)
+    settings["ms_level"] = settings.get("ms_level", MS_level.ms1)
+    settings["polarity"] = settings.get("polarity", 1)
+    df = spectra_as_df(spectra_path, **settings)
+
+    tolerance = options["MSresolution"].tolerance
+    df = add_bins(df, tolerance)
+    df = merge_peaks_from_scan(df)
+
+    df, lx_data = aggregate_groups(df)
+    # TODO extend df with lx_data, https://pandas.pydata.org/pandas-docs/stable/development/extending.html
+    # see https://git.mpi-cbg.de/mirandaa/lipidxplorer2.0/-/blob/master/lx2_tools/scansDecorator.py
+    lx_data["stem"] = Path(spectra_path).stem
+    lx_data["ms_level"] = settings["ms_level"]
+    lx_data["polarity"] = settings["polarity"]
+
+    if add_stem:
+        df["stem"] = lx_data["stem"]
+        df["stem"] = df["stem"].astype("category")
+
+    mask = filter_repetition_rate(
+        df, lx_data["scan_count"], options["MSfilter"]
+    )
+    df = df[mask]
+    mask = filter_intensity(df, options["MSthreshold"])
+    df = df[mask]
+
+    calibration_masses = options["MScalibration"]
+    matching_masses, reference_distance = find_reference_masses(
+        df, tolerance, calibration_masses
+    )
+    df = recalibrate(df, matching_masses, reference_distance)
+
+    return df, lx_data

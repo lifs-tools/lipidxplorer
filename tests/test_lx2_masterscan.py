@@ -11,7 +11,8 @@ from lx1_refactored import (
     spectra_as_df,
     recalibrate,
 )
-from lx1_refactored.lx2_dataframe import align_spectra
+from lx1_refactored.lx2_dataframe import align_spectra, spectra_2_DF
+from utils import read_options
 
 ROOT_PATH = r"tests/resources/small_test"
 OPTIONS_PATH = ROOT_PATH + r"/small_test-project.lxp"
@@ -20,6 +21,10 @@ ms1_peaks_REF = ROOT_PATH + r"/test_get_ms1_peaks_ref.pkl"
 lx2_group_ms1_peaks_REF = ROOT_PATH + r"/test_get_lx2_ms1_peaks_ref.pkl"
 lx2_align_ms1_scans_ref_REF = ROOT_PATH + r"/test_lx2_align_ms1_scans_ref.pkl"
 
+@pytest.fixture
+def options():
+    options = read_options(OPTIONS_PATH)
+    return options
 
 def test_get_ms1_peaks():
     # options = read_options(OPTIONS_PATH) # Note only here as reference
