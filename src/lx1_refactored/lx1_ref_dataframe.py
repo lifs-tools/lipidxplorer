@@ -11,7 +11,10 @@ from ms_deisotope import MSFileLoader
 from ms_deisotope.data_source.memory import make_scan
 from ms_deisotope.data_source.metadata import file_information
 from ms_deisotope.data_source.metadata.scan_traits import (
-    ScanAcquisitionInformation, ScanEventInformation, unitfloat)
+    ScanAcquisitionInformation,
+    ScanEventInformation,
+    unitfloat,
+)
 from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
 
@@ -104,8 +107,9 @@ def recalibrate_with_ms1(df):
     # https://git.mpi-cbg.de/labShevchenko/PeakStrainer/-/blob/master/lib/simStitching/simStitcher.py#L198
     raise NotImplementedError()
 
+
 def drop_fuzzy(df):
-    '''drop the first few scans that have a lot total ion count '''
+    """drop the first few scans that have a lot total ion count """
     raise NotImplementedError()
     # fraction_of_average_intensity = 0.1
     # spectras_sum_inty = (
@@ -178,14 +182,16 @@ def scan_to_DF(scan, path, mz_start, mz_end):
         df[col] = df[col].astype("category")
     return df
 
+
 class MS_level(Flag):
     ms1 = auto()
     ms2 = auto()
     sim = auto()
 
+
 def spectra_as_df(
     path,
-    ms_level = MS_level.ms1,
+    ms_level=MS_level.ms1,
     time_start=0,
     time_end=float("inf"),
     ms1_start=0,
@@ -194,7 +200,7 @@ def spectra_as_df(
     ms2_end=float("inf"),
     polarity=1,
 ):
-    '''read a spectra into a dataframe with contstraints, ms_level is an enum'''
+    """read a spectra into a dataframe with contstraints, ms_level is an enum"""
     path = Path(path)
     dfs = []
     with MSFileLoader(str(path)) as r:
@@ -545,9 +551,7 @@ def dataframe2mzml(df, source, destination=None):
         # Format the date and time as a string in a tight format
         tight_datetime_string = current_datetime.strftime("%Y%m%d%H%M%S")
         destination = Path(
-            str(source.with_suffix(""))
-            + tight_datetime_string
-            + '.mzml'
+            str(source.with_suffix("")) + tight_datetime_string + ".mzml"
         )
 
     with MzMLSerializer(
@@ -594,8 +598,7 @@ def dataframe2mzml(df, source, destination=None):
     return destination
 
 
-
-def sim_trim(path, da = None):
+def sim_trim(path, da=None):
     """trim the sim on the file, and create an mzml from the trimmed sims at location of original file
 
     Args:
@@ -603,32 +606,40 @@ def sim_trim(path, da = None):
         da (float, optional): daltos to trim from each edge of sim. Defaults to None.
     """
 
-    #NOTE https://git.mpi-cbg.de/labShevchenko/simtrim/-/blob/master/simtrim/simtrim.py
+    # NOTE https://git.mpi-cbg.de/labShevchenko/simtrim/-/blob/master/simtrim/simtrim.py
     # https://github.com/mobiusklein/ms_deisotope/issues/10#issuecomment-477393829
-    #https://github.com/mobiusklein/ms_deisotope/issues/13#issuecomment-515017479
+    # https://github.com/mobiusklein/ms_deisotope/issues/13#issuecomment-515017479
 
     source_reader = MSFileLoader(path)
-    
+
     p = Path(path)
-    dest = str(p.with_suffix(''))+'-trim.mzML'
-    
-    #calculate da
+    dest = str(p.with_suffix("")) + "-trim.mzML"
+
+    # calculate da
     if da is None or da <= 0:
         scan_window1, scan_window2 = None, None
-        for bunch in (b for b in source_reader if 'SIM' in b.precursor.annotations['filter string']):
+        for bunch in (
+            b
+            for b in source_reader
+            if "SIM" in b.precursor.annotations["filter string"]
+        ):
             scan_window1 = scan_window2
             scan_window2 = bunch.precursor.acquisition_information[0][0]
-            if scan_window1 and scan_window2: # get only two entries then stop
+            if scan_window1 and scan_window2:  # get only two entries then stop
                 source_reader.reset()
                 break
         delta = scan_window1.upper - scan_window2.lower
         if delta <= 0:
-            raise ValueError('The first two sims do not provide a valid `da` value')
+            raise ValueError(
+                "The first two sims do not provide a valid `da` value"
+            )
         da = delta / 2
-    
+
     # write the file
-    with open(dest , 'wb') as fh:
-        writer = MzMLSerializer(fh, n_spectra=len(source_reader.index), deconvoluted = False)
+    with open(dest, "wb") as fh:
+        writer = MzMLSerializer(
+            fh, n_spectra=len(source_reader.index), deconvoluted=False
+        )
         description = source_reader.file_description()
         writer.add_file_information(description)
         writer.add_file_contents("profile spectrum")
@@ -649,27 +660,33 @@ def sim_trim(path, da = None):
 
         processing = writer.build_processing_method()
         writer.add_data_processing(processing)
-    
-        
-        for bunch in (b for b in source_reader if 'SIM' in b.precursor.annotations['filter string']):
+
+        for bunch in (
+            b
+            for b in source_reader
+            if "SIM" in b.precursor.annotations["filter string"]
+        ):
             if da is None:
-                print('fix this')
+                print("fix this")
             scan_window = bunch.precursor.acquisition_information[0][0]
             bunch.precursor.pick_peaks()
-            bunch.precursor.peak_set = bunch.precursor.peak_set.between(scan_window.lower + da, scan_window.upper - da)
+            bunch.precursor.peak_set = bunch.precursor.peak_set.between(
+                scan_window.lower + da, scan_window.upper - da
+            )
             writer.save(bunch)
-        
+
         writer.complete()
         fh.flush()
         writer.format()
-    
+
     return dest
 
+
 def spectra_2_DF_lx1(spectra_path, options, add_stem=True):
-    '''convert a spectra mzml, with multiple scans, into a dataframe an average ms1 dataframe'''
+    """convert a spectra mzml, with multiple scans, into a dataframe an average ms1 dataframe"""
     settings = get_settings(options)
-    settings["ms_level"] = settings.get("ms_level",MS_level.ms1)
-    settings["polarity"] = settings.get("polarity",1)
+    settings["ms_level"] = settings.get("ms_level", MS_level.ms1)
+    settings["polarity"] = settings.get("polarity", 1)
     df = spectra_as_df(spectra_path, **settings)
 
     tolerance = options["MSresolution"].tolerance
@@ -677,7 +694,7 @@ def spectra_2_DF_lx1(spectra_path, options, add_stem=True):
     df = merge_peaks_from_scan(df)
 
     df, lx_data = aggregate_groups(df)
-    #TODO extend df with lx_data, https://pandas.pydata.org/pandas-docs/stable/development/extending.html
+    # TODO extend df with lx_data, https://pandas.pydata.org/pandas-docs/stable/development/extending.html
     # see https://git.mpi-cbg.de/mirandaa/lipidxplorer2.0/-/blob/master/lx2_tools/scansDecorator.py
     lx_data["stem"] = Path(spectra_path).stem
     lx_data["ms_level"] = settings["ms_level"]
@@ -702,14 +719,16 @@ def spectra_2_DF_lx1(spectra_path, options, add_stem=True):
 
     return df, lx_data
 
+
 def align_ms1_dfs(dfs, options):
-    '''aling multiple dataframes, from multiple spectra, into single dataframe'''
+    """aling multiple dataframes, from multiple spectra, into single dataframe"""
     df = pd.concat(dfs)
     tolerance = options["MSresolution"].tolerance
     resolutionDelta = options["MSresolutionDelta"]
 
     df = align_spectra(df, tolerance, resolutionDelta)
     return df
+
 
 def get_mz_ml_paths(options):
     p = Path(options["importDir"])
@@ -721,18 +740,22 @@ def get_mz_ml_paths(options):
 
     return mzmls
 
+
 def aligned_spectra_df_lx1(options):
     mzmls = get_mz_ml_paths(options)
-    dfs_and_info = [spectra_2_DF(spectra_path, options) for spectra_path in mzmls]
+    dfs_and_info = [
+        spectra_2_DF(spectra_path, options) for spectra_path in mzmls
+    ]
     dfs, df_infos = zip(*dfs_and_info)
-    #NOTE assert all dfs have same polarity? YAGNI 
+    # NOTE assert all dfs have same polarity? YAGNI
     df = align_ms1_dfs(dfs, options)
     return df, df_infos
+
 
 def make_masterscan_lx1(options):
     df, df_infos = aligned_spectra_df(options)
     df["masswindow"] = -1  # # NOTE use :add_massWindow instead
-    polarity = df_infos[0]['polarity']
+    polarity = df_infos[0]["polarity"]
     samples = df["stem"].unique().tolist()
     listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
     scan = build_masterscan(options, listSurveyEntry, samples)
