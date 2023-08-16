@@ -732,7 +732,7 @@ def aligned_spectra_df(options):
 def make_masterscan(options):
     df, df_infos = aligned_spectra_df(options)
     df["masswindow"] = -1  # # NOTE use :add_massWindow instead
-    polarity = df_infos['polarity']
+    polarity = df_infos[0]['polarity']
     samples = df["stem"].unique().tolist()
     listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
     scan = build_masterscan(options, listSurveyEntry, samples)
