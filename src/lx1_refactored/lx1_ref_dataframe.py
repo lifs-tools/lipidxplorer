@@ -382,29 +382,9 @@ def filter_intensity(df, MSthreshold=0.0):
 ###### recalibrate
 
 
-def find_closest():
-    raise NotImplementedError("This function is not yet implemented.")
-    # ser1 = pd.Series(list(MS2_dict.keys()), name="ser1")
-    # ser1.sort_values(inplace=True)
-    # tol = 0.001
-
-    # precur_map_df = pd.merge_asof(
-    #     ser1,
-    #     ser2,
-    #     left_on="ser1",
-    #     right_on="ser2",
-    #     direction="nearest",
-    #     tolerance=tol,
-    # )
-
-    ######### vs
-    # df_indices = np.searchsorted(df['mz'], recalibration_masses, side='left')
-    # matching_masses = df['mz'].iloc[df_indices].values
-    return None
 
 
 def find_reference_masses(df, tolerance, recalibration_masses):
-    # TODO make find_closest function... see above
     recalibration_masses = pd.Series(recalibration_masses)
     recalibration_masses.sort_values(inplace=True)
     # Find the indices of the closest float values in the right DataFrame for each value in the left DataFrame
@@ -716,7 +696,7 @@ def spectra_2_DF_lx1(spectra_path, options, add_stem=True):
         df, tolerance, calibration_masses
     )
     df = recalibrate(df, matching_masses, reference_distance)
-
+    lx_data["recalibration"] = (matching_masses, reference_distance)
     return df, lx_data
 
 
