@@ -3,6 +3,7 @@ import sys
 import warnings
 from datetime import datetime
 from pathlib import Path
+from enum import Flag, auto
 
 import numpy as np
 import pandas as pd
@@ -14,7 +15,7 @@ from ms_deisotope.data_source.metadata.scan_traits import (
 from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
 
-from .lx1_ref_masterscan import df2listSurveyEntry, build_masterscan
+from .lx1_ref_masterscan import build_masterscan, df2listSurveyEntry
 
 logging.basicConfig(
     level=logging.INFO,
@@ -177,12 +178,14 @@ def scan_to_DF(scan, path, mz_start, mz_end):
         df[col] = df[col].astype("category")
     return df
 
+class MS_level(Flag):
+    ms1 = auto()
+    ms2 = auto()
+    sim = auto()
 
 def spectra_as_df(
     path,
-    read_ms1_scans=True,
-    read_ms2_scans=True,
-    read_sim_scans=False,
+    ms_level = MS_level.ms1,
     time_start=0,
     time_end=float("inf"),
     ms1_start=0,
@@ -191,9 +194,7 @@ def spectra_as_df(
     ms2_end=float("inf"),
     polarity=1,
 ):
-    assert (
-        read_ms1_scans or read_ms2_scans or read_sim_scans
-    ), " must read ms1 or ms2 scans os SIM scans"
+    '''read a spectra into a dataframe with contstraints, ms_level is an enum'''
     path = Path(path)
     dfs = []
     with MSFileLoader(str(path)) as r:
@@ -216,17 +217,16 @@ def spectra_as_df(
                 if scan.annotations
                 else scan._data["filterLine"]
             )
-            isSim = " sim " in filter_string.lower()
 
-            if read_ms1_scans and not isSim:
+            if MS_level.ms1 in ms_level:
                 df = scan_to_DF(b.precursor, path, ms1_start, ms1_end)
                 dfs.append(df)
-            if read_sim_scans and isSim:
+            if MS_level.sim in ms_level and " sim " in filter_string.lower():
                 df = scan_to_DF(b.precursor, path, ms1_start, ms1_end)
                 dfs.append(df)
 
             # read the ms2 scans
-            if read_ms2_scans:
+            if MS_level.ms2 in ms_level:
                 for p in b.products:
                     if not (time_start / 60 < p.scan_time < time_end / 60):
                         continue
@@ -668,7 +668,8 @@ def sim_trim(path, da = None):
 def spectra_2_DF(spectra_path, options, add_stem=True):
     '''convert a spectra mzml, with multiple scans, into a dataframe an average ms1 dataframe'''
     settings = get_settings(options)
-    settings["read_ms2_scans"] = False
+    settings["ms_level"] = settings.get("ms_level",MS_level.ms1)
+    settings["polarity"] = settings.get("polarity",1)
     df = spectra_as_df(spectra_path, **settings)
 
     tolerance = options["MSresolution"].tolerance
@@ -676,7 +677,12 @@ def spectra_2_DF(spectra_path, options, add_stem=True):
     df = merge_peaks_from_scan(df)
 
     df, lx_data = aggregate_groups(df)
+    #TODO extend df with lx_data, https://pandas.pydata.org/pandas-docs/stable/development/extending.html
+    # see https://git.mpi-cbg.de/mirandaa/lipidxplorer2.0/-/blob/master/lx2_tools/scansDecorator.py
     lx_data["stem"] = Path(spectra_path).stem
+    lx_data["ms_level"] = settings["ms_level"]
+    lx_data["polarity"] = settings["polarity"]
+
     if add_stem:
         df["stem"] = lx_data["stem"]
         df["stem"] = df["stem"].astype("category")
@@ -719,13 +725,14 @@ def aligned_spectra_df(options):
     mzmls = get_mz_ml_paths(options)
     dfs_and_info = [spectra_2_DF(spectra_path, options) for spectra_path in mzmls]
     dfs, df_infos = zip(*dfs_and_info)
+    #NOTE assert all dfs have same polarity? YAGNI 
     df = align_ms1_dfs(dfs, options)
     return df, df_infos
 
 def make_masterscan(options):
     df, df_infos = aligned_spectra_df(options)
     df["masswindow"] = -1  # # NOTE use :add_massWindow instead
-    polarity = 1
+    polarity = df_infos['polarity']
     samples = df["stem"].unique().tolist()
     listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
     scan = build_masterscan(options, listSurveyEntry, samples)
