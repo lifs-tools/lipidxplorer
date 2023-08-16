@@ -57,6 +57,10 @@ def spectra_2_df_single(mzml, options, **kwargs):
 
 
 def spectra_2_df(options):
+    warnings.warn(
+        "this whole module is depriated only use as reference",
+        DeprecationWarning,
+    )
     mzmls = get_mz_ml_paths(options)
     print(mzmls)
     return [spectra_2_df_single(mzml, options) for mzml in mzmls]
