@@ -742,9 +742,17 @@ def get_mz_ml_paths(options):
 
 
 def aligned_spectra_df_lx1(options):
+    """create a dataframe with the average ms1 information for all the spectra indicated in the options
+
+    Args:
+        options (_type_): as in lx1
+
+    Returns:
+        tuple : dataframe and list with information about the processing of the spectra
+    """
     mzmls = get_mz_ml_paths(options)
     dfs_and_info = [
-        spectra_2_DF(spectra_path, options) for spectra_path in mzmls
+        spectra_2_DF_lx1(spectra_path, options) for spectra_path in mzmls
     ]
     dfs, df_infos = zip(*dfs_and_info)
     # NOTE assert all dfs have same polarity? YAGNI
@@ -753,7 +761,15 @@ def aligned_spectra_df_lx1(options):
 
 
 def make_masterscan_lx1(options):
-    df, df_infos = aligned_spectra_df(options)
+    """make the masterscan based on the optoins inftomation
+
+    Args:
+        options (_type_): as in lx1
+
+    Returns:
+        masterscan: with the averaged spectra information
+    """
+    df, df_infos = aligned_spectra_df_lx1(options)
     df["masswindow"] = -1  # # NOTE use :add_massWindow instead
     polarity = df_infos[0]["polarity"]
     samples = df["stem"].unique().tolist()
