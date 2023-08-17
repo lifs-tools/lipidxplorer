@@ -161,7 +161,7 @@ def parse_out_file(out):
     return df
 
 
-def check_and_relace_results(out, dump, result_file):
+def replace_results_with_min_abs_error(out, dump, result_file):
     """
     replace the results from the out file with values from the dump file,
     where the eabsolute error is smaller,
@@ -276,7 +276,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    check_and_relace_results(*args)
+    replace_results_with_min_abs_error(*args)
 
 
 if __name__ == "__main__":
