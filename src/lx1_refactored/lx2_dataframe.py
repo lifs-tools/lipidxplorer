@@ -1,6 +1,9 @@
+import logging
+import sys
 import numpy as np
 import pandas as pd
 from pathlib import Path
+import warnings
 
 from .lx1_ref_dataframe import (
     MS_level,
@@ -11,7 +14,17 @@ from .lx1_ref_dataframe import (
     filter_repetition_rate,
     filter_intensity,
     recalibrate,
+    get_mz_ml_paths
 )
+from .lx1_ref_dataframe import make_masterscan as make_masterscan_from_lx1
+
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format="[%(asctime)s] {%(name)s:%(lineno)d} %(levelname)s - %(message)s",
+    datefmt="%H:%M:%S",
+)
+log = logging.getLogger(Path(__file__).stem)
 
 
 # see compare_grouping from LX1 masterscan
@@ -159,7 +172,7 @@ def tukey_upper(differences, k=1.5):
     upper_bound = q3 + k * iqr
     return upper_bound
 
-def find_reference_masses(df, recalibration_masses):
+def find_reference_masses(df, recalibration_masses, max_tolearance = 0.1):
     # TODO make find_closest function... see above
     recalibration_masses = pd.Series(recalibration_masses)
     recalibration_masses.sort_values(inplace=True)
@@ -169,6 +182,12 @@ def find_reference_masses(df, recalibration_masses):
     differences = matching_masses - recalibration_masses.values
     
     tolerance = tukey_upper(differences)
+    if tolerance > max_tolearance:
+        tolerance = max_tolearance
+        message = f'reference mass tolerance is exxceded with replace with max tolerance: {max_tolearance}'
+        warnings.warn(message)
+        log.warning(message)
+
     mask = differences <= (matching_masses / tolerance)
     return matching_masses[mask], differences[mask]
 
@@ -217,3 +236,26 @@ def spectra_2_DF(spectra_path, options, add_stem=True):
     lx_data["recalibration"] = (matching_masses, reference_distance)
 
     return df, lx_data
+
+def aligned_spectra_df(options):
+    """create a dataframe with the average ms1 information for all the spectra indicated in the options
+
+    Args:
+        options (_type_): as in lx1
+
+    Returns:
+        tuple : dataframe and list with information about the processing of the spectra
+    """
+    mzmls = get_mz_ml_paths(options)
+    dfs_and_info = [
+        spectra_2_DF(spectra_path, options) for spectra_path in mzmls
+    ]
+    dfs, df_infos = zip(*dfs_and_info)
+    # NOTE assert all dfs have same polarity? YAGNI
+    df = pd.concat(dfs)
+    df = align_spectra(df)
+    return df, df_infos
+
+def make_masterscan(options):
+    df, df_infos = aligned_spectra_df(options)
+    return make_masterscan_from_lx1(options, df, df_infos)

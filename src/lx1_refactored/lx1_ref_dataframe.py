@@ -20,6 +20,7 @@ from ms_deisotope.output.mzml import MzMLSerializer
 
 from .lx1_ref_masterscan import build_masterscan, df2listSurveyEntry
 
+
 logging.basicConfig(
     level=logging.INFO,
     stream=sys.stdout,
@@ -750,6 +751,19 @@ def make_masterscan_lx1(options):
         masterscan: with the averaged spectra information
     """
     df, df_infos = aligned_spectra_df_lx1(options)
+    return make_masterscan(options,  df, df_infos)
+
+def make_masterscan(options, aligned_spectra_df, aligned_spectra_infos):
+    """make the masterscan based on the optoins inftomation
+
+    Args:
+        options (_type_): as in lx1
+
+    Returns:
+        masterscan: with the averaged spectra information
+    """
+    df = aligned_spectra_df
+    df_infos = aligned_spectra_infos
     df["masswindow"] = -1  # # NOTE use :add_massWindow instead
     polarity = df_infos[0]["polarity"]
     samples = df["stem"].unique().tolist()

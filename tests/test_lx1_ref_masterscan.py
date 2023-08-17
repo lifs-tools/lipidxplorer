@@ -202,5 +202,5 @@ def test_aligned_spectra_df_lx1(options):
 
 def test_make_masterscan(options):
     scan = make_masterscan_lx1(options)
-    assert scan
+    assert len(scan.listSurveyEntry) == 1850
 

@@ -11,7 +11,7 @@ from lx1_refactored import (
     spectra_as_df,
     recalibrate,
 )
-from lx1_refactored.lx2_dataframe import align_spectra, spectra_2_DF
+from lx1_refactored.lx2_dataframe import align_spectra, spectra_2_DF, aligned_spectra_df, make_masterscan
 from utils import read_options
 
 ROOT_PATH = r"tests/resources/small_test"
@@ -65,7 +65,7 @@ def test_get_ms2_peaks():
     reason="There is an issue of ValueError: cannot reindex from a duplicate axis"
 )  # TODO: Jacobo for the future
 def test_group_ms1_peaks():
-    options = {"MSfilter": 0.7, "MSthreshold": 0.5}
+    options = {"MSfilter": 0.6, "MSthreshold": 0.6}
     df = pd.read_pickle(ms1_peaks_REF)
     df = add_bins(df)
     df = merge_peaks_from_scan(df)
@@ -80,7 +80,7 @@ def test_group_ms1_peaks():
     mask = filter_intensity(df, options["MSthreshold"])
     df = df[mask]
     assert df.shape == (1729, 7)
-    df_ref = pd.read_pickle(lx2_group_ms1_peaks_REF)
+    df_ref = pd.read_pickle(lx2_group_ms1_peaks_REF) # TODO recheck because iupdated lx2_group_ms1_peaks_REF
     assert df_ref.equals(df)
 
 
@@ -88,7 +88,7 @@ def test_group_ms1_peaks():
     reason="Check the differences!"
 )  # TODO: Jacobo for the future
 def test_align_ms1_scans():
-    df1 = pd.read_pickle(lx2_group_ms1_peaks_REF)
+    df1 = pd.read_pickle(lx2_group_ms1_peaks_REF) # TODO recheck because iupdated lx2_group_ms1_peaks_REF
     # making a modified spectra
     df2 = pd.read_pickle(lx2_group_ms1_peaks_REF)
     df2 = df2.sample(frac=0.9, replace=True, random_state=1)
@@ -159,18 +159,17 @@ def test_readfile():
 
 def test_spectra_2_DF(options):
     df, lx_data = spectra_2_DF(SPECTRA_PATH, options)
-    df_ref = pd.read_pickle(group_ms1_peaks_REF)
+    df_ref = pd.read_pickle(lx2_group_ms1_peaks_REF)
     cols = ['mz','inty']
-    assert False
     assert (df[cols] - df_ref[cols]).describe().loc['mean'].abs().sum() < 0.01 # to have a little wiggle room, like no close
     assert (df[cols] - df_ref[cols]).describe().loc['std'].abs().sum() < 0.01
 
 def test_aligned_spectra_df(options):
     df, df_infos = aligned_spectra_df(options)
-    df_ref = pd.read_pickle(align_ms1_scans_ref_REF)
+    df_ref = pd.read_pickle(lx2_align_ms1_scans_ref_REF)
     cols = ['mz','inty']
-    assert False
+    assert df.shape == (3940, 8)
 
 def test_make_masterscan(options):
     scan = make_masterscan(options)
-    assert False
+    assert len(scan.listSurveyEntry) == 2095
