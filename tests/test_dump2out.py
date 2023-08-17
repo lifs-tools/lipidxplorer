@@ -1,5 +1,5 @@
 import pandas as pd
-from lx1_refactored.tools import check_and_relace_results
+from tools import check_and_relace_results
 
 OUT_FILE = r"tests/resources/dump2out/Trim-out-5 ppm.csv"
 DUMP_FILE = r"tests/resources/dump2out/Trim-dump- 5 ppm.csv"
