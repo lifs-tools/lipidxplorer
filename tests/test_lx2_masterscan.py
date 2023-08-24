@@ -11,7 +11,12 @@ from lx1_refactored import (
     spectra_as_df,
     recalibrate,
 )
-from lx1_refactored.lx2_dataframe import align_spectra, spectra_2_DF, aligned_spectra_df, make_masterscan
+from lx1_refactored.lx2_dataframe import (
+    align_spectra,
+    spectra_2_DF,
+    aligned_spectra_df,
+    make_masterscan,
+)
 from utils import read_options
 
 ROOT_PATH = r"tests/resources/small_test"
@@ -21,10 +26,12 @@ ms1_peaks_REF = ROOT_PATH + r"/test_get_ms1_peaks_ref.pkl"
 lx2_group_ms1_peaks_REF = ROOT_PATH + r"/test_get_lx2_ms1_peaks_ref.pkl"
 lx2_align_ms1_scans_ref_REF = ROOT_PATH + r"/test_lx2_align_ms1_scans_ref.pkl"
 
+
 @pytest.fixture
 def options():
     options = read_options(OPTIONS_PATH)
     return options
+
 
 def test_get_ms1_peaks():
     # options = read_options(OPTIONS_PATH) # Note only here as reference
@@ -61,9 +68,6 @@ def test_get_ms2_peaks():
     assert df.shape == (302188, 8)
 
 
-@pytest.mark.skip(
-    reason="There is an issue of ValueError: cannot reindex from a duplicate axis"
-)  # TODO: Jacobo for the future
 def test_group_ms1_peaks():
     options = {"MSfilter": 0.6, "MSthreshold": 0.6}
     df = pd.read_pickle(ms1_peaks_REF)
@@ -80,7 +84,9 @@ def test_group_ms1_peaks():
     mask = filter_intensity(df, options["MSthreshold"])
     df = df[mask]
     assert df.shape == (1729, 7)
-    df_ref = pd.read_pickle(lx2_group_ms1_peaks_REF) # TODO recheck because iupdated lx2_group_ms1_peaks_REF
+    df_ref = pd.read_pickle(
+        lx2_group_ms1_peaks_REF
+    )  # TODO recheck because iupdated lx2_group_ms1_peaks_REF
     assert df_ref.equals(df)
 
 
@@ -88,7 +94,9 @@ def test_group_ms1_peaks():
     reason="Check the differences!"
 )  # TODO: Jacobo for the future
 def test_align_ms1_scans():
-    df1 = pd.read_pickle(lx2_group_ms1_peaks_REF) # TODO recheck because iupdated lx2_group_ms1_peaks_REF
+    df1 = pd.read_pickle(
+        lx2_group_ms1_peaks_REF
+    )  # TODO recheck because iupdated lx2_group_ms1_peaks_REF
     # making a modified spectra
     df2 = pd.read_pickle(lx2_group_ms1_peaks_REF)
     df2 = df2.sample(frac=0.9, replace=True, random_state=1)
@@ -147,28 +155,35 @@ def test_exclude_text():
 @pytest.mark.skip(reason="YAGNI, not used, is legacy")
 def test_readfile():
     spectra_path = r"tests/resources/benchmark128/spectra/190321_Serum_Lipidextract_368723_01.mzML"
-    options = {  # NOTE to initialize Masterscan(options) a dictionalry is not enough
-        "timerange": (33.0, 1080.0),
-        "MSmassrange": (360.0, 1000.0),
-        "MSMSmassrange": (150.0, 1000.0),
-        "MScalibration": [680.4802],
-        "MSMScalibration": None,
-    }
+    options = (
+        {  # NOTE to initialize Masterscan(options) a dictionalry is not enough
+            "timerange": (33.0, 1080.0),
+            "MSmassrange": (360.0, 1000.0),
+            "MSMSmassrange": (150.0, 1000.0),
+            "MScalibration": [680.4802],
+            "MSMScalibration": None,
+        }
+    )
     scan = lx2_spectra(spectra_path, options)
     assert scan is not None
+
 
 def test_spectra_2_DF(options):
     df, lx_data = spectra_2_DF(SPECTRA_PATH, options)
     df_ref = pd.read_pickle(lx2_group_ms1_peaks_REF)
-    cols = ['mz','inty']
-    assert (df[cols] - df_ref[cols]).describe().loc['mean'].abs().sum() < 0.01 # to have a little wiggle room, like no close
-    assert (df[cols] - df_ref[cols]).describe().loc['std'].abs().sum() < 0.01
+    cols = ["mz", "inty"]
+    assert (df[cols] - df_ref[cols]).describe().loc[
+        "mean"
+    ].abs().sum() < 0.01  # to have a little wiggle room, like no close
+    assert (df[cols] - df_ref[cols]).describe().loc["std"].abs().sum() < 0.01
+
 
 def test_aligned_spectra_df(options):
     df, df_infos = aligned_spectra_df(options)
     df_ref = pd.read_pickle(lx2_align_ms1_scans_ref_REF)
-    cols = ['mz','inty']
+    cols = ["mz", "inty"]
     assert df.shape == (3940, 8)
+
 
 def test_make_masterscan(options):
     scan = make_masterscan(options)

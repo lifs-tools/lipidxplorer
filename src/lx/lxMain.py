@@ -18,6 +18,7 @@ import time
 # from guppy import hpy
 # import memory_logging
 # import objgraph
+from lx.spectraImport import doImport
 
 
 def startImport(
@@ -26,7 +27,7 @@ def startImport(
     parent=None,
     worker=None,
     lipidxplorer=False,
-    optimization=False,
+    lx_ver="LX1",
 ):
     ######################################################
     ###              start LipidXplorer                ###
@@ -42,12 +43,6 @@ def startImport(
                 % options["spectraFormat"]
             )
 
-    # if optimization:
-    if False:
-        from lx.spectraImportC import doImport_new as doImport
-    else:
-        from lx.spectraImport import doImport
-
     # if parent:
     # max = len(listIntermission[5]) + 3
 
@@ -60,37 +55,55 @@ def startImport(
 
     # listIntermission: (options, scan, importDir, output, parent, listFiles, isTaken, isGroup)
     if parent:  # if started from GUI, put it in a thread
-        worker.beginThread(
-            doImport,
-            listIntermission[0],
-            listIntermission[1],
-            listIntermission[2],
-            listIntermission[3],
-            listIntermission[4],
-            listIntermission[5],
-            listIntermission[6],
-            listIntermission[7],
-            options["alignmentMethodMS"],
-            options["alignmentMethodMSMS"],
-            options["scanAveragingMethod"],
-            options["importMSMS"],
-        )
+        if lx_ver == "LX1":
+            worker.beginThread(
+                doImport,
+                listIntermission[0],
+                listIntermission[1],
+                listIntermission[2],
+                listIntermission[3],
+                listIntermission[4],
+                listIntermission[5],
+                listIntermission[6],
+                listIntermission[7],
+                options["alignmentMethodMS"],
+                options["alignmentMethodMSMS"],
+                options["scanAveragingMethod"],
+                options["importMSMS"],
+            )
+        elif lx_ver == "LX1_refactored":
+            from lx1_refactored import make_masterscan_lx1
+
+            worker.beginThread(make_masterscan_lx1, options)
+        elif lx_ver == "LX2":
+            from lx1_refactored.lx2_dataframe import make_masterscan
+
+            worker.beginThread(make_masterscan, options)
 
     else:
-        doImport(
-            listIntermission[0],
-            listIntermission[1],
-            listIntermission[2],
-            listIntermission[3],
-            listIntermission[4],
-            listIntermission[5],
-            listIntermission[6],
-            listIntermission[7],
-            options["alignmentMethodMS"],
-            options["alignmentMethodMSMS"],
-            options["scanAveragingMethod"],
-            options["importMSMS"],
-        )
+        if lx_ver == "LX1":
+            doImport(
+                listIntermission[0],
+                listIntermission[1],
+                listIntermission[2],
+                listIntermission[3],
+                listIntermission[4],
+                listIntermission[5],
+                listIntermission[6],
+                listIntermission[7],
+                options["alignmentMethodMS"],
+                options["alignmentMethodMSMS"],
+                options["scanAveragingMethod"],
+                options["importMSMS"],
+            )
+        elif lx_ver == "LX1_refactored":
+            from lx1_refactored import make_masterscan_lx1
+
+            make_masterscan_lx1(options)
+        elif lx_ver == "LX2":
+            from lx1_refactored.lx2_dataframe import make_masterscan
+
+            make_masterscan(options)
 
 
 def startMFQL(options={}, queries={}, parent=None):

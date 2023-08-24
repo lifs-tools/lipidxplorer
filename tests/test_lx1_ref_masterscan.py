@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 from lx1_refactored import (
     add_aggregated_mass,
@@ -20,7 +20,7 @@ from lx1_refactored import (
     get_settings,
     spectra_2_DF_lx1,
     aligned_spectra_df_lx1,
-    make_masterscan_lx1
+    make_masterscan_lx1,
 )
 
 from utils import read_options
@@ -64,7 +64,6 @@ def test_spectra2df_settings(settings):
 
 
 def test_get_ms1_peaks(settings):
-    settings["read_ms2_scans"] = False
     df = spectra_as_df(SPECTRA_PATH, **settings)
     assert df.shape == (65897, 8)
     assert df.scan_id.unique().shape[0] == 31
@@ -78,7 +77,7 @@ def test_group_ms1_peaks(options):
     tolerance = options["MSresolution"].tolerance
     df = add_lx1_bins(df, tolerance)
     df = merge_peaks_from_scan(df)
-    assert df.shape == (65897, 14)
+    assert df.shape == (65897, 15)
     df, lx_data = aggregate_groups(df)
     assert df.shape == (6707, 7)
     mask = filter_repetition_rate(
@@ -189,18 +188,20 @@ def test_build_masterscan(options):
 def test_spectra_2_DF_lx1(options):
     df, lx_data = spectra_2_DF_lx1(SPECTRA_PATH, options)
     df_ref = pd.read_pickle(group_ms1_peaks_REF)
-    cols = ['mz','inty']
-    assert (df[cols] - df_ref[cols]).describe().loc['mean'].abs().sum() < 0.01 # to have a little wiggle room, like no close
-    assert (df[cols] - df_ref[cols]).describe().loc['std'].abs().sum() < 0.01
+    cols = ["mz", "inty"]
+    assert (df[cols] - df_ref[cols]).describe().loc[
+        "mean"
+    ].abs().sum() < 0.01  # to have a little wiggle room, like no close
+    assert (df[cols] - df_ref[cols]).describe().loc["std"].abs().sum() < 0.01
 
 
 def test_aligned_spectra_df_lx1(options):
     df, df_infos = aligned_spectra_df_lx1(options)
     df_ref = pd.read_pickle(align_ms1_scans_ref_REF)
-    cols = ['mz','inty']
+    cols = ["mz", "inty"]
     assert df.shape == (3415, 8)
+
 
 def test_make_masterscan(options):
     scan = make_masterscan_lx1(options)
     assert len(scan.listSurveyEntry) == 1850
-

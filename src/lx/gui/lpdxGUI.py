@@ -606,7 +606,7 @@ class TextOutFrame(wx.Frame):
         self.sizer_buttons.Add(
             self.button_clear,
             0,
-            wx.ADJUST_MINSIZE | wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL,
+            wx.ADJUST_MINSIZE | wx.ALIGN_BOTTOM,
             10,
         )
         # self.sizer_buttons.Add(self.button_stop, 0, wx.ADJUST_MINSIZE|wx.ALIGN_BOTTOM|wx.ALIGN_CENTER_HORIZONTAL, 10)
@@ -614,10 +614,7 @@ class TextOutFrame(wx.Frame):
         self.sizer.Add(
             self.sizer_buttons,
             0,
-            wx.ADJUST_MINSIZE
-            | wx.ALIGN_BOTTOM
-            | wx.ALIGN_CENTER_HORIZONTAL
-            | wx.ALL,
+            wx.ADJUST_MINSIZE | wx.ALIGN_CENTER_HORIZONTAL | wx.ALL,
             10,
         )
         self.SetSizer(self.sizer)
@@ -2740,6 +2737,10 @@ intensity."""
         if evt.msg == "startImport":
             self.button_StartImport.Enable()
             self.button_RunLipidX.Enable()
+        if evt.msg == "make_masterscan":
+            self.button_StartImport.Enable()
+        if evt.msg == "make_masterscan_lx1":
+            self.button_StartImport.Enable()
 
         if self.debug.progressDialog:
             self.debug.progressDialog.Destroy()
@@ -3590,7 +3591,12 @@ intensity."""
                             # this is normal gray: (230, 224, 218, 255)
                             if not self.dict_button_save[
                                 key
-                            ].GetBackgroundColour() == (250, 80, 80, 215,):
+                            ].GetBackgroundColour() == (
+                                250,
+                                80,
+                                80,
+                                215,
+                            ):
                                 self.dict_button_save[key].SetBackgroundColour(
                                     (250, 80, 80, 215)
                                 )
@@ -3859,7 +3865,10 @@ intensity."""
                                     strCentroid = ""
                                 strStartWiff = (
                                     'mzWiff -FPC1 %s --mzXML "%s"'
-                                    % (strCentroid, os.path.join(root, f),)
+                                    % (
+                                        strCentroid,
+                                        os.path.join(root, f),
+                                    )
                                 )  # s, wiffOut)
 
                             print(strStartWiff)
@@ -4962,48 +4971,42 @@ intensity."""
         self.text_ctrl_SettingsSection_precursorMassShiftOrbi.ChangeValue("")
 
     def OnStartImport(self, evt):
-        # TODO: @Jacobo: please check the version and change the method accordingly here
         # In this part we setup parameters according to the version as well as method overrides
-
-        if self.lipidxplorer:
-            from lx.lxMain import startImport
-        else:
-            from lipoxplorer.lxMain import runLipoX
 
         # get the options from GUI settings
         project = self.readOptions()
 
         # TODO: @Jacobo: please check the parameters for LX2
         # in LX2 mode, override the options if necessary
-        if self.lx_ver == "LX2":
-            # elements below will be ignored when using calctol
-            elems = [
-                "MSresolution",  # self.text_ctrl_SettingsSection_resolution_ms,
-                "MSMSresolution",  # self.text_ctrl_SettingsSection_resolution_msms,
-                "MSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_ms,
-                "MSMSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_msms,
-                "MStolerance",  # self.text_ctrl_SettingsSection_tolerance_ms,
-                "MSMStolerance",  # self.text_ctrl_SettingsSection_tolerance_msms,
-                "selectionWindow",  # self.text_ctrl_SettingsSection_selectionWindow,
-                # 'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
-                # 'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
-                # 'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
-                # 'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
-            ]
-
-            for e in elems:
-                project.options[
-                    e
-                ] = "0.123456"  # TODO replace this dirty fix that avoids div by zero
-
-            project.options["optionalMStolerance"] = "20"
-            project.options["optionalMSMStolerance"] = "20"
-            project.options["optionalMStoleranceType"] = "ppm"
-            project.options["optionalMSMStoleranceType"] = "ppm"
-
-            project.options["scanAveragingMethod"] = "calctol"  # vs 'linear'
-            project.options["alignmentMethodMS"] = "calctol"
-            project.options["alignmentMethodMSMS"] = "calctol"
+        # if self.lx_ver == "LX2":
+        #     # elements below will be ignored when using calctol
+        #     elems = [
+        #         "MSresolution",  # self.text_ctrl_SettingsSection_resolution_ms,
+        #         "MSMSresolution",  # self.text_ctrl_SettingsSection_resolution_msms,
+        #         "MSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_ms,
+        #         "MSMSresolutionDelta",  # self.text_ctrl_SettingsSection_resDelta_msms,
+        #         "MStolerance",  # self.text_ctrl_SettingsSection_tolerance_ms,
+        #         "MSMStolerance",  # self.text_ctrl_SettingsSection_tolerance_msms,
+        #         "selectionWindow",  # self.text_ctrl_SettingsSection_selectionWindow,
+        #         # 'MSthreshold',# self.text_ctrl_SettingsSection_threshold_ms,
+        #         # 'MSMSthreshold',# self.text_ctrl_SettingsSection_threshold_msms,
+        #         # 'MSminOccupation',# self.text_ctrl_SettingsSection_occupationThr_ms,
+        #         # 'MSMSminOccupation'# self.text_ctrl_SettingsSection_occupationThr_msms
+        #     ]
+        #
+        #     for e in elems:
+        #         project.options[
+        #             e
+        #         ] = "1"  # TODO replace this dirty fix that avoids div by zero
+        #
+        #     project.options["optionalMStolerance"] = "20"
+        #     project.options["optionalMSMStolerance"] = "20"
+        #     project.options["optionalMStoleranceType"] = "ppm"
+        #     project.options["optionalMSMStoleranceType"] = "ppm"
+        #
+        #     project.options["scanAveragingMethod"] = "calctol"  # vs 'linear'
+        #     project.options["alignmentMethodMS"] = "calctol"
+        #     project.options["alignmentMethodMSMS"] = "calctol"
 
         # test if all options are correct
         project.testOptions()
@@ -5014,75 +5017,24 @@ intensity."""
         # get options
         options = project.getOptions()
 
-        self.button_StartImport.Disable()
-        self.isRunning = True
-
-        # start import
-        # startImportGUI(self, options)
-
-        # Processing part according to the version
-
-        # TODO: @Jacobo: LX2
         # in LX2 mode
         if self.lx_ver == "LX2":
-            import LX1_masterscan
-            import pickle
-            from pathlib import Path
-            import logging
-            import compare_masterscan
+            print("LX2 mode")
 
-            LX1_masterscan.log.addHandler(
-                logging.StreamHandler(SysOutListener())
-            )
-
-            def make_save_mastersscan(options):
-                masterscan = LX1_masterscan.make_lx_masterscan(options)
-                idp = Path(options["importDir"])
-                # filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
-                filename = options["masterScanRun"]
-                LX1_masterscan.log.info(f"saving file to: {filename}")
-                with open(filename, "wb") as scFile:
-                    pickle.dump(masterscan, scFile, pickle.HIGHEST_PROTOCOL)
-                return self.CONST_THREAD_SUCCESSFUL
-
-            requestQ = queue.Queue()
-            resultQ = queue.Queue()
-            worker = Worker(self, requestQ, resultQ)
-            worker.beginThread(make_save_mastersscan, options)
-
-            # dlg = wx.MessageDialog(
-            #     self,
-            #     "shall we compare mastescans?",
-            #     "compare",
-            #     wx.NO | wx.YES | wx.ICON_HAND,
-            # )
-            # if dlg.ShowModal() == wx.ID_YES:
-            #     lx1_mscan = options["masterScanRun"]
-            #     idp = Path(options["importDir"])
-            #     filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
-            #     lx2_mscan = filename
-            #     xls_output_path = str(idp / Path("".join([idp.stem, "-compare.xlsx"])))
-            #     compare_masterscan.compare_masterscan(
-            #         lx1_mscan, lx2_mscan, xls_output_path
-            #     )
-            #     dlg.Destroy()
-
-            self.button_StartImport.Enable()
-            self.isRunning = False
-
-            return None
-
-        # TODO: @Jacobo: this is LX1_refactored
         # in LX1_refactored mode
         elif self.lx_ver == "LX1_refactored":
             print("LX1 Refactored mode")
 
-        # TODO: @Jacobo: this is LX1 which is original
         # in old LX1 mode
         elif self.lx_ver == "LX1":
             print("LX1 mode")
 
+        self.button_StartImport.Disable()
+        self.isRunning = True
+
         try:  # generate a new MasterScan and set the import settings
+            # Processing part according to the version
+
             # We can move version check logic here instead
             if self.lipidxplorer:
                 if not wx.GetApp().frame.debugOpen:
@@ -5093,18 +5045,16 @@ intensity."""
                 resultQ = queue.Queue()
                 worker = Worker(self, requestQ, resultQ)
 
-                # TODO: @Jacobo: according to the version, we call different method here
+                from lx.lxMain import startImport
+
                 startImport(
                     options=options,
                     queries=project.mfql,
                     parent=self,
                     worker=worker,
                     lipidxplorer=self.lipidxplorer,
-                    optimization=self.optimized,
+                    lx_ver=self.lx_ver,
                 )
-
-            else:
-                runLipoX(options=options, queries=project.mfql, parent=self)
 
         except LipidXException:
             # frame.handleLipidXException()
@@ -6445,7 +6395,12 @@ intensity."""
                 )
                 str += (
                     "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n"
-                    % (Mtx[0][3], Mtx[1][2], Mtx[2][1], Mtx[3][0],)
+                    % (
+                        Mtx[0][3],
+                        Mtx[1][2],
+                        Mtx[2][1],
+                        Mtx[3][0],
+                    )
                 )
                 str += (
                     "     F0N4: %.4f, F1N3: %.4f, F2N2: %.4f, F3N1: %.4f, F4N0: %.4f\n"
@@ -6486,7 +6441,12 @@ intensity."""
                 )
                 str += (
                     "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n"
-                    % (Mtx[0][3], Mtx[1][2], Mtx[2][1], Mtx[3][0],)
+                    % (
+                        Mtx[0][3],
+                        Mtx[1][2],
+                        Mtx[2][1],
+                        Mtx[3][0],
+                    )
                 )
                 str += (
                     "     F0N4: %.4f, F1N3: %.4f, F2N2: %.4f, F3N1: %.4f, F4N0: %.4f\n"
@@ -7247,7 +7207,7 @@ intensity."""
         sizer_toolPane.Add(
             sizer_toolPane_2,
             0,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT | wx.EXPAND,
+            wx.LEFT | wx.RIGHT | wx.EXPAND,
             10,
         )
         sizer_toolPane_1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -7261,7 +7221,7 @@ intensity."""
         sizer_toolPane.Add(
             self.text_ctrl_mstools_OutputSection,
             0,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT | wx.EXPAND,
+            wx.LEFT | wx.RIGHT | wx.EXPAND,
             20,
         )
 
@@ -7308,14 +7268,14 @@ intensity."""
         sizer_toolPane_14.Add(
             self.checkBox_mstools_Isotopes_nl,
             0,
-            wx.ALIGN_RIGHT | wx.EXPAND | wx.ALL,
+            wx.ALIGN_CENTRE_HORIZONTAL,
             5,
         )
         sizer_toolPane_12.Add(sizer_toolPane_14)
         sizer_toolPane.Add(
             sizer_toolPane_12,
             0,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT | wx.EXPAND,
+            wx.LEFT | wx.RIGHT | wx.EXPAND,
             10,
         )
         sizer_toolPane_13 = wx.BoxSizer(wx.HORIZONTAL)
@@ -7326,7 +7286,7 @@ intensity."""
         sizer_toolPane.Add(
             self.text_ctrl_mstools_Isotopes_output,
             0,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT | wx.EXPAND,
+            wx.LEFT | wx.RIGHT | wx.EXPAND,
             20,
         )
 
@@ -7380,13 +7340,14 @@ intensity."""
         )
         grid_sizer_5_listBox.AddGrowableCol(0)
         grid_sizer_5_listBox.AddGrowableRow(0)
-        grid_sizer_6 = wx.BoxSizer(wx.VERTICAL)
-        grid_sizer_6.Add((220, 10), 0, wx.ALL, 0)
-        grid_sizer_6.Add(self.button_AddMFQL, 0, wx.ALL, 0)
-        grid_sizer_6.Add(self.button_AddDir, 0, wx.ALL, 0)
-        grid_sizer_6.Add(self.button_OpenFile, 0, wx.ALL, 0)
-        grid_sizer_6.Add(self.button_NewFile, 0, wx.ALL, 0)
-        grid_sizer_6.Add(self.button_RemoveEntry, 0, wx.ALL, 0)
+
+        # grid_sizer_6 = wx.BoxSizer(wx.VERTICAL)
+        # grid_sizer_6.Add((220, 10), 0, wx.ALL, 0)
+        # grid_sizer_6.Add(self.button_AddMFQL, 0, wx.ALL, 0)
+        # grid_sizer_6.Add(self.button_AddDir, 0, wx.ALL, 0)
+        # grid_sizer_6.Add(self.button_OpenFile, 0, wx.ALL, 0)
+        # grid_sizer_6.Add(self.button_NewFile, 0, wx.ALL, 0)
+        # grid_sizer_6.Add(self.button_RemoveEntry, 0, wx.ALL, 0)
         grid_sizer_1_RunCard.Add(grid_sizer_5_listBox, 1, 0, 0)
 
         # masterScan
@@ -7611,7 +7572,7 @@ intensity."""
         grid_sizer_30_ImportDataSection_GroupSamples.Add(
             self.label_SettingsSection_occupationThr_groups,
             0,
-            wx.ALIGN_CENTER | wx.EXPAND | wx.TOP,
+            wx.EXPAND | wx.TOP,
             15,
         )
         grid_sizer_14_textBrowse_V.Add(

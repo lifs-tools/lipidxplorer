@@ -14,7 +14,7 @@ from .lx1_ref_dataframe import (
     filter_repetition_rate,
     filter_intensity,
     recalibrate,
-    get_mz_ml_paths
+    get_mz_ml_paths,
 )
 from .lx1_ref_dataframe import make_masterscan as make_masterscan_from_lx1
 
@@ -132,7 +132,6 @@ def get_bins(masses, eg_count, sigma=2):
 
 
 def get_weighted_masses(gdf_mz):
-
     # https://stackoverflow.com/questions/64368050/gaussian-rolling-weights-pandas
     # https://www.youtube.com/watch?v=QIi2eWmdPM8&ab_channel=learndataa
     # https://dsp.stackexchange.com/questions/84471/rolling-average-in-pandas-using-a-gaussian-window\
@@ -140,10 +139,11 @@ def get_weighted_masses(gdf_mz):
     x = gdf_mz
     mu = gdf_mz.mean()
     sigma = 2
-    weights = np.exp(-((x - mu) ** 2) / 2 * sigma ** 2) / np.sqrt(
-        2 * np.pi * sigma ** 2
+    weights = np.exp(-((x - mu) ** 2) / 2 * sigma**2) / np.sqrt(
+        2 * np.pi * sigma**2
     )
     return weights * x
+
 
 def find_closest():
     raise NotImplementedError("This function is not yet implemented.")
@@ -165,6 +165,7 @@ def find_closest():
     # matching_masses = df['mz'].iloc[df_indices].values
     return None
 
+
 def tukey_upper(differences, k=1.5):
     q1 = np.percentile(differences, 25)
     q3 = np.percentile(differences, 75)
@@ -172,7 +173,8 @@ def tukey_upper(differences, k=1.5):
     upper_bound = q3 + k * iqr
     return upper_bound
 
-def find_reference_masses(df, recalibration_masses, max_tolearance = 0.1):
+
+def find_reference_masses(df, recalibration_masses, max_tolearance=0.1):
     # TODO make find_closest function... see above
     recalibration_masses = pd.Series(recalibration_masses)
     recalibration_masses.sort_values(inplace=True)
@@ -180,11 +182,11 @@ def find_reference_masses(df, recalibration_masses, max_tolearance = 0.1):
     df_indices = np.searchsorted(df["mz"], recalibration_masses, side="left")
     matching_masses = df["mz"].iloc[df_indices].values
     differences = matching_masses - recalibration_masses.values
-    
+
     tolerance = tukey_upper(differences)
     if tolerance > max_tolearance:
         tolerance = max_tolearance
-        message = f'reference mass tolerance is exxceded with replace with max tolerance: {max_tolearance}'
+        message = f"reference mass tolerance is exxceded with replace with max tolerance: {max_tolearance}"
         warnings.warn(message)
         log.warning(message)
 
@@ -237,6 +239,7 @@ def spectra_2_DF(spectra_path, options, add_stem=True):
 
     return df, lx_data
 
+
 def aligned_spectra_df(options):
     """create a dataframe with the average ms1 information for all the spectra indicated in the options
 
@@ -256,6 +259,7 @@ def aligned_spectra_df(options):
     df = align_spectra(df)
     return df, df_infos
 
-def make_masterscan(options):
+
+def make_masterscan(options, **kwargs):
     df, df_infos = aligned_spectra_df(options)
-    return make_masterscan_from_lx1(options, df, df_infos)
+    return make_masterscan_from_lx1(options, df, df_infos, lx2=True)

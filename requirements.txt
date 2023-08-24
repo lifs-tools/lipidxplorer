@@ -1,4 +1,4 @@
-numpy
+numpy==1.21
 altgraph==0.17
 appdirs==1.4.4
 astroid
@@ -92,7 +92,7 @@ wcwidth==0.1.7
 webencodings==0.5.1
 wheel==0.33.6
 wrapt==1.11.2
-wxpython==4.0.4
+wxpython==4.2.1
 pyzmq
 zipp==0.6.0
 comtypes==1.1.7

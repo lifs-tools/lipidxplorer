@@ -8,13 +8,14 @@ from enum import Flag, auto
 import numpy as np
 import pandas as pd
 from ms_deisotope import MSFileLoader
+from ms_deisotope._c.units import unitfloat
 from ms_deisotope.data_source.memory import make_scan
 from ms_deisotope.data_source.metadata import file_information
 from ms_deisotope.data_source.metadata.scan_traits import (
     ScanAcquisitionInformation,
     ScanEventInformation,
-    unitfloat,
 )
+import pickle
 from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
 
@@ -110,7 +111,7 @@ def recalibrate_with_ms1(df):
 
 
 def drop_fuzzy(df):
-    """drop the first few scans that have a lot total ion count """
+    """drop the first few scans that have a lot total ion count"""
     raise NotImplementedError()
     # fraction_of_average_intensity = 0.1
     # spectras_sum_inty = (
@@ -297,6 +298,9 @@ def merge_peaks_from_scan(df):
         "_group" in df
     ), "The DataFrame or Series must contain a column named 'group'."
 
+    # reset the index
+    df = df.reset_index()
+
     # use weighted mass
     df["_inty_x_mass"] = df["mz"] * df["inty"]
 
@@ -381,8 +385,6 @@ def filter_intensity(df, MSthreshold=0.0):
 
 
 ###### recalibrate
-
-
 
 
 def find_reference_masses(df, tolerance, recalibration_masses):
@@ -475,7 +477,7 @@ def collapse_spectra_groups(df):
 
 def add_massWindow(df, tolerance, resolutionDelta):
     """masswindow is actually the tolerance by resolution delta, see :bin_linear_alignment,
-    it is not used but required to make the surveryentries in the masterscan 
+    it is not used but required to make the surveryentries in the masterscan
     """
     masses = df["mz"]
     minmass = masses.min()
@@ -556,7 +558,10 @@ def dataframe2mzml(df, source, destination=None):
                 traits={"filter string": filter_string},
             )
             acquisition_information = ScanAcquisitionInformation(
-                "no combination", [scanEventInformation,]
+                "no combination",
+                [
+                    scanEventInformation,
+                ],
             )
             # Create a new spectrum
             index += 1
@@ -751,9 +756,12 @@ def make_masterscan_lx1(options):
         masterscan: with the averaged spectra information
     """
     df, df_infos = aligned_spectra_df_lx1(options)
-    return make_masterscan(options,  df, df_infos)
+    return make_masterscan(options, df, df_infos)
 
-def make_masterscan(options, aligned_spectra_df, aligned_spectra_infos):
+
+def make_masterscan(
+    options, aligned_spectra_df, aligned_spectra_infos, lx2=False
+):
     """make the masterscan based on the optoins inftomation
 
     Args:
@@ -769,4 +777,17 @@ def make_masterscan(options, aligned_spectra_df, aligned_spectra_infos):
     samples = df["stem"].unique().tolist()
     listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
     scan = build_masterscan(options, listSurveyEntry, samples)
+
+    idp = Path(options["importDir"])
+
+    if lx2:
+        filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
+    else:
+        filename = str(idp / Path("".join([idp.stem, "-lx1-ref.sc"])))
+
+    # filename = options["masterScanRun"]
+    log.info(f"saving file to: {filename}")
+    with open(filename, "wb") as scFile:
+        pickle.dump(scan, scFile, pickle.HIGHEST_PROTOCOL)
+
     return scan
