@@ -3,6 +3,9 @@ Created on 04.05.2017
 
 @author: mirandaa
 '''
+import sys, os
+sys.path.append(os.environ.get("SRC_DIR"))
+
 from utils.peakStrainerGUI import MyFrame2
 import wx
 import os

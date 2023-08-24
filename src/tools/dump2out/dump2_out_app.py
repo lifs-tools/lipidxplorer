@@ -1,4 +1,6 @@
 import wx
+import sys, os
+sys.path.append(os.environ.get("SRC_DIR"))
 from tools.dump2out.dump2out_frame import Dump2outFrame
 from tools.dump2out.dump2out import (
     suggest_result_file,
