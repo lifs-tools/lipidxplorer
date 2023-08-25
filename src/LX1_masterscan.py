@@ -21,58 +21,7 @@ from LX2_masterscan_tools import (
     spectra_2_df_single,
 )
 from lx.spectraContainer import MasterScan
-
-
-def make_lx_spectra(mzml, options):
-    # all peaks - time and mass range
-    spectra_df = spectra_2_df_single(Path(mzml), options)
-    ms1_peaks = spectra_df.loc[spectra_df.precursor_id.isna()]
-    bins = make_lx1_bins(ms1_peaks, options)
-    ms1_peaks["bin_mass_lx1"] = bins
-    agg_ms1_peaks = ms1_peaks_agg(ms1_peaks, options)
-    agg_ms1_peaks["stem"] = ms1_peaks.stem.iloc[0]
-    if options._data.get("MScalibration"):
-        cal_matchs, cal_vals = recalibration_values(agg_ms1_peaks, options)
-        if cal_matchs and cal_vals:
-            agg_ms1_peaks.mz = agg_ms1_peaks.mz + np.interp(
-                agg_ms1_peaks.mz, cal_matchs, cal_vals
-            )
-
-    bins_lx2, _ = ms1_peaks_agg_lx2_bin(ms1_peaks)
-    ms1_peaks["bin_mass_lx2"] = list(bins_lx2)
-    agg_ms1_peaks_lx2 = ms1_peaks_agg_lx2(ms1_peaks, options)
-    if options._data.get("MScalibration"):
-        (
-            options["lx2_MSresolution"],
-            options["lx2_MSresolution_gradient"],
-        ) = suggest_resolution_gradient_and_tolerance(spectra_df)
-        cal_matchs, cal_vals = recalibration_values(
-            agg_ms1_peaks_lx2, options, use_lx2=True
-        )
-        if cal_matchs and cal_vals:
-            agg_ms1_peaks_lx2.mz = agg_ms1_peaks_lx2.mz + np.interp(
-                agg_ms1_peaks_lx2.mz, cal_matchs, cal_vals
-            )
-
-    peaks_with_agg = ms1_peaks.merge(
-        agg_ms1_peaks,
-        how="left",
-        left_on="bin_mass_lx1",
-        right_on="bin_mass",
-        suffixes=("_og", "_lx1"),
-    )
-    # now add lx2 data
-    peaks_with_agg = peaks_with_agg.merge(
-        agg_ms1_peaks_lx2,
-        how="left",
-        left_on="bin_mass_lx2",
-        right_on="bin_mass",
-        suffixes=("_og", "_lx2"),
-    )
-    peaks_with_agg.rename(
-        columns={"mz": "mz_lx2", "inty": "inty_lx2"}, inplace=True
-    )
-    return peaks_with_agg
+import warnings
 
 
 def compare_grouping(mzml, options):
@@ -380,7 +329,6 @@ def make_lx1_bins(ms1_peaks, options):
             ms1_peaks.groupby(bins2)["mz"].transform("mean"), options
         )
     )
-
     return bins3
 
 

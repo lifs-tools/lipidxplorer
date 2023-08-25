@@ -1,8 +1,10 @@
 import wx
+import sys, os
+sys.path.append(os.environ.get("SRC_DIR"))
 from tools.dump2out.dump2out_frame import Dump2outFrame
 from tools.dump2out.dump2out import (
     suggest_result_file,
-    check_and_relace_results,
+    replace_results_with_min_abs_error,
 )
 
 
@@ -20,7 +22,7 @@ class dump2outApp(Dump2outFrame):
         dump_file = self.dump_m_filePicker11.GetPath()
         result_file = self.new_m_textCtrl1.GetValue()
 
-        check_and_relace_results(out_file, dump_file, result_file)
+        replace_results_with_min_abs_error(out_file, dump_file, result_file)
         val = wx.MessageBox(
             f"Close the application ?\n\nThe file is complete \n {result_file}",
             "Close the application ?",

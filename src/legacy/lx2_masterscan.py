@@ -10,6 +10,8 @@ import pandas as pd
 
 from ms_deisotope import MSFileLoader
 
+import warnings
+
 logging.basicConfig(
     level=logging.INFO,
     stream=sys.stdout,
@@ -31,6 +33,8 @@ class lx2_data_files:
 
 class lx2_spectra:
     def __init__(self, spectra_path, options) -> None:
+        warnings.warn("This class is deprecated and will be removed in the future. use lx1_ref_masterscan instead",
+                  DeprecationWarning, stacklevel=2)
         self.spectra_path = spectra_path
         self.options = options
 
