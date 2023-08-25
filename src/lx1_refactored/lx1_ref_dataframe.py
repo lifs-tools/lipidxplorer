@@ -8,7 +8,7 @@ from enum import Flag, auto
 import numpy as np
 import pandas as pd
 from ms_deisotope import MSFileLoader
-from ms_deisotope._c.units import unitfloat
+from pyteomics.xml import unitfloat
 from ms_deisotope.data_source.memory import make_scan
 from ms_deisotope.data_source.metadata import file_information
 from ms_deisotope.data_source.metadata.scan_traits import (
