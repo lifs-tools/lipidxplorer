@@ -662,7 +662,6 @@ def sim_trim(path, da=None):
             writer.save(bunch)
 
         writer.complete()
-        fh.flush()
         writer.format()
 
     return dest

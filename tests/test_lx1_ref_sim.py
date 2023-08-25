@@ -11,7 +11,7 @@ from lx1_refactored import (
     sim_trim,
     write2templateMzXML,
 )
-
+from lx1_refactored.lx1_ref_dataframe import MS_level
 
 SIM_PATH = r"tests/resources/t_sim/spectra/sim_sample.mzML"
 ref_SIM_SPECTRA = r"tests/resources/t_sim/reference/ref_SIM_SPECTRA.pkl"
@@ -19,9 +19,7 @@ ref_SIM_SPECTRA = r"tests/resources/t_sim/reference/ref_SIM_SPECTRA.pkl"
 
 def test_read_sim_spectra():
     settings = {
-        "read_sim_scans": True,
-        "read_ms1_scans": False,
-        "read_ms2_scans": False,
+        "ms_level": MS_level.sim,
         "polarity": -1,
         "time_start": 33.0,
         "time_end": 1080.0,
