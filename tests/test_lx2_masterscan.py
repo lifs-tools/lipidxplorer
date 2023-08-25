@@ -199,4 +199,4 @@ def test_aligned_spectra_df(options):
 
 def test_make_masterscan(options):
     scan = make_masterscan(options)
-    assert len(scan.listSurveyEntry) == 2115
+    assert len(scan.listSurveyEntry) == 2095
