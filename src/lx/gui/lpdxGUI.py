@@ -1484,6 +1484,42 @@ class LpdxFrame(wx.Frame):
             0,
         )
 
+        self.m_peakStrainerButton = wx.Button(
+            self.notebook_1_pane_6,
+            wx.ID_ANY,
+            "peakStrainer",
+            wx.DefaultPosition,
+            wx.DefaultSize,
+            0,
+        )
+
+        self.m_simStitcherButton = wx.Button(
+            self.notebook_1_pane_6,
+            wx.ID_ANY,
+            "simStitcher",
+            wx.DefaultPosition,
+            wx.DefaultSize,
+            0,
+        )
+
+        self.m_simTrimButton = wx.Button(
+            self.notebook_1_pane_6,
+            wx.ID_ANY,
+            "simTrim",
+            wx.DefaultPosition,
+            wx.DefaultSize,
+            0,
+        )
+
+        self.m_reorderScanButton = wx.Button(
+            self.notebook_1_pane_6,
+            wx.ID_ANY,
+            "reorderScan",
+            wx.DefaultPosition,
+            wx.DefaultSize,
+            0,
+        )
+
         ##############################
         ### MS tools notebook pane ###
 
@@ -2566,6 +2602,12 @@ intensity."""
 
         # extra tools panel buttons
         self.Bind(wx.EVT_BUTTON, self.OnDump2out, self.m_dump2outButton)
+        self.Bind(
+            wx.EVT_BUTTON, self.OnPeakStrainer, self.m_peakStrainerButton
+        )
+        self.Bind(wx.EVT_BUTTON, self.OnSimStitcher, self.m_simStitcherButton)
+        self.Bind(wx.EVT_BUTTON, self.OnSimTrim, self.m_simTrimButton)
+        self.Bind(wx.EVT_BUTTON, self.OnReorderScan, self.m_reorderScanButton)
 
         # mstools panel buttons
         self.Bind(
@@ -6204,6 +6246,26 @@ intensity."""
 
         openDump2_out(self)
 
+    def OnPeakStrainer(self, event):
+        from tools.peakStrainer.peakStrainerApp import openPeakStrainer
+
+        openPeakStrainer(self)
+
+    def OnSimStitcher(self, evnet):
+        from tools.simStitching.simStitcherApp import openSimStitcher
+
+        openSimStitcher(self)
+
+    def OnSimTrim(self, event):
+        from tools.simtrim.simtrimApp import openSimtrim
+
+        openSimtrim()
+
+    def OnReorderScan(self, event):
+        from tools.reorderScans.reorderScans import openReorderScans
+
+        openReorderScans(self)
+
     def OnMassToSumComposition(self, evt):
         if self.text_ctrl_mstools_InputSection_mz.IsEmpty():
             dlg = wx.MessageDialog(
@@ -7098,6 +7160,30 @@ intensity."""
 
     def __do_layout(self):
         border_labels = 4
+
+        ### Extra Tools pane ###
+        sizer_extraToolPane = wx.BoxSizer(wx.VERTICAL)
+        sizer_extraToolPane.Add(
+            self.m_dump2outButton, 0, wx.ALIGN_LEFT | wx.ALL, 10
+        )
+
+        sizer_extraToolPane.Add(
+            self.m_peakStrainerButton, 0, wx.ALIGN_LEFT | wx.ALL, 10
+        )
+
+        sizer_extraToolPane.Add(
+            self.m_simStitcherButton, 0, wx.ALIGN_LEFT | wx.ALL, 10
+        )
+
+        sizer_extraToolPane.Add(
+            self.m_simTrimButton, 0, wx.ALIGN_LEFT | wx.ALL, 10
+        )
+
+        sizer_extraToolPane.Add(
+            self.m_reorderScanButton, 0, wx.ALIGN_LEFT | wx.ALL, 10
+        )
+
+        self.notebook_1_pane_6.SetSizer(sizer_extraToolPane)
 
         ### TOOL pane ###
         sizer_toolPane = wx.BoxSizer(wx.VERTICAL)
