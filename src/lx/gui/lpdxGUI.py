@@ -27,6 +27,9 @@ import queue
 sysPath = ".." + os.sep + "lib"
 sys.path.append(sysPath)
 
+sysPath = "src"
+sys.path.append(sysPath)
+
 from lx.lxMain import startMFQL
 
 # the MFQL editor
