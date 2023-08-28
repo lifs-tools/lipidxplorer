@@ -125,6 +125,7 @@ build-job:      # This job runs in the build stage.
     - Set-Variable -Name "time" -Value (date -Format "%H:%m")
     - echo ${time}
     - echo "started by ${GITLAB_USER_NAME}"
+    - pip install attrdict requests
     - ./run.ps1
     - pyinstaller --distpath dist src/LipidXplorer.spec
     - dir

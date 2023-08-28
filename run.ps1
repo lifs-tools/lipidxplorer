@@ -2,9 +2,6 @@ C:\Python37\Scripts\ipython.exe --version
 
 C:\Python37\Scripts\ipython.exe -m venv venv
 
-pip install attrdict
-pip install requests
-
 venv\Scripts\Activate.ps1
 
 # Invoke-WebRequest -Uri "https://aka.ms/vs/15/release/vs_buildtools.exe" -OutFile "c:/vs_buildtools.exe"
