@@ -33,14 +33,14 @@ jupyter_client==5.3.4
 jupyter_core==4.6.1
 kiwisolver==1.1.0
 lazy-object-proxy
-llvmlite==0.32.1
+llvmlite
 pypng
 libsodium
 XSLTools
 lxml
 macholib==1.14
 markupsafe==1.1.1
-matplotlib==3.1.1
+matplotlib
 mccabe==0.6.1
 mistune==0.8.4
 more-itertools==7.2.0
@@ -92,7 +92,7 @@ wcwidth==0.1.7
 webencodings==0.5.1
 wheel==0.33.6
 wrapt==1.11.2
-wxpython==4.2.1
+wxpython
 pyzmq
 zipp==0.6.0
 comtypes==1.2.0
