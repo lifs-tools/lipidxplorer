@@ -48,7 +48,7 @@ mypy_extensions==0.4.3
 nbconvert==5.6.1
 nbformat==4.4.0
 notebook==6.0.2
-numba==0.47.0
+numba
 packaging
 pandas
 pandoc
@@ -95,7 +95,7 @@ wrapt==1.11.2
 wxpython==4.2.1
 pyzmq
 zipp==0.6.0
-comtypes==1.1.7
+comtypes==1.2.0
 debugpy==1.0.0b5
 pyteomics==4.1.2
 schedule==1.1.0
