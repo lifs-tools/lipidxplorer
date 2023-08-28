@@ -126,7 +126,7 @@ build-job:      # This job runs in the build stage.
     - echo ${time}
     - echo "started by ${GITLAB_USER_NAME}"
     - ./run.ps1
-    - pyinstaller src/LipidXplorer.spec
+    - pyinstaller --distpath dist src/LipidXplorer.spec
     - dir
     - echo "Application successfully built."
   artifacts:

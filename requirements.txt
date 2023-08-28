@@ -3,6 +3,7 @@ altgraph==0.17
 appdirs==1.4.4
 astroid
 atomicwrites==1.4.0
+attrdict
 attrs==19.3.0
 autopep8==1.4.4
 backcall==0.1.0
@@ -92,6 +93,7 @@ wcwidth==0.1.7
 webencodings==0.5.1
 wheel==0.33.6
 wrapt==1.11.2
+requests
 wxpython==4.2.1
 pyzmq
 zipp==0.6.0
