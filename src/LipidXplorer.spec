@@ -2,8 +2,6 @@
 import os, sys, shutil
 from zipfile import ZipFile
 import subprocess
-import pkg_resources.py2_warn # before you add it to hiddenimports, import it here.
-import dependency_injector.errors
 import six
 
 label = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
