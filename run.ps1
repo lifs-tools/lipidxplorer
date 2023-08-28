@@ -8,6 +8,6 @@ venv\Scripts\Activate.ps1
 #
 # c:/vs_buildtools.exe --add Microsoft.VisualStudio.Workload.VCTools --includeOptional --includeRecommended --quiet --nocache --wait
 
-pip install attrdict requests
+pip install attrdict3 requests
 
 pip install -r requirements.txt
