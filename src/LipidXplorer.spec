@@ -2,6 +2,9 @@
 import os, sys, shutil
 from zipfile import ZipFile
 import subprocess
+import pkg_resources.py2_warn # before you add it to hiddenimports, import it here.
+import dependency_injector.errors
+import six
 
 label = subprocess.check_output(["git", "describe", "--always"]).strip().decode()
 with open("CHANGELOG", "a") as myfile:
@@ -29,7 +32,7 @@ block_cipher = None
 a = Analysis(['LipidXplorer.py'],
              pathex=['C:\\Users\\nils.hoffmann\\PycharmProjects\\gitlab.isas.de\\lipidxplorer'],
              datas=[],
-             hiddenimports=[],
+             hiddenimports=['pkg_resources.py2_warn', 'dependency_injector.errors', 'six'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
