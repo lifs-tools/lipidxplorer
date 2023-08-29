@@ -41,7 +41,7 @@ XSLTools
 lxml
 macholib==1.14
 markupsafe==1.1.1
-matplotlib==3.1.1
+matplotlib==3.5.1
 mccabe==0.6.1
 mistune==0.8.4
 more-itertools==7.2.0
