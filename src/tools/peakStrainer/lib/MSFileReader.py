@@ -44,16 +44,16 @@ except ImportError:
         + "XRawfile2_x64.dll"
     )  # 64bits msFileReader aside raw.py
     XRawfile2_dll_path.append(
-        "C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2_x64.dll"
+        "C:\\Program Files\\Thermo\\Foundation\\XRawfile2_x64.dll"
     )  # 64bits msFileReader with 64bits system
     XRawfile2_dll_path.append(
         os.path.dirname(os.path.abspath(__file__)) + os.sep + "XRawfile2.dll"
     )  # 32bits msFileReader aside raw.py
     XRawfile2_dll_path.append(
-        "C:\\Program Files (x86)\\Thermo\\MSFileReader\\XRawfile2.dll"
+        "C:\\Program Files (x86)\\Thermo\\Foundation\\XRawfile2.dll"
     )  # 32bits msFileReader with 64bits system
     XRawfile2_dll_path.append(
-        "C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2.dll"
+        "C:\\Program Files\\Thermo\\Foundation\\XRawfile2.dll"
     )  # 32bits msFileReader with 32bits system
     XRawfile2_dll_path_0 = copy.deepcopy(XRawfile2_dll_path)
     while not XRawfile2_dll_loaded:
