@@ -203,6 +203,7 @@ class Options:
         # however...
         self.options["loopNr"] = 3
         self.options["lx2_MSresolution"] = None
+        self.options["polarity"] = "+"
 
         # the "formatted options" contain the options in the correct data format
         # the method 'readOptions' fills this dictionary
@@ -794,6 +795,7 @@ class Options:
         self.options_formatted["lx2_MSresolution"] = self.options[
             "lx2_MSresolution"
         ]
+        self.options_formatted["polarity"] = self.options["polarity"]
 
     def try2apply_calctol(self, o, options_formatted):
         if o["MSresolution"] == "auto" or o["MSresolution"] == 0:
