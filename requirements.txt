@@ -34,6 +34,7 @@ jupyter_client==5.3.4
 jupyter_core==4.6.1
 kiwisolver==1.1.0
 lazy-object-proxy
+llvmlite==0.32.1
 pypng
 libsodium
 XSLTools
