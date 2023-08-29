@@ -619,8 +619,8 @@ class TextOutFrame(wx.Frame):
         )
         self.SetSizer(self.sizer)
 
-        self.SetMinSize((880, 400))
-        self.SetSize((880, 400))
+        self.SetMinSize((860, 400))
+        self.SetSize((860, 400))
         self.Layout()
 
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
@@ -6904,7 +6904,7 @@ intensity."""
             self.SetTitle("LipOXplorer Version %s" % self.version)
 
         self.SetMinSize((720, 660))
-        self.SetSize((1000, 730))
+        self.SetSize((1000, 790))
 
         self.list_box_1.SetMinSize((textCtrl_big_w, 211))
 
