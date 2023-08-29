@@ -619,8 +619,8 @@ class TextOutFrame(wx.Frame):
         )
         self.SetSizer(self.sizer)
 
-        self.SetMinSize((860, 400))
-        self.SetSize((860, 400))
+        self.SetMinSize((880, 400))
+        self.SetSize((880, 400))
         self.Layout()
 
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
