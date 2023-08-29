@@ -54,7 +54,6 @@ class Spectrum:
 class MzXMLFileReader:
     def __init__(self, f):
         self.fname = f
-        self.handle = None
         self.tagre = re.compile(r"^{(.*)}(.*)$")
         self.typemap = {}
         for tag in (
@@ -91,10 +90,6 @@ class MzXMLFileReader:
         self.reset()
 
     def reset(self):
-        if self.handle:
-            self.handle.close()
-            self.handle = None
-        self.handle = open(self.fname, "r")
         self.context = []
         self.ns = ""
 
@@ -147,8 +142,8 @@ class MzXMLFileReader:
         return scan
 
     def __next__(self):
-        for event, ele in ET.iterparse(self.handle, ("start", "end")):
-            # print event,self.context,ele.tag,ele.attrib
+        for event, ele in ET.iterparse(self.fname, ("start", "end")):
+            # print(event, self.context, ele.tag, ele.attrib)
 
             if event == "start":
                 m = self.tagre.search(ele.tag)
