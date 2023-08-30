@@ -97,7 +97,7 @@ def add_Sample(sc=None, specFile=None, specDir=None, options={}, **kwargs):
     fadi_percentageMSMS = options["MSMSfilter"]
 
     # for MS/MS collection of spectra attributes
-    polarity = ""
+    polarity = options["polarity"]
     count = 0
 
     # read the mz file

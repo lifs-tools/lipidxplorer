@@ -138,6 +138,7 @@ def drop_fuzzy(df):
 
 
 def get_settings(options):
+    # print(options)
     res = {}
     time_range = options["timerange"]
     res["time_start"] = 0 if not time_range else time_range[0]
@@ -148,6 +149,7 @@ def get_settings(options):
     ms2_mass_range = options["MSMSmassrange"]
     res["ms2_start"] = 0 if not ms2_mass_range else ms2_mass_range[0]
     res["ms2_end"] = float("inf") if not ms2_mass_range else ms2_mass_range[1]
+    res["polarity"] = -1 if options["polarity"] == "-" else 1
     return res
 
 
@@ -399,6 +401,9 @@ def find_reference_masses(df, tolerance, recalibration_masses):
 
 
 def recalibrate(df, matching_masses, reference_distance):
+    if not matching_masses or not reference_distance:
+        log.warn('no calibration masses found, spectra is not recalibrated')
+        return df
     df["mz"] = df["mz"] - np.interp(
         df["mz"], matching_masses, reference_distance
     )
@@ -700,6 +705,7 @@ def spectra_2_DF_lx1(spectra_path, options, add_stem=True):
     matching_masses, reference_distance = find_reference_masses(
         df, tolerance, calibration_masses
     )
+    # TODO: @Jacobo matching_masses can be empty
     df = recalibrate(df, matching_masses, reference_distance)
     lx_data["recalibration"] = (matching_masses, reference_distance)
     return df, lx_data

@@ -118,6 +118,20 @@ def test_recalibrate_ms1_peaks(options):
     df = recalibrate(df, matching_masses, reference_distance)
     assert (df["mz"] != ref).all()
 
+def test_no_recalibrate_masses_found(options):
+    df = pd.read_pickle(group_ms1_peaks_REF)
+    ref = df["mz"].copy()
+    tolerance = options["MSresolution"].tolerance
+    # calibration_masses = options["MScalibration"]
+    calibration_masses = [300.0,]
+    matching_masses, reference_distance = find_reference_masses(
+        df, tolerance, calibration_masses
+    )
+    assert not matching_masses
+    assert not reference_distance
+    df = recalibrate(df, matching_masses, reference_distance)
+    assert (df["mz"] == ref).all()
+
 
 def test_align_ms1_scans(options):
     df1 = pd.read_pickle(group_ms1_peaks_REF)

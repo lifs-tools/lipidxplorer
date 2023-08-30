@@ -183,6 +183,7 @@ class Project(Options):
         self.confParse.set(
             configuration, "scanAveragingMethod", o["scanAveragingMethod"]
         )
+        self.confParse.set(configuration, "polarity", o["polarity"])
         self.confParse.set(configuration, "importMSMS", o["importMSMS"])
 
         self.confParse.write(open(self.projectFilePath, "w+"))

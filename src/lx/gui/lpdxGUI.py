@@ -2234,11 +2234,14 @@ intensity."""
             (button1_small_w * 1.3, button1_small_h * 1.3)
         )
 
-        self.choice_SettingsSection_lx_ver = wx.Choice(
-            self.notebook_1_pane_5, -1, choices=["LX 2"]  # "LX 1",
+        self.choice_SettingsSection_polarity = wx.Choice(
+            self.notebook_1_pane_5, -1, choices=["+", "-"]  # "Polarity",
         )
-        self.choice_SettingsSection_lx_ver.SetStringSelection("LX 2")
-        # self.choice_SettingsSection_lx_ver.SetMinSize((button1_small_w, button1_small_h * 1.3))
+        self.choice_SettingsSection_polarity.SetStringSelection("+")
+        self.choice_SettingsSection_polarity.SetMinSize(
+            (button1_small_w, button1_small_h * 1.3)
+        )
+        self.store_SettingsSection_polarity = "+"
 
         # neither textCtrl nor label stuff
         self.choice_SettingsSection_tolerance_ms = wx.Choice(
@@ -2684,8 +2687,8 @@ intensity."""
 
         self.Bind(
             wx.EVT_CHOICE,
-            self.OnChoice_lx_ver,
-            self.choice_SettingsSection_lx_ver,
+            self.OnChoice_polarity,
+            self.choice_SettingsSection_polarity,
         )
 
         # run panel buttons
@@ -3099,6 +3102,12 @@ intensity."""
             "spectraFormat"
         ] = self.combo_ctrl_ImportDataSection.GetValue()
 
+        project.options[
+            "polarity"
+        ] = self.choice_SettingsSection_polarity.GetString(
+            self.choice_SettingsSection_polarity.GetSelection()
+        )
+
         for query in list(self.dictMFQLScripts.keys()):
             project.mfql[query] = self.dictMFQLScripts[query]
 
@@ -3479,6 +3488,10 @@ intensity."""
             self.checkBox_noPermutations.SetValue(
                 strToBool(options["noPermutations"])
             )
+            self.choice_SettingsSection_polarity.SetStringSelection(
+                options["polarity"]
+            )
+            self.store_SettingsSection_polarity = options["polarity"]
             # project.options['mzXML'] = None # option key used in lpdxImport.py, substituted by 'dataType'
         except TypeError as AttributeError:
             pass
@@ -4471,6 +4484,11 @@ intensity."""
             "MSMSfilter",
             self.text_ctrl_SettingsSection_filter_msms.GetValue(),
         )
+        self.confParse.set(
+            newSection,
+            "polarity",
+            self.choice_SettingsSection_polarity.GetSelection(),
+        )
 
         self.listConfigurations.append(newSection)
         self.listConfigurations.sort()
@@ -4522,33 +4540,11 @@ intensity."""
             self.store_SettingsSection_threshold_msms = "absolute"
         self.OnSettingsChange()
 
-    def OnChoice_lx_ver(self, evt):
-        elems = [
-            self.text_ctrl_SettingsSection_resolution_ms,
-            self.text_ctrl_SettingsSection_resolution_msms,
-            self.text_ctrl_SettingsSection_resDelta_ms,
-            self.text_ctrl_SettingsSection_resDelta_msms,
-            self.text_ctrl_SettingsSection_tolerance_ms,
-            self.text_ctrl_SettingsSection_tolerance_msms,
-            self.text_ctrl_SettingsSection_selectionWindow,
-            # self.text_ctrl_SettingsSection_threshold_ms,
-            # self.text_ctrl_SettingsSection_threshold_msms,
-            # self.text_ctrl_SettingsSection_occupationThr_ms,
-            # self.text_ctrl_SettingsSection_occupationThr_msms,
-            self.text_ctrl_RunOptions_MS,
-            self.text_ctrl_RunOptions_MSMS,
-        ]
-
-        self.lx_ver = "LX 2"
-        # if evt.GetString() == "LX 1":
-        #     self.lx_ver = "LX 1"
-        #     for e in elems:
-        #         e.Enable()
-        # elif evt.GetString() == "LX 2":
-        #     self.lx_ver = "LX 2"
-        #     for e in elems:
-        #         e.Disable()
-
+    def OnChoice_polarity(self, evt):
+        if evt.GetString() == "+":
+            self.store_SettingsSection_polarity = "+"
+        elif evt.GetString() == "-":
+            self.store_SettingsSection_polarity = "-"
         self.OnSettingsChange()
 
     def OnOpen_Output(self, evt):
@@ -4985,6 +4981,17 @@ intensity."""
             self.text_ctrl_SettingsSection_precursorMassShiftOrbi.ChangeValue(
                 ""
             )
+
+        if self.confParse.has_option(setting, "polarity"):
+            self.choice_SettingsSection_polarity.SetStringSelection(
+                self.confParse.get(setting, "polarity")
+            )
+            self.store_SettingsSection_polarity = self.confParse.get(
+                setting, "polarity"
+            )
+        else:
+            self.choice_SettingsSection_polarity.SetStringSelection("+")
+            self.store_SettingsSection_polarity = "+"
 
     def clearConfiguration(self):
         # some options
@@ -7777,7 +7784,7 @@ intensity."""
             self.button_Delete_LoadIniSection
         )
         box_sizer_SettingsSection_buttons.Add(
-            self.choice_SettingsSection_lx_ver
+            self.choice_SettingsSection_polarity
         )
         grid_sizer_19_SettingsSection_gridBag.Add(
             box_sizer_SettingsSection_buttons, (0, 6), (2, 3), 0, 0
