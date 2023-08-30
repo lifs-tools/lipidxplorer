@@ -401,6 +401,9 @@ def find_reference_masses(df, tolerance, recalibration_masses):
 
 
 def recalibrate(df, matching_masses, reference_distance):
+    if not matching_masses or not reference_distance:
+        log.warn('no calibration masses found, spectra is not recalibrated')
+        return df
     df["mz"] = df["mz"] - np.interp(
         df["mz"], matching_masses, reference_distance
     )
