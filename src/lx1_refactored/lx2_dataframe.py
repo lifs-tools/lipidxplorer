@@ -6,7 +6,6 @@ from pathlib import Path
 import warnings
 
 from .lx1_ref_dataframe import (
-    MS_level,
     get_settings,
     spectra_as_df,
     merge_peaks_from_scan,
