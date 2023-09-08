@@ -1,9 +1,14 @@
+"""desktop user interface made with wxform builder for easyer set,
+this is only the controller, to update the view use wxformbuolder and edit the *.fbp file, then generate the code to be used
+
+"""
+
 import wx
 from lx2_gui import Lx2_gui
 from lx.project import Project
 from collections import namedtuple
 
-from LX1_masterscan import make_lx_masterscan
+from lx1_refactored.lx2_dataframe import make_masterscan
 
 # TODO make this a dataclass
 P_elem = namedtuple("P_elem", "name index default", defaults=(None, None, ""))
@@ -198,7 +203,7 @@ class lx2_gui_controler(Lx2_gui):
         self.project.testOptions()
         self.project.formatOptions()
         options = self.project.getOptions()
-        make_lx_masterscan(options)
+        make_masterscan(options)
 
 
 def main():

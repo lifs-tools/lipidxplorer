@@ -1,3 +1,8 @@
+"""web user interface, essentially it collects the fields and make an options object, 
+then  it runs :make_masterscan with the options,
+it keeps a session :init_session to load the default values and keep the values from the options object
+useful when running multiole instances.
+"""
 import streamlit as st
 from lx.project import Project
 from enum import Enum
