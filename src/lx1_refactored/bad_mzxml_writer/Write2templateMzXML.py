@@ -1,3 +1,5 @@
+"""generates an psudo mzxml file, the real data is the masses and intensities
+it is intended to be used by the filter and merge functions where the original scan is lost """
 import copy
 import os
 import sys
