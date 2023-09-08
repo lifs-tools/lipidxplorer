@@ -1,7 +1,6 @@
 import pickle
 import pytest
 from pathlib import Path
-from LX1_masterscan import make_lx_masterscan
 
 from utils import (
     getMfqlFiles,
