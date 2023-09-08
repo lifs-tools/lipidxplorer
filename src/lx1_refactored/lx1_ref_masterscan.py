@@ -1,3 +1,23 @@
+""" adapting dataframe and dictionalries into LX1 masterscan for backward compatibility
+    start with a dataframe that contains the averaged spectra
+    with columns including mass, intensity, ms level, polalrity and filename (stem)
+
+    in general:
+        dataframe into -> mass_inty_generator_ms1_agg generates -> a list of tuples
+        tuple into -> se_factory generates -> surveyentry
+    
+    specificaly:
+        df into -> df2listSurveyEntry generates-> list of SurveyEntry required by the masterscan object
+        options, listSurveyEntry and filenames(stems) into -> build_masterscan generates -> a masterscan object ready to use  in LX1
+
+    could be called something like this:
+        options = get options from somewhere
+        polarity = df.iloc[0].at['polarity']
+        stems = df.['stems'].unique()
+        
+        scan = build_masterscan(options, df2listSurveyEntry(df, polarity), stems)
+
+"""
 import logging
 import sys
 import warnings
@@ -14,8 +34,6 @@ logging.basicConfig(
 )
 log = logging.getLogger(Path(__file__).stem)
 
-
-#### build masterscan
 def df2listSurveyEntry(df, polarity, samples):
 
     listSurveyEntry = [
@@ -40,6 +58,18 @@ def mass_inty_generator_ms1_agg(df, polarity):
 
 
 def se_factory(msmass, dictIntensity, samples, polarity, massWindow=0):
+    """tuple in survey entry out
+
+    Args:
+        msmass (_type_): average mass 
+        dictIntensity (_type_): one intensity value per sample (a sample is a filename / stem) 
+        samples (_type_): list of filenames / stems
+        polarity (_type_): -1 , +1 used in que mfql, taken from the spectra
+        massWindow (int, optional): should be the difference of the maximum and the minumum of the masses that where averaged. Defaults to 0 because not needed.
+
+    Returns:
+        SurveyEntry: for compatibility with LX1
+    """
     holder = {s: 0 for s in samples}
     holder.update(dictIntensity)
     se = SurveyEntry(
@@ -55,19 +85,22 @@ def se_factory(msmass, dictIntensity, samples, polarity, massWindow=0):
         dictBasePeakIntensity={s: 1 for s in samples},
     )
     se.massWindow = (
-        massWindow  # used for isotopic c orrection when no resolution is given
+        massWindow  # used for isotopic correction when no resolution is given
     )
     return se
 
-def mass_inty_generator_ms1(ms1_df, occupancy=1):
-    add_group_no_ms1_df(ms1_df, occupancy=occupancy)
-    for _, df in ms1_df.groupby(ms1_df.group_no):
-        msmass = float(df.mz_mean.mean())
-        dictIntensity = df.set_index("stem_first")["inty_mean"].to_dict()
-        polarity = df.polarity_first.to_list()[0]
-        yield msmass, dictIntensity, polarity
 
 def build_masterscan(options, listSurveyEntry, stems):
+    """generate a generic masterscan for LX1 compatibility
+
+    Args:
+        options (dict like): setting used for generating 
+        listSurveyEntry (iterable of surveyentries): the main content of the masterscan
+        stems (list of str): the names of the spectra in listSurveyEntry
+
+    Returns:
+        scan: the masterscan
+    """
     listSurveyEntry = list(sorted(listSurveyEntry, key=lambda x: x.precurmass))
     scan = MasterScan(options)
     scan.listSurveyEntry = listSurveyEntry
@@ -79,3 +112,5 @@ def build_masterscan(options, listSurveyEntry, stems):
     # for printing we need
     scan.listSamples = stems
     return scan
+
+
