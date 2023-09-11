@@ -5,7 +5,7 @@ import pandas as pd
 from pathlib import Path
 import warnings
 
-from .lx1_ref_dataframe import (
+from .lx1_ref_aggregate import (
     get_settings,
     spectra_as_df,
     merge_peaks_from_scan,
@@ -15,7 +15,7 @@ from .lx1_ref_dataframe import (
     recalibrate,
     get_mz_ml_paths,
 )
-from .lx1_ref_dataframe import make_masterscan as make_masterscan_from_lx1
+from .lx1_ref_aggregate import make_masterscan as make_masterscan_from_lx1
 
 logging.basicConfig(
     level=logging.INFO,

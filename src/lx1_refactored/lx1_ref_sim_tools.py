@@ -2,7 +2,6 @@
 import logging
 import sys
 import warnings
-from datetime import datetime
 from pathlib import Path
 from enum import Flag, auto
 
@@ -21,7 +20,7 @@ from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
 
 from .lx1_ref_masterscan import build_masterscan, df2listSurveyEntry
-from .lx1_ref_read_spectra import get_settings, spectra_as_df
+from .lx1_ref_read_write_spectra import get_settings, spectra_as_df
 
 
 logging.basicConfig(

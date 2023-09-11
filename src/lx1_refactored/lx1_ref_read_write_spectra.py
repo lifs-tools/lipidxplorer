@@ -1,31 +1,30 @@
 """converting a spectra file *.mzML into a dataframe
+and write dataframe to *.mzML
 and selecting th data in the spectra
 ie limiting the scope of scans, mass, intensity or time
 
 
 """
 import logging
+import pickle
 import sys
 import warnings
-from pathlib import Path
+from datetime import datetime
 from enum import Flag, auto
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from ms_deisotope import MSFileLoader
-from pyteomics.xml import unitfloat
 from ms_deisotope.data_source.memory import make_scan
 from ms_deisotope.data_source.metadata import file_information
 from ms_deisotope.data_source.metadata.scan_traits import (
-    ScanAcquisitionInformation,
-    ScanEventInformation,
-)
-import pickle
+    ScanAcquisitionInformation, ScanEventInformation)
 from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
+from pyteomics.xml import unitfloat
 
 from .lx1_ref_masterscan import build_masterscan, df2listSurveyEntry
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -233,3 +232,76 @@ def drop_fuzzy(df):
 
     # return spectra_df.loc[~spectra_df.scan_id.isin(to_drop)]
 
+def dataframe2mzml(df, source, destination=None):
+    """write a dataframe into a mzml file
+
+    Args:
+        df (dataframe): contains masses and intensities and scans (mz,inty, filter_string)
+        source (str: filepath): the basis for this file, some metadata is copied
+        destination (str: filepath, optional): name of the file that shouild be generated or defaults to adding the date to the source file name. Defaults to None.
+
+    Returns:
+        str: the name of the file that was destination
+    """
+    # NOTE https://github.com/mobiusklein/ms_deisotope/blob/master/src/ms_deisotope/data_source/text.py
+    # https://github.com/mobiusklein/ms_deisotope/blob/master/examples/csv_to_mzml.py
+    # see https://git.mpi-cbg.de/labShevchenko/simtrim/-/blob/master/simtrim/simtrim.py#L35
+    # or https://mobiusklein.github.io/ms_deisotope/docs/_build/html/output/mzml.html
+    source_reader = MSFileLoader(source)
+    scan1 = next(source_reader)
+    scan1 = scan1.precursor
+    scan1.pick_peaks()
+    source = Path(source)
+
+    if destination is None:
+        # Get the current date and time
+        current_datetime = datetime.now()
+
+        # Format the date and time as a string in a tight format
+        tight_datetime_string = current_datetime.strftime("%Y%m%d%H%M%S")
+        destination = Path(
+            str(source.with_suffix("")) + tight_datetime_string + ".mzml"
+        )
+
+    with MzMLSerializer(
+        open(destination, "wb"),
+        1,
+        deconvoluted=False,
+        sample_name=destination.stem,
+        build_extra_index=False,
+    ) as writer:
+        # writer.copy_metadata_from(source) #NOTE not sure if is needed
+        writer.add_file_contents(file_information.MS_MSn_Spectrum.name)
+        writer.add_data_processing(writer.build_processing_method())
+
+        writer.save(scan1)
+        index = 0
+        for filter_string, gdf in df.groupby("filter_string"):
+            signal = RawDataArrays(gdf["mz"].values, gdf["inty"].values)
+            scanEventInformation = ScanEventInformation(
+                unitfloat(0, "minute"),
+                [],
+                traits={"filter string": filter_string},
+            )
+            acquisition_information = ScanAcquisitionInformation(
+                "no combination", [scanEventInformation,],
+            )
+            # Create a new spectrum
+            index += 1
+            scan = make_scan(
+                signal,
+                1,
+                f"index={index}",
+                0,
+                0,
+                is_profile=False,
+                polarity=gdf.iloc[0].at["polarity"],
+                acquisition_information=acquisition_information,
+                precursor_information=None,
+            )
+            scan.pick_peaks()
+
+            # Write the spectrum to the MzML file
+            writer.save(scan)
+
+    return destination

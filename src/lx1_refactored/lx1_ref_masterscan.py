@@ -20,7 +20,7 @@
 """
 import logging
 import sys
-import warnings
+import pickle
 from collections import OrderedDict
 from pathlib import Path
 
@@ -89,7 +89,39 @@ def se_factory(msmass, dictIntensity, samples, polarity, massWindow=0):
     )
     return se
 
+def make_masterscan(
+    options, aligned_spectra_df, aligned_spectra_infos, lx2=False
+):
+    """make the masterscan based on the optoins inftomation
 
+    Args:
+        options (_type_): as in lx1
+
+    Returns:
+        masterscan: with the averaged spectra information
+    """
+    df = aligned_spectra_df
+    df_infos = aligned_spectra_infos
+    df["masswindow"] = -1  # # NOTE use :add_massWindow instead
+    polarity = df_infos[0]["polarity"]
+    samples = df["stem"].unique().tolist()
+    listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
+    scan = build_masterscan(options, listSurveyEntry, samples)
+
+    idp = Path(options["importDir"])
+
+    if lx2:
+        filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
+    else:
+        filename = str(idp / Path("".join([idp.stem, "-lx1-ref.sc"])))
+
+    # filename = options["masterScanRun"]
+    log.info(f"saving file to: {filename}")
+    with open(filename, "wb") as scFile:
+        pickle.dump(scan, scFile, pickle.HIGHEST_PROTOCOL)
+
+    return scan
+    
 def build_masterscan(options, listSurveyEntry, stems):
     """generate a generic masterscan for LX1 compatibility
 
@@ -112,5 +144,4 @@ def build_masterscan(options, listSurveyEntry, stems):
     # for printing we need
     scan.listSamples = stems
     return scan
-
 
