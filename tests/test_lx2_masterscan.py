@@ -11,7 +11,7 @@ from lx1_refactored import (
     spectra_as_df,
     recalibrate,
 )
-from lx1_refactored.lx2_dataframe import (
+from lx1_refactored.lx2_aggregate import (
     align_spectra,
     spectra_2_DF,
     aligned_spectra_df,

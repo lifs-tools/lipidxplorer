@@ -9,7 +9,7 @@ from utils import (
 )
 
 from lx1_refactored import make_masterscan_lx1
-from lx1_refactored.lx2_dataframe import make_masterscan as make_masterscan_lx2
+from lx1_refactored.lx2_aggregate import make_masterscan as make_masterscan_lx2
 
 
 @pytest.fixture

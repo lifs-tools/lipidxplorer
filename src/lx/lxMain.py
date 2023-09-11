@@ -76,7 +76,7 @@ def startImport(
 
             worker.beginThread(make_masterscan_lx1, options)
         elif lx_ver == "LX2":
-            from lx1_refactored.lx2_dataframe import make_masterscan
+            from lx1_refactored.lx2_aggregate import make_masterscan
 
             worker.beginThread(make_masterscan, options)
 
@@ -101,7 +101,7 @@ def startImport(
 
             make_masterscan_lx1(options)
         elif lx_ver == "LX2":
-            from lx1_refactored.lx2_dataframe import make_masterscan
+            from lx1_refactored.lx2_aggregate import make_masterscan
 
             make_masterscan(options)
 

@@ -8,7 +8,7 @@ from lx2_gui import Lx2_gui
 from lx.project import Project
 from collections import namedtuple
 
-from lx1_refactored.lx2_dataframe import make_masterscan
+from lx1_refactored.lx2_aggregate import make_masterscan
 
 # TODO make this a dataclass
 P_elem = namedtuple("P_elem", "name index default", defaults=(None, None, ""))

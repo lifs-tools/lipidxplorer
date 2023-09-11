@@ -36,4 +36,4 @@ from .lx1_ref_sim_tools import (
     filter_string_replacements,
 )
 
-from .lx2_dataframe import add_bins
+from .lx2_aggregate import add_bins
