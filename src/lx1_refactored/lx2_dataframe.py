@@ -204,7 +204,7 @@ def align_spectra(df):
 def spectra_2_DF(spectra_path, options, add_stem=True):
     """convert a spectra mzml, with multiple scans, into a dataframe an average ms1 dataframe"""
     settings = get_settings(options)
-    settings["ms_level"] = settings.get("ms_level", MS_level.ms1)
+    settings["ms_level"] = settings.get("ms_level", 'ms1')
     settings["polarity"] = settings.get("polarity", 1)
     df = spectra_as_df(spectra_path, **settings)
 

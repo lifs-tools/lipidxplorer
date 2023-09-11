@@ -15,11 +15,8 @@ from .lx1_ref_dataframe import (
     add_massWindow,
     filter_occupation,
     add_aggregated_mass,
-    parse_filter_string,
-    stitch_sim_scans,
     recalibrate_with_ms1,
     dataframe2mzml,
-    sim_trim,
     spectra_2_DF_lx1,
     aligned_spectra_df_lx1,
     make_masterscan_lx1
@@ -28,6 +25,13 @@ from .lx1_ref_dataframe import (
 from .lx1_ref_read_spectra import (
     get_settings,
     spectra_as_df,
+)
+
+from .lx1_ref_sim_tools import (
+    sim_trim,
+    parse_filter_string,
+    stitch_sim_scans,
+    filter_string_replacements,
 )
 
 from .lx2_dataframe import add_bins

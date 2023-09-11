@@ -1,4 +1,4 @@
-""" adapting dataframe and dictionalries into LX1 masterscan for backward compatibility
+""" adapting dataframe and dictionaries into LX1 masterscan for backward compatibility
     start with a dataframe that contains the averaged spectra
     with columns including mass, intensity, ms level, polalrity and filename (stem)
 

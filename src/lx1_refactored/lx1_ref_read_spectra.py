@@ -1,11 +1,12 @@
 """converting a spectra file *.mzML into a dataframe
+and selecting th data in the spectra
+ie limiting the scope of scans, mass, intensity or time
 
 
 """
 import logging
 import sys
 import warnings
-from datetime import datetime
 from pathlib import Path
 from enum import Flag, auto
 
@@ -35,7 +36,7 @@ logging.basicConfig(
 log = logging.getLogger(Path(__file__).stem)
 
 def get_settings(options):
-    """convert options into a dict called settings
+    """convert options into a dict called settings, to limit the scope of scans that are read
 
     Returns:
         dict: settings needed for reading
@@ -55,6 +56,17 @@ def get_settings(options):
     return res
 
 def scan_to_DF(scan, path, mz_start, mz_end):
+    """convert a single scan from a spectra into a dataframe
+
+    Args:
+        scan (_type_): _description_
+        path (_type_): _description_
+        mz_start (_type_): _description_
+        mz_end (_type_): _description_
+
+    Returns:
+        dataframe: the relevant scan information as columns
+    """
     _categorical_cols = [
         "stem",
         "scan_id",
@@ -93,19 +105,13 @@ class MS_level(Flag):
     sim = auto()
 
 def _get_ms_level(ms_level_ish):
-    """converts a string or int into an MS_level
+    """converts a string or int into an MS_level,
+    so users can input anything
 
     Args:
         ms_level_ish (str or int): comma sperated str or int or
     """
-    # match ms_level_ish:
-    #     case [1|"1"|"ms1"]:
-    #         return MS_level.ms1
-    #     case [2|"2"|"ms2"]:
-    #         return MS_level.ms2
-    #     case ['SIM'|'sim']:
-    #         return MS_level.sim
-    #     case _:
+    # TODO use match case
     res = None
     ms_level_ish = str(ms_level_ish).lower()
 
@@ -202,7 +208,7 @@ def spectra_as_df(
 ########## filter some scan before averaging
 
 def drop_fuzzy(df):
-    """drop the first few scans that have a lot total ion count"""
+    """drop the first few scans that have a low total ion count"""
     raise NotImplementedError()
     # fraction_of_average_intensity = 0.1
     # spectras_sum_inty = (

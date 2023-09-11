@@ -11,7 +11,6 @@ from lx1_refactored import (
     spectra_as_df,
     recalibrate,
 )
-from lx1_refactored.lx1_ref_dataframe import MS_level
 from lx1_refactored.lx2_dataframe import (
     align_spectra,
     spectra_2_DF,
@@ -37,7 +36,7 @@ def options():
 def test_get_ms1_peaks():
     # options = read_options(OPTIONS_PATH) # Note only here as reference
     settings = {
-        "ms_level": MS_level.ms1,
+        "ms_level": 'ms1',
         "polarity": 1,
         "time_start": 33.0,
         "time_end": 1080.0,
@@ -52,7 +51,7 @@ def test_get_ms1_peaks():
 
 def test_get_ms2_peaks():
     settings = {
-        "ms_level": MS_level.ms2,
+        "ms_level": 'ms2',
         "polarity": 1,
         "time_start": 33.0,
         "time_end": 1080.0,
