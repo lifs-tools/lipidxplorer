@@ -13,7 +13,7 @@ from lx1_refactored import (
     filter_intensity,
     filter_occupation,
     filter_repetition_rate,
-    find_reference_masses,
+    find_reference_masses_w_tol,
     merge_peaks_from_scan,
     recalibrate,
     spectra_as_df,
@@ -112,19 +112,22 @@ def test_recalibrate_ms1_peaks(options):
     ref = df["mz"].copy()
     tolerance = options["MSresolution"].tolerance
     calibration_masses = options["MScalibration"]
-    matching_masses, reference_distance = find_reference_masses(
+    matching_masses, reference_distance = find_reference_masses_w_tol(
         df, tolerance, calibration_masses
     )
     df = recalibrate(df, matching_masses, reference_distance)
     assert (df["mz"] != ref).all()
+
 
 def test_no_recalibrate_masses_found(options):
     df = pd.read_pickle(group_ms1_peaks_REF)
     ref = df["mz"].copy()
     tolerance = options["MSresolution"].tolerance
     # calibration_masses = options["MScalibration"]
-    calibration_masses = [300.0,]
-    matching_masses, reference_distance = find_reference_masses(
+    calibration_masses = [
+        300.0,
+    ]
+    matching_masses, reference_distance = find_reference_masses_w_tol(
         df, tolerance, calibration_masses
     )
     assert not matching_masses

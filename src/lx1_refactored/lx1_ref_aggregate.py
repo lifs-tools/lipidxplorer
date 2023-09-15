@@ -44,6 +44,7 @@ from .lx1_ref_masterscan import (
     build_masterscan,
     df2listSurveyEntry,
     make_masterscan,
+    make_masterscan,
 )
 from .lx1_ref_read_write_spectra import get_settings, spectra_as_df
 
@@ -56,7 +57,7 @@ from .lx1_ref_sim_tools import (
 from .lx1_ref_change_peaks import (
     filter_repetition_rate,
     filter_intensity,
-    find_reference_masses,
+    find_reference_masses_w_tol,
     recalibrate,
     filter_occupation,
     add_massWindow,
@@ -308,7 +309,7 @@ def spectra_2_DF_lx1(spectra_path, options, add_stem=True):
     df = df[mask]
 
     calibration_masses = options["MScalibration"]
-    matching_masses, reference_distance = find_reference_masses(
+    matching_masses, reference_distance = find_reference_masses_w_tol(
         df, tolerance, calibration_masses
     )
     # TODO: @Jacobo matching_masses can be empty
@@ -368,3 +369,4 @@ def make_masterscan_lx1(options):
     """
     df, df_infos = aligned_spectra_df_lx1(options)
     return make_masterscan(options, df, df_infos)
+

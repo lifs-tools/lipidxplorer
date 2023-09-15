@@ -17,6 +17,8 @@ from .lx1_ref_aggregate import (
 )
 from .lx1_ref_aggregate import make_masterscan as make_masterscan_from_lx1
 
+from .lx1_ref_change_peaks import find_reference_masses
+
 logging.basicConfig(
     level=logging.INFO,
     stream=sys.stdout,
@@ -144,53 +146,7 @@ def get_weighted_masses(gdf_mz):
     return weights * x
 
 
-def find_closest():
-    raise NotImplementedError("This function is not yet implemented.")
-    # ser1 = pd.Series(list(MS2_dict.keys()), name="ser1")
-    # ser1.sort_values(inplace=True)
-    # tol = 0.001
 
-    # precur_map_df = pd.merge_asof(
-    #     ser1,
-    #     ser2,
-    #     left_on="ser1",
-    #     right_on="ser2",
-    #     direction="nearest",
-    #     tolerance=tol,
-    # )
-
-    ######### vs
-    # df_indices = np.searchsorted(df['mz'], recalibration_masses, side='left')
-    # matching_masses = df['mz'].iloc[df_indices].values
-    return None
-
-
-def tukey_upper(differences, k=1.5):
-    q1 = np.percentile(differences, 25)
-    q3 = np.percentile(differences, 75)
-    iqr = q3 - q1
-    upper_bound = q3 + k * iqr
-    return upper_bound
-
-
-def find_reference_masses(df, recalibration_masses, max_tolearance=0.1):
-    # TODO make find_closest function... see above
-    recalibration_masses = pd.Series(recalibration_masses)
-    recalibration_masses.sort_values(inplace=True)
-    # Find the indices of the closest float values in the right DataFrame for each value in the left DataFrame
-    df_indices = np.searchsorted(df["mz"], recalibration_masses, side="left")
-    matching_masses = df["mz"].iloc[df_indices].values
-    differences = matching_masses - recalibration_masses.values
-
-    tolerance = tukey_upper(differences)
-    if tolerance > max_tolearance:
-        tolerance = max_tolearance
-        message = f"reference mass tolerance is exxceded with replace with max tolerance: {max_tolearance}"
-        warnings.warn(message)
-        log.warning(message)
-
-    mask = differences <= (matching_masses / tolerance)
-    return matching_masses[mask], differences[mask]
 
 
 def align_spectra(df):
