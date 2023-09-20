@@ -1,14 +1,14 @@
 import traceback
 import wx
-from standalone_resources.simtrim_form import simtrim_Frame
-from simtrim import simtrim
+from tools.simtrim.standalone_resources.simtrim_form import simtrim_Frame
+from tools.simtrim.simtrim import simtrim
 
 
 class simtrimControler(simtrim_Frame):
     def __init__(self, parent):
         super(simtrimControler, self).__init__(parent)
-	
-    def run_clicked( self, event ):
+
+    def run_clicked(self, event):
         event.Skip()
         file = self.m_filePicker10.GetPath()
         try:
@@ -20,10 +20,10 @@ class simtrimControler(simtrim_Frame):
             stop_rt = float(start_rt)
 
             kwargs = {}
-            kwargs['start_rt'] = start_rt
-            kwargs['stop_rt'] = stop_rt
+            kwargs["start_rt"] = start_rt
+            kwargs["stop_rt"] = stop_rt
 
-            simtrim(file , da, **kwargs)
+            simtrim(file, da, **kwargs)
 
         except Exception as e:
             print(e)
@@ -38,27 +38,28 @@ class simtrimControler(simtrim_Frame):
             )
             dlg.ShowModal()
             dlg.Destroy()
-        
+
         dlg = wx.MessageDialog(
-                self,
-                "Completed",
-                "Completed",
-                wx.OK ,
-            )
+            self,
+            "Completed",
+            "Completed",
+            wx.OK,
+        )
         dlg.ShowModal()
         dlg.Destroy()
 
-    
 
 def openSimtrimControler(parent):
     frame = simtrimControler(parent)
     frame.Show(True)
+
 
 def main():
     app = wx.App(False)
     frame = simtrimControler(None)
     frame.Show(True)
     app.MainLoop()
+
 
 def openSimTrim(parent):
     frame = simtrimControler(parent)

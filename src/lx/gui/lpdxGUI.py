@@ -6264,9 +6264,9 @@ intensity."""
         openSimStitcher(self)
 
     def OnSimTrim(self, event):
-        from tools.simtrim.simtrimApp import openSimtrim
+        from tools.simtrim.simtrimApp import openSimTrim
 
-        openSimtrim()
+        openSimTrim(self)
 
     def OnReorderScan(self, event):
         from tools.reorderScans.reorderScans import openReorderScans
