@@ -917,9 +917,7 @@ def add_Sample_AVG(sc=None, specFile=None, specDir=None, options={}, **kwargs):
 
     # maybe there is no MS/MS?
     if len(ms2Scans) > 0:
-        for ms2scan_entry in sorted(
-            ms2Scans, cmp=lambda x, y: cmp(x["precursorMz"], y["precursorMz"])
-        ):
+        for ms2scan_entry in sorted(ms2Scans, key=lambda x: x["precursorMz"]):
             if ms2scan_entry["scan"] != []:
                 # add the fragment mass to the fragment spectrum
                 lpdxSample.listMsms.append(
@@ -1270,9 +1268,7 @@ def add_mzXMLSample(
 
     # maybe there is no MS/MS?
     if len(ms2Scans) > 0:
-        for ms2scan_entry in sorted(
-            ms2Scans, cmp=lambda x, y: cmp(x["precursorMz"], y["precursorMz"])
-        ):
+        for ms2scan_entry in sorted(ms2Scans, key=lambda x: x["precursorMz"]):
             if ms2scan_entry["scan"] != []:
                 # add the fragment mass to the fragment spectrum
                 lpdxSample.listMsms.append(

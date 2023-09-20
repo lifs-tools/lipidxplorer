@@ -337,7 +337,7 @@ class PrecursorSort:
     def __next__(self):
         spectra = list(self.input)
         spectra.sort(
-            key=lambda s: s.get("precursorMz", None), reverse=(not self.asc)
+            key=lambda s: s.get("precursorMz", 0), reverse=(not self.asc)
         )
         for s in spectra:
             yield s
