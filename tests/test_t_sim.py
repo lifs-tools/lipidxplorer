@@ -9,7 +9,6 @@ from utils import (
     compareResults,
 )
 
-# from LX1_masterscan import make_lx_masterscan
 from lx1_refactored import make_masterscan_lx1
 from lx1_refactored.lx2_aggregate import make_masterscan as make_masterscan_lx2
 import pickle
@@ -91,13 +90,15 @@ def test_masterescan_automatic(get_no_res_options, get_no_res_masterscan):
     assert compareMasterScans(masterscan, reference)
 
 
-@pytest.mark.skip(reason="Make it work since the previous one worked")
 def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
     with open(r"tests/resources/t_sim/reference/result_1.pkl", "rb") as f:
         reference = pickle.load(f)
     result = make_MFQL_result(
         get_masterscan, getMfqlFiles, get_options, log_steps=True
     )
+    # with open("tests/resources/t_sim/reference/result_1.pkl", "wb") as f:
+    #     pickle.dump(result, f)
+
     assert compareResults(result, reference)
 
 
