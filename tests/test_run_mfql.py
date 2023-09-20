@@ -21,6 +21,7 @@ def out_reference():
 
 def test_run_mfql(out_reference):
     options = read_options(proy_path)
+    import pickle5 as pickle
 
     with open(options["masterScanFileRun"], "rb") as handle:
         masterscan = pickle.load(handle)
