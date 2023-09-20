@@ -19,7 +19,9 @@ from ms_deisotope import MSFileLoader
 from ms_deisotope.data_source.memory import make_scan
 from ms_deisotope.data_source.metadata import file_information
 from ms_deisotope.data_source.metadata.scan_traits import (
-    ScanAcquisitionInformation, ScanEventInformation)
+    ScanAcquisitionInformation,
+    ScanEventInformation,
+)
 from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
 from pyteomics.xml import unitfloat
@@ -33,6 +35,7 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger(Path(__file__).stem)
+
 
 def get_settings(options):
     """convert options into a dict called settings, to limit the scope of scans that are read
@@ -51,8 +54,11 @@ def get_settings(options):
     ms2_mass_range = options["MSMSmassrange"]
     res["ms2_start"] = 0 if not ms2_mass_range else ms2_mass_range[0]
     res["ms2_end"] = float("inf") if not ms2_mass_range else ms2_mass_range[1]
-    res["polarity"] = -1 if options["polarity"] == "-" else 1 # None means use both
+    res["polarity"] = (
+        -1 if options["polarity"] == "-" else 1
+    )  # None means use both
     return res
+
 
 def scan_to_DF(scan, path, mz_start, mz_end):
     """convert a single scan from a spectra into a dataframe
@@ -98,10 +104,12 @@ def scan_to_DF(scan, path, mz_start, mz_end):
         df[col] = df[col].astype("category")
     return df
 
+
 class MS_level(Flag):
     ms1 = auto()
     ms2 = auto()
     sim = auto()
+
 
 def _get_ms_level(ms_level_ish):
     """converts a string or int into an MS_level,
@@ -114,23 +122,25 @@ def _get_ms_level(ms_level_ish):
     res = None
     ms_level_ish = str(ms_level_ish).lower()
 
-    if '1' in ms_level_ish:
+    if "1" in ms_level_ish:
         res = MS_level.ms1 if res is None else res | MS_level.ms1
-    if '2' in ms_level_ish:
+    if "2" in ms_level_ish:
         res = MS_level.ms2 if res is None else res | MS_level.ms2
-    if 'sim' in ms_level_ish:
+    if "sim" in ms_level_ish:
         res = MS_level.sim if res is None else res | MS_level.sim
-    
-    if res is None:
-        raise ValueError(ms_level_ish, "Value must be a comma seperated string with 1, 2 or sim") 
-    
-    return res
 
+    if res is None:
+        raise ValueError(
+            ms_level_ish,
+            "Value must be a comma seperated string with 1, 2 or sim",
+        )
+
+    return res
 
 
 def spectra_as_df(
     path,
-    ms_level='1',
+    ms_level="1",
     time_start=0,
     time_end=float("inf"),
     ms1_start=0,
@@ -141,7 +151,7 @@ def spectra_as_df(
 ):
     """read a spectra into a dataframe with contstraints,
      ms_level is string like: "1" or "ms1,ms2" or "sim"
-    poarity can be: 0 for both +1 positive and -1 negative
+    polarity can be: 0 for both +1 positive and -1 negative
 
     Args:
         path (_type_): _description_
@@ -158,9 +168,9 @@ def spectra_as_df(
         _type_: _description_
     """
     path = Path(path)
-    assert polarity in [-1,+1,0], 'polarity must be -1, +1 or 0'
+    assert polarity in [-1, +1, 0], "polarity must be -1, +1 or 0"
     ms_level = _get_ms_level(ms_level)
-    
+
     dfs = []
     with MSFileLoader(str(path)) as r:
         r.get_scan_by_time(time_start / 60)
@@ -204,7 +214,9 @@ def spectra_as_df(
     log.info(f"spectra {path.stem}, size: {df.shape}")
     return df
 
+
 ########## filter some scan before averaging
+
 
 def drop_fuzzy(df):
     """drop the first few scans that have a low total ion count"""
@@ -231,6 +243,7 @@ def drop_fuzzy(df):
     #         break
 
     # return spectra_df.loc[~spectra_df.scan_id.isin(to_drop)]
+
 
 def dataframe2mzml(df, source, destination=None):
     """write a dataframe into a mzml file
@@ -284,7 +297,10 @@ def dataframe2mzml(df, source, destination=None):
                 traits={"filter string": filter_string},
             )
             acquisition_information = ScanAcquisitionInformation(
-                "no combination", [scanEventInformation,],
+                "no combination",
+                [
+                    scanEventInformation,
+                ],
             )
             # Create a new spectrum
             index += 1
