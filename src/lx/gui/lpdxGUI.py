@@ -8344,6 +8344,33 @@ intensity."""
         self.lx_ver = self.m_radioBoxVersions.GetStringSelection()
         print(f"Mode is changed to {self.lx_ver}")
 
+        strMasterScan = (
+            self.filePath_ImportData
+            + os.sep
+            + self.filePath_ImportData.split(os.sep)[-1]
+            + ".sc"
+        )
+
+        # in LX2 mode
+        if self.lx_ver == "LX2":
+            strMasterScan = (
+                self.filePath_ImportData
+                + os.sep
+                + self.filePath_ImportData.split(os.sep)[-1]
+                + "-lx2.sc"
+            )
+
+        # in LX1_refactored mode
+        elif self.lx_ver == "LX1_refactored":
+            strMasterScan = (
+                self.filePath_ImportData
+                + os.sep
+                + self.filePath_ImportData.split(os.sep)[-1]
+                + "-lx1-ref.sc"
+            )
+
+        self.text_ctrl_MasterScanSection.SetValue(strMasterScan)
+
     def writeOutput(self, destination, content):
         if os.path.exists(destination):
             dlgError = wx.MessageDialog(
