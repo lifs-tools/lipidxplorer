@@ -93,7 +93,7 @@ def test_masterescan_automatic(get_no_res_options, get_no_res_masterscan):
 def test_mfql_manual(get_masterscan, get_options, getMfqlFiles):
     import pickle5 as pickle
 
-    with open(r"tests/resources/t_sim/reference/result_1.pkl", "rb") as f:
+    with open(r"tests/resources/t_sim/reference/result_test.pkl", "rb") as f:
         reference = pickle.load(f)
     result = make_MFQL_result(
         get_masterscan, getMfqlFiles, get_options, log_steps=True
