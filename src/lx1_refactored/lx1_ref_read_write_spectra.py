@@ -210,6 +210,9 @@ def spectra_as_df(
                     df = scan_to_DF(p, path, ms2_start, ms2_end)
                     dfs.append(df)
 
+    if len(dfs) == 0:
+        raise ValueError("No spectra is found!")
+
     df = pd.concat(dfs)
     log.info(f"spectra {path.stem}, size: {df.shape}")
     return df

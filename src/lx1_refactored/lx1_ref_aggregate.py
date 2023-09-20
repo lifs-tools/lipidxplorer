@@ -40,7 +40,12 @@ import pickle
 from ms_deisotope.data_source.scan.base import RawDataArrays
 from ms_deisotope.output.mzml import MzMLSerializer
 
-from .lx1_ref_masterscan import build_masterscan, df2listSurveyEntry, make_masterscan, make_masterscan
+from .lx1_ref_masterscan import (
+    build_masterscan,
+    df2listSurveyEntry,
+    make_masterscan,
+    make_masterscan,
+)
 from .lx1_ref_read_write_spectra import get_settings, spectra_as_df
 
 from .lx1_ref_sim_tools import (
@@ -193,7 +198,7 @@ def align_spectra(df, tolerance, resolutionDelta):
 def _collapsable_adjacent_groups(
     df, headers_column, group_column, close_enogh_da=0.001
 ):
-    """tries to merge adjacent groups that might have been splip by the low tolerance, 
+    """tries to merge adjacent groups that might have been splip by the low tolerance,
     its a work arownd for bad results"""
     # TODO make this more elegant if needed
     cluster_column = group_column
@@ -252,10 +257,10 @@ def collapse_spectra_groups(df):
                 stem_1  stem_2  stem_3
     mz 450.1    100     0       0
     mz 450.2      0     200     0
-    
-    converts to 
+
+    converts to
     mz 450.15      100     200     0
-    
+
 
     Args:
         df (dataframe): the averaged and grouped data
@@ -272,7 +277,6 @@ def add_aggregated_mass(df):
     # NOTE not sure why this is done here, maybe its the way its done in lx1
     df["mass"] = df.groupby("_group")["mz"].transform("mean")
     return df
-
 
 
 def spectra_2_DF_lx1(spectra_path, options, add_stem=True):
@@ -365,7 +369,3 @@ def make_masterscan_lx1(options):
     """
     df, df_infos = aligned_spectra_df_lx1(options)
     return make_masterscan(options, df, df_infos)
-
-
-
-
