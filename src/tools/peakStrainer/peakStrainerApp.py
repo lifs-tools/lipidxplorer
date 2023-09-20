@@ -48,17 +48,19 @@ class MyFrame(MyFrame2):
         )
 
         if dlg.ShowModal() == wx.ID_OK:
-            self.path, file = os.path.split(dlg.GetPath())
-            self.fileNames = dlg.GetFilenames()
+            paths = dlg.GetPaths()
+            if len(paths) > 0:
+                self.path, file = os.path.split(paths[0])
+                self.fileNames = dlg.GetFilenames()
 
-            self.m_textCtrl1.SetValue(
-                str(self.path).replace("\\\\", "\\")
-                + " "
-                + str(len(self.fileNames))
-                + " files"
-            )
-            # ----
-            self.m_buttonFinish.Enable(True)
+                self.m_textCtrl1.SetValue(
+                    str(self.path).replace("\\\\", "\\")
+                    + " "
+                    + str(len(self.fileNames))
+                    + " files"
+                )
+                # ----
+                self.m_buttonFinish.Enable(True)
 
     def clickOpenSpecReord(self, event):
         reorderscansMain()

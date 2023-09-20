@@ -28,17 +28,19 @@ class mySimStitcherFrame(SimStitcherFrame):
         )
 
         if dlg.ShowModal() == wx.ID_OK:
-            self.path, file = os.path.split(dlg.GetPath())
-            self.fileNames = dlg.GetFilenames()
+            paths = dlg.GetPaths()
+            if len(paths) > 0:
+                self.path, file = os.path.split(paths[0])
+                self.fileNames = dlg.GetFilenames()
 
-            self.m_textCtrl1.SetValue(
-                str(self.path).replace("\\\\", "\\")
-                + " "
-                + str(len(self.fileNames))
-                + " files"
-            )
-            self.m_button2.Enable(True)
-            self.m_gauge1.SetValue(0)
+                self.m_textCtrl1.SetValue(
+                    str(self.path).replace("\\\\", "\\")
+                    + " "
+                    + str(len(self.fileNames))
+                    + " files"
+                )
+                self.m_button2.Enable(True)
+                self.m_gauge1.SetValue(0)
 
     def clickStart(self, event):
         status = self.run_all()
