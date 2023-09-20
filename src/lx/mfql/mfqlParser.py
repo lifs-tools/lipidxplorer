@@ -642,7 +642,7 @@ def p_identification_normal_old(p):
         print("generating combinatorics ...", end=" ")
         for se in mfqlObj.sc.listSurveyEntry:
             mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-        print("%.2f sec." % time.clock())
+        print("%.2f sec." % time.perf_counter())
 
     if len(p) == 8:
         mfqlObj.suchthatApplied = False
@@ -685,13 +685,13 @@ def p_identification_normal_new(p):
         print("generating combinatorics ...", end=" ")
         for se in mfqlObj.sc.listSurveyEntry:
             mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-        print("%.2f sec." % time.clock())
+        print("%.2f sec." % time.perf_counter())
 
     if mfqlObj.parsePart == "identification":
         print("generating combinatorics ...", end=" ")
         for se in mfqlObj.sc.listSurveyEntry:
             mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-        print("%.2f sec." % time.clock())
+        print("%.2f sec." % time.perf_counter())
 
     if len(p) == 6:
         mfqlObj.suchthatApplied = False
@@ -848,7 +848,7 @@ def p_evalMarks(p):
     if mfqlObj.parsePart == "identification":
         print("IDENTIFY the masses of interest ...", end=" ")
         mfqlObj.scan.evaluate()
-        print("%.2f sec." % time.clock())
+        print("%.2f sec." % time.perf_counter())
     pass
 
 
@@ -1010,7 +1010,7 @@ def p_bterm(p):
                                 # result.append(tmpRes)
 
         p[0] = report
-        print("%.2f sec. for %d comparisons" % (time.clock(), count))
+        print("%.2f sec. for %d comparisons" % (time.perf_counter(), count))
 
 
 def p_booleanterm_logic(p):
@@ -1317,7 +1317,7 @@ def startParsing(
     log_steps=False,
     callback=None,
 ):
-    time.clock()
+    time.perf_counter()
 
     global mfqlObj
     global gprogressCount
@@ -1380,7 +1380,7 @@ def startParsing(
         # 		parent.debug.progressDialog.Destroy()
         # 		return parent.CONST_THREAD_USER_ABORT
 
-        print("%.2f sec." % time.clock())
+        print("%.2f sec." % time.perf_counter())
     else:
         print("type II isotopic correction for MS is switched off")
 
@@ -1396,7 +1396,7 @@ def startParsing(
         callback(
             "merge_collapse_ids", mfqlObj.resultSC
         )  # now its a list not actually scans
-    print("%.2f sec." % time.clock())
+    print("%.2f sec." % time.perf_counter())
 
     # print("only some surveys are of interest")
     # print("\n".join(map(str, mfqlObj.resultSC)))
@@ -1420,7 +1420,7 @@ def startParsing(
         # 		parent.debug.progressDialog.Destroy()
         # 		return parent.CONST_THREAD_USER_ABORT
 
-        print("%.2f sec." % time.clock())
+        print("%.2f sec." % time.perf_counter())
     else:
         print("type II isotopic correction for MS/MS is switched off")
 
@@ -1428,7 +1428,7 @@ def startParsing(
         print("type I isotopic correction in MS and MS/MS ...", end=" ")
         if isotopicCorrectionMS or isotopicCorrectionMSMS:
             mfqlObj.result.correctMonoisotopicPeaks()
-        print("%.2f sec." % time.clock())
+        print("%.2f sec." % time.perf_counter())
         if log_steps:
             callback("correctMonoisotopicPeaks", mfqlObj.resultSC)
             print(
@@ -1450,7 +1450,7 @@ def startParsing(
     mfqlObj.result.generateQueryResultSC()
     if log_steps:
         callback("generateQueryResultSC", mfqlObj.resultSC)
-    print("%.2f sec." % time.clock())
+    print("%.2f sec." % time.perf_counter())
 
     if log_steps:
         print("put the stuff in a differentplace")
@@ -1471,7 +1471,7 @@ def startParsing(
     mfqlObj.result.checkIsobaricSpeciesBeforeSUCHTHAT()
     if log_steps:
         callback("checkIsobaricSpeciesBeforeSUCHTHAT", mfqlObj.resultSC)
-    print("%.2f sec." % time.clock())
+    print("%.2f sec." % time.perf_counter())
 
     ### do the REPORT ###
     for k in list(dictData.keys()):
@@ -1496,15 +1496,15 @@ def startParsing(
         # mfqlObj.result.isotopicCorrectionMSMS()
         # print "de-isotoping MS ...",
         # mfqlObj.result.deIsotopingMS_complement()
-        # print "%.2f sec." % time.clock()
+        # print "%.2f sec." % time.perf_counter()
 
         # print "de-isotoping MS ...",
         # mfqlObj.result.deIsotopingMSMS_complement()
-        # print "%.2f sec." % time.clock()
+        # print "%.2f sec." % time.perf_counter()
 
         print("generate complement MasterScan ...")
         mfqlObj.result.generateComplementSC()
-        print("%.2f sec." % time.clock())
+        print("%.2f sec." % time.perf_counter())
 
     if options["noPermutations"]:
         mfqlObj.result.removePermutations()
@@ -1536,7 +1536,7 @@ def startParsing(
                 for k, variab in variabs.items():
                     for s in variab.isobaric:
                         print(s)
-    print("%.2f sec." % time.clock())
+    print("%.2f sec." % time.perf_counter())
 
     print("generate report ...", end=" ")
     mfqlObj.result.generateReport(options)
@@ -1548,16 +1548,16 @@ def startParsing(
             print(Queryitems.strOutput)
             print(Queryitems.dataMatrix)
 
-    print("%.2f sec." % time.clock())
+    print("%.2f sec." % time.perf_counter())
 
     if generateStatistics and mfqlObj.result.mfqlOutput:
         print("generate statistics ...", end=" ")
         mfqlObj.result.generateStatistics(options)
-        print("%.2f sec." % time.clock())
+        print("%.2f sec." % time.perf_counter())
 
     # print "generate graphics ...",
     # mfqlObj.result.generateGraphics()
-    # print "%.2f sec." % time.clock()
+    # print "%.2f sec." % time.perf_counter()
 
     # if yacc.error:
     # 	print "ERROR", yacc.error

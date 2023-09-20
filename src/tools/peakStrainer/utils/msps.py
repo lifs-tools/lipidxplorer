@@ -160,7 +160,7 @@ def main():
     if log.level == logging.DEBUG:
         log.addHandler(logging.StreamHandler())  # log to console
 
-    log.debug("Start %f", time.clock())
+    log.debug("Start %f", time.perf_counter())
 
     filename = args.filename[0]
     scans = ThermoRawfile2Scans(filename)
@@ -290,7 +290,7 @@ def main():
     log.info("Writing results to %s", newfilename)
     write2templateMzXML(newfilename, filtered_peaks)
 
-    log.debug("finish %f", time.clock())
+    log.debug("finish %f", time.perf_counter())
 
 
 if __name__ == "__main__":

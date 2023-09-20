@@ -668,7 +668,7 @@ def doImport(
     nb_msms_peaks = []
 
     # time
-    starttime = time.clock()
+    starttime = time.perf_counter()
 
     # go recursively through the directory
     listPolarity = []
@@ -825,7 +825,7 @@ def doImport(
         )
     )
 
-    loadingtime = time.clock() - starttime
+    loadingtime = time.perf_counter() - starttime
     reportout("%.2f sec. for reading the spectra" % loadingtime)
 
     # if Debug("logMemory"):
@@ -871,7 +871,7 @@ def doImport(
     ):
         recalibrateMSMS(scan, scan.options["MSMScalibration"])
 
-    calibrationtime = time.clock() - starttime - loadingtime
+    calibrationtime = time.perf_counter() - starttime - loadingtime
     reportout("%.2f sec. for calibrating the spectra" % calibrationtime)
 
     # align MS spectra
@@ -970,7 +970,9 @@ def doImport(
                 isPIS=options["pisSpectra"],
             )
 
-    alignmenttime = time.clock() - starttime - loadingtime - calibrationtime
+    alignmenttime = (
+        time.perf_counter() - starttime - loadingtime - calibrationtime
+    )
     reportout("%.2f sec. for aligning the spectra\n" % alignmenttime)
 
     for sample in scan.listSamples:
@@ -1003,7 +1005,8 @@ def doImport(
     saveSC(scan, output)
 
     reportout(
-        "%.2f sec. for the whole import process" % (time.clock() - starttime)
+        "%.2f sec. for the whole import process"
+        % (time.perf_counter() - starttime)
     )
     reportout("\n")
 
@@ -1038,7 +1041,7 @@ def doImport_alt(
     # 	import memory_logging
 
     # time
-    starttime = time.clock()
+    starttime = time.perf_counter()
 
     # go recursively through the directory
     listPolarity = []
@@ -1146,7 +1149,7 @@ def doImport_alt(
                     "Something wrong with the calculation of the base peaks"
                 )
 
-            loadingtime = time.clock() - starttime
+            loadingtime = time.perf_counter() - starttime
             reportout("%.2f sec. for reading the spectra" % loadingtime)
 
             # if Debug("logMemory"):
@@ -1190,7 +1193,7 @@ def doImport_alt(
                     scan, scan.options["MSMScalibration"]
                 )
 
-            calibrationtime = time.clock() - starttime - loadingtime
+            calibrationtime = time.perf_counter() - starttime - loadingtime
             reportout(
                 "%.2f sec. for calibrating the spectra" % calibrationtime
             )
@@ -1424,7 +1427,9 @@ def doImport_alt(
                 isPIS=options["pisSpectra"],
             )
 
-    alignmenttime = time.clock() - starttime - loadingtime - calibrationtime
+    alignmenttime = (
+        time.perf_counter() - starttime - loadingtime - calibrationtime
+    )
     reportout("%.2f sec. for aligning the spectra\n" % alignmenttime)
 
     # free space in the MasterScan
@@ -1445,7 +1450,8 @@ def doImport_alt(
     saveSC(scan_original, output)
 
     reportout(
-        "%.2f sec. for the whole import process" % (time.clock() - starttime)
+        "%.2f sec. for the whole import process"
+        % (time.perf_counter() - starttime)
     )
     reportout("\n")
 

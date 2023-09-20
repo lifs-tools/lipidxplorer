@@ -639,7 +639,7 @@ class TypeResult:
                         gotOne = False
 
                         neg = 1 - 0.01082
-                        cWithoutIsotopes = neg ** numC
+                        cWithoutIsotopes = neg**numC
 
                         cfM = []
                         cfM.append(
@@ -836,7 +836,7 @@ class TypeResult:
                     gotOne = False
 
                     neg = 1 - 0.01082
-                    cWithoutIsotopes = neg ** numC
+                    cWithoutIsotopes = neg**numC
 
                     cfM = []
                     cfM.append(
@@ -979,7 +979,7 @@ class TypeResult:
         scan = self.mfqlObj.sc
         listKeys = scan.listSamples
         listSE = self.mfqlObj.sc.listSurveyEntry
-        lowest_res = max(e.massWindow for e in listSE if e.massWindow > 0)
+        # lowest_res = max(e.massWindow for e in listSE if e.massWindow > 0)
 
         listSE = sorted(listSE, key=lambda x: x.peakMean)
 
@@ -1793,7 +1793,7 @@ class TypeResult:
                         numC = 0
 
                     neg = 1 - 0.01082
-                    cWithoutIsotopes = neg ** numC
+                    cWithoutIsotopes = neg**numC
 
                     cfM = []
                     cfM.append(
@@ -1997,7 +1997,7 @@ class TypeResult:
                         numC = 0
 
                     neg = 1 - 0.01082
-                    cWithoutIsotopes = neg ** numC
+                    cWithoutIsotopes = neg**numC
 
                     cfM = []
                     cfM.append(
@@ -2404,7 +2404,11 @@ class TypeResult:
                             )
                             dbgstr += (
                                 "     F0N2: %.4f, F1N1: %.4f, F2N0: %.4f\n"
-                                % (Mtx[0][2], Mtx[1][1], Mtx[2][0],)
+                                % (
+                                    Mtx[0][2],
+                                    Mtx[1][1],
+                                    Mtx[2][0],
+                                )
                             )
                             dbgstr += (
                                 "     F0N3: %.4f, F1N2: %.4f, F2N1: %.4f, F3N0: %.4f\n"
@@ -2469,8 +2473,8 @@ class TypeResult:
 
                                     # store original intensity for dump
                                     if M1.msmse.dictBeforeIsocoIntensity == {}:
-                                        M1.msmse.dictBeforeIsocoIntensity = deepcopy(
-                                            M1.msmse.dictIntensity
+                                        M1.msmse.dictBeforeIsocoIntensity = (
+                                            deepcopy(M1.msmse.dictIntensity)
                                         )
 
                                     # correct the found fragment intensity
@@ -2588,8 +2592,8 @@ class TypeResult:
                                     if not isIn:
                                         # store original intensity for dump
                                         if M1f.dictBeforeIsocoIntensity == {}:
-                                            M1f.dictBeforeIsocoIntensity = deepcopy(
-                                                M1f.dictIntensity
+                                            M1f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M1f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
@@ -2656,8 +2660,8 @@ class TypeResult:
                                 if not isIn:
                                     # store original intensity for dump
                                     if M2.msmse.dictBeforeIsocoIntensity == {}:
-                                        M2.msmse.dictBeforeIsocoIntensity = deepcopy(
-                                            M2.msmse.dictIntensity
+                                        M2.msmse.dictBeforeIsocoIntensity = (
+                                            deepcopy(M2.msmse.dictIntensity)
                                         )
 
                                     for k in list(
@@ -2791,8 +2795,8 @@ class TypeResult:
                                     if not isIn:
                                         # store original intensity for dump
                                         if M1f.dictBeforeIsocoIntensity == {}:
-                                            M1f.dictBeforeIsocoIntensity = deepcopy(
-                                                M1f.dictIntensity
+                                            M1f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M1f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
@@ -2855,8 +2859,8 @@ class TypeResult:
                                     if not isIn:
                                         # store original intensity for dump
                                         if M2f.dictBeforeIsocoIntensity == {}:
-                                            M2f.dictBeforeIsocoIntensity = deepcopy(
-                                                M2f.dictIntensity
+                                            M2f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M2f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
@@ -2920,8 +2924,8 @@ class TypeResult:
                                 if not isIn:
                                     # store original intensity for dump
                                     if M3.msmse.dictBeforeIsocoIntensity == {}:
-                                        M3.msmse.dictBeforeIsocoIntensity = deepcopy(
-                                            M3.msmse.dictIntensity
+                                        M3.msmse.dictBeforeIsocoIntensity = (
+                                            deepcopy(M3.msmse.dictIntensity)
                                         )
 
                                     for k in list(
@@ -3078,8 +3082,8 @@ class TypeResult:
                                     if not isIn:
                                         # store original intensity for dump
                                         if M1f.dictBeforeIsocoIntensity == {}:
-                                            M1f.dictBeforeIsocoIntensity = deepcopy(
-                                                M1f.dictIntensity
+                                            M1f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M1f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
@@ -3142,8 +3146,8 @@ class TypeResult:
                                     if not isIn:
                                         # store original intensity for dump
                                         if M2f.dictBeforeIsocoIntensity == {}:
-                                            M2f.dictBeforeIsocoIntensity = deepcopy(
-                                                M2f.dictIntensity
+                                            M2f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M2f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
@@ -3206,8 +3210,8 @@ class TypeResult:
                                     if not isIn:
                                         # store original intensity for dump
                                         if M3f.dictBeforeIsocoIntensity == {}:
-                                            M3f.dictBeforeIsocoIntensity = deepcopy(
-                                                M3f.dictIntensity
+                                            M3f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M3f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
@@ -3274,8 +3278,8 @@ class TypeResult:
                                 if not isIn:
                                     # store original intensity for dump
                                     if M4.msmse.dictBeforeIsocoIntensity == {}:
-                                        M4.msmse.dictBeforeIsocoIntensity = deepcopy(
-                                            M4.msmse.dictIntensity
+                                        M4.msmse.dictBeforeIsocoIntensity = (
+                                            deepcopy(M4.msmse.dictIntensity)
                                         )
 
                                     for k in list(
@@ -3440,8 +3444,8 @@ class TypeResult:
                                     if not isIn:
                                         # store original intensity for dump
                                         if M1f.dictBeforeIsocoIntensity == {}:
-                                            M1f.dictBeforeIsocoIntensity = deepcopy(
-                                                M1f.dictIntensity
+                                            M1f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M1f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
@@ -3504,8 +3508,8 @@ class TypeResult:
                                     if not isIn:
                                         # store original intensity for dump
                                         if M2f.dictBeforeIsocoIntensity == {}:
-                                            M2f.dictBeforeIsocoIntensity = deepcopy(
-                                                M2f.dictIntensity
+                                            M2f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M2f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
@@ -3568,8 +3572,8 @@ class TypeResult:
                                     if not isIn:
                                         # store original intensity for dump
                                         if M3f.dictBeforeIsocoIntensity == {}:
-                                            M3f.dictBeforeIsocoIntensity = deepcopy(
-                                                M3f.dictIntensity
+                                            M3f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M3f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity
@@ -3632,8 +3636,8 @@ class TypeResult:
                                     if not isIn:
                                         # store original intensity for dump
                                         if M4f.dictBeforeIsocoIntensity == {}:
-                                            M4f.dictBeforeIsocoIntensity = deepcopy(
-                                                M4f.dictIntensity
+                                            M4f.dictBeforeIsocoIntensity = (
+                                                deepcopy(M4f.dictIntensity)
                                             )
 
                                         # correct the found fragment intensity

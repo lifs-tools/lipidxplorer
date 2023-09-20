@@ -108,7 +108,7 @@ def startImport(
 
 def startMFQL(options={}, queries={}, parent=None):
     # get the starting time for speed measure
-    start = time.clock()
+    start = time.perf_counter()
 
     progressCount = 0
 
@@ -253,7 +253,10 @@ def startMFQL(options={}, queries={}, parent=None):
 
     print(
         "\nOverall time needed for identification: %d:%d"
-        % ((time.clock() - start) / 60, (time.clock() - start) % 60)
+        % (
+            (time.perf_counter() - start) / 60,
+            (time.perf_counter() - start) % 60,
+        )
     )
 
     # return successfull

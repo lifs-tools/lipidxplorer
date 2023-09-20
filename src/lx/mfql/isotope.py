@@ -164,29 +164,29 @@ def isotope(
                 ]  # ;  % put isotopic distribution in tA
 
         # print 'Calculate FFT...'
-        t0 = time.clock()
+        t0 = time.perf_counter()
         tA = F.fft(tA)  # FFT along elements isotopic distribution  O(nlogn)
-        t_fft = time.clock() - t0
+        t_fft = time.perf_counter() - t0
         # print 'Multiply vectors...'
-        t0 = time.clock()
+        t0 = time.perf_counter()
         tA = tA ** M[i]  #  % O(n)
         #################
         ptA = ptA * tA  #  % O(n)#this is where it is messing UP
         #################
-        t1 = time.clock()
+        t1 = time.perf_counter()
         t_mult = t1 - t0
 
     # print 'Time for FFT: %4.2f s'%t_fft
     # print 'Time for multiplications: %4.2f s'%t_mult
 
     # print 'Calculate IFFT...'
-    # t0=time.clock()
+    # t0=time.perf_counter()
     ptA = F.ifft(ptA).real  # ;  % O(nlogn)
 
-    # print 'Time for IFFT: %4.2f s'%(time.clock()-t0)
+    # print 'Time for IFFT: %4.2f s'%(time.perf_counter()-t0)
 
     # print 'Plotting...'
-    # t0=time.clock()
+    # t0=time.perf_counter()
 
     start = (
         (FOLDED * (WINDOW_SIZE - 1) + 1) * RESOLUTION + MASS_REMOVED,
@@ -207,7 +207,7 @@ def isotope(
 
     # P.vlines(x,0,y)
 
-    #'Time for plotting: %4.2f s'%(time.clock() - t0)
+    #'Time for plotting: %4.2f s'%(time.perf_counter() - t0)
     # P.show()
 
     # monoisotopic peak is 1.0

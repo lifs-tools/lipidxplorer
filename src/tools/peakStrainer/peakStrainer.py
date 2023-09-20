@@ -37,7 +37,7 @@ def main(folder, technial_replicates=True, rcf_a=5408000.0, rcf_b=0.5):
     if log.level == logging.DEBUG:
         logging.basicConfig(filename="peakStrainer.log", filemode="w")
 
-    log.debug("Start %f", time.clock())
+    log.debug("Start %f", time.perf_counter())
     #     if len(sys.argv) == 1:
     #         print("A filename must be provided")
     #         raise SystemExit

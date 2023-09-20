@@ -569,14 +569,16 @@ def doImport(
             elif nb_msms_peaks[-1] == 0:
                 print(f" File {i[0]} contains 0 MS2 peaks after alignment")
 
-
     # intermediate output
     if kwargs.get("make_intermediate_output", False):
         import pandas as pd
         from pathlib import Path
+
         df = pd.concat(peaks_df_list)
 
-        df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_groups.pkl"))
+        df.to_pickle(
+            Path(options["importDir"]) / Path("lx1_spectra_peak_groups.pkl")
+        )
 
         lpm = (
             (scan_name, pm.precurmass, pm.intensity)
@@ -585,7 +587,9 @@ def doImport(
         )
 
         lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
-        lpm_df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_averaged.pkl"))
+        lpm_df.to_pickle(
+            Path(options["importDir"]) / Path("lx1_spectra_peak_averaged.pkl")
+        )
 
     if (not scan.options.isEmpty("precursorMassShift")) and scan.options[
         "precursorMassShift"
@@ -606,7 +610,6 @@ def doImport(
             )
 
     if kwargs.get("make_intermediate_output", False):
-
         lpm = (
             (scan_name, pm.precurmass, pm.intensity)
             for scan_name, item in scan.dictSamples.items()
@@ -614,7 +617,10 @@ def doImport(
         )
 
         lpm_df = pd.DataFrame(lpm, columns="spectra mass inty".split())
-        lpm_df.to_pickle(Path(options['importDir']) / Path("lx1_spectra_peak_recalibrated.pkl"))
+        lpm_df.to_pickle(
+            Path(options["importDir"])
+            / Path("lx1_spectra_peak_recalibrated.pkl")
+        )
 
     scan.listSamples.sort()
 
@@ -663,11 +669,11 @@ def doImport(
             minocc=scan.options["MSminOccupation"],
             bin_res=scan.options["alignmentMethodMS"] == "calctol",
             collapse=scan.options["alignmentMethodMS"] == "calctol",
-            **kwargs
+            **kwargs,
         )
 
     if kwargs.get("make_intermediate_output", False):
-        pass # generate in mkSurveyLinear method
+        pass  # generate in mkSurveyLinear method
 
     ### aling the fragment spectra ###
 
@@ -692,7 +698,7 @@ def doImport(
                 isPIS=options["pisSpectra"],
                 bin_res=options["alignmentMethodMSMS"] == "calctol",
                 collapse=scan.options["alignmentMethodMSMS"] == "calctol",
-                **kwargs
+                **kwargs,
             )
 
     # blanks = potential_blanks(scan.listSurveyEntry, 25) # be careguk not to confiuse blanks with internal standards
@@ -803,7 +809,7 @@ def doImport_alt(
         import memory_logging
 
     # time
-    starttime = time.clock()
+    starttime = time.perf_counter()
 
     # go recursively through the directory
     listPolarity = []
@@ -910,7 +916,7 @@ def doImport_alt(
                     "Something wrong with the calculation of the base peaks"
                 )
 
-            loadingtime = time.clock() - starttime
+            loadingtime = time.perf_counter() - starttime
             reportout("%.2f sec. for reading the spectra" % loadingtime)
 
             # if Debug("logMemory"):
@@ -954,7 +960,7 @@ def doImport_alt(
                     scan, scan.options["MSMScalibration"]
                 )
 
-            calibrationtime = time.clock() - starttime - loadingtime
+            calibrationtime = time.perf_counter() - starttime - loadingtime
             reportout(
                 "%.2f sec. for calibrating the spectra" % calibrationtime
             )
@@ -1188,7 +1194,9 @@ def doImport_alt(
                 isPIS=options["pisSpectra"],
             )
 
-    alignmenttime = time.clock() - starttime - loadingtime - calibrationtime
+    alignmenttime = (
+        time.perf_counter() - starttime - loadingtime - calibrationtime
+    )
     reportout("%.2f sec. for aligning the spectra\n" % alignmenttime)
 
     # free space in the MasterScan
@@ -1209,7 +1217,8 @@ def doImport_alt(
     saveSC(scan_original, output)
 
     reportout(
-        "%.2f sec. for the whole import process" % (time.clock() - starttime)
+        "%.2f sec. for the whole import process"
+        % (time.perf_counter() - starttime)
     )
     reportout("\n")
 
