@@ -1,6 +1,6 @@
 import traceback
 import wx
-from tools.simtrim.standalone_resources.simtrim_form import simtrim_Frame
+from tools.simtrim.simtrim_form import simtrim_Frame
 from tools.simtrim.simtrim import simtrim
 
 
