@@ -9,7 +9,7 @@ class simtrimControler(simtrim_Frame):
         super(simtrimControler, self).__init__(parent)
 
     def run_clicked(self, event):
-        event.Skip()
+        # event.Skip()
         file = self.m_filePicker10.GetPath()
         try:
             da = self.m_textCtrl3.GetValue()
