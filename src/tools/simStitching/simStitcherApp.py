@@ -119,7 +119,7 @@ class mySimStitcherFrame(SimStitcherFrame):
 
         ststus = False
         for onefile in self.fileNames:
-            filepath = str(self.path + "\\" + onefile)
+            filepath = str(onefile)
             self.m_gauge1.SetValue(self.m_gauge1.GetValue() + gaugeStep)
             try:
                 simStitcher(

@@ -137,7 +137,7 @@ class MyFrame(MyFrame2):
         self.fileNames
 
         for onefile in self.fileNames:
-            filepath = str(self.path + "\\" + onefile)
+            filepath = str(onefile)
             self.m_statuslog.WriteText("Starting filepath " + filepath + "\n")
             try:
                 self.run_once(filepath, onefile)
