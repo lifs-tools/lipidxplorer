@@ -49,11 +49,6 @@ class simtrimControler(simtrim_Frame):
         dlg.Destroy()
 
 
-def openSimtrimControler(parent):
-    frame = simtrimControler(parent)
-    frame.Show(True)
-
-
 def main():
     app = wx.App(False)
     frame = simtrimControler(None)

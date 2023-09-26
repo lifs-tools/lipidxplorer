@@ -256,9 +256,10 @@ def removeLockFromHeader(scans):
 def ThermoRawfile2Scans_RawQuant(file_path):
     log.info("raw file: %s", file_path)
     from RawQuant import RawFileReader
+    import ThermoFisher.CommonCore.Data.Business as Business
 
     raw = RawFileReader.open_raw_file(file_path)
-    raw.SelectInstrument(0, 1)  # needed by thermo
+    raw.SelectInstrument(Business.Device.MS, 1)  # needed by thermo
 
     start = raw.RunHeaderEx.FirstSpectrum
     end = raw.RunHeaderEx.LastSpectrum
@@ -268,7 +269,7 @@ def ThermoRawfile2Scans_RawQuant(file_path):
     )
 
     def get_out(raw, scan):
-        data = raw.GetCentroidStream(scan, None)
+        data = raw.GetCentroidStream(scan, False)
 
         out = np.empty((data.Length, 6))
 
@@ -292,7 +293,7 @@ def ThermoRawfile2Scans_RawQuant(file_path):
 
     MSrawscans = []
     for scanNum in range(start, end + 1):
-        data = raw.GetCentroidStream(scanNum, None)
+        data = raw.GetCentroidStream(scanNum, False)
         if data.Length == 0:
             log.debug(
                 f"scan {scanNum} {raw.GetScanEventForScanNumber(scanNum).ToString()} has no masses"
@@ -565,7 +566,7 @@ def preliminaryFilter(
     }
     log.debug("groups with minCount %d: %d", minCount, len(minCount_bin))
     minCount_bin_max = (
-        float(max(minCount_bin.values())) if len(minCount_bin) is not 0 else 0
+        float(max(minCount_bin.values())) if len(minCount_bin) != 0 else 0
     )
     minRepetitionRate_bin = {
         bin: count
