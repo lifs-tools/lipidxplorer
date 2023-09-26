@@ -108,4 +108,3 @@ ms_deisotope
 pytest-pythonpath
 gooey
 RawQuant
-py2exe
