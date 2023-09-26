@@ -11,3 +11,5 @@ venv\Scripts\Activate.ps1
 pip install attrdict3 requests
 
 pip install -r requirements.txt
+
+# pip install git+https://github.com/pyinstaller/pyinstaller
