@@ -99,7 +99,7 @@ pyzmq
 zipp==0.6.0
 comtypes==1.1.11
 debugpy==1.0.0b5
-pyteomics==4.1.2
+pyteomics>=4.5
 schedule==1.1.0
 ipywidgets
 ms_deisotope==0.0.49
