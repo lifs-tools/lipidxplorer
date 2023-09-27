@@ -244,6 +244,8 @@ def ThermoRawfile2Scans(file_path, dropElbowIIT=False):
 
 import numpy as np
 import ctypes
+import clr, System
+from System import Array, Int32
 from System.Runtime.InteropServices import GCHandle, GCHandleType
 
 _MAP_NET_NP = {
