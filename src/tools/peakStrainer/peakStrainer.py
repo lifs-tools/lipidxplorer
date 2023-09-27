@@ -294,7 +294,7 @@ def asNumpyArray(netArray):
 def ThermoRawfile2Scans_local(file_path):
     # NOTE: for testing use ThermoRawfile2Scans_sample instead
     log.info("raw file: %s", file_path)
-    rawfile = MSFileReader(file_path)
+    rawfile = MSFileReader.ThermoRawfile(file_path)
     source = rawfile._source
 
     start = rawfile.FirstSpectrumNumber()
