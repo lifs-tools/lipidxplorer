@@ -7,7 +7,11 @@ import os
 import time
 import logging
 
-log = logging.getLogger(os.path.basename(__file__))
+try:
+    log = logging.getLogger(os.path.basename(__file__))
+except Exception:
+    log = None
+
 from collections import namedtuple
 from ctypes import *
 import copy
@@ -25,64 +29,139 @@ else:
     from collections import OrderedDict
 
 try:
-    import comtypes
-    from comtypes.client import GetModule, CreateObject
-except (ImportError, NameError) as e:
-    if os.name != "posix":
-        sys.exit(
-            "Please install comtypes >= 0.6.2 : http://pypi.python.org/pypi/comtypes/"
-        )
+    WindowsError
+except NameError:
+    raise ImportError("Platform Not Supported")
 
 try:
+    import comtypes
+    from comtypes.client import GetModule, CreateObject
+    from comtypes.safearray import safearray_as_ndarray
+except (ImportError, NameError) as e:
+    raise ImportError("Could not import comtypes")
+
+try:
+    # Load previously built COM wrapper
     from comtypes.gen import MSFileReaderLib
-except ImportError:
-    XRawfile2_dll_loaded = False
-    XRawfile2_dll_path = []
-    XRawfile2_dll_path.append(
-        os.path.dirname(os.path.abspath(__file__))
-        + os.sep
-        + "XRawfile2_x64.dll"
-    )  # 64bits msFileReader aside raw.py
-    XRawfile2_dll_path.append(
-        "C:\\Program Files\\Thermo\\Foundation\\XRawfile2_x64.dll"
-    )  # 64bits msFileReader with 64bits system
-    XRawfile2_dll_path.append(
-        os.path.dirname(os.path.abspath(__file__)) + os.sep + "XRawfile2.dll"
-    )  # 32bits msFileReader aside raw.py
-    XRawfile2_dll_path.append(
-        "C:\\Program Files (x86)\\Thermo\\Foundation\\XRawfile2.dll"
-    )  # 32bits msFileReader with 64bits system
-    XRawfile2_dll_path.append(
-        "C:\\Program Files\\Thermo\\Foundation\\XRawfile2.dll"
-    )  # 32bits msFileReader with 32bits system
-    XRawfile2_dll_path_0 = copy.deepcopy(XRawfile2_dll_path)
-    while not XRawfile2_dll_loaded:
+
+    DLL_IS_LOADED = True
+except (ImportError, TypeError):
+    DLL_IS_LOADED = False
+
+
+def _check_numpy():
+    import numpy as np
+    from numpy import ctypeslib
+
+    try:
+        from numpy.ctypeslib import _typecodes
+    except ImportError:
+        from numpy.ctypeslib import as_ctypes_type
+
+        ctypes_to_dtypes = {}
+
+        for tp in set(np.sctypeDict.values()):
+            try:
+                ctype_for = as_ctypes_type(tp)
+                ctypes_to_dtypes[ctype_for] = tp
+            except NotImplementedError:
+                continue
+        ctypeslib._typecodes = ctypes_to_dtypes
+
+
+_check_numpy()
+
+_default_paths = [
+    # Theoretical Bundled 64 bit MSFileReader DLL
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "XRawfile2_x64.dll"
+    ),
+    # Default Installation Path on 64 bit systems
+    "C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2_x64.dll",
+    "C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2.dll",
+    "C:\\Program Files\\Thermo\\Foundation\\XRawfile2.dll",
+    # Default Installation Path on 32 bit systems
+    "C:\\Program Files (x86)\\Thermo\\MSFileReader\\XRawfile2.dll",
+    "C:\\Program Files (x86)\\Thermo\\Foundation\\XRawfile2.dll",
+]
+
+
+def _register_dll(search_paths=None):
+    from ms_deisotope.config import get_config
+
+    global DLL_IS_LOADED
+    if DLL_IS_LOADED:
+        return True
+    if search_paths is None:
+        search_paths = []
+    search_paths = list(search_paths)
+    search_paths.extend(_default_paths)
+    search_paths.extend(
+        get_config().get("vendor_readers", {}).get("thermo-com", [])
+    )
+    paths_yet_to_search = list(search_paths)
+    for path in paths_yet_to_search:
         try:
-            # TODO ? version with XRawfile2.dll integrated = no need to install MSFileReader, dll not registered to the COM server
-            # problem : IXRawfile4 not found
-            #  -> http://osdir.com/ml/python.comtypes.user/2008-07/msg00045.html messages 42-46 talk about it
-            XRawfile2_dll_filename = XRawfile2_dll_path.pop(0)
-            log.debug(
-                "Trying comtypes.client.GetModule "
-                + XRawfile2_dll_filename
-                + " ..."
-            )
-            GetModule(XRawfile2_dll_filename)  # -> generation
-        except IndexError:
-            msg = (
-                "1) The msFileReader DLL (XRawfile2.dll or XRawfile2_x64.dll) may not be installed and therefore not registered to the COM server"
-                "2) the msFileReader DLL may not be a these paths :\n"
-                + "\n".join(XRawfile2_dll_path_0)
-            )
-            if os.name != "posix":
-                sys.exit(msg)
-            else:
-                XRawfile2_dll_loaded = True
-        except Exception as e:
-            log.debug(e)
-        else:
-            log.debug("DLL path : " + XRawfile2_dll_filename)
-            XRawfile2_dll_loaded = True
+            log.debug("Attempting to load DLL from %r" % (path,))
+            GetModule(path)
+            DLL_IS_LOADED = True
+            return True
+        except Exception:
+            continue
+    else:
+        return False
+
+
+def register_dll(search_paths=None):
+    if search_paths is None:
+        search_paths = []
+    loaded = _register_dll(search_paths)
+    if not loaded:
+        log.debug("Could not resolve XRawfile-related DLL")
+        search_paths.extend(_default_paths)
+        msg = """
+        1) The msFileReader DLL (XRawfile2.dll or XRawfile2_x64.dll) may not be installed and
+           therefore not registered to the COM server.
+        2) The msFileReader DLL may not be a these paths:
+        %s
+        """ % (
+            "\n".join(search_paths)
+        )
+        raise ImportError(msg)
+
+
+GetLabelData_Labels = namedtuple(
+    "LabelData_Labels", "mass intensity resolution baseline noise charge"
+)
+GetLabelData_Flags = namedtuple(
+    "LabelData_Flags",
+    "saturated fragmented merged exception reference modified",
+)
+
+GetAllMSOrderData_Labels = namedtuple(
+    "AllMSOrderData_Labels", "mass intensity resolution baseline noise charge"
+)
+GetAllMSOrderData_Flags = namedtuple(
+    "AllMSOrderData_Flags", "activation_type is_precursor_range_valid"
+)
+
+FullMSOrderPrecursorData = namedtuple(
+    "FullMSOrderPrecursorData",
+    [
+        "precursorMass",
+        "isolationWidth",
+        "collisionEnergy",
+        "collisionEnergyValid",
+        "rangeIsValid",
+        "firstPrecursorMass",
+        "lastPrecursorMass",
+        "isolationWidthOffset",
+    ],
+)
+
+GetPrecursorInfoFromScanNum_PrecursorInfo = namedtuple(
+    "PrecursorInfo", "isolationMass monoIsoMass chargeState scanNumber"
+)
 
 
 def _to_float(x):
@@ -189,24 +268,36 @@ class ThermoRawfile(object):
         3: "ScanTypeSRM",
     }
 
+    @staticmethod
+    def create_com_object():
+        try:
+            log.debug("Trying COM Name 'MSFileReader.XRawfile'")
+            obj = CreateObject("MSFileReader.XRawfile")
+        except Exception as e:
+            log.debug(e)
+            try:
+                log.debug("Trying COM Name ('XRawfile.XRawfile'")
+                obj = CreateObject("XRawfile.XRawfile")
+            except Exception as e:
+                log.debug(e)
+                raise ImportError(
+                    (
+                        "Please install the appropriate Thermo MSFileReader"
+                        "version depending of your Python version (32 bit or 64 bit)\n%r"
+                    )
+                    % e
+                )
+        return obj
+
     def __init__(self, filename, **kwargs):
         self.filename = os.path.abspath(filename)
         self.filename = os.path.normpath(self.filename)
         self.source = None
 
-        try:
-            log.debug("obj = CreateObject('MSFileReader.XRawfile')")
-            obj = CreateObject("MSFileReader.XRawfile")
-        except Exception as e:
-            log.debug(e)
-            try:
-                log.debug("obj = CreateObject('XRawfile.XRawfile')")
-                obj = CreateObject("XRawfile.XRawfile")
-            except Exception as e:
-                log.debug(e)
-                sys.exit(
-                    "Please install the appropriate Thermo MSFileReader version depending of your Python version (32bits or 64bits)"
-                )
+        if not DLL_IS_LOADED:
+            register_dll()
+
+        obj = self.create_com_object()
 
         self.source = obj
 
@@ -214,9 +305,10 @@ class ThermoRawfile(object):
             error = obj.Open(filename)
         except WindowsError:
             raise WindowsError(
-                "RAWfile {0} could not be opened, is the file accessible and not opened in Xcalibur/QualBrowser ?".format(
-                    self.filename
-                )
+                (
+                    "RAWfile {0} could not be opened, is the file accessible and\
+                  not opened in Xcalibur/QualBrowser ?"
+                ).format(self.filename)
             )
         if error:
             raise IOError(

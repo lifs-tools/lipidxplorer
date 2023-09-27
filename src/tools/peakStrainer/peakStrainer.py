@@ -19,7 +19,7 @@ from _collections import defaultdict
 import collections
 
 log = logging.getLogger(os.path.basename(__file__))
-from ms_deisotope.data_source._vendor import MSFileReader
+from tools.peakStrainer.lib import MSFileReader
 from collections import namedtuple
 import numpy as np
 import glob, os
