@@ -11,6 +11,9 @@ import os
 import time
 import logging
 import csv
+
+import ms_deisotope.data_source
+
 from tools.peakStrainer.utils.peakStrainer_util import write2templateMzXML
 import itertools
 import math
@@ -294,11 +297,12 @@ def asNumpyArray(netArray):
 def ThermoRawfile2Scans_local(file_path):
     # NOTE: for testing use ThermoRawfile2Scans_sample instead
     log.info("raw file: %s", file_path)
-    rawfile = MSFileReader.ThermoRawfile(file_path)
+    rawfile = ms_deisotope.data_source.MSFileLoader(file_path)
     source = rawfile._source
 
-    start = rawfile.FirstSpectrumNumber()
-    end = rawfile.LastSpectrumNumber()
+    run = source.RunHeaderEx
+    start = run.FirstSpectrum
+    end = run.LastSpectrum
 
     Labels = namedtuple(
         "Labels", "mass intensity resolution baseline noise charge"
