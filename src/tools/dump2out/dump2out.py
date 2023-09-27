@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import argparse
-from gooey import Gooey
 
 
 def to_lister(lines):
@@ -230,7 +229,6 @@ def replace_results_with_min_abs_error(out, dump, result_file):
     return lines_out
 
 
-@Gooey
 def parse_args():
     # Create the argument parser
     parser = argparse.ArgumentParser(

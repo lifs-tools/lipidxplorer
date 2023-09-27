@@ -28,9 +28,9 @@ block_cipher = None
 
 
 a = Analysis(['LipidXplorer.py'],
-             pathex=['C:\\Users\\nils.hoffmann\\PycharmProjects\\gitlab.isas.de\\lipidxplorer'],
+             pathex=[],
              datas=[],
-             hiddenimports=['pkg_resources.py2_warn', 'dependency_injector.errors', 'scipy.spatial.transform._rotation_groups', 'six', 'clr'],
+             hiddenimports=['pkg_resources.py2_warn', 'dependency_injector.errors', 'scipy.spatial.transform._rotation_groups', 'six'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -49,13 +49,13 @@ exe = EXE(pyz,
           a.datas,
           [],
           name='LipidXplorer',
-          debug=False,
+          debug=True,
           bootloader_ignore_signals=False,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
           icon='lx/stuff/lipidx_tb.ico',
-          console=False )
+          console=True )
 
 with ZipFile(DISTPATH+'.zip', 'w') as zipObj:
    # Iterate over all the files in DISTPATH

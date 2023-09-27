@@ -12,4 +12,8 @@ pip install attrdict3 requests
 
 pip install -r requirements.txt
 
+cp venv\lib\site-packages\pythonnet\runtime\Python.Runtime.dll venv\lib\site-packages\
+
 # pip install git+https://github.com/pyinstaller/pyinstaller
+
+# pip install git+https://github.com/mobiusklein/ms_deisotope
