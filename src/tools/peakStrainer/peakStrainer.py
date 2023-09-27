@@ -19,7 +19,7 @@ from _collections import defaultdict
 import collections
 
 log = logging.getLogger(os.path.basename(__file__))
-from tools.peakStrainer.lib import MSFileReader
+from ms_deisotope import MSFileLoader
 from collections import namedtuple
 import numpy as np
 import glob, os
@@ -294,7 +294,7 @@ def asNumpyArray(netArray):
 def ThermoRawfile2Scans_local(file_path):
     # NOTE: for testing use ThermoRawfile2Scans_sample instead
     log.info("raw file: %s", file_path)
-    rawfile = MSFileReader.ThermoRawfile(file_path)
+    rawfile = MSFileLoader(file_path)
     source = rawfile._source
 
     start = rawfile.FirstSpectrumNumber
