@@ -78,11 +78,9 @@ _default_paths = [
     ),
     # Default Installation Path on 64 bit systems
     "C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2_x64.dll",
-    "C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2.dll",
-    "C:\\Program Files\\Thermo\\Foundation\\XRawfile2.dll",
-    # Default Installation Path on 32 bit systems
     "C:\\Program Files (x86)\\Thermo\\MSFileReader\\XRawfile2.dll",
-    "C:\\Program Files (x86)\\Thermo\\Foundation\\XRawfile2.dll",
+    # Default Installation Path on 32 bit systems
+    "C:\\Program Files\\Thermo\\MSFileReader\\XRawfile2.dll",
 ]
 
 
