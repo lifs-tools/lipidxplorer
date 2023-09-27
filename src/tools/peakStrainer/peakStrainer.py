@@ -297,8 +297,8 @@ def ThermoRawfile2Scans_local(file_path):
     rawfile = MSFileLoader(file_path)
     source = rawfile._source
 
-    start = rawfile.FirstSpectrumNumber
-    end = rawfile.LastSpectrumNumber
+    start = source.FirstSpectrumNumber
+    end = source.LastSpectrumNumber
 
     Labels = namedtuple(
         "Labels", "mass intensity resolution baseline noise charge"
