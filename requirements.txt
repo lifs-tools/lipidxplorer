@@ -102,9 +102,9 @@ debugpy==1.0.0b5
 pyteomics>=4.5
 schedule==1.1.0
 ipywidgets
-ms_deisotope==0.0.49
-ms_peak_picker==0.1.40
-brain_isotopic_distribution==1.5.11
+ms_deisotope
+ms_peak_picker
+brainpy
 pytest-pythonpath
 pythonnet
 RawQuant
