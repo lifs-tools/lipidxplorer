@@ -47,6 +47,14 @@ a = Analysis(['LipidXplorer.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
+
+# Remove duplicates
+for b in a.binaries.copy():  # Traver the binaries.
+    for d in a.datas:  #  Traverse the datas.
+        if b[1].endswith(d[0]):  # If duplicate found.
+            a.binaries.remove(b)  # Remove the duplicate.
+            break
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
