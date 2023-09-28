@@ -102,8 +102,8 @@ debugpy==1.0.0b5
 pyteomics>=4.5
 schedule==1.1.0
 ipywidgets
-ms_deisotope
-ms_peak_picker
+ms_deisotope==0.0.36
+ms_peak_picker==0.1.40
 brainpy==2.1.5
 pytest-pythonpath
 pythonnet

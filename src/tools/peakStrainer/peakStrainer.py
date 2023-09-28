@@ -12,7 +12,7 @@ import time
 import logging
 import csv
 
-import ms_deisotope.data_source
+# import ms_deisotope.data_source
 
 from tools.peakStrainer.utils.peakStrainer_util import write2templateMzXML
 import itertools
@@ -208,7 +208,7 @@ def isElbowIIT(rawfile, end, scanNum, filterLine):
 
 def ThermoRawfile2Scans(file_path, dropElbowIIT=False):
     if True:
-        return ThermoRawfile2Scans_local(file_path)
+        return ThermoRawfile2Scans_RawQuant(file_path)
     # NOTE: for testing use ThermoRawfile2Scans_sample instead
     log.info("raw file: %s", file_path)
     rawfile = MSFileReader.ThermoRawfile(file_path)
@@ -245,115 +245,64 @@ def ThermoRawfile2Scans(file_path, dropElbowIIT=False):
     return MSrawscans
 
 
-import numpy as np
-import ctypes
-import clr, System
-from System import Array, Int32
-from System.Runtime.InteropServices import GCHandle, GCHandleType
-
-_MAP_NET_NP = {
-    "Single": np.dtype("float32"),
-    "Double": np.dtype("float64"),
-    "SByte": np.dtype("int8"),
-    "Int16": np.dtype("int16"),
-    "Int32": np.dtype("int32"),
-    "Int64": np.dtype("int64"),
-    "Byte": np.dtype("uint8"),
-    "UInt16": np.dtype("uint16"),
-    "UInt32": np.dtype("uint32"),
-    "UInt64": np.dtype("uint64"),
-    "Boolean": np.dtype("bool"),
-}
-
-
-def asNumpyArray(netArray):
-    """
-    Given a CLR `System.Array` returns a `numpy.ndarray`.  See _MAP_NET_NP for
-    the mapping of CLR types to Numpy dtypes.
-    """
-    dims = np.empty(netArray.Rank, dtype=int)
-    for I in range(netArray.Rank):
-        dims[I] = netArray.GetLength(I)
-    netType = netArray.GetType().GetElementType().Name
-
-    try:
-        npArray = np.empty(dims, order="C", dtype=_MAP_NET_NP[netType])
-    except KeyError:
-        raise NotImplementedError(
-            "asNumpyArray does not yet support System type {}".format(netType)
-        )
-
-    try:  # Memmove
-        sourceHandle = GCHandle.Alloc(netArray, GCHandleType.Pinned)
-        sourcePtr = sourceHandle.AddrOfPinnedObject().ToInt64()
-        destPtr = npArray.__array_interface__["data"][0]
-        ctypes.memmove(destPtr, sourcePtr, npArray.nbytes)
-    finally:
-        if sourceHandle.IsAllocated:
-            sourceHandle.Free()
-    return npArray
-
-
-def ThermoRawfile2Scans_local(file_path):
-    # NOTE: for testing use ThermoRawfile2Scans_sample instead
-    log.info("raw file: %s", file_path)
-    rawfile = ms_deisotope.data_source.MSFileLoader(file_path)
-    source = rawfile._source
-
-    run = source.RunHeaderEx
-    start = run.FirstSpectrum
-    end = run.LastSpectrum
-
-    Labels = namedtuple(
-        "Labels", "mass intensity resolution baseline noise charge"
-    )
-
-    def get_out(raw, scan):
-        data = raw.GetCentroidStream(scan, False)
-
-        return Labels(
-            tuple(asNumpyArray(data.Masses)),
-            tuple(asNumpyArray(data.Intensities)),
-            tuple(asNumpyArray(data.Resolutions)),
-            tuple(asNumpyArray(data.Baselines)),
-            tuple(asNumpyArray(data.Noises)),
-            tuple(asNumpyArray(data.Charges)),
-        )
-
-    MSrawscans = []
-    for scanNum in range(start, end + 1):
-        data = source.GetCentroidStream(scanNum, False)
-        if data.Length == 0:
-            log.debug(
-                f"scan {scanNum} {source.GetScanEventForScanNumber(scanNum).ToString()} has no masses"
-            )
-            continue
-        peak_datas = get_out(source, scanNum)
-        filterLine = source.GetScanEventForScanNumber(scanNum).ToString()
-        retTime = source.RetentionTimeFromScanNumber(scanNum) * 60
-        row = (scanNum, filterLine, peak_datas, retTime, file_path)
-        MSrawscans.append(row)
-
-    log.info("Scan Count is %d", len(MSrawscans))
-    # Note: to reshape into lists use
-    # scanNum, filterLine, peak_datas, retTime = list(zip(*MSrawscans)
-    # retTime, file_name   #Note: to get list of mass use
-    # peak_data = peak_datas[0]
-    # peak_data.mass
-
-    return MSrawscans
-
-
-# def ThermoRawfile2Scans_RawQuant(file_path):
+# import numpy as np
+# import ctypes
+# import clr, System
+# from System import Array, Int32
+# from System.Runtime.InteropServices import GCHandle, GCHandleType
+#
+# _MAP_NET_NP = {
+#     "Single": np.dtype("float32"),
+#     "Double": np.dtype("float64"),
+#     "SByte": np.dtype("int8"),
+#     "Int16": np.dtype("int16"),
+#     "Int32": np.dtype("int32"),
+#     "Int64": np.dtype("int64"),
+#     "Byte": np.dtype("uint8"),
+#     "UInt16": np.dtype("uint16"),
+#     "UInt32": np.dtype("uint32"),
+#     "UInt64": np.dtype("uint64"),
+#     "Boolean": np.dtype("bool"),
+# }
+#
+#
+# def asNumpyArray(netArray):
+#     """
+#     Given a CLR `System.Array` returns a `numpy.ndarray`.  See _MAP_NET_NP for
+#     the mapping of CLR types to Numpy dtypes.
+#     """
+#     dims = np.empty(netArray.Rank, dtype=int)
+#     for I in range(netArray.Rank):
+#         dims[I] = netArray.GetLength(I)
+#     netType = netArray.GetType().GetElementType().Name
+#
+#     try:
+#         npArray = np.empty(dims, order="C", dtype=_MAP_NET_NP[netType])
+#     except KeyError:
+#         raise NotImplementedError(
+#             "asNumpyArray does not yet support System type {}".format(netType)
+#         )
+#
+#     try:  # Memmove
+#         sourceHandle = GCHandle.Alloc(netArray, GCHandleType.Pinned)
+#         sourcePtr = sourceHandle.AddrOfPinnedObject().ToInt64()
+#         destPtr = npArray.__array_interface__["data"][0]
+#         ctypes.memmove(destPtr, sourcePtr, npArray.nbytes)
+#     finally:
+#         if sourceHandle.IsAllocated:
+#             sourceHandle.Free()
+#     return npArray
+#
+#
+# def ThermoRawfile2Scans_local(file_path):
+#     # NOTE: for testing use ThermoRawfile2Scans_sample instead
 #     log.info("raw file: %s", file_path)
-#     from RawQuant import RawFileReader
-#     import ThermoFisher.CommonCore.Data.Business as Business
+#     rawfile = ms_deisotope.data_source.MSFileLoader(file_path)
+#     source = rawfile._source
 #
-#     raw = RawFileReader.open_raw_file(file_path)
-#     raw.SelectInstrument(Business.Device.MS, 1)  # needed by thermo
-#
-#     start = raw.RunHeaderEx.FirstSpectrum
-#     end = raw.RunHeaderEx.LastSpectrum
+#     run = source.RunHeaderEx
+#     start = run.FirstSpectrum
+#     end = run.LastSpectrum
 #
 #     Labels = namedtuple(
 #         "Labels", "mass intensity resolution baseline noise charge"
@@ -361,17 +310,6 @@ def ThermoRawfile2Scans_local(file_path):
 #
 #     def get_out(raw, scan):
 #         data = raw.GetCentroidStream(scan, False)
-#
-#         out = np.empty((data.Length, 6))
-#
-#         asNumpyArray = RawFileReader.asNumpyArray
-#
-#         #         out[:, 0] = asNumpyArray(data.Masses)
-#         #         out[:, 1] = asNumpyArray(data.Intensities)
-#         #         out[:, 2] = asNumpyArray(data.Resolutions)
-#         #         out[:, 3] = asNumpyArray(data.Baselines)
-#         #         out[:, 4] = asNumpyArray(data.Noises)
-#         #         out[:, 5] = asNumpyArray(data.Charges)
 #
 #         return Labels(
 #             tuple(asNumpyArray(data.Masses)),
@@ -384,15 +322,15 @@ def ThermoRawfile2Scans_local(file_path):
 #
 #     MSrawscans = []
 #     for scanNum in range(start, end + 1):
-#         data = raw.GetCentroidStream(scanNum, False)
+#         data = source.GetCentroidStream(scanNum, False)
 #         if data.Length == 0:
 #             log.debug(
-#                 f"scan {scanNum} {raw.GetScanEventForScanNumber(scanNum).ToString()} has no masses"
+#                 f"scan {scanNum} {source.GetScanEventForScanNumber(scanNum).ToString()} has no masses"
 #             )
 #             continue
-#         peak_datas = get_out(raw, scanNum)
-#         filterLine = raw.GetScanEventForScanNumber(scanNum).ToString()
-#         retTime = raw.RetentionTimeFromScanNumber(scanNum) * 60
+#         peak_datas = get_out(source, scanNum)
+#         filterLine = source.GetScanEventForScanNumber(scanNum).ToString()
+#         retTime = source.RetentionTimeFromScanNumber(scanNum) * 60
 #         row = (scanNum, filterLine, peak_datas, retTime, file_path)
 #         MSrawscans.append(row)
 #
@@ -404,6 +342,68 @@ def ThermoRawfile2Scans_local(file_path):
 #     # peak_data.mass
 #
 #     return MSrawscans
+
+
+def ThermoRawfile2Scans_RawQuant(file_path):
+    log.info("raw file: %s", file_path)
+    from RawQuant import RawFileReader
+    import ThermoFisher.CommonCore.Data.Business as Business
+
+    raw = RawFileReader.open_raw_file(file_path)
+    raw.SelectInstrument(Business.Device.MS, 1)  # needed by thermo
+
+    start = raw.RunHeaderEx.FirstSpectrum
+    end = raw.RunHeaderEx.LastSpectrum
+
+    Labels = namedtuple(
+        "Labels", "mass intensity resolution baseline noise charge"
+    )
+
+    def get_out(raw, scan):
+        data = raw.GetCentroidStream(scan, False)
+
+        out = np.empty((data.Length, 6))
+
+        asNumpyArray = RawFileReader.asNumpyArray
+
+        #         out[:, 0] = asNumpyArray(data.Masses)
+        #         out[:, 1] = asNumpyArray(data.Intensities)
+        #         out[:, 2] = asNumpyArray(data.Resolutions)
+        #         out[:, 3] = asNumpyArray(data.Baselines)
+        #         out[:, 4] = asNumpyArray(data.Noises)
+        #         out[:, 5] = asNumpyArray(data.Charges)
+
+        return Labels(
+            tuple(asNumpyArray(data.Masses)),
+            tuple(asNumpyArray(data.Intensities)),
+            tuple(asNumpyArray(data.Resolutions)),
+            tuple(asNumpyArray(data.Baselines)),
+            tuple(asNumpyArray(data.Noises)),
+            tuple(asNumpyArray(data.Charges)),
+        )
+
+    MSrawscans = []
+    for scanNum in range(start, end + 1):
+        data = raw.GetCentroidStream(scanNum, False)
+        if data.Length == 0:
+            log.debug(
+                f"scan {scanNum} {raw.GetScanEventForScanNumber(scanNum).ToString()} has no masses"
+            )
+            continue
+        peak_datas = get_out(raw, scanNum)
+        filterLine = raw.GetScanEventForScanNumber(scanNum).ToString()
+        retTime = raw.RetentionTimeFromScanNumber(scanNum) * 60
+        row = (scanNum, filterLine, peak_datas, retTime, file_path)
+        MSrawscans.append(row)
+
+    log.info("Scan Count is %d", len(MSrawscans))
+    # Note: to reshape into lists use
+    # scanNum, filterLine, peak_datas, retTime = list(zip(*MSrawscans)
+    # retTime, file_name   #Note: to get list of mass use
+    # peak_data = peak_datas[0]
+    # peak_data.mass
+
+    return MSrawscans
 
 
 def removeLockFromHeader(scans):
