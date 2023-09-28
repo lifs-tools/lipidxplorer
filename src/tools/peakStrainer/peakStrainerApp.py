@@ -13,8 +13,8 @@ import os
 import traceback
 from tools.peakStrainer.peakStrainer import *
 
-from tools.reorderScans.reorderScans import main as reorderscansMain
-from tools.simStitching.simStitcherApp import main as simStitcherMain
+from tools.reorderScans.reorderScans import openReorderScans as reorderscans
+from tools.simStitching.simStitcherApp import openSimStitcher as simStitcher
 
 import pandas as pd
 
@@ -63,8 +63,9 @@ class MyFrame(MyFrame2):
                 self.m_buttonFinish.Enable(True)
 
     def clickOpenSpecReord(self, event):
-        reorderscansMain()
-        raise SystemExit
+        reorderscans(self)
+        event.EventObject.Destroy()
+        # raise SystemExit
 
     def radioBin(self, event):
         self.m_staticText23.Enable(self.m_radioBtn1.GetValue())
@@ -123,7 +124,7 @@ class MyFrame(MyFrame2):
 
     def clickedSimStitcher(self, event):
         self_ = self
-        simStitcherMain()
+        simStitcher(self)
         # TODO fix this bug, for now I only know this works, but throws dead object error
         # the identity of self gets lost
         event.EventObject.Destroy()
@@ -157,10 +158,10 @@ class MyFrame(MyFrame2):
         self.m_statuslog.WriteText(
             "finished All " + str(len(self.fileNames)) + " files \n"
         )
-        self.m_buttonFinish.Enable(False)
+        # self.m_buttonFinish.Enable(True)
 
         if self.m_checkBox2.GetValue():
-            reorderscansMain(self.path)
+            reorderscans(self, self.path)
 
     #         raise SystemExit
 

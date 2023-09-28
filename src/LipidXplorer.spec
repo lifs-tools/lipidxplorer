@@ -29,14 +29,15 @@ block_cipher = None
 
 a = Analysis(['LipidXplorer.py'],
              pathex=[],
-             datas=[],
-             hiddenimports=['pkg_resources.py2_warn', 'dependency_injector.errors', 'scipy.spatial.transform._rotation_groups', 'six'],
-             binaries=[
-                ('..\\venv\\Lib\\site-packages\\RawQuant\\RawFileReader\\ThermoFisher.CommonCore.BackgroundSubtraction.dll', 'ThermoFisher.CommonCore.BackgroundSubtraction'),
-             		('..\\venv\\Lib\\site-packages\\RawQuant\\RawFileReader\\ThermoFisher.CommonCore.Data.dll', 'ThermoFisher.CommonCore.Data'),
-             		('..\\venv\\Lib\\site-packages\\RawQuant\\RawFileReader\\ThermoFisher.CommonCore.MassPrecisionEstimator.dll', 'MassPrecisionEstimator'),
-             		('..\\venv\\Lib\\site-packages\\RawQuant\\RawFileReader\\ThermoFisher.CommonCore.RawFileReader.dll', 'RawFileReader'),
+             venv3.8/lib/python3.8/site-packages/ms_deisotope/data_source/_vendor/ThermoRawFileReader_3_0_41/Libraries
+             datas=[
+                 ('..\\venv\\Lib\\site-packages\\RawQuant\\RawFileReader\\*.dll', 'RawQuant\\RawFileReader'),
+                 ('..\\venv\\Lib\\site-packages\\ms_deisotope\\data_source\\_vendor\\ThermoRawFileReader_3_0_41\\Libraries\\*.dll', '.'),
+                 ('tools\\peakStrainer\\utils\\template.mzXML', 'tools\\peakStrainer\\utils'),
+                 ('lx\\mfql\\mfqlParser.py', 'lx\\mfql')
              ] if sys.platform == 'win32' else [],
+             hiddenimports=['pkg_resources.py2_warn', 'dependency_injector.errors', 'scipy.spatial.transform._rotation_groups', 'six'],
+             binaries=[],
              hookspath=[],
              runtime_hooks=[],
              excludes=['tornado', 'pandoc'],

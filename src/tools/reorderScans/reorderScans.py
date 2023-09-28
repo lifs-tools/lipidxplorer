@@ -18,8 +18,8 @@ def main(folderpath=None):
     app.MainLoop()
 
 
-def openReorderScans(parent):
-    frame = MyFrame(parent)
+def openReorderScans(parent, folderpath=None):
+    frame = MyFrame(parent, folderpath)
     frame.Show(True)
 
 
