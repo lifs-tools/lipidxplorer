@@ -3683,7 +3683,7 @@ intensity."""
                         self.dict_mfqlFile[key] = mfqlFile
                         mfqlFile.write(self.dict_text_ctrl[key].GetText())
 
-        if wx.GetApp().frame is not None and wx.GetApp().frame.debugOpen:
+        if wx.GetApp().frame.debugOpen:
             wx.GetApp().frame.OnMenuDebugWin(None)
 
         for tlw in wx.GetTopLevelWindows():
