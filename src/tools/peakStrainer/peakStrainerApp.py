@@ -158,12 +158,10 @@ class MyFrame(MyFrame2):
         self.m_statuslog.WriteText(
             "finished All " + str(len(self.fileNames)) + " files \n"
         )
-        # self.m_buttonFinish.Enable(True)
+        self.m_buttonFinish.Enable(False)
 
         if self.m_checkBox2.GetValue():
             reorderscans(self, self.path)
-
-    #         raise SystemExit
 
     def getLoglevel(self):
         if not self.m_checkBox9.GetValue():
