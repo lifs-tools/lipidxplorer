@@ -29,7 +29,6 @@ block_cipher = None
 
 a = Analysis(['LipidXplorer.py'],
              pathex=[],
-             venv3.8/lib/python3.8/site-packages/ms_deisotope/data_source/_vendor/ThermoRawFileReader_3_0_41/Libraries
              datas=[
                  ('..\\venv\\Lib\\site-packages\\RawQuant\\RawFileReader\\*.dll', 'RawQuant\\RawFileReader'),
                  ('..\\venv\\Lib\\site-packages\\ms_deisotope\\data_source\\_vendor\\ThermoRawFileReader_3_0_41\\Libraries\\*.dll', '.'),
