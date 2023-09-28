@@ -104,7 +104,6 @@ schedule==1.1.0
 ipywidgets
 ms_deisotope==0.0.36
 ms_peak_picker==0.1.42
-brainpy==2.1.5
-jax
+brain-isotopic-distribution==1.5.11
 pytest-pythonpath
 pythonnet
