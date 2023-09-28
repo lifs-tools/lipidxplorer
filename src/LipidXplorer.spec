@@ -26,6 +26,8 @@ shutil.copy("ReleaseNotes.docx", DISTPATH+"/")
 
 block_cipher = None
 
+# only for python 3.8
+# ('..\\venv\\Lib\\site-packages\\scipy.libs\*.dll', '.'),
 
 a = Analysis(['LipidXplorer.py'],
              pathex=[],
@@ -33,7 +35,6 @@ a = Analysis(['LipidXplorer.py'],
                  ('..\\venv\\Lib\\site-packages\\ms_deisotope\\data_source\\_vendor\\ThermoRawFileReader_3_0_41\\Libraries\\*.dll', 'ms_deisotope\\data_source\\_vendor\\ThermoRawFileReader_3_0_41\\Libraries'),
                  ('tools\\peakStrainer\\utils\\template.mzXML', 'tools\\peakStrainer\\utils'),
                  ('lx\\mfql\\mfqlParser.py', 'lx\\mfql'),
-                 ('..\\venv\\Lib\\site-packages\\scipy.libs\*.dll', '.'),
                  ('..\\venv\\Lib\\site-packages\\ms_deisotope\\_c', 'ms_deisotope\\_c'),
                  ('..\\venv\\Lib\\site-packages\\ms_peak_picker\\_c', 'ms_peak_picker\\_c'),
                  ('..\\venv\\Lib\\site-packages\\brainpy\\_c', 'brainpy\\_c'),
