@@ -5,7 +5,7 @@
     in general:
         dataframe into -> mass_inty_generator_ms1_agg generates -> a list of tuples
         tuple into -> se_factory generates -> surveyentry
-    
+
     specificaly:
         df into -> df2listSurveyEntry generates-> list of SurveyEntry required by the masterscan object
         options, listSurveyEntry and filenames(stems) into -> build_masterscan generates -> a masterscan object ready to use  in LX1
@@ -14,7 +14,7 @@
         options = get options from somewhere
         polarity = df.iloc[0].at['polarity']
         stems = df.['stems'].unique()
-        
+
         scan = build_masterscan(options, df2listSurveyEntry(df, polarity), stems)
 
 """
@@ -34,8 +34,8 @@ logging.basicConfig(
 )
 log = logging.getLogger(Path(__file__).stem)
 
-def df2listSurveyEntry(df, polarity, samples):
 
+def df2listSurveyEntry(df, polarity, samples):
     listSurveyEntry = [
         se_factory(msmass, dictIntensity, samples, polarity, massWindow)
         for msmass, dictIntensity, polarity, massWindow in mass_inty_generator_ms1_agg(
@@ -46,13 +46,14 @@ def df2listSurveyEntry(df, polarity, samples):
     # TODO: need to optimised (most time spent)
     return sorted(listSurveyEntry, key=lambda x: x.precurmass)
 
+
 def mass_inty_generator_ms1_agg(df, polarity):
     for mass, gdf in df.groupby("_group"):
         # dictIntensity = gdf.set_index("stem")["lx1_bad_inty"].to_dict()
         dictIntensity = gdf.set_index("stem")["inty"].to_dict()
         # dictIntensity.update({f"{k}_lx2": v for k, v in dictIntensity_lx2.items()})
         dictIntensity = OrderedDict(sorted(dictIntensity.items()))
-        massWindow = float(gdf['masswindow'].mean())
+        massWindow = float(gdf["masswindow"].mean())
         mass = float(gdf.mz.mean())
         yield (mass, dictIntensity, polarity, massWindow)
 
@@ -61,8 +62,8 @@ def se_factory(msmass, dictIntensity, samples, polarity, massWindow=0):
     """tuple in survey entry out
 
     Args:
-        msmass (_type_): average mass 
-        dictIntensity (_type_): one intensity value per sample (a sample is a filename / stem) 
+        msmass (_type_): average mass
+        dictIntensity (_type_): one intensity value per sample (a sample is a filename / stem)
         samples (_type_): list of filenames / stems
         polarity (_type_): -1 , +1 used in que mfql, taken from the spectra
         massWindow (int, optional): should be the difference of the maximum and the minumum of the masses that where averaged. Defaults to 0 because not needed.
@@ -89,6 +90,7 @@ def se_factory(msmass, dictIntensity, samples, polarity, massWindow=0):
     )
     return se
 
+
 def make_masterscan(
     options, aligned_spectra_df, aligned_spectra_infos, lx2=False
 ):
@@ -106,7 +108,13 @@ def make_masterscan(
     polarity = df_infos[0]["polarity"]
     samples = df["stem"].unique().tolist()
     listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
-    scan = build_masterscan(options, listSurveyEntry, samples)
+
+    if lx2:
+        from LX1_masterscan import make_lx_masterscan
+
+        scan = make_lx_masterscan(options, lx_version=2)
+    else:
+        scan = build_masterscan(options, listSurveyEntry, samples)
 
     idp = Path(options["importDir"])
 
@@ -121,12 +129,13 @@ def make_masterscan(
         pickle.dump(scan, scFile, pickle.HIGHEST_PROTOCOL)
 
     return scan
-    
+
+
 def build_masterscan(options, listSurveyEntry, stems):
     """generate a generic masterscan for LX1 compatibility
 
     Args:
-        options (dict like): setting used for generating 
+        options (dict like): setting used for generating
         listSurveyEntry (iterable of surveyentries): the main content of the masterscan
         stems (list of str): the names of the spectra in listSurveyEntry
 
@@ -144,4 +153,3 @@ def build_masterscan(options, listSurveyEntry, stems):
     # for printing we need
     scan.listSamples = stems
     return scan
-

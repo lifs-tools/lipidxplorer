@@ -125,6 +125,7 @@ def make_lx_masterscan(options, lx_version=0) -> MasterScan:
 
     if options._data.get("MScalibration"):
         if use_lx2:
+            log.info(f"Use auto MS resolution")
             (
                 options["lx2_MSresolution"],
                 options["lx2_MSresolution_gradient"],
