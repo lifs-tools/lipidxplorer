@@ -35,7 +35,7 @@ stages:          # List of stages for jobs, and their order of execution
     - apt-get -y install libgtk-3-dev
     - apt-get -y install libgstreamer-gl1.0-0 libwxgtk-webview3.0-gtk3-dev
     - apt-get -y install freeglut3-dev
-    - apt-get -y install libgstreamer-plugins-base1.0-dev
+    - apt-get -y install libgstreamer-plugins-base1.0-dev git
     - pip install --upgrade wheel==0.33.6
     - pip install --upgrade setuptools==41.6.0
     - pip install pytest-cov
