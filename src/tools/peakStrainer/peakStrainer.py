@@ -406,6 +406,87 @@ def ThermoRawfile2Scans_RawQuant(file_path):
     return MSrawscans
 
 
+def ThermoRawfile2Scans_fisher(file_path):
+    # NOTE: for testing use ThermoRawfile2Scans_sample instead
+    log.info("raw file: %s", file_path)
+    from fisher_py.raw_file_reader import RawFileReaderAdapter, RawFileAccess
+    from fisher_py.data.business import (
+        GenericDataTypes,
+        ChromatogramTraceSettings,
+        TraceType,
+        ChromatogramSignal,
+        SpectrumPacketType,
+        Scan,
+    )
+    from fisher_py.data.filter_enums import MsOrderType
+    from fisher_py.data import Device, ToleranceUnits
+    from fisher_py.mass_precision_estimator import PrecisionEstimate
+
+    rawfile = RawFileReaderAdapter.file_factory(file_path)
+
+    rawfile.select_instrument(Device.MS, 1)
+
+    # Get the first and last scan from the RAW file
+    first_scan_number = rawfile.run_header_ex.first_spectrum
+    last_scan_number = rawfile.run_header_ex.last_spectrum
+
+    # get the start and end time from the RAW file
+    start_time = rawfile.run_header_ex.start_time
+    end_time = rawfile.run_header_ex.end_time
+
+    # Get the number of filters present in the RAW file
+    number_filters = len(rawfile.get_filters())
+
+    # Get the scan filter for the first and last spectrum in the RAW file
+    first_filter = rawfile.get_filter_for_scan_number(first_scan_number)
+    last_filter = rawfile.get_filter_for_scan_number(last_scan_number)
+
+    # log.info('Filter Information:')
+    # log.info(f'   Scan filter (first scan): {str(first_filter)}')
+    # log.info(f'   Scan filter (last scan): {str(last_filter)}')
+    # log.info(f'   Total number of filters:{number_filters}')
+    # log.info('')
+
+    Labels = namedtuple(
+        "Labels", "mass intensity resolution baseline noise charge"
+    )
+
+    def get_out(raw, scan):
+        data = raw.get_centroid_stream(scan, False)
+
+        return Labels(
+            tuple(data.masses),
+            tuple(data.intensities),
+            tuple(data.resolutions),
+            tuple(data.baselines),
+            tuple(data.noises),
+            tuple(data.charges),
+        )
+
+    MSrawscans = []
+    for scanNum in range(first_scan_number, last_scan_number + 1):
+        data = rawfile.get_centroid_stream(scanNum, False)
+        if data.length == 0:
+            log.debug(
+                f"scan {scanNum} {rawfile.get_scan_event_string_for_scan_number(scanNum)} has no masses"
+            )
+            continue
+        peak_datas = get_out(rawfile, scanNum)
+        filterLine = rawfile.get_scan_event_string_for_scan_number(scanNum)
+        retTime = rawfile.retention_time_from_scan_number(scanNum) * 60
+        row = (scanNum, filterLine, peak_datas, retTime, file_path)
+        MSrawscans.append(row)
+
+    log.info("Scan Count is %d", len(MSrawscans))
+    # Note: to reshape into lists use
+    # scanNum, filterLine, peak_datas, retTime = list(zip(*MSrawscans)
+    # retTime, file_name   #Note: to get list of mass use
+    # peak_data = peak_datas[0]
+    # peak_data.mass
+
+    return MSrawscans
+
+
 def removeLockFromHeader(scans):
     log.info("removeLockFromHeader")
     newScans = []
