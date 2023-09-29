@@ -88,7 +88,7 @@ toml==0.10.2
 tornado==6.0.3
 traitlets==4.3.3
 typed-ast==1.4.3
-typing_extensions
+typing_extensions==4.7.1
 wcwidth==0.1.7
 webencodings==0.5.1
 wheel==0.33.6
@@ -104,6 +104,6 @@ schedule==1.1.0
 ipywidgets==8.0.7
 ms_deisotope @ git+https://github.com/mobiusklein/ms_deisotope
 ms_peak_picker==0.1.42
-brain-isotopic-distribution==1.5.11
+brain-isotopic-distribution
 pytest-pythonpath==0.7.4
 pythonnet==3.0.2
