@@ -51,7 +51,7 @@ class MyFrame(MyFrame2):
             paths = dlg.GetPaths()
             if len(paths) > 0:
                 self.path, file = os.path.split(paths[0])
-                self.fileNames = dlg.GetFilenames()
+                self.fileNames = paths
 
                 self.m_textCtrl1.SetValue(
                     str(self.path).replace("\\\\", "\\")
@@ -139,9 +139,11 @@ class MyFrame(MyFrame2):
 
         for onefile in self.fileNames:
             filepath = str(onefile)
+            path, file = os.path.split(onefile)
+
             self.m_statuslog.WriteText("Starting filepath " + filepath + "\n")
             try:
-                self.run_once(filepath, onefile)
+                self.run_once(filepath, file)
             except Exception as e:
                 self.m_statuslog.WriteText(
                     "\n *** THERE WAS A PROBLEM PROCESSING THE FILE *** \n"

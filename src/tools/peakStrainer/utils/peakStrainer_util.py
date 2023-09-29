@@ -153,7 +153,7 @@ def write2templateMzXML(newfilename, scanPeaks):
         "", "http://sashimi.sourceforge.net/schema_revision/mzXML_3.0"
     )
     scriptPath = os.path.dirname(os.path.realpath(__file__))
-    tree = ET.parse(scriptPath + "\\template.mzXML")
+    tree = ET.parse(scriptPath + "//template.mzXML")
 
     msRunElement = tree.find(".//xmlns:msRun", namespaces)
     scanTemplete = msRunElement.find(".//xmlns:scan", namespaces)

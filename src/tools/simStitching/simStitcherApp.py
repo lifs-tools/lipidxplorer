@@ -31,7 +31,7 @@ class mySimStitcherFrame(SimStitcherFrame):
             paths = dlg.GetPaths()
             if len(paths) > 0:
                 self.path, file = os.path.split(paths[0])
-                self.fileNames = dlg.GetFilenames()
+                self.fileNames = paths
 
                 self.m_textCtrl1.SetValue(
                     str(self.path).replace("\\\\", "\\")

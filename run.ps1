@@ -10,7 +10,7 @@ venv\Scripts\Activate.ps1
 
 pip install attrdict3 requests
 
-pip install "jax[cpu]" -f https://whls.blob.core.windows.net/unstable/index.html
+# pip install "jax[cpu]" -f https://whls.blob.core.windows.net/unstable/index.html
 
 pip install git+https://github.com/mobiusklein/ms_deisotope
 
