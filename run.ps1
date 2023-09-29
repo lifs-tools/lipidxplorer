@@ -14,7 +14,7 @@ pip install attrdict3 requests
 
 pip install -r requirements.txt
 
-pip install --upgrade --force git+https://github.com/mobiusklein/ms_deisotope
+# pip install --upgrade --force git+https://github.com/mobiusklein/ms_deisotope
 
 cp venv\lib\site-packages\pythonnet\runtime\Python.Runtime.dll venv\lib\site-packages\
 
