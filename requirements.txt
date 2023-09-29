@@ -93,7 +93,7 @@ wcwidth==0.1.7
 webencodings==0.5.1
 wheel==0.33.6
 wrapt==1.11.2
-requests==2023.5.5
+requests==2.31.0
 wxpython==4.2.1
 pyzmq==25.0.2
 zipp==0.6.0
