@@ -102,7 +102,6 @@ debugpy==1.0.0b5
 pyteomics>=4.5
 schedule==1.1.0
 ipywidgets
-ms_deisotope==0.0.52
 ms_peak_picker==0.1.42
 brain-isotopic-distribution==1.5.11
 pytest-pythonpath

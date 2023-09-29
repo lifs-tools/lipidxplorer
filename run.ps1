@@ -12,6 +12,8 @@ pip install attrdict3 requests
 
 pip install "jax[cpu]" -f https://whls.blob.core.windows.net/unstable/index.html
 
+pip install git+https://github.com/mobiusklein/ms_deisotope
+
 pip install -r requirements.txt
 
 cp venv\lib\site-packages\pythonnet\runtime\Python.Runtime.dll venv\lib\site-packages\
