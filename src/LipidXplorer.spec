@@ -67,13 +67,13 @@ exe = EXE(pyz,
           a.datas,
           [],
           name='LipidXplorer',
-          debug=True,
+          debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
           icon='lx/stuff/lipidx_tb.ico',
-          console=True )
+          console=False )
 
 with ZipFile(DISTPATH+'.zip', 'w') as zipObj:
    # Iterate over all the files in DISTPATH
