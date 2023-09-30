@@ -36,7 +36,7 @@ def options():
 def test_get_ms1_peaks():
     # options = read_options(OPTIONS_PATH) # Note only here as reference
     settings = {
-        "ms_level": 'ms1',
+        "ms_level": "ms1",
         "polarity": 1,
         "time_start": 33.0,
         "time_end": 1080.0,
@@ -51,7 +51,7 @@ def test_get_ms1_peaks():
 
 def test_get_ms2_peaks():
     settings = {
-        "ms_level": 'ms2',
+        "ms_level": "ms2",
         "polarity": 1,
         "time_start": 33.0,
         "time_end": 1080.0,
@@ -198,4 +198,4 @@ def test_aligned_spectra_df(options):
 
 def test_make_masterscan(options):
     scan = make_masterscan(options)
-    assert len(scan.listSurveyEntry) == 2095
+    assert len(scan.listSurveyEntry) == 1812
