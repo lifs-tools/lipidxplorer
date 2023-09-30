@@ -107,3 +107,4 @@ ms_peak_picker==0.1.42
 brain-isotopic-distribution
 pytest-pythonpath==0.7.4
 pythonnet==3.0.2
+fisher-py==1.0.21
