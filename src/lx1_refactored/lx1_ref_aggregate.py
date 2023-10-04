@@ -44,7 +44,6 @@ from .lx1_ref_masterscan import (
     build_masterscan,
     df2listSurveyEntry,
     make_masterscan,
-    make_masterscan,
 )
 from .lx1_ref_read_write_spectra import get_settings, spectra_as_df
 

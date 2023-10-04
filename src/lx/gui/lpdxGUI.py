@@ -8312,7 +8312,8 @@ intensity."""
         self.counterNotebookPages += 1
         self.dictNotebookPages["ExtraTools"] = self.counterNotebookPages
 
-        m_radio_box_version_choices = ["LX1", "LX1_refactored", "LX2"]
+        # m_radio_box_version_choices = ["LX1", "LX1_refactored", "LX2"]
+        m_radio_box_version_choices = ["LX1", "LX2"]
         self.m_radioBoxVersions = wx.RadioBox(
             self,
             wx.ID_ANY,
