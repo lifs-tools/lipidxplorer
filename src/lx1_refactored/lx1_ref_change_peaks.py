@@ -14,7 +14,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from lx.spectraContainer import MasterScan, MSMSEntry, SurveyEntry
-import warnings
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,7 +24,6 @@ logging.basicConfig(
 log = logging.getLogger(Path(__file__).stem)
 
 ###### recalibrate not with tolerance like lx2
-
 
 def find_closest():
     raise NotImplementedError("This function is not yet implemented.")
