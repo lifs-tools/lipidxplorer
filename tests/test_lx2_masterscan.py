@@ -199,3 +199,27 @@ def test_aligned_spectra_df(options):
 def test_make_masterscan(options):
     scan = make_masterscan(options)
     assert len(scan.listSurveyEntry) == 2095
+
+def test_get_ms2_spectra():
+    assert False
+
+def test_get_precursors_from_spectra():
+    assert False
+
+def test_gropup_precursors():
+    assert False
+
+def test_group_scans_by_precursor():
+    assert False
+
+def test_group_ms2_peaks():
+    assert False
+
+def test_aggregate_ms2_peaks():
+    assert False
+
+def test_align_ms2_sectra():
+    assert False
+
+def test_append_ms2_to_masterscan():
+    assert False
