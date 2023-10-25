@@ -1,3 +1,4 @@
+from functools import partial
 import pandas as pd
 import numpy as np
 import pytest
@@ -17,6 +18,7 @@ from lx1_refactored.lx2_aggregate import (
     aligned_spectra_df,
     make_masterscan,
     map_precursors_2_groups,
+    get_ms2_group,
 )
 from utils import read_options
 
@@ -226,7 +228,12 @@ def test_group_precursors():
 
 
 def test_group_scans_by_precursor():
+
     df = pd.read_pickle(ms2_peaks_REF)
+    df = df.sort_values(["stem","_prec_bin", 'mz'])
+    eg_count = df[["scan_id", "_prec_bin"]].drop_duplicates()["_prec_bin"].value_counts().min()
+    get_ms2_group_w_count = partial(get_ms2_group, eg_count=eg_count)
+    df["ms2_group"] = df.groupby(["stem", "_prec_bin"])['mz'].transform(get_ms2_group_w_count)
     assert False
 
 

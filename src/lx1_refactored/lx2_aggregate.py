@@ -268,3 +268,6 @@ def group_elements_by_limit(input_list, max_width=0.5):
 
     return result_dict
 
+def get_ms2_group(masses, eg_count):
+    return get_bins(masses, eg_count)[0]
+
