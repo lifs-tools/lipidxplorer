@@ -16,6 +16,7 @@ from lx1_refactored.lx2_aggregate import (
     spectra_2_DF,
     aligned_spectra_df,
     make_masterscan,
+    map_precursors_2_groups,
 )
 from utils import read_options
 
@@ -25,6 +26,8 @@ SPECTRA_PATH = ROOT_PATH + r"/190321_Serum_Lipidextract_368723_01.mzML"
 ms1_peaks_REF = ROOT_PATH + r"/test_get_ms1_peaks_ref.pkl"
 lx2_group_ms1_peaks_REF = ROOT_PATH + r"/test_get_lx2_ms1_peaks_ref.pkl"
 lx2_align_ms1_scans_ref_REF = ROOT_PATH + r"/test_lx2_align_ms1_scans_ref.pkl"
+
+ms2_peaks_REF = ROOT_PATH + r"/test_get_ms2_spectra_REF.pkl"
 
 
 @pytest.fixture
@@ -165,15 +168,13 @@ def test_exclude_text():
 @pytest.mark.skip(reason="YAGNI, not used, is legacy")
 def test_readfile():
     spectra_path = r"tests/resources/benchmark128/spectra/190321_Serum_Lipidextract_368723_01.mzML"
-    options = (
-        {  # NOTE to initialize Masterscan(options) a dictionalry is not enough
-            "timerange": (33.0, 1080.0),
-            "MSmassrange": (360.0, 1000.0),
-            "MSMSmassrange": (150.0, 1000.0),
-            "MScalibration": [680.4802],
-            "MSMScalibration": None,
-        }
-    )
+    options = {  # NOTE to initialize Masterscan(options) a dictionalry is not enough
+        "timerange": (33.0, 1080.0),
+        "MSmassrange": (360.0, 1000.0),
+        "MSMSmassrange": (150.0, 1000.0),
+        "MScalibration": [680.4802],
+        "MSMScalibration": None,
+    }
     scan = lx2_spectra(spectra_path, options)
     assert scan is not None
 
@@ -200,26 +201,46 @@ def test_make_masterscan(options):
     scan = make_masterscan(options)
     assert len(scan.listSurveyEntry) == 2095
 
+
 def test_get_ms2_spectra():
-    assert False
+    df = pd.read_pickle(ms2_peaks_REF)  #  based on test_get_ms2_peaks
+    cols = [
+        "mz",
+        "inty",
+        "stem",
+        "scan_id",
+        "filter_string",
+        "precursor_id",
+        "precursor_mz",
+        "polarity",
+    ]
+    assert all([col in df for col in cols])
+    assert df.precursor_mz.unique().size == 640
 
-def test_get_precursors_from_spectra():
-    assert False
 
-def test_gropup_precursors():
-    assert False
+def test_group_precursors():
+    df = pd.read_pickle(ms2_peaks_REF)
+    precursor_groups = map_precursors_2_groups(df)
+    df["_prec_bin"] = df.precursor_mz.map(precursor_groups)
+    assert all(df["_prec_bin"] == df.precursor_mz.map(precursor_groups))
+
 
 def test_group_scans_by_precursor():
+    df = pd.read_pickle(ms2_peaks_REF)
     assert False
+
 
 def test_group_ms2_peaks():
     assert False
 
+
 def test_aggregate_ms2_peaks():
     assert False
 
+
 def test_align_ms2_sectra():
     assert False
+
 
 def test_append_ms2_to_masterscan():
     assert False

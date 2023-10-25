@@ -17,7 +17,7 @@ from .lx1_ref_aggregate import (
 )
 from .lx1_ref_aggregate import make_masterscan as make_masterscan_from_lx1
 
-from .lx1_ref_change_peaks import find_reference_masses
+from .lx1_ref_change_peaks import find_reference_masses, tukey_upper
 
 logging.basicConfig(
     level=logging.INFO,
@@ -218,3 +218,53 @@ def aligned_spectra_df(options):
 def make_masterscan(options, **kwargs):
     df, df_infos = aligned_spectra_df(options)
     return make_masterscan_from_lx1(options, df, df_infos, lx2=True)
+
+################################ms2
+
+def map_precursors_2_groups(df):
+    # there are two cases, 
+    # * "data dependant" an ms1 peak (precursor) triggered  an ms2 scan
+    # * "data independant" as in fixed selection of ms1 precursors should get an ms2 scan
+    # * exception there are no groups
+    cols = [
+        "stem",
+        "scan_id",
+        "filter_string",
+        "precursor_id",
+        "precursor_mz",
+        "polarity",
+    ]
+    scans_df = df[cols].drop_duplicates()
+    min_count_of_precursor_scans = min(scans_df.precursor_mz.value_counts())
+    precursors_repeat = min_count_of_precursor_scans >=2
+        
+    if precursors_repeat:
+        res = {e:e for e in scans_df.precursor_mz.unique().tolist()}
+    else:
+        max_width = tukey_upper(scans_df.precursor_mz.unique().sort_values().diff())
+        res = group_elements_by_limit(scans_df.precursor_mz.unique().tolist(), max_width)
+    return res
+
+
+
+def group_elements_by_limit(input_list, max_width=0.5):
+    groups = []
+    current_group = [input_list[0]]
+
+    for i in range(1, len(input_list)):
+        if input_list[i] - current_group[0] <= max_width:
+            current_group.append(input_list[i])
+        else:
+            groups.append(current_group)
+            current_group = [input_list[i]]
+
+    groups.append(current_group)
+
+    # Create the dictionary
+    result_dict = {}
+    for group in groups:
+        for element in group:
+            result_dict[element] = group
+
+    return result_dict
+
