@@ -60,8 +60,8 @@ def get_bins(masses, eg_count, sigma=2):
     ), "The 'masses' Series must be sorted in ascending order."
 
     masses.reset_index(drop=True, inplace=True)
-    mz_r_mean = masses.rolling(eg_count, center=True).mean()
-    mz_r_std = masses.rolling(eg_count, center=True).apply(np.std)
+    mz_r_mean = masses.rolling(eg_count, center=True).mean().fillna(masses)
+    mz_r_std = masses.rolling(eg_count, center=True).apply(np.std).fillna(method='ffill').fillna(method='bfill')
     mz_r_std_min = mz_r_std.rolling(eg_count, center=True).min()
     is_std_min = mz_r_std == mz_r_std_min
     # TODO add kurtosis and skew to check?
@@ -128,8 +128,14 @@ def get_bins(masses, eg_count, sigma=2):
     #             return row['group_no']
     # groups_df = masses.to_frame()
     # groups_df['group'] =  masses.apply(wrapper)
-
-    return pd.cut(masses, cuts, labels=False), bins
+    groups = pd.cut(masses, cuts, labels=False)
+    count_of_initial_missing = groups.isna().head(eg_count).sum()#  first few peaks that might not have 
+    if count_of_initial_missing:
+        groups = groups.add(count_of_initial_missing) #make space for the first few peaks that might not be in any cluster 
+        for i in range(count_of_initial_missing):
+            groups[i]=i
+    groups = groups.astype(int)
+    return groups, bins
 
 
 def get_weighted_masses(gdf_mz):
