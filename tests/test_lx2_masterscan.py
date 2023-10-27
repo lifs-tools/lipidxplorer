@@ -233,15 +233,12 @@ def test_group_scans_by_precursor():
     df = df.sort_values(["stem","_prec_bin", 'mz'])
     eg_count = df[["scan_id", "_prec_bin"]].drop_duplicates()["_prec_bin"].value_counts().min()
     get_ms2_group_w_count = partial(get_ms2_group, eg_count=eg_count)
-    df["ms2_group"] = df.groupby(["stem", "_prec_bin"])['mz'].transform(get_ms2_group_w_count)
-    assert False
-
-
-def test_group_ms2_peaks():
-    assert False
+    ms2_group = df.groupby(["stem", "_prec_bin"])['mz'].transform(get_ms2_group_w_count)
+    assert all(df["ms2_group"] == ms2_group)
 
 
 def test_aggregate_ms2_peaks():
+    df = pd.read_pickle(ms2_peaks_REF)
     assert False
 
 
