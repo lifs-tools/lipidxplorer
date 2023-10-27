@@ -64,6 +64,8 @@ def get_bins(masses, eg_count, sigma=2):
     mz_r_std = masses.rolling(eg_count, center=True).apply(np.std).fillna(method='ffill').fillna(method='bfill')
     mz_r_std_min = mz_r_std.rolling(eg_count, center=True).min()
     is_std_min = mz_r_std == mz_r_std_min
+    is_std_min.iloc[0]=True # add edges in case they dont fall in a group, avoids NAN on edges after pd.cut
+    is_std_min.iloc[-1]=True
     # TODO add kurtosis and skew to check?
     mean_mz = mz_r_mean.loc[is_std_min]
     std_mz = mz_r_std[is_std_min]
@@ -129,11 +131,7 @@ def get_bins(masses, eg_count, sigma=2):
     # groups_df = masses.to_frame()
     # groups_df['group'] =  masses.apply(wrapper)
     groups = pd.cut(masses, cuts, labels=False)
-    count_of_initial_missing = groups.isna().head(eg_count).sum()#  first few peaks that might not have 
-    if count_of_initial_missing:
-        groups = groups.add(count_of_initial_missing) #make space for the first few peaks that might not be in any cluster 
-        for i in range(count_of_initial_missing):
-            groups[i]=i
+
     groups = groups.astype(int)
     return groups, bins
 
