@@ -58,7 +58,7 @@ def get_bins(masses, eg_count, sigma=2):
     assert (
         masses.is_monotonic_increasing
     ), "The 'masses' Series must be sorted in ascending order."
-
+    prefilter_mask = masses.groupby(masses.round(2)).transform('count') >1 # TODO apply the mask
     masses.reset_index(drop=True, inplace=True)
     mz_r_mean = masses.rolling(eg_count, center=True).mean().fillna(masses)
     mz_r_std = masses.rolling(eg_count, center=True).apply(np.std).fillna(method='ffill').fillna(method='bfill')
