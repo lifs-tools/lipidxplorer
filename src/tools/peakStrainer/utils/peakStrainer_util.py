@@ -37,6 +37,8 @@ def decode_mzXML_Peaks(encodedPeaks):
     Note zmass and intensity are together
 
     """
+    if isinstance(encodedPeaks, tuple):  # assume its mzml
+        return decode_mz_ML_Peaks(encodedPeaks[0], encodedPeaks[1])
 
     decoded = b64decode(encodedPeaks)
     peaks = array("f", decoded)
@@ -47,6 +49,21 @@ def decode_mzXML_Peaks(encodedPeaks):
     mass = peaks[::2]
     intens = peaks[1::2]
     return mass, intens
+
+
+def decode_mz_ML_Peaks(mass_encoded, inty_encoded):
+
+    mass_decoded = b64decode(mass_encoded)
+    inty_decoded = b64decode(inty_encoded)
+
+    mass_peaks = array("f", mass_decoded)
+    inty_peaks = array("f", inty_decoded)
+
+    if sys.byteorder != "big":
+        mass_peaks.byteswap()
+        inty_peaks.byteswap()
+
+    return mass_peaks, inty_peaks
 
 
 def ThermoRawfile2Scans_sample(file_path):
@@ -139,6 +156,42 @@ def getMZXMLEncondedScans(filePath):
         scanNo = int(scan.attrib["num"])
         filterLine = scan.attrib["filterLine"]
         retTime = scan.attrib["retentionTime"]
+        object = (scanNo, filterLine, encodedPeaks, retTime)
+        rawscans.append(object)
+
+    return list(zip(*rawscans))
+
+
+def getMZ_MLEncondedScans(filePath):
+    #     TODO:handle different namespaces of mzxml
+    ns = {
+        "mzml": "http://psi.hupo.org/ms/mzml",
+        "ms": "http://psi.hupo.org/ms/mzml",
+    }
+
+    tree = ET.parse(filePath)
+    root = tree.getroot()
+
+    spectrums = root.findall(".//mzml:spectrum", namespaces=ns)
+
+    rawscans = []
+    for spectrum in spectrums:
+        mz_array_elem = spectrum.find(
+            './/ms:cvParam[@name="m/z array"]/../ms:binaryDataArray',
+            namespaces=ns,
+        )
+        intensity_array_elem = spectrum.find(
+            './/ms:cvParam[@name="intensity array"]/../ms:binaryDataArray',
+            namespaces=ns,
+        )
+        encodedPeaks = (mz_array_elem, intensity_array_elem)
+        scanNo = int(spectrum.get("id").split("=")[-1])
+        filterLine = spectrum.find(
+            './/ms:cvParam[@name="filter string"]', namespaces=ns
+        ).get("value")
+        retTime = spectrum.find(
+            './/ms:cvParam[@name="scan start time"]', namespaces=ns
+        ).get("value")
         object = (scanNo, filterLine, encodedPeaks, retTime)
         rawscans.append(object)
 

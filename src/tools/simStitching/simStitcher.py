@@ -15,6 +15,7 @@ import warnings
 log = logging.getLogger(os.path.basename(__file__))
 from tools.peakStrainer.utils.peakStrainer_util import (
     getMZXMLEncondedScans,
+    getMZ_MLEncondedScans,
     decode_mzXML_Peaks,
     write2templateMzXML,
     encodePeaks,
@@ -23,7 +24,7 @@ from itertools import compress
 import numpy as np
 import xml.etree.ElementTree as ET
 import copy
-
+from pathlib import Path
 
 class Scan(object):
     class FilterLine(object):
@@ -628,7 +629,7 @@ def simStitcher(
             filemode="w",
         )
 
-    log.info("getMZXMLEncondedScans from" + filePath)
+    log.info("getMZ_MLEncondedScans from" + filePath)
     scans_mzxml = getMZXMLEncondedScanRows(filePath)
     log.debug("\n".join(map(str, scans_mzxml)))
 
@@ -883,7 +884,15 @@ def outputAdjustedFile(fileName):
 
 
 def getMZXMLEncondedScanRows(filePath):
-    return list(zip(*getMZXMLEncondedScans(filePath)))
+    p = Path(filePath)
+    if p.suffix.lower() == ".mzxml":
+        return list(zip(*getMZXMLEncondedScans(filePath)))
+    if p.suffix.lower() == ".mzml":
+        # object = (scanNo, filterLine, encodedPeaks, retTime)
+        # rawscans = list[objects]
+        return list(zip(*getMZ_MLEncondedScans(filePath)))
+    else:
+        raise NotImplementedError(f" files of type {p.suffix} are not suppported")
 
 
 if __name__ == "__main__":
