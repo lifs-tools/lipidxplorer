@@ -30,6 +30,8 @@ lx2_group_ms1_peaks_REF = ROOT_PATH + r"/test_get_lx2_ms1_peaks_ref.pkl"
 lx2_align_ms1_scans_ref_REF = ROOT_PATH + r"/test_lx2_align_ms1_scans_ref.pkl"
 
 ms2_peaks_REF = ROOT_PATH + r"/test_get_ms2_spectra_REF.pkl"
+ms2_agg_REF = ROOT_PATH + r"/test_get_ms2_agg_REF.pkl"
+ms2_2_agg_REF  = ROOT_PATH + r"/test_get_ms2_2_agg_REF.pkl"
 
 
 @pytest.fixture
@@ -65,7 +67,7 @@ def test_get_ms2_peaks():
         "ms2_start": 150.0,
         "ms2_end": 1000.0,
     }
-    df = spectra_as_df(SPECTRA_PATH, **settings)
+    df = spectra_as_df(SPECTRA_PATH.replace('01','02'), **settings)
     assert df.shape == (302188, 8)
 
 
@@ -224,25 +226,46 @@ def test_group_precursors():
     df = pd.read_pickle(ms2_peaks_REF)
     precursor_groups = map_precursors_2_groups(df)
     df["_prec_bin"] = df.precursor_mz.map(precursor_groups)
-    assert all(df["_prec_bin"] == df.precursor_mz.map(precursor_groups))
+    assert np.all(np.isclose(df["_prec_bin"],df.precursor_mz.map(precursor_groups)))
 
 
 def test_group_scans_by_precursor():
-
+    #TODO prefilter by rounding
     df = pd.read_pickle(ms2_peaks_REF)
     df = df.sort_values(["stem","_prec_bin", 'mz'])
     eg_count = df[["scan_id", "_prec_bin"]].drop_duplicates()["_prec_bin"].value_counts().min()
     get_ms2_group_w_count = partial(get_ms2_group, eg_count=eg_count)
     ms2_group = df.groupby(["stem", "_prec_bin"])['mz'].transform(get_ms2_group_w_count)
-    assert all(df["ms2_group"] == ms2_group)
+    assert np.all(np.isclose(df["ms2_group"], ms2_group))
 
+def test_filter_occupation():
+    assert False
 
 def test_aggregate_ms2_peaks():
     df = pd.read_pickle(ms2_peaks_REF)
-    assert False
+    agg_df = df.groupby(["stem", "_prec_bin", 'ms2_group']).agg(
+            {
+                "mz": ["mean",'count','min','max', 'std'],
+                "inty": "mean",
+            }
+        )
+    agg_df.columns = ["_".join(col).strip() for col in agg_df.columns.values]
+    agg_df.reset_index(inplace=True)
+    agg_df.dropna(inplace = True)
+    agg_df = agg_df[agg_df["mz_count"]>2]
+    agg_df = agg_df[agg_df["mz_std"]<1]
+    agg_df = agg_df[(agg_df["mz_max"]-agg_df["mz_min"])<1]
+    #TODO handle overcrouded bins
+    #TODO check empty mean and filter, by width intensity, etc. 
+    assert agg_df.shape[0] == 51490
 
 
 def test_align_ms2_sectra():
+    agg_df = pd.read_pickle(ms2_agg_REF )
+    agg2_df = pd.read_pickle(ms2_2_agg_REF )
+
+    prec1 = agg_df['_prec_bin'].unique()
+    prec2 = agg2_df['_prec_bin'].unique()
     assert False
 
 
