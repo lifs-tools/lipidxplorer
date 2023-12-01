@@ -17,12 +17,12 @@ class mySimStitcherFrame(SimStitcherFrame):
     def browseClicked(self, event):
         #         doCompare = self.m_checkBox1.GetValue()
         #         simStitcher(filepath, doCompare)
-        wildcard = "mzXML (*.mzXML)|*.mzxml;*MZXML"
+        wildcard = "mzXML/mzML (*.mzXML/*.mzML)|*.mzxml;*MZXML;*.mzml;*.MZML"
         dlg = wx.FileDialog(
             self,
             message="Select your files",
             defaultDir=os.getcwd(),
-            defaultFile="*.mzXML",
+            defaultFile="",
             wildcard=wildcard,
             style=wx.FD_OPEN | wx.FD_MULTIPLE,
         )

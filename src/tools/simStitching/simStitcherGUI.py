@@ -69,7 +69,7 @@ class SimStitcherFrame(wx.Frame):
         self.m_staticText2 = wx.StaticText(
             self,
             wx.ID_ANY,
-            "Select MZXML file to Sim Stich:",
+            "Select mzML/mzXML file to Sim Stitch:",
             wx.DefaultPosition,
             wx.DefaultSize,
             0,

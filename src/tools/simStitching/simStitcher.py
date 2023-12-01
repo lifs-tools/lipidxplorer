@@ -12,12 +12,15 @@ from collections import namedtuple
 from math import sqrt
 import warnings
 
+from ms_peak_picker import PeakIndex
+
 log = logging.getLogger(os.path.basename(__file__))
 from tools.peakStrainer.utils.peakStrainer_util import (
     getMZXMLEncondedScans,
     decode_mzXML_Peaks,
     write2templateMzXML,
     encodePeaks,
+    getMZMLScans,
 )
 from itertools import compress
 import numpy as np
@@ -72,7 +75,12 @@ class Scan(object):
         self.filterLine = self.FilterLine(filterLine)
         self.encodedPeaks = encodedPeaks
         self.retTime = retTime
-        self.masses, self.intens = decode_mzXML_Peaks(self.encodedPeaks)
+        if type(encodedPeaks) is PeakIndex:
+            self.masses = [p.mz for p in encodedPeaks]
+            self.intens = [p.intensity for p in encodedPeaks]
+        else:
+            self.masses, self.intens = decode_mzXML_Peaks(self.encodedPeaks)
+
         self.previous = None
         self.next = None
         self.centreCorrectionFactor = (
@@ -883,7 +891,13 @@ def outputAdjustedFile(fileName):
 
 
 def getMZXMLEncondedScanRows(filePath):
-    return list(zip(*getMZXMLEncondedScans(filePath)))
+    from pathlib import Path
+
+    p = Path(filePath)
+    if p.suffix == ".mzML":
+        return list(zip(*getMZMLScans(filePath)))
+    elif p.suffix == ".mzXML":
+        return list(zip(*getMZXMLEncondedScans(filePath)))
 
 
 if __name__ == "__main__":

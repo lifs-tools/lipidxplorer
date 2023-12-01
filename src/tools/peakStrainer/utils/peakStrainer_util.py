@@ -145,6 +145,52 @@ def getMZXMLEncondedScans(filePath):
     return list(zip(*rawscans))
 
 
+def getMZMLScans(filePath):
+    # namespaces = {
+    #     "xmlns": "http://psi.hupo.org/ms/mzml"
+    # }
+    # ET.register_namespace(
+    #     "", "http://psi.hupo.org/ms/mzml"
+    # )
+    # tree = ET.parse(filePath)
+    #
+    # scanElems = tree.findall(".//xmlns:scan", namespaces)
+    #
+    # rawscans = []
+    # for scan in scanElems:
+    #     encodedPeaks = scan.find(".//xmlns:peaks", namespaces).text
+    #     scanNo = int(scan.attrib["num"])
+    #     filterLine = scan.attrib["filterLine"]
+    #     retTime = scan.attrib["retentionTime"]
+    #     object = (scanNo, filterLine, encodedPeaks, retTime)
+    #     rawscans.append(object)
+
+    # return list(zip(*rawscans))
+
+    from ms_deisotope import MSFileLoader
+
+    source_reader = MSFileLoader(filePath)
+
+    rawscans = []
+    for bunch in source_reader:
+        for scan in bunch.products:
+            # isolation = scan.isolation_window
+            scanNo = int(re.findall(r"scan=(\d+)", scan.scan_id)[0])
+            filterLine = scan.annotations["filter string"]
+            retTime = scan.scan_time
+            scan.pick_peaks()
+            # scan.peak_set = scan.peak_set.between(
+            #     isolation.upper_bound, isolation.lower_bound
+            # )
+            # for peak in scan.peak_set:
+            #     print(peak.mz, peak.intensity)
+
+            object = (scanNo, filterLine, scan.peak_set, retTime)
+            rawscans.append(object)
+
+    return list(zip(*rawscans))
+
+
 def write2templateMzXML(newfilename, scanPeaks):
     namespaces = {
         "xmlns": "http://sashimi.sourceforge.net/schema_revision/mzXML_3.0"

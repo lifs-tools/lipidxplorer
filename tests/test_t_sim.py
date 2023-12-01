@@ -182,3 +182,13 @@ def test_multi_id_isotopic_correction(getMfqlFiles, get_options):
                 break
 
     assert is_ok
+
+
+def test_mzML():
+    mzMLFile = (
+        r"tests/resources/small_test/190321_Serum_Lipidextract_368723_01.mzML"
+    )
+
+    from tools.simStitching.simStitcher import getMZXMLEncondedScanRows
+
+    assert len(list(zip(*getMZXMLEncondedScanRows(mzMLFile)))) == 4
