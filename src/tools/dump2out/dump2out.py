@@ -197,7 +197,7 @@ def replace_results_with_min_abs_error(out, dump, result_file):
         row = line.split(",")
         Elemental_comp = row[outs_elemental_comp_row]
         Elemental_comp = Elemental_comp.strip()
-        error = float(row[outs_error_row])
+        error = 0 if not row[outs_error_row] else float(row[outs_error_row])
         error = round(error, 2)
 
         result = (
@@ -220,7 +220,7 @@ def replace_results_with_min_abs_error(out, dump, result_file):
         row[outs_mass_row] = replacement.mass
         row[outs_error_row] = str(result.error)
 
-        lines_out.append(",".join(row))
+        lines_out.append(",".join(map(str, row)))
 
     if result_file:
         with open(result_file, "w") as file:
