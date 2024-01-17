@@ -795,7 +795,14 @@ class Options:
         self.options_formatted["lx2_MSresolution"] = self.options[
             "lx2_MSresolution"
         ]
-        self.options_formatted["polarity"] = self.options["polarity"]
+        if self.options["polarity"] == "+":
+            self.options_formatted["polarity"] = 1
+        elif self.options["polarity"] == "-":
+            self.options_formatted["polarity"] = -1
+        elif self.options["polarity"] == "":
+            self.options_formatted["polarity"] = 0
+        else:
+            self.options_formatted["polarity"] = self.options["polarity"]
 
     def try2apply_calctol(self, o, options_formatted):
         if o["MSresolution"] == "auto" or o["MSresolution"] == 0:

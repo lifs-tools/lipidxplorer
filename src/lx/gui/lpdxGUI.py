@@ -2234,14 +2234,16 @@ intensity."""
             (button1_small_w * 1.3, button1_small_h * 1.3)
         )
 
+        self.polarities = ["-", "", "+"]
+
         self.choice_SettingsSection_polarity = wx.Choice(
-            self.notebook_1_pane_5, -1, choices=["+", "-"]  # "Polarity",
+            self.notebook_1_pane_5, -1, choices=self.polarities  # "Polarity",
         )
         self.choice_SettingsSection_polarity.SetStringSelection("+")
         self.choice_SettingsSection_polarity.SetMinSize(
             (button1_small_w, button1_small_h * 1.3)
         )
-        self.store_SettingsSection_polarity = "+"
+        self.store_SettingsSection_polarity = 1
 
         # neither textCtrl nor label stuff
         self.choice_SettingsSection_tolerance_ms = wx.Choice(
@@ -3102,6 +3104,7 @@ intensity."""
             "spectraFormat"
         ] = self.combo_ctrl_ImportDataSection.GetValue()
 
+        print(self.choice_SettingsSection_polarity.GetSelection())
         project.options[
             "polarity"
         ] = self.choice_SettingsSection_polarity.GetString(
@@ -3489,7 +3492,7 @@ intensity."""
                 strToBool(options["noPermutations"])
             )
             self.choice_SettingsSection_polarity.SetStringSelection(
-                options["polarity"]
+                self.polarities[options["polarity"] + 1]
             )
             self.store_SettingsSection_polarity = options["polarity"]
             # project.options['mzXML'] = None # option key used in lpdxImport.py, substituted by 'dataType'
@@ -4542,9 +4545,11 @@ intensity."""
 
     def OnChoice_polarity(self, evt):
         if evt.GetString() == "+":
-            self.store_SettingsSection_polarity = "+"
+            self.store_SettingsSection_polarity = 1
         elif evt.GetString() == "-":
-            self.store_SettingsSection_polarity = "-"
+            self.store_SettingsSection_polarity = -1
+        elif evt.GetString() == "":
+            self.store_SettingsSection_polarity = 0
         self.OnSettingsChange()
 
     def OnOpen_Output(self, evt):
@@ -4983,15 +4988,15 @@ intensity."""
             )
 
         if self.confParse.has_option(setting, "polarity"):
-            self.choice_SettingsSection_polarity.SetStringSelection(
-                self.confParse.get(setting, "polarity")
-            )
             self.store_SettingsSection_polarity = self.confParse.get(
                 setting, "polarity"
             )
+            self.choice_SettingsSection_polarity.SetStringSelection(
+                self.polarities[self.confParse.get(setting, "polarity") + 1]
+            )
         else:
             self.choice_SettingsSection_polarity.SetStringSelection("+")
-            self.store_SettingsSection_polarity = "+"
+            self.store_SettingsSection_polarity = 1
 
     def clearConfiguration(self):
         # some options
