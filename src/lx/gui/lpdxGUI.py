@@ -2243,7 +2243,6 @@ intensity."""
         self.choice_SettingsSection_polarity.SetMinSize(
             (button1_small_w, button1_small_h * 1.3)
         )
-        self.store_SettingsSection_polarity = 1
 
         # neither textCtrl nor label stuff
         self.choice_SettingsSection_tolerance_ms = wx.Choice(
@@ -3104,11 +3103,8 @@ intensity."""
             "spectraFormat"
         ] = self.combo_ctrl_ImportDataSection.GetValue()
 
-        print(self.choice_SettingsSection_polarity.GetSelection())
-        project.options[
-            "polarity"
-        ] = self.choice_SettingsSection_polarity.GetString(
-            self.choice_SettingsSection_polarity.GetSelection()
+        project.options["polarity"] = (
+            self.choice_SettingsSection_polarity.GetSelection() - 1
         )
 
         for query in list(self.dictMFQLScripts.keys()):
@@ -3494,7 +3490,6 @@ intensity."""
             self.choice_SettingsSection_polarity.SetStringSelection(
                 self.polarities[options["polarity"] + 1]
             )
-            self.store_SettingsSection_polarity = options["polarity"]
             # project.options['mzXML'] = None # option key used in lpdxImport.py, substituted by 'dataType'
         except TypeError as AttributeError:
             pass
@@ -4304,6 +4299,11 @@ intensity."""
                 "MSMSfilter",
                 self.text_ctrl_SettingsSection_filter_msms.GetValue(),
             )
+            self.confParse.set(
+                section,
+                "polarity",
+                str(self.choice_SettingsSection_polarity.GetSelection() - 1),
+            )
 
             with open(self.filePath_LoadIni, "w+") as fIni:
                 self.confParse.write(fIni)
@@ -4490,7 +4490,7 @@ intensity."""
         self.confParse.set(
             newSection,
             "polarity",
-            self.choice_SettingsSection_polarity.GetSelection(),
+            str(self.choice_SettingsSection_polarity.GetSelection() - 1),
         )
 
         self.listConfigurations.append(newSection)
@@ -4544,12 +4544,6 @@ intensity."""
         self.OnSettingsChange()
 
     def OnChoice_polarity(self, evt):
-        if evt.GetString() == "+":
-            self.store_SettingsSection_polarity = 1
-        elif evt.GetString() == "-":
-            self.store_SettingsSection_polarity = -1
-        elif evt.GetString() == "":
-            self.store_SettingsSection_polarity = 0
         self.OnSettingsChange()
 
     def OnOpen_Output(self, evt):
@@ -4988,15 +4982,13 @@ intensity."""
             )
 
         if self.confParse.has_option(setting, "polarity"):
-            self.store_SettingsSection_polarity = self.confParse.get(
-                setting, "polarity"
-            )
             self.choice_SettingsSection_polarity.SetStringSelection(
-                self.polarities[self.confParse.get(setting, "polarity") + 1]
+                self.polarities[
+                    int(self.confParse.get(setting, "polarity")) + 1
+                ]
             )
         else:
             self.choice_SettingsSection_polarity.SetStringSelection("+")
-            self.store_SettingsSection_polarity = 1
 
     def clearConfiguration(self):
         # some options
