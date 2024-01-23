@@ -1054,10 +1054,10 @@ class TypeResult:
                         res = last_res
 
                 else:
-                    # self.mfqlObj.options._data.get("MSresolution"):
-                    res = self.mfqlObj.options["MSresolution"].getTinDA(
-                        listSE[entry].precurmass
-                    )
+                    if self.mfqlObj.options._data.get("MSresolution"):
+                        res = self.mfqlObj.options["MSresolution"].getTinDA(
+                            listSE[entry].precurmass
+                        )
 
                 isotopicDistance = 1.0033
                 chargePrecurmassSF = {}

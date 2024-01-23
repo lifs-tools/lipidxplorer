@@ -109,19 +109,19 @@ def make_masterscan(
     samples = df["stem"].unique().tolist()
     listSurveyEntry = df2listSurveyEntry(df, polarity, samples)
 
-    # if lx2:
-    #     from LX1_masterscan import make_lx_masterscan
-    #
-    #     scan = make_lx_masterscan(options, lx_version=2)
-    # else:
-    scan = build_masterscan(options, listSurveyEntry, samples)
+    if lx2:
+        from LX1_masterscan import make_lx_masterscan
+
+        scan = make_lx_masterscan(options, lx_version=2)
+    else:
+        scan = build_masterscan(options, listSurveyEntry, samples)
 
     idp = Path(options["importDir"])
 
     if lx2:
         filename = str(idp / Path("".join([idp.stem, "-lx2.sc"])))
     else:
-        filename = str(idp / Path("".join([idp.stem, "-lx1.sc"])))
+        filename = str(idp / Path("".join([idp.stem, ".sc"])))
 
     # filename = options["masterScanRun"]
     log.info(f"saving file to: {filename}")

@@ -2837,7 +2837,10 @@ intensity."""
             if not re.match(".*\.lxp", projectFilePath):
                 s = projectFilePath.split(".")
                 if len(s) == 1:
-                    projectFilePath += ".sc"
+                    if self.lx_ver == "LX2":
+                        projectFilePath += "-lx2.sc"
+                    else:
+                        projectFilePath += ".sc"
                 else:
                     projectFilePath = ""
                 for i in s[:-1]:
@@ -4090,13 +4093,30 @@ intensity."""
                 dlg.Destroy()
                 return None
 
-        strMasterScan = filePath + os.sep + filePath.split(os.sep)[-1] + ".sc"
-        strOutputFile = (
-            filePath + os.sep + filePath.split(os.sep)[-1] + "-out.csv"
-        )
-        self.filePath_Dump = (
-            filePath + os.sep + filePath.split(os.sep)[-1] + "-dump.csv"
-        )
+        if self.lx_ver == "LX2":
+            strMasterScan = (
+                filePath + os.sep + filePath.split(os.sep)[-1] + "-lx2.sc"
+            )
+            strOutputFile = (
+                filePath + os.sep + filePath.split(os.sep)[-1] + "-out-lx2.csv"
+            )
+            self.filePath_Dump = (
+                filePath
+                + os.sep
+                + filePath.split(os.sep)[-1]
+                + "-dump-lx2.csv"
+            )
+        else:
+            strMasterScan = (
+                filePath + os.sep + filePath.split(os.sep)[-1] + ".sc"
+            )
+
+            strOutputFile = (
+                filePath + os.sep + filePath.split(os.sep)[-1] + "-out.csv"
+            )
+            self.filePath_Dump = (
+                filePath + os.sep + filePath.split(os.sep)[-1] + "-dump.csv"
+            )
         self.text_ctrl_MasterScanSection.SetValue(strMasterScan)
         self.text_ctrl_OutputMasterScanSection.SetValue(strMasterScan)
         self.text_ctrl_OutputSection.SetValue(strOutputFile)
@@ -4116,7 +4136,10 @@ intensity."""
             if not re.match(".*\.sc", self.filePath_MasterScan):
                 s = self.filePath_MasterScan.split(".")
                 if len(s) == 1:
-                    self.filePath_MasterScan += ".sc"
+                    if self.lx_ver == "LX2":
+                        self.filePath_MasterScan += "-lx2.sc"
+                    else:
+                        self.filePath_MasterScan += ".sc"
                 else:
                     self.filePath_MasterScan = ""
                 for i in s[:-1]:
