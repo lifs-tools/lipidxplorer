@@ -406,7 +406,11 @@ def ms1_peaks_agg_lx2_bin(ms1_peaks):
     scan_count = ms1_peaks.scan_id.unique().size
     if scan_count < 2:
         log.info("no averaging, not enough scans")
-        return ms1_peaks
+        return (
+            ms1_peaks.mz,
+            ms1_peaks.mz.diff(-1).shift(),
+        )  # each peak its its own group, with a width of the distance to the next peak
+
     ms1_peaks["mz_diff"] = ms1_peaks.mz.diff(-1).shift()
     ms1_peaks["mz_diff_long"] = (
         ms1_peaks["mz_diff"]

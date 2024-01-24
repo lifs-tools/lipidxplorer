@@ -8369,66 +8369,93 @@ intensity."""
     def m_radioBoxOnVersionChanged(self, event):
         self.lx_ver = self.m_radioBoxVersions.GetStringSelection()
         print(f"Mode is changed to {self.lx_ver}")
+        filePath = self.filePath_ImportData
 
-        strMasterScan = (
-            self.filePath_ImportData
-            + os.sep
-            + self.filePath_ImportData.split(os.sep)[-1]
-            + ".sc"
+        strMasterScan = filePath + os.sep + filePath.split(os.sep)[-1] + ".sc"
+
+        strOutputFile = (
+            filePath + os.sep + filePath.split(os.sep)[-1] + "-out.csv"
+        )
+
+        self.filePath_Dump = (
+            filePath + os.sep + filePath.split(os.sep)[-1] + "-dump.csv"
         )
 
         # in LX2 mode
         if self.lx_ver == "LX2":
             strMasterScan = (
-                self.filePath_ImportData
+                filePath + os.sep + filePath.split(os.sep)[-1] + "-lx2.sc"
+            )
+
+            strOutputFile = (
+                filePath + os.sep + filePath.split(os.sep)[-1] + "-out-lx2.csv"
+            )
+
+            self.filePath_Dump = (
+                filePath
                 + os.sep
-                + self.filePath_ImportData.split(os.sep)[-1]
-                + "-lx2.sc"
+                + filePath.split(os.sep)[-1]
+                + "-dump-lx2.csv"
             )
 
         # in LX1_refactored mode
         elif self.lx_ver == "LX1_refactored":
             strMasterScan = (
-                self.filePath_ImportData
+                filePath + os.sep + filePath.split(os.sep)[-1] + "-lx1-ref.sc"
+            )
+
+            strOutputFile = (
+                filePath
                 + os.sep
-                + self.filePath_ImportData.split(os.sep)[-1]
-                + "-lx1-ref.sc"
+                + filePath.split(os.sep)[-1]
+                + "-out-lx1-ref.csv"
+            )
+
+            self.filePath_Dump = (
+                filePath
+                + os.sep
+                + filePath.split(os.sep)[-1]
+                + "-dump-lx1-ref.csv"
             )
 
         self.text_ctrl_MasterScanSection.SetValue(strMasterScan)
+        self.text_ctrl_OutputMasterScanSection.SetValue(strMasterScan)
+        self.text_ctrl_OutputSection.SetValue(strOutputFile)
+        self.text_ctrl_ImportDataSection.SetValue(filePath)
 
-    def writeOutput(self, destination, content):
-        if os.path.exists(destination):
+
+def writeOutput(self, destination, content):
+    if os.path.exists(destination):
+        dlgError = wx.MessageDialog(
+            self,
+            f"The file {destination} already exists, \n are you sure you want to overwrite?",
+            "File writing error",
+            wx.YES_NO | wx.ICON_QUESTION,
+        )
+        answer = dlgError.ShowModal()
+        if answer == wx.ID_NO:
+            return False
+
+    tryAgain = True
+    while tryAgain:
+        try:
+            f = open(destination, "w")
+            f.write(content)
+            f.close()
+            return True
+        except IOError:
             dlgError = wx.MessageDialog(
                 self,
-                f"The file {destination} already exists, \n are you sure you want to overwrite?",
+                "The result cannot be saved. It is probably open by another program. Try again?",
                 "File writing error",
                 wx.YES_NO | wx.ICON_QUESTION,
             )
             answer = dlgError.ShowModal()
             if answer == wx.ID_NO:
-                return False
+                tryAgain = False
+            dlgError.Destroy()
 
-        tryAgain = True
-        while tryAgain:
-            try:
-                f = open(destination, "w")
-                f.write(content)
-                f.close()
-                return True
-            except IOError:
-                dlgError = wx.MessageDialog(
-                    self,
-                    "The result cannot be saved. It is probably open by another program. Try again?",
-                    "File writing error",
-                    wx.YES_NO | wx.ICON_QUESTION,
-                )
-                answer = dlgError.ShowModal()
-                if answer == wx.ID_NO:
-                    tryAgain = False
-                dlgError.Destroy()
-
-        return False
+    return False
 
 
 # end of class LpdxFrame
