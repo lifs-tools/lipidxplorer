@@ -1,0 +1,69 @@
+<html><head></head><body><br><h3>Options</h3>
+<table>
+<tr><td>MSMScalibration:</td><td>[0.0]</td></tr>
+<tr><td>MSMSfilter:</td><td>0.1</td></tr>
+<tr><td>MSMSmassrange:</td><td>(120.0, 1100.0)</td></tr>
+<tr><td>MSMSminOccupation:</td><td>0.0</td></tr>
+<tr><td>MSMSresolution:</td><td>10.00 ppm</td></tr>
+<tr><td>MSMSresolutionDelta:</td><td>-66.0</td></tr>
+<tr><td>MSMSthreshold:</td><td>0.0</td></tr>
+<tr><td>MSMSthresholdType:</td><td>absolute</td></tr>
+<tr><td>MSMStolerance:</td><td>10.00 ppm</td></tr>
+<tr><td>MSMStoleranceType:</td><td>ppm</td></tr>
+<tr><td>MScalibration:</td><td>[4.0]</td></tr>
+<tr><td>MSfilter:</td><td>0.1</td></tr>
+<tr><td>MSmassrange:</td><td>(400.0, 1200.0)</td></tr>
+<tr><td>MSminOccupation:</td><td>0.0</td></tr>
+<tr><td>MSresolution:</td><td>10.00 ppm</td></tr>
+<tr><td>MSresolutionDelta:</td><td>-78.0</td></tr>
+<tr><td>MSthreshold:</td><td>0.0</td></tr>
+<tr><td>MSthresholdType:</td><td>absolute</td></tr>
+<tr><td>MStolerance:</td><td>10.00 ppm</td></tr>
+<tr><td>MStoleranceType:</td><td>ppm</td></tr>
+<tr><td>alignmentMethodMS:</td><td>calctol</td></tr>
+<tr><td>alignmentMethodMSMS:</td><td>calctol</td></tr>
+<tr><td>complementMasterScan:</td><td>False</td></tr>
+<tr><td>complementMasterScanFile:</td><td>/Users/moon/Projects/gitlab/lx2/tests/sofia/240117/LX1/Plus/Plus-complement.csv</td></tr>
+<tr><td>compress:</td><td>False</td></tr>
+<tr><td>dataType:</td><td>mzXML</td></tr>
+<tr><td>dumpMasterScan:</td><td>True</td></tr>
+<tr><td>dumpMasterScanFile:</td><td>/Users/moon/Projects/gitlab/lx2/tests/sofia/240117/LX1/Plus/Plus-dump.csv</td></tr>
+<tr><td>importDir:</td><td>/Users/moon/Projects/gitlab/lx2/tests/sofia/240117/LX1/Plus</td></tr>
+<tr><td>importMSMS:</td><td>True</td></tr>
+<tr><td>ini:</td><td>/Users/moon/Projects/gitlab/lx2/tests/sofia/lpdxImportSettings_yuting.ini</td></tr>
+<tr><td>intensityCorrection:</td><td>False</td></tr>
+<tr><td>isotopesInMasterScan:</td><td>False</td></tr>
+<tr><td>isotopicCorrectionMS:</td><td>True</td></tr>
+<tr><td>isotopicCorrectionMSMS:</td><td>True</td></tr>
+<tr><td>isotopicCorrection_MSMS:</td><td>False</td></tr>
+<tr><td>logMemory:</td><td>False</td></tr>
+<tr><td>loopNr:</td><td>3</td></tr>
+<tr><td>masterScanFileImport:</td><td>/Users/moon/Projects/gitlab/lx2/tests/sofia/240117/LX1/Plus/Plus.sc</td></tr>
+<tr><td>masterScanFileRun:</td><td>/Users/moon/Projects/gitlab/lx2/tests/sofia/240117/LX1/Plus/Plus.sc</td></tr>
+<tr><td>masterScanImport:</td><td>/Users/moon/Projects/gitlab/lx2/tests/sofia/240117/LX1/Plus/Plus.sc</td></tr>
+<tr><td>masterScanInSQL:</td><td>False</td></tr>
+<tr><td>masterScanRun:</td><td>/Users/moon/Projects/gitlab/lx2/tests/sofia/240117/LX1/Plus/Plus.sc</td></tr>
+<tr><td>monoisotopicCorrection:</td><td>False</td></tr>
+<tr><td>noHead:</td><td>False</td></tr>
+<tr><td>noPermutations:</td><td>True</td></tr>
+<tr><td>optionalMSMStolerance:</td><td>20.00 ppm</td></tr>
+<tr><td>optionalMSMStoleranceType:</td><td>ppm</td></tr>
+<tr><td>optionalMStolerance:</td><td>20.00 ppm</td></tr>
+<tr><td>optionalMStoleranceType:</td><td>ppm</td></tr>
+<tr><td>pisSpectra:</td><td>False</td></tr>
+<tr><td>polarity:</td><td>1</td></tr>
+<tr><td>relativeIntensity:</td><td>False</td></tr>
+<tr><td>removeIsotopes:</td><td>True</td></tr>
+<tr><td>resultFile:</td><td>/Users/moon/Projects/gitlab/lx2/tests/sofia/240117/LX1/Plus/Plus-out.csv</td></tr>
+<tr><td>scanAveragingMethod:</td><td>calctol</td></tr>
+<tr><td>selectionWindow:</td><td>0.5</td></tr>
+<tr><td>setting:</td><td>8.0</td></tr>
+<tr><td>settingsPrefix:</td><td>False</td></tr>
+<tr><td>spectraFormat:</td><td>mzXML</td></tr>
+<tr><td>statistics:</td><td>False</td></tr>
+<tr><td>sumFattyAcids:</td><td>False</td></tr>
+<tr><td>tabLimited:</td><td>False</td></tr>
+<tr><td>timerange:</td><td>(0.0, 1000.0)</td></tr>
+</table><br>
+<h3>MFQL queries</h3><tt>
+ <br><br>>> filename: QS_MS1_GalCer_14N12C.mfql >><br><br>##########################################################<br># Identify GalCer with checking  the precursor mass      #<br>##########################################################<br><br>QUERYNAME = hexCer;<br>DEFINE pr = 'C[30..53] H[30..200] N[1] O[8..9]' WITH DBR = (1.5,5.5), CHG = 1;<br><br>IDENTIFY<br>	pr IN MS1+<br>  <br>REPORT <br>	PRM = pr.mass;<br><br>	EC = pr.chemsc;<br><br>	CLASS = "hexCer" % "()";<br><br>	PRC = "%d" % "((pr.chemsc)[C] - 6)";<br><br>	PRDB = "%d" % "((pr.chemsc)[db] - 1.5)";<br><br>	PROH = "%d" % "((pr.chemsc)[O] - 6)";<br><br>	SPECIE = "hexCer %d:%d:%d" % "((pr.chemsc)[C] - 6, pr.chemsc[db] - 1.5, pr.chemsc[O] - 6)";<br><br>        QSERR = "%2.2f" % "(pr.errppm)";<br><br>	QS = pr.intensity;<br><br>	;<br><br>################ end script ##################<br><br><br> <br><br>>> filename: QS_MS1_CED7 160 (M+NH4)+.mfql >><br><br>##########################################################<br># Identify Cholesteryl ester with checking  the precursor mass   #<br>##########################################################<br><br><br>QUERYNAME = CED160;<br><br>	DEFINE pr = 'C[43] H[73] D[7] N[1] O[2]' WITH DBR = (4,5), CHG = 1;<br><br>IDENTIFY<br>	pr IN MS1+<br>        <br>REPORT <br>	PRM = pr.mass;<br>	EC = pr.chemsc;<br>	CLASS = "CE" % "()";<br>	PRC = "%d" % "((pr.chemsc)[C] - 27)";<br><br>	PRDB = "%d" % "((pr.chemsc)[db] - 4.5)";<br><br>	PROH = "%d" % "((pr.chemsc)[O] - 2)";<br>	SPECIE = "CED %d:%d:%d" % "((pr.chemsc)[C]-27, pr.chemsc[db] - 4.5, pr.chemsc[O]-2)";<br><br><br>        QSERR = "%2.2f" % "(pr.errppm)";<br><br>	QS = pr.intensity; <br>	;<br><br>################ end script ################## <br><br>>> filename: QS_MS1_TGd5500 (M+NH4)+.mfql >><br><br>##########################################################<br># Identify TG with checking  the precursor mass        #<br>##########################################################<br><br><br>QUERYNAME = TGdis;<br><br><br>DEFINE pr = 'C[53] H[101] D[5] N[1] O[6]' WITH DBR = (1.0,2.0), CHG = +1;<br><br><br>IDENTIFY<br>	pr IN MS1+<br><br><br>REPORT <br>	PRM = pr.mass;<br>	EC = pr.chemsc;<br>	CLASS = "TG" % "()";<br>	PRC = "%d" % "((pr.chemsc)[C] - 3)";<br><br>	PRDB = "%d" % "((pr.chemsc)[db] - 1.5)";<br><br>	PROH = "%d" % "((pr.chemsc)[O] - 6)";<br>	SPECIE = "TGD %d:%d:%d" % "((pr.chemsc)[C]-3, pr.chemsc[db] - 1.5, pr.chemsc[O]-6)";<br><br><br>        QSERR = "%2.2f" % "(pr.errppm)";<br><br>	QS = pr.intensity; <br>	;<br><br>################ end script ################## <br><br>>> filename: QS_MS1_CE (M+NH4)+.mfql >><br><br>##########################################################<br># Identify Cholesteryl ester with checking  the precursor mass   #<br>##########################################################<br><br><br>QUERYNAME = CholE;<br><br><br>DEFINE pr = 'C[37..55] H[50..150] N[1] O[2]' WITH DBR = (4,11), CHG = 1;<br><br>IDENTIFY<br>	pr IN MS1+<br>        <br>REPORT <br>	PRM = pr.mass;<br>	EC = pr.chemsc;<br>	CLASS = "CE" % "()";<br>	PRC = "%d" % "((pr.chemsc)[C] - 27)";<br><br>	PRDB = "%d" % "((pr.chemsc)[db] - 4.5)";<br><br>	PROH = "%d" % "((pr.chemsc)[O] - 2)";<br>	SPECIE = "CE %d:%d:%d" % "((pr.chemsc)[C]-27, pr.chemsc[db] - 4.5, pr.chemsc[O]-2)";<br><br><br>        QSERR = "%2.2f" % "(pr.errppm)";<br><br>	QS = pr.intensity; <br>	;<br><br>################ end script ################## <br><br>>> filename: QS_MS1_TG (M+NH4)+.mfql >><br><br>##########################################################<br># Identify TG with checking  the precursor mass        #<br>##########################################################<br><br><br>QUERYNAME = TGprec;<br><br><br>DEFINE pr = 'C[39..87] H[30..400] N[1] O[6]' WITH DBR = (1.5,20.5), CHG = +1;<br><br><br>IDENTIFY<br>	pr IN MS1+<br><br><br>REPORT <br>	PRM = pr.mass;<br>	EC = pr.chemsc;<br>	CLASS = "TG" % "()";<br>	PRC = "%d" % "((pr.chemsc)[C] - 3)";<br><br>	PRDB = "%d" % "((pr.chemsc)[db] - 1.5)";<br><br>	PROH = "%d" % "((pr.chemsc)[O] - 6)";<br>	SPECIE = "TG %d:%d:%d" % "((pr.chemsc)[C]-3, pr.chemsc[db] - 1.5, pr.chemsc[O]-6)";<br><br><br>        QSERR = "%2.2f" % "(pr.errppm)";<br><br>	QS = pr.intensity; <br>	;<br><br>################ end script ##################</tt></body></html>

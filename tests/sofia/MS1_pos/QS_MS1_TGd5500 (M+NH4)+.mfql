@@ -1,0 +1,25 @@
+##########################################################
+# Identify TG with checking  the precursor mass        #
+##########################################################
+
+QUERYNAME = TGdis;
+
+DEFINE pr = 'C[53] H[101] D[5] N[1] O[6]' WITH DBR = (1.0,2.0), CHG = +1;
+
+IDENTIFY
+	pr IN MS1+
+
+REPORT
+	PRM = pr.mass;
+	EC = pr.chemsc;
+	CLASS = "TG" % "()";
+	PRC = "%d" % "((pr.chemsc)[C] - 3)";
+	PRDB = "%d" % "((pr.chemsc)[db] - 1.5)";
+	PROH = "%d" % "((pr.chemsc)[O] - 6)";
+	SPECIE = "TGD %d:%d:%d" % "((pr.chemsc)[C]-3, pr.chemsc[db] - 1.5, pr.chemsc[O]-6)";
+
+        QSERR = "%2.2f" % "(pr.errppm)";
+	QS = pr.intensity;
+	;
+
+################ end script ##################

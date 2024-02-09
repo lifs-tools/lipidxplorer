@@ -1,0 +1,25 @@
+##########################################################
+# Identify Cholesteryl ester with checking  the precursor mass   #
+##########################################################
+
+QUERYNAME = CholE;
+
+DEFINE pr = 'C[37..55] H[50..150] N[1] O[2]' WITH DBR = (4,11), CHG = 1;
+
+IDENTIFY
+	pr IN MS1+
+
+REPORT
+	PRM = pr.mass;
+	EC = pr.chemsc;
+	CLASS = "CE" % "()";
+	PRC = "%d" % "((pr.chemsc)[C] - 27)";
+	PRDB = "%d" % "((pr.chemsc)[db] - 4.5)";
+	PROH = "%d" % "((pr.chemsc)[O] - 2)";
+	SPECIE = "CE %d:%d:%d" % "((pr.chemsc)[C]-27, pr.chemsc[db] - 4.5, pr.chemsc[O]-2)";
+
+        QSERR = "%2.2f" % "(pr.errppm)";
+	QS = pr.intensity;
+	;
+
+################ end script ##################

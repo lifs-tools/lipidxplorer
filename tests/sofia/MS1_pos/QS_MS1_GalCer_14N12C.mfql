@@ -1,0 +1,23 @@
+##########################################################
+# Identify GalCer with checking  the precursor mass      #
+##########################################################
+
+QUERYNAME = hexCer;
+DEFINE pr = 'C[30..53] H[30..200] N[1] O[8..9]' WITH DBR = (1.5,5.5), CHG = 1;
+
+IDENTIFY
+	pr IN MS1+
+
+REPORT
+	PRM = pr.mass;
+	EC = pr.chemsc;
+	CLASS = "hexCer" % "()";
+	PRC = "%d" % "((pr.chemsc)[C] - 6)";
+	PRDB = "%d" % "((pr.chemsc)[db] - 1.5)";
+	PROH = "%d" % "((pr.chemsc)[O] - 6)";
+	SPECIE = "hexCer %d:%d:%d" % "((pr.chemsc)[C] - 6, pr.chemsc[db] - 1.5, pr.chemsc[O] - 6)";
+        QSERR = "%2.2f" % "(pr.errppm)";
+	QS = pr.intensity;
+	;
+
+################ end script ##################
