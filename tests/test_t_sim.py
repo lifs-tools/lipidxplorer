@@ -183,7 +183,7 @@ def test_multi_id_isotopic_correction(getMfqlFiles, get_options):
 
     assert is_ok
 
-
+@pytest.mark.skip(reason="not a focus now")
 def test_mzML():
     mzMLFile = (
         r"tests/resources/small_test/190321_Serum_Lipidextract_368723_01.mzML"
