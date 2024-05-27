@@ -219,11 +219,13 @@ def startMFQL(options={}, queries={}, parent=None):
         if not options["resultFile"]:
             print(strResult)
         else:
+            with open(options["resultFile"], "w") as f:
+                f.write(strResult)
             if parent:
                 parent.writeOutput(options["resultFile"], strResult)
-            else:
-                with open(options["resultFile"], "w") as f:
-                    f.write(strResult)
+            
+            
+            
     else:
         print("\n <Query returned no result.>\n")
 
