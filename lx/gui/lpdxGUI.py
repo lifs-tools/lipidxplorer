@@ -404,7 +404,7 @@ class Worker(threading.Thread):
 				r = dlg.ShowModal()
 				if r == wx.ID_YES:
 
-					dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to lifs-support@isas.de", \
+					dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to contact@lifs-tools.org", \
 							"ERROR", style=wx.OK)
 					if dlg.ShowModal() == wx.ID_OK:
 						dlg.Destroy()
@@ -2165,31 +2165,31 @@ intensity."""))
 
 	def OnMenuLipidXDocumentation(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Documentation')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php/LipidX_Documentation')
 
 	def OnMenuMFQLTutorial(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_MFQL#A_short_tutorial')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php/LipidX_MFQL#A_short_tutorial')
 
 	def OnMenuMFQLReference(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_MFQL#The_4_sections_of_a_MFQL_query')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php/LipidX_MFQL#The_4_sections_of_a_MFQL_query')
 
 	def OnMenuHelpImportSettings(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Usage#Machine_specific_settings')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php/LipidX_Usage#Machine_specific_settings')
 
 	def OnMenuHelpRun(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Usage#Run_queries_on_the_MasterScan')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php/LipidX_Usage#Run_queries_on_the_MasterScan')
 
 	def OnMenuHelpMSTools(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Usage#The_MS-Tools_panel')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php/LipidX_Usage#The_MS-Tools_panel')
 
 	def OnMenuAbout(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Preface')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php/LipidX_Preface')
 
 	def OnTextEnter(self, evt):
 
@@ -2389,7 +2389,7 @@ intensity."""))
 		r = dlg.ShowModal()
 		if r == wx.ID_YES:
 
-			dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to lifs-support@isas.de", \
+			dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to contact@lifs-tools.org", \
 					"ERROR", style=wx.OK)
 			if dlg.ShowModal() == wx.ID_OK:
 				dlg.Destroy()
@@ -3296,7 +3296,7 @@ intensity."""))
 			r = dlg.ShowModal()
 			if r == wx.ID_YES:
 
-				dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to lifs-support@isas.de", \
+				dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to contact@lifs-tools.org", \
 						"ERROR", style=wx.OK)
 				if dlg.ShowModal() == wx.ID_OK:
 					dlg.Destroy()
@@ -4035,7 +4035,7 @@ intensity."""))
 			r = dlg.ShowModal()
 			if r == wx.ID_YES:
 
-				dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to lifs-support@isas.de", \
+				dlg = wx.MessageDialog(wx.GetApp().frame, "Please store the bugReport.html and send it to contact@lifs-tools.org", \
 						"ERROR", style=wx.OK)
 				if dlg.ShowModal() == wx.ID_OK:
 					dlg.Destroy()
