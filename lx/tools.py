@@ -489,15 +489,14 @@ def delchars(str, chars):
 	return str.translate(identity, chars)
 
 
+if sys.platform == "linux" or sys.platform == "linux2":
+    import ctypes
+    ctypes.CDLL('libX11.so').XInitThreads()
+
 
 #!/usr/bin/env python
 
 import sys
-
-if sys.platform == 'linux2':
-	import pygtk
-	pygtk.require('2.0')
-	import gtk
 
 class Browser:
 	def make_row( self, piter, name, value ):
