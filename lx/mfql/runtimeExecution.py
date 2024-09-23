@@ -200,6 +200,8 @@ class TypeMFQL:
 
 		### TODO: the empty variables have to be added somewhere here###
 
+		# DEBUG: all 5 possible results are made here and end up to be "theResult". The wrong and the right included
+
 		loopResults = surveyEntry.listScanEntries
 		surveyEntry.listScanEntries = []
 
@@ -229,6 +231,7 @@ class TypeMFQL:
 				theResult.append(vars)
 
 		surveyEntry.listVariables += theResult
+
 
 	def genVariables_old(self, surveyEntry, plus_permutation = False):
 		'''This routine generates all combinations of fragments
@@ -2638,6 +2641,8 @@ class TypeResult:
 
 
 	def generateReport(self, options = {}):
+		# DEBUG: Output created here!
+		# tmpRpt is always already with false output errppm=67.34, so is rpt
 
 		noString = re.compile(r'\[(\w+)\]', re.VERBOSE)
 
@@ -2647,6 +2652,7 @@ class TypeResult:
 		# every query
 		for query in self.dictQuery.values():
 
+			# DEBUG: Here, already just the wrong Output is found in listVariables, all other are already sorted out
 			self.mfqlObj.currQuery = query
 			self.mfqlObj.queryName = query.name
 
@@ -2724,6 +2730,7 @@ class TypeResult:
 								strCorr += ",%.9f" % attr
 							strCorr += ')'
 							str = eval(report[1] + ' % ' + strCorr)
+
 							rpt[report[0]] = str
 
 						else:
@@ -2830,7 +2837,9 @@ class TypeResult:
 				self.listHead = connectLists(self.listHead, query.reportHeads)
 
 				# append the dict entry to the result list
+
 				if boolAdd:
+					# DEBUG: rpt is added only once with the wrong value
 					query.listReportOut.append(rpt)
 					rpt = odict()
 
@@ -3445,10 +3454,28 @@ class TypeResult:
 	def removePermutations(self):
 
 		for query in self.dictQuery:
+
+			# DEBUG SOLUTION (?)
+			# before, the output list (self.dictQuery[query].listVariables) was always just populated with the first
+			# element in this line:
+			# listVar_noPermutations = [listVar[0]]
+			# which always was the one with the lowest errppm, as self.dictQuery[query].listVariables before this
+			# function is sorted by errppm but not absolute errppm
+			# Another approach would be to find the code, where self.dictQuery[query].listVariables is sorted
+			# originally.
+			# But for now, going through this haiduken spagetthi code, I feel OK with just hard coding some patchworky
+			# workaround and not digging deeper into the abyss of heaps of redundant, dead end, not commented, commented
+			# out, obsolete, deprecated, un-pythonic and all together incomprehensive code.
+
+			# DEBUG old listVars code:
+			#listVar = []
+			#for i in self.dictQuery[query].listVariables:
+			#	listVar.append(sorted(i.items(), key = lambda x : x[1].mass))
+
+			# DEBUG: this changed listVar is sorted by absolute errppm
 			listVar = []
-			for i in self.dictQuery[query].listVariables:
-				#listVar.append(sorted(i.items(), cmp = lambda x, y: cmp(x[1].mass, y[1].mass)))
-				listVar.append(sorted(i.items(), key = lambda x : x[1].mass))
+			for i in sorted(self.dictQuery[query].listVariables, key=lambda d: abs(list(d.values())[1].errppm)):
+				listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
 
 			# if there are no variables, we don't need to do anything
 			if len(listVar) > 0:
@@ -3463,6 +3490,12 @@ class TypeResult:
 						# compare two lists
 						lists_are_same = True
 						for index in range(len(i)):
+
+							# DEBUG: in here, all following entries are sorted out, because they have the same
+							# chemical structure. The only one left, was the one with lowest errppm but not absolute
+							# lowest errpm
+
+							# DEBUG: this always holds, hence lists_are_same is always True
 							if i[index][1].chemsc != j[index][1].chemsc:
 								lists_are_same = False
 								break
@@ -3471,6 +3504,7 @@ class TypeResult:
 							isIn = True
 							break
 
+					# DEBUG: therefore, this is never met
 					if not isIn:
 						listVar_noPermutations.append(i)
 

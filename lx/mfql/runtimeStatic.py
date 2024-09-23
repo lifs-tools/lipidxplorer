@@ -1504,7 +1504,7 @@ class TypeExpression:
 							float = result.dictIntensity[self.item],
 							dictIntensity = None,
 							type = TYPE_FLOAT)
-
+		result
 		return result
 
 class TypeMarkTerm:

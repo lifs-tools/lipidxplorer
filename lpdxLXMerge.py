@@ -659,6 +659,8 @@ class MyFrame(wx.Frame):
 		outputKeys = odict()
 		outputCSV = StringIO()
 
+
+
 		# format the output header
 		for col in self.colsToAlign:
 			outputCSV.write(",")
@@ -740,7 +742,7 @@ class MyFrame(wx.Frame):
 					#if self.dictOutput[entry][file] != {}:
 
 					for col in outputKeys[file]:
-						if self.dictOutput[entry][file].has_key(col):
+					    if self.dictOutput[entry][file].has_key(col):
 							#outputCSV.write('%s,' % self.dictOutput[entry][file][col])
 							csvOut += '%s,' % self.dictOutput[entry][file][col]
 						elif dictOutputSamples[entry][file].has_key(col):

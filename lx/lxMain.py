@@ -135,6 +135,8 @@ def startMFQL(options = {}, queries = {}, parent = None):
 		mfqlObj.outputSeperator = ','
 
 	# parse input file k and save the result in mfqlObj.result
+	# DEBUG: startParsing creates the result
+
 	(progressCount, returnValue) = startParsing(mfqlFiles,
 				mfqlObj,
 				masterscan,
@@ -145,6 +147,9 @@ def startMFQL(options = {}, queries = {}, parent = None):
 				progressCount = progressCount,
 				generateStatistics = options['statistics'],
 				)
+
+	# DEBUG after this, the result is in mfqlObj.result.dictQuery...
+	data_matrix = mfqlObj.result.dictQuery['PCSplash'].dataMatrix
 
 	if parent:
 		if returnValue == parent.CONST_THREAD_USER_ABORT:
@@ -177,6 +182,8 @@ def startMFQL(options = {}, queries = {}, parent = None):
 		# free 'k' because otherwise Python keeps all
 		# the SurveyEntries. Don't ask me why...
 		del k
+
+		# DEBUG: strResult carries the output
 
 		# put out
 		if not options['resultFile']:

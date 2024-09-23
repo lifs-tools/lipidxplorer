@@ -57,4 +57,3 @@ dependencies:
   - wxpython=4.0.4=py27hc99224d_0
   - xz=5.4.6=h5eee18b_1
   - zlib=1.2.13=h5eee18b_1
-prefix: /home/luggieatwork/anaconda3/envs/lx129_new
