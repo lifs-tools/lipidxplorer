@@ -1,4 +1,4 @@
-name: lx129_new
+name: lx129
 channels:
   - defaults
 dependencies:
