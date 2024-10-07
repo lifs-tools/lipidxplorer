@@ -1,6 +1,10 @@
 import os
 from lx.gui import lpdxGUI
 import wx
+import sys
+
+os.chdir(sys._MEIPASS)
+
 
 class MyApp(wx.App):
 

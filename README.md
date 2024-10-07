@@ -46,9 +46,13 @@ This will also create a zip archive of the `distpath` folder in the root directo
 The same instructions for creation of a standalone executable also apply under Linux. Please make sure, that you have a proper Anaconda environment
 installed and activated. Then run the following command:
 
-    pyinstaller --distpath="LipidXplorer-1.2.8" LipidXplorer.spec
+     pyinstaller --onefile --add-data "lx\stuff\*;lx\stuff\" LipidXplorer.py
 
-This will also create a zip archive of the `distpath` folder in the root directory of the project: `LipidXplorer-1.2.8.zip`.
+or
+
+     pyinstaller pyinstaller.spec
+
+
 
 ## Versioning
 
