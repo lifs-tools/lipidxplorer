@@ -3463,9 +3463,6 @@ class TypeResult:
 			# function is sorted by errppm but not absolute errppm
 			# Another approach would be to find the code, where self.dictQuery[query].listVariables is sorted
 			# originally.
-			# But for now, going through this haiduken spagetthi code, I feel OK with just hard coding some patchworky
-			# workaround and not digging deeper into the abyss of heaps of redundant, dead end, not commented, commented
-			# out, obsolete, deprecated, un-pythonic and all together incomprehensive code.
 
 			# DEBUG old listVars code:
 			#listVar = []

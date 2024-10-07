@@ -2165,7 +2165,7 @@ intensity."""))
 
 	def OnMenuLipidXDocumentation(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Documentation')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php?title=Main_Page')
 
 	def OnMenuMFQLTutorial(self, evt):
 
