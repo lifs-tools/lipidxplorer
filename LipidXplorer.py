@@ -3,7 +3,11 @@ from lx.gui import lpdxGUI
 import wx
 import sys
 
-os.chdir(sys._MEIPASS)
+try:
+	# for pyinstaller: https://stackoverflow.com/questions/22472124/what-is-sys-meipass-in-python
+	os.chdir(sys._MEIPASS)
+except:
+	pass
 
 
 class MyApp(wx.App):
