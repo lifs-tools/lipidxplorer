@@ -200,8 +200,6 @@ class TypeMFQL:
 
 		### TODO: the empty variables have to be added somewhere here###
 
-		# DEBUG: all 5 possible results are made here and end up to be "theResult". The wrong and the right included
-
 		loopResults = surveyEntry.listScanEntries
 		surveyEntry.listScanEntries = []
 
@@ -2641,8 +2639,6 @@ class TypeResult:
 
 
 	def generateReport(self, options = {}):
-		# DEBUG: Output created here!
-		# tmpRpt is always already with false output errppm=67.34, so is rpt
 
 		noString = re.compile(r'\[(\w+)\]', re.VERBOSE)
 
@@ -2652,7 +2648,6 @@ class TypeResult:
 		# every query
 		for query in self.dictQuery.values():
 
-			# DEBUG: Here, already just the wrong Output is found in listVariables, all other are already sorted out
 			self.mfqlObj.currQuery = query
 			self.mfqlObj.queryName = query.name
 
@@ -2839,7 +2834,6 @@ class TypeResult:
 				# append the dict entry to the result list
 
 				if boolAdd:
-					# DEBUG: rpt is added only once with the wrong value
 					query.listReportOut.append(rpt)
 
 		# if there are results, then there is a self.listHead
@@ -3454,7 +3448,7 @@ class TypeResult:
 
 		for query in self.dictQuery:
 
-			# DEBUG SOLUTION (?)
+			# DEBUG SOLUTION
 			# before, the output list (self.dictQuery[query].listVariables) was always just populated with the first
 			# element in this line:
 			# listVar_noPermutations = [listVar[0]]
@@ -3466,12 +3460,18 @@ class TypeResult:
 			# DEBUG old listVars code:
 			#listVar = []
 			#for i in self.dictQuery[query].listVariables:
-			#	listVar.append(sorted(i.items(), key = lambda x : x[1].mass))
+		    #		listVar.append(sorted(i.items(), key = lambda x : x[1].mass))
 
 			# DEBUG: this changed listVar is sorted by absolute errppm
+			#listVar = []
+			#for i in sorted(self.dictQuery[query].listVariables, key=lambda d: abs(list(d.values())[1].errppm)):
+		    #	listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
+
 			listVar = []
-			for i in sorted(self.dictQuery[query].listVariables, key=lambda d: abs(list(d.values())[1].errppm)):
+			for i in sorted(self.dictQuery[query].listVariables,
+							key=lambda d: abs(next(value for key, value in d.items() if key.endswith('_PR')).errppm)):
 				listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
+
 
 			# if there are no variables, we don't need to do anything
 			if len(listVar) > 0:

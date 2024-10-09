@@ -552,7 +552,6 @@ def p_identification_normal_old(p):
 			mfqlObj.result.dictQuery[mfqlObj.queryName] = query
 
 		if mfqlObj.parsePart == 'report':
-			# DEBUG never reached
 			mfqlObj.result.dictQuery[mfqlObj.queryName].listVariables = p[6]
 
 def p_identification_normal_new(p):
@@ -561,7 +560,6 @@ def p_identification_normal_new(p):
 
 	### next the report is generated ###
 	if mfqlObj.parsePart == 'genTargetList':
-		# DEBUG never called
 		genMasterScan(mfqlObj)
 
 	elif mfqlObj.parsePart == 'identification':
@@ -577,7 +575,6 @@ def p_identification_normal_new(p):
 		print "%.2f sec." % time.clock()
 
 	if len(p) == 6:
-		# DEBUG always 6
 
 		mfqlObj.suchthatApplied = False
 		if mfqlObj.parsePart == 'identification':
@@ -589,7 +586,6 @@ def p_identification_normal_new(p):
 
 
 	if len(p) == 7:
-		# DEBUG: never reached
 
 		mfqlObj.suchthatApplied = True
 		if mfqlObj.parsePart == 'identification':
@@ -600,7 +596,6 @@ def p_identification_normal_new(p):
 			mfqlObj.result.dictQuery[mfqlObj.queryName] = query
 
 		if mfqlObj.parsePart == 'report':
-			# DEBUG never reached
 			mfqlObj.result.dictQuery[mfqlObj.queryName].listVariables = p[4]
 
 
@@ -751,8 +746,6 @@ def p_bterm(p):
 
 	# apply SUCHTHAT filter if vars were found
 	if mfqlObj.parsePart == 'report':
-
-		# DEBUG never reached
 
 		print "testing constraints of SUCHTHAT ...",
 		report = []
@@ -1111,8 +1104,6 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	options = mfqlObj.options
 
 	if mode == 'generateTargetList':
-		# DEBUG not entered
-
 		###  ###
 		for k in dictData.keys():
 
@@ -1129,15 +1120,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 	### do the IDENTIFY(cation) ###
 
-	# DEBUG
-	# mfqlObj.resultSC empty
-	# mfqlObj.result.dictQuery empty on the first, but not on the second visit (???)
-	# hence mfqlObj.result.dictQuery['PCSplash'].listVariables empty
-	# hence mfqlObj.result.dictQuery['PCSplash'].listReportOut empty
-
 	for k in dictData.keys():
-
-		# DEBUG this loop identifies the precursors
 
 		mfqlObj.filename = k
 		numQueries = 0
@@ -1148,14 +1131,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 		mfqlObj.reset()
 
-	# DEBUG
-	# [No change] mfqlObj.resultSC empty
-	# [No change]  mfqlObj.result.dictQuery exists with
-	# [No change]  mfqlObj.result.dictQuery['PCSplash'].listVariables empty
-	# [No change]  mfqlObj.result.dictQuery['PCSplash'].listReportOut empty
-
 	if isotopicCorrectionMS:
-		# DEBUG entered
 		#mfqlObj.result.isotopicCorrectionMSMS()
 		print "type II isotopic correction in MS ...",
 		mfqlObj.result.isotopicCorrectionMS()
@@ -1171,11 +1147,6 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	else:
 		print "type II isotopic correction for MS is switched off"
 
-	# DEBUG
-	# [No change] mfqlObj.resultSC empty
-	# [No change]  mfqlObj.result.dictQuery exists with
-	# [No change]  mfqlObj.result.dictQuery['PCSplash'].listVariables empty
-	# [No change]  mfqlObj.result.dictQuery['PCSplash'].listReportOut empty
 
 	# testwise put it here before MS/MS correction, because MS/MS correction has to
 	# note the change first
@@ -1183,14 +1154,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	mfqlObj.result.generateResultSC()
 	print "%.2f sec." % time.clock()
 
-	# DEBUG
-	# [CHANGE!] mfqlObj.resultSC contains 5 entries, among the correct and the falsely chosen one
-	# [No change]  mfqlObj.result.dictQuery exists with
-	# [No change]  mfqlObj.result.dictQuery['PCSplash'].listVariables empty
-	# [No change]  mfqlObj.result.dictQuery['PCSplash'].listReportOut empty
-
 	if isotopicCorrectionMSMS:
-		# DEBUG entered
 		print "type II isotopic correction in MS/MS ...",
 		mfqlObj.result.isotopicCorrectionMSMS()
 		print "%.2f sec." % time.clock()
@@ -1200,40 +1164,20 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	if not Debug("noMonoisotopicCorrection"):
 		print "type I isotopic correction in MS and MS/MS ...",
 		if isotopicCorrectionMS or isotopicCorrectionMSMS:
-			# DEBUG entered
 			mfqlObj.result.correctMonoisotopicPeaks()
 		print "%.2f sec." % time.clock()
 
 	if Debug("removeIsotopes"):# and (isotopicCorrectionMS or isotopicCorrectionMSMS):
-		# DEBUG not entered
 		mfqlObj.result.removeIsotopicCorrected()
-
-	# DEBUG (also 2 visits with no changes (???))
-	# [No change] mfqlObj.resultSC contains 5 entries, among the correct and the falsely chosen one
-	# [No change] mfqlObj.result.dictQuery exists with
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listVariables empty
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listReportOut empty
 
 	print "generate query result MasterScans ...",
 	mfqlObj.result.generateQueryResultSC()
 	print "%.2f sec." % time.clock()
 
-	# DEBUG
-	# [No change] mfqlObj.resultSC contains 5 entries, among the correct and the falsely chosen one
-	# [No change] mfqlObj.result.dictQuery exists with
-	# [CHANGE!] mfqlObj.result.dictQuery['PCSplash'].listVariables contains 5 entries (list of dicts with keys "PCSplash_PR <TypeMarked>), ordered by errppm
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listReportOut empty
-
 	# check for isobaric species
 	print "checking if there are isobaric species ...",
 	mfqlObj.result.checkIsobaricSpeciesBeforeSUCHTHAT()
 	print "%.2f sec." % time.clock()
-
-	# DEBUG (also 2 visits with no changes (???))
-	# [No change] mfqlObj.resultSC contains 5 entries, among the correct and the falsely chosen one
-	# [No change] mfqlObj.result.dictQuery exists with
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listVariables contains 5 entries (list of dicts with keys "PCSplash_PR <TypeMarked>), ordered by errppm
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listReportOut empty
 
 	### do the REPORT ###
 	for k in dictData.keys():
@@ -1245,12 +1189,6 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		lexer.lineno = 1
 		parser.parse(dictData[k], lexer = lexer, tracking = True)
 
-	# DEBUG
-	# [No change] mfqlObj.resultSC contains 5 entries, among the correct and the falsely chosen one
-	# [No change] mfqlObj.result.dictQuery exists with
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listVariables contains 5 entries (list of dicts with keys "PCSplash_PR <TypeMarked>), ordered by errppm
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listReportOut empty
-
 	if complementSC:
 
 		print "generate complement MasterScan ..."
@@ -1260,31 +1198,14 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	if options['noPermutations']:
 		mfqlObj.result.removePermutations()
 
-	# DEBUG
-	# [No change] mfqlObj.resultSC contains 5 entries, among the correct and the falsely chosen one
-	# [No change] mfqlObj.result.dictQuery exists with
-	# [CHANGE!] mfqlObj.result.dictQuery['PCSplash'].listVariables contains 1 entry, the wrong one
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listReportOut empty
-
 	print "checking if there are still isobaric species ...",
 	mfqlObj.result.checkIsobaricSpeciesAfterSUCHTHAT()
 	print "%.2f sec." % time.clock()
-
-	# DEBUG
-	# [No change] mfqlObj.resultSC contains 5 entries, among the correct and the falsely chosen one
-	# [No change] mfqlObj.result.dictQuery exists with
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listVariables contains 1 entry, the wrong one
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listReportOut empty
 
 	print "generate report ...",
 	mfqlObj.result.generateReport(options)
 	print "%.2f sec." % time.clock()
 
-	# DEBUG
-	# [No change] mfqlObj.resultSC contains 5 entries, among the correct and the falsely chosen one
-	# [No change] mfqlObj.result.dictQuery exists with
-	# [No change] mfqlObj.result.dictQuery['PCSplash'].listVariables contains 5 entries (list of dicts with keys "PCSplash_PR <TypeMarked>), ordered by errppm
-	# [CHANGE!] mfqlObj.result.dictQuery['PCSplash'].listReportOut contains false output
 
 	if generateStatistics and mfqlObj.result.mfqlOutput:
 		print "generate statistics ...",

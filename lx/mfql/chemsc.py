@@ -454,7 +454,6 @@ class ElementSequence:
 
 		return self._db
 
-	# DEBUG the bug happens way before here
 	def getWeight(self, truemz = False):
 
 		if self._weight == 0.0:

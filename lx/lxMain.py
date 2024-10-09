@@ -134,9 +134,6 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	else:
 		mfqlObj.outputSeperator = ','
 
-	# parse input file k and save the result in mfqlObj.result
-	# DEBUG: startParsing creates the result
-
 	(progressCount, returnValue) = startParsing(mfqlFiles,
 				mfqlObj,
 				masterscan,
@@ -179,8 +176,6 @@ def startMFQL(options = {}, queries = {}, parent = None):
 		# free 'k' because otherwise Python keeps all
 		# the SurveyEntries. Don't ask me why...
 		del k
-
-		# DEBUG: strResult carries the output
 
 		# put out
 		if not options['resultFile']:

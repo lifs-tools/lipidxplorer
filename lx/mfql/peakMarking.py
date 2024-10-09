@@ -95,7 +95,6 @@ class TypeScan:
 		for mo in self.scanTerm:
 			groups.append([])
 
-		# DEBUG: illegal iteration
 		for se in self.mfqlObj.sc.listSurveyEntry:
 
 			for indexM in range(len(self.scanTerm)):
@@ -326,8 +325,6 @@ class TypeScan:
 										errppm = (-((m.elementSequence.getWeight() - se.precurmass) * 1000000) / se.precurmass) * abs(se.charge)
 										errda = -(m.elementSequence.getWeight() - se.precurmass) * abs(se.charge)
 									else:
-										# DEBUG errppm = ~ -67.34 found
-										# correct candidate found
 										errppm = (-((m.elementSequence.getWeight() - se.precurmass) * 1000000) / se.precurmass)
 										errda = -(m.elementSequence.getWeight() - se.precurmass)
 
