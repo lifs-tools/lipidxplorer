@@ -148,9 +148,6 @@ def startMFQL(options = {}, queries = {}, parent = None):
 				generateStatistics = options['statistics'],
 				)
 
-	# DEBUG after this, the result is in mfqlObj.result.dictQuery...
-	data_matrix = mfqlObj.result.dictQuery['PCSplash'].dataMatrix
-
 	if parent:
 		if returnValue == parent.CONST_THREAD_USER_ABORT:
 			return parent.CONST_THREAD_USER_ABORT

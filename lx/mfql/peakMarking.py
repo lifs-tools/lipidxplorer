@@ -329,8 +329,6 @@ class TypeScan:
 										# DEBUG errppm = ~ -67.34 found
 										# correct candidate found
 										errppm = (-((m.elementSequence.getWeight() - se.precurmass) * 1000000) / se.precurmass)
-										tmp_weight = m.elementSequence.getWeight()
-										tmp_prmass = se.precurmass
 										errda = -(m.elementSequence.getWeight() - se.precurmass)
 
 									if errppm != 0:

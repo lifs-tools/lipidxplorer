@@ -2841,7 +2841,6 @@ class TypeResult:
 				if boolAdd:
 					# DEBUG: rpt is added only once with the wrong value
 					query.listReportOut.append(rpt)
-					rpt = odict()
 
 		# if there are results, then there is a self.listHead
 		if self.listHead:
