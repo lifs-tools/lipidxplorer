@@ -3463,7 +3463,7 @@ class TypeResult:
 			# MS1 only
 			if all("_FR" not in key for key in self.dictQuery[query].listVariables[0].keys()):
 				for i in self.dictQuery[query].listVariables:
-					listVar.append(sorted(i.items(), key = lambda x : x[1].mass))
+					listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
 
 			# with MS2
 			else:
@@ -3503,13 +3503,16 @@ class TypeResult:
 					if not isIn:
 						listVar_noPermutations.append(i)
 
+				# FIX
+				# if MS1 is only applied, sort by mass
+				if any("_FR" in key for key in self.dictQuery[query].listVariables[0].keys()):
+					listVar_noPermutations = sorted(listVar_noPermutations, key=lambda x: x[1][1].mass)
+				# /FIX
+
 				self.dictQuery[query].listVariables = []
 
-				# TODO sort listVar_noPermutations by mass
-				print listVar_noPermutations
-
-				for i in listVar_noPermutations:
-					self.dictQuery[query].listVariables.append(dict(i))
+				# Append the sorted elements to self.dictQuery[query].listVariables
+				self.dictQuery[query].listVariables = [dict(i) for i in listVar_noPermutations]
 
 class TypeQuery:
 
