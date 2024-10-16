@@ -3448,20 +3448,16 @@ class TypeResult:
 
 		for query in self.dictQuery:
 
-			# DEBUG SOLUTION
+			# DEBUG explanation
 			# before, the output list (self.dictQuery[query].listVariables) was always just populated with the first
 			# element in this line:
 			# listVar_noPermutations = [listVar[0]]
-			# which always was the one with the lowest errppm, as self.dictQuery[query].listVariables before this
-			# function is sorted by errppm but not absolute errppm
+			# which was always the one with the lowest errppm, as self.dictQuery[query].listVariables before this
+			# function is sorted by errppm ascending but not absolute errppm
 			# Another approach would be to find the code, where self.dictQuery[query].listVariables is sorted
 			# originally.
 
-			# DEBUG old listVars code:
-			#listVar = []
-			#for i in self.dictQuery[query].listVariables:
-		    #		listVar.append(sorted(i.items(), key = lambda x : x[1].mass))
-
+			# FIX
 			listVar = []
 
 			# MS1 only
@@ -3474,7 +3470,7 @@ class TypeResult:
 				for i in sorted(self.dictQuery[query].listVariables,
 								key=lambda d: abs(next(value for key, value in d.items() if key.endswith('_PR')).errppm)):
 					listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
-
+			# /FIX
 
 			# if there are no variables, we don't need to do anything
 			if len(listVar) > 0:
@@ -3490,11 +3486,11 @@ class TypeResult:
 						lists_are_same = True
 						for index in range(len(i)):
 
-							# DEBUG: in here, all following entries are sorted out, because they have the same
+							# DEBUG explanation: in here, all following entries are sorted out, because they have the same
 							# chemical structure. The only one left, was the one with lowest errppm but not absolute
 							# lowest errpm
 
-							# DEBUG: this always holds, hence lists_are_same is always True
+							# DEBUG explanation: this always holds, hence lists_are_same is always True
 							if i[index][1].chemsc != j[index][1].chemsc:
 								lists_are_same = False
 								break
@@ -3503,11 +3499,15 @@ class TypeResult:
 							isIn = True
 							break
 
-					# DEBUG: therefore, this is never met
+					# DEBUG explanation: therefore, this is never met
 					if not isIn:
 						listVar_noPermutations.append(i)
 
 				self.dictQuery[query].listVariables = []
+
+				# TODO sort listVar_noPermutations by mass
+				print listVar_noPermutations
+
 				for i in listVar_noPermutations:
 					self.dictQuery[query].listVariables.append(dict(i))
 
