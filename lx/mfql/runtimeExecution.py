@@ -3506,7 +3506,7 @@ class TypeResult:
 				# FIX
 				# if MS1 is only applied, sort by mass
 				if any("_FR" in key for key in self.dictQuery[query].listVariables[0].keys()):
-					listVar_noPermutations = sorted(listVar_noPermutations, key=lambda x: x[1][1].mass)
+					listVar_noPermutations = sorted(listVar_noPermutations, key=lambda x: x[-1][1].mass)
 				# /FIX
 
 				self.dictQuery[query].listVariables = []
