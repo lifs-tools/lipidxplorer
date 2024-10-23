@@ -3460,17 +3460,18 @@ class TypeResult:
 			# FIX
 			listVar = []
 
-			# MS1 only
-			if all("_FR" not in key for key in self.dictQuery[query].listVariables[0].keys()):
-				for i in self.dictQuery[query].listVariables:
-					listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
+			if self.dictQuery[query].listVariables:
+				# MS1 only
+				if all("_FR" not in key for key in self.dictQuery[query].listVariables[0].keys()):
+					for i in self.dictQuery[query].listVariables:
+						listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
 
-			# with MS2
-			else:
-				for i in sorted(self.dictQuery[query].listVariables,
-								key=lambda d: abs(next(value for key, value in d.items() if key.endswith('_PR')).errppm)):
-					listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
-			# /FIX
+				# with MS2
+				else:
+					for i in sorted(self.dictQuery[query].listVariables,
+									key=lambda d: abs(next(value for key, value in d.items() if key.endswith('_PR')).errppm)):
+						listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
+				# /FIX
 
 			# if there are no variables, we don't need to do anything
 			if len(listVar) > 0:
