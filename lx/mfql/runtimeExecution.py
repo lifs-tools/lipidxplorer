@@ -3460,16 +3460,20 @@ class TypeResult:
 			# FIX
 			listVar = []
 
+			a = self.dictQuery[query].listVariables
+
+
 			if self.dictQuery[query].listVariables:
+				# note that the Precursor is identified by MS1+ scope and Fragment (from MSMS) is identified by MS2+
+
 				# MS1 only
-				if all("_FR" not in key for key in self.dictQuery[query].listVariables[0].keys()):
+				if all(v.scope == "MS1+" for v in self.dictQuery[query].listVariables[0].values()):
 					for i in self.dictQuery[query].listVariables:
 						listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
 
 				# with MS2
 				else:
-					for i in sorted(self.dictQuery[query].listVariables,
-									key=lambda d: abs(next(value for key, value in d.items() if key.endswith('_PR')).errppm)):
+					for i in sorted(self.dictQuery[query].listVariables, key=lambda d: abs(next(v for v in d.values() if v.scope == "MS1+").errppm)):
 						listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
 				# /FIX
 
@@ -3505,9 +3509,8 @@ class TypeResult:
 						listVar_noPermutations.append(i)
 
 				# FIX
-				# if MS1 is only applied, sort by mass
-				if any("_FR" in key for key in self.dictQuery[query].listVariables[0].keys()):
-					listVar_noPermutations = sorted(listVar_noPermutations, key=lambda x: x[-1][1].mass)
+				# sort by mass after permutations are removed
+				listVar_noPermutations = sorted(listVar_noPermutations, key=lambda x: x[-1][1].mass)
 				# /FIX
 
 				self.dictQuery[query].listVariables = []
