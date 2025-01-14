@@ -3449,22 +3449,21 @@ class TypeResult:
 		for query in self.dictQuery:
 
 			# DEBUG explanation
-			# before, the output list (self.dictQuery[query].listVariables) was always just populated with the first
-			# element in this line:
-			# listVar_noPermutations = [listVar[0]]
-			# which was always the one with the lowest errppm, as self.dictQuery[query].listVariables before this
-			# function is sorted by errppm ascending but not absolute errppm
+			# Before the fix, the output list (self.dictQuery[query].listVariables) was initially populated with the
+			# first element of listVar (in this line listVar_noPermutations = [listVar[0]]).
+			# This was element was the one with the lowest value of errppm, as self.dictQuery[query].listVariables
+			# before it is processed in this function is sorted by errppm ascending but not by absolute errppm!
+			# This is fixed here (in both FIX blocks) by appending the values to listVar in order of lowest absolute
+			# errppm ascending. All permutations with the same chemical structure are removed afterward.
+
 			# Another approach would be to find the code, where self.dictQuery[query].listVariables is sorted
 			# originally.
 
 			# FIX
 			listVar = []
 
-			a = self.dictQuery[query].listVariables
-
-
 			if self.dictQuery[query].listVariables:
-				# note that the Precursor is identified by MS1+ scope and Fragment (from MSMS) is identified by MS2+
+				# Note that the Precursor is identified by the scope attribute as "MS1+" and "MS2+" (MSMS) respectively.
 
 				# MS1 only
 				if all(v.scope == "MS1+" for v in self.dictQuery[query].listVariables[0].values()):
@@ -3491,9 +3490,9 @@ class TypeResult:
 						lists_are_same = True
 						for index in range(len(i)):
 
-							# DEBUG explanation: in here, all following entries are sorted out, because they have the same
-							# chemical structure. The only one left, was the one with lowest errppm but not absolute
-							# lowest errpm
+							# DEBUG explanation: in here, all following entries are sorted out, because they have the
+							# same chemical structure. The only one left, was the one with lowest errppm but not
+							# absolute lowest errpm.
 
 							# DEBUG explanation: this always holds, hence lists_are_same is always True
 							if i[index][1].chemsc != j[index][1].chemsc:
@@ -3509,7 +3508,7 @@ class TypeResult:
 						listVar_noPermutations.append(i)
 
 				# FIX
-				# sort by mass after permutations are removed
+				# sort by mass after permutations are removed for more convenient output
 				listVar_noPermutations = sorted(listVar_noPermutations, key=lambda x: x[-1][1].mass)
 				# /FIX
 
