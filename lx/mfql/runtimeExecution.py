@@ -3472,7 +3472,7 @@ class TypeResult:
 
 				# with MS2
 				else:
-					for i in sorted(self.dictQuery[query].listVariables, key=lambda d: abs(next(v for v in d.values() if v.scope == "MS1+").errppm)):
+					for i in sorted(self.dictQuery[query].listVariables, key=lambda d: abs(next(v for v in d.values() if v.scope in ["MS1+", "MS1-"]).errppm)):
 						listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
 				# /FIX
 
