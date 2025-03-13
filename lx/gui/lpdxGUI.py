@@ -1609,9 +1609,9 @@ intensity."""))
 		strTT = """Set the resolution of the acquired spectra according to mass spec settings.
 \nNOTE that this resolution referes to the smalles mass in the spectra. The change of resolution for greater masses is handled with the 'resolution gradien' below."""
 		self.label_SettingsSection_resolution.SetToolTip(wx.ToolTip(strTT))
-		self.label_SettingsSection_resolution_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "FMHW")
+		self.label_SettingsSection_resolution_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "FWHM")
 		self.label_SettingsSection_resolution_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
-		self.label_SettingsSection_resolution_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "FMHW")
+		self.label_SettingsSection_resolution_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "FWHM")
 		self.label_SettingsSection_tolerance = wx.StaticText(self.notebook_1_pane_5, -1, "tolerance")
 		self.label_SettingsSection_tolerance.SetToolTip(wx.ToolTip("Set the accuracy of the acquired masses according to mass spec settings"))
 		self.label_SettingsSection_tolerance_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
