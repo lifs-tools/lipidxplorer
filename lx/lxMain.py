@@ -96,7 +96,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 				#mfqlFiles[arg] = open(arg, 'r').read()
 				with open(queries[arg], 'r') as mfqlFile:
 					mfqlFiles[arg] = mfqlFile.read()
-
+	print "mfqlFiles in startMFQL", mfqlFiles
 	print "\n****** Starting MFQL interpretation ******\n"
 
 	# collect masterscan file

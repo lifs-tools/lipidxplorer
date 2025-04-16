@@ -445,7 +445,7 @@ def p_varcontent_string(p):
 
 def p_varcontent_sfstring(p):
 	'''varcontent : SFSTRING'''
-
+	print " p_varcontent_sfstring  p.................",p[1]
 	es = parseElemSeq(p[1].strip('\''))
 	if isinstance(es, SCConstraint):
 		p[0] = TypeSFConstraint(elementSequence = es)
@@ -1102,7 +1102,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	gprogressCount = progressCount
 
 	options = mfqlObj.options
-
+	#print "mfqlFiles/dictData in mfqlParser.py..........", dictData
 	if mode == 'generateTargetList':
 		###  ###
 		for k in dictData.keys():

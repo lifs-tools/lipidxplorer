@@ -749,7 +749,7 @@ class SCConstraint(ElementSequence):
 				t = m / tolerance.tolerance
 		else:
 			t = m / tolerance
-
+		#print "Tolarance in solveWithCalcSF()...........: ", t
 		elemC = self.get_element('C')
 		elemH = self.get_element('H')
 		elemO = self.get_element('O')
@@ -1062,7 +1062,7 @@ def calcSFbyMass(mass, sfconstraint, tolerance, nearest=False):
 	nearest in Boolean
 OUT: list of SurveyEntry
 """
-
+	#print "calcSFbyMass......... mass, sfconstraint, tolerance, nearest ", mass,sfconstraint, tolerance,nearest
 	if not sfconstraint:
 		raise "No SF given"
 

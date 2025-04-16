@@ -1034,7 +1034,7 @@ class LpdxFrame(wx.Frame):
 		# allow import of raw files?
 		self.rawimport = kwds['rawimport']
 
-		self.supportedFileTypes = ['mzML', 'mzXML']
+		self.supportedFileTypes = ['mzML', 'mzXML', 'csv']
 		self.defaultFileType = 'mzML'
 		self.rawToolTip = ""
 
@@ -4119,7 +4119,7 @@ intensity."""))
 
 		strDB = ' db(%.1f,%.1f)' % (float(lowerDB), float(higherDB))
 
-		t = float(mass) / ((float(mass) / 100000) * float(accuracy))
+		t = float(mass) / ((float(mass) / 1000000) * float(accuracy))## 21.02.25:Ballal chacged the value to 1000000. Before it was 100000
 
 		elscp = parseElemSeq(sf_constraint + strDB + charge)
 		rslt = calcSFbyMass(float(mass), elscp, t, False)
@@ -4128,7 +4128,7 @@ intensity."""))
 			outtext = "No sum composition found for %s with m/z %.4f" % (elscp, float(mass))
 
 		for i in rslt:
-			outtext = "m/z: %.4f sc: %s error: %.4f ppm" % (
+			outtext = "m/z: %.4f sc: %s error: %.4f Da" % ( ## 21.02.25:Ballal chacged the error in Da. Before it was ppm
 					i.getWeight(),
 					i,
 					(float(mass) - i.getWeight()))
