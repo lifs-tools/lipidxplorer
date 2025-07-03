@@ -1321,19 +1321,6 @@ def add_DTASample(sc, sampleDir, sampleName, MSmassrange = None, MSMSmassrange =
 					if mcsv.match(namef):
 						csv = root + os.sep + namef
 
-
-#					lpdxTools.log("loading %s from %s" % (name, root))
-
-#			if csv != "" and dta:
-#				sampleDir = (csv, root)
-#			elif dta:
-#				sampleDir = ("", root)
-#			elif csv != "":
-#				sampleDir = (csv, "")
-
-#			csv = ""
-#			dta = False
-
 			# unpack experiment
 			dirmsms = sampleDir
 
