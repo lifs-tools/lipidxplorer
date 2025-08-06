@@ -585,6 +585,7 @@ def dumpObjTree( name, value ):
 	browser = Browser( name, value )
 	gtk.main()
 
+
 def dbgout(text):
 	#print "[%s] %s" % (sys._getframe(1).f_code.co_name, text)
 	print text
