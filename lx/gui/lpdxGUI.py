@@ -1609,9 +1609,9 @@ intensity."""))
 		strTT = """Set the resolution of the acquired spectra according to mass spec settings.
 \nNOTE that this resolution referes to the smalles mass in the spectra. The change of resolution for greater masses is handled with the 'resolution gradien' below."""
 		self.label_SettingsSection_resolution.SetToolTip(wx.ToolTip(strTT))
-		self.label_SettingsSection_resolution_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "FMHW")
+		self.label_SettingsSection_resolution_ms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "FWHM")
 		self.label_SettingsSection_resolution_msms = wx.StaticText(self.notebook_1_pane_5, -1, "MS/MS")
-		self.label_SettingsSection_resolution_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "FMHW")
+		self.label_SettingsSection_resolution_msms_unit = wx.StaticText(self.notebook_1_pane_5, -1, "FWHM")
 		self.label_SettingsSection_tolerance = wx.StaticText(self.notebook_1_pane_5, -1, "tolerance")
 		self.label_SettingsSection_tolerance.SetToolTip(wx.ToolTip("Set the accuracy of the acquired masses according to mass spec settings"))
 		self.label_SettingsSection_tolerance_ms = wx.StaticText(self.notebook_1_pane_5, -1, "MS")
@@ -2165,31 +2165,31 @@ intensity."""))
 
 	def OnMenuLipidXDocumentation(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Documentation')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php?title=Main_Page')
 
 	def OnMenuMFQLTutorial(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_MFQL#A_short_tutorial')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php/LipidXplorer_MFQL#A_short_tutorial')
 
 	def OnMenuMFQLReference(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_MFQL#The_4_sections_of_a_MFQL_query')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php/Main_Page#Citing_LipidXplorer')
 
 	def OnMenuHelpImportSettings(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Usage#Machine_specific_settings')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php?title=LipidXplorer_Reference#Importing_mass_spectra_into_LipidXplorer')
 
 	def OnMenuHelpRun(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Usage#Run_queries_on_the_MasterScan')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php?title=LipidXplorer_Reference#Run_queries_on_the_MasterScan')
 
 	def OnMenuHelpMSTools(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Usage#The_MS-Tools_panel')
+		webbrowser.open('https://lifs-tools.org/wiki/index.php?title=LipidXplorer_Reference#The_MS-Tools_panel')
 
 	def OnMenuAbout(self, evt):
 
-		webbrowser.open('https://lifs.isas.de/wiki/index.php/LipidX_Preface')
+		webbrowser.open('https://lifs-tools.org/lipidxplorer.html')
 
 	def OnTextEnter(self, evt):
 

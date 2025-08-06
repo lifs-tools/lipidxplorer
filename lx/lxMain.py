@@ -134,7 +134,6 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	else:
 		mfqlObj.outputSeperator = ','
 
-	# parse input file k and save the result in mfqlObj.result
 	(progressCount, returnValue) = startParsing(mfqlFiles,
 				mfqlObj,
 				masterscan,

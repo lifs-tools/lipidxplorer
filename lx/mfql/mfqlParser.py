@@ -559,7 +559,6 @@ def p_identification_normal_new(p):
 		  			  | IDENTIFY marks evalMarks REPORT report'''
 
 	### next the report is generated ###
-
 	if mfqlObj.parsePart == 'genTargetList':
 		genMasterScan(mfqlObj)
 
@@ -575,7 +574,6 @@ def p_identification_normal_new(p):
 			mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
 		print "%.2f sec." % time.clock()
 
-
 	if len(p) == 6:
 
 		mfqlObj.suchthatApplied = False
@@ -585,6 +583,7 @@ def p_identification_normal_new(p):
 							report = p[5])
 
 			mfqlObj.result.dictQuery[mfqlObj.queryName] = query
+
 
 	if len(p) == 7:
 
@@ -1105,7 +1104,6 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	options = mfqlObj.options
 
 	if mode == 'generateTargetList':
-
 		###  ###
 		for k in dictData.keys():
 
@@ -1121,6 +1119,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		saveMasterScan(mfqlObj)
 
 	### do the IDENTIFY(cation) ###
+
 	for k in dictData.keys():
 
 		mfqlObj.filename = k
@@ -1148,31 +1147,16 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	else:
 		print "type II isotopic correction for MS is switched off"
 
+
 	# testwise put it here before MS/MS correction, because MS/MS correction has to
 	# note the change first
 	print "generating result MasterScan ...",
 	mfqlObj.result.generateResultSC()
 	print "%.2f sec." % time.clock()
 
-	## debugging ###
-	#for se in mfqlObj.result.mfqlObj.resultSC:
-		#for msmse in se.listMSMS:
-		#	print msmse.mass, msmse.listMark
-		#	for mark in msmse.listMark:
-		#		print mark.name, [x.precurmass for x in mark.se], mark.frsc, mark.nlsc
-		#		print mark.intensity
-
 	if isotopicCorrectionMSMS:
 		print "type II isotopic correction in MS/MS ...",
 		mfqlObj.result.isotopicCorrectionMSMS()
-
-		#gprogressCount += 1
-		#if parent:
-		#	(cont, skip) = parent.debug.progressDialog.Update(gprogressCount)
-		#	if not cont:
-		#		parent.debug.progressDialog.Destroy()
-		#		return parent.CONST_THREAD_USER_ABORT
-
 		print "%.2f sec." % time.clock()
 	else:
 		print "type II isotopic correction for MS/MS is switched off"
@@ -1190,13 +1174,6 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	mfqlObj.result.generateQueryResultSC()
 	print "%.2f sec." % time.clock()
 
-	#for q in mfqlObj.result.dictQuery.keys():
-	#	print ">>>", q
-	#	for se in mfqlObj.result.dictQuery[q]:
-	#		print ">>>", se
-	#		for msmse in se.listMSMS:
-	#			print ">>> >>>", len(msmse.listMark)
-
 	# check for isobaric species
 	print "checking if there are isobaric species ...",
 	mfqlObj.result.checkIsobaricSpeciesBeforeSUCHTHAT()
@@ -1204,9 +1181,6 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 	### do the REPORT ###
 	for k in dictData.keys():
-
-		#log.setLevel(logging.INFO)
-		#log.info("Processing %s", k, extra = func)
 
 		mfqlObj.filename = k
 
@@ -1217,30 +1191,12 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 	if complementSC:
 
-		#mfqlObj.result.isotopicCorrectionMSMS()
-		#print "de-isotoping MS ...",
-		#mfqlObj.result.deIsotopingMS_complement()
-		#print "%.2f sec." % time.clock()
-
-		#print "de-isotoping MS ...",
-		#mfqlObj.result.deIsotopingMSMS_complement()
-		#print "%.2f sec." % time.clock()
-
 		print "generate complement MasterScan ..."
 		mfqlObj.result.generateComplementSC()
 		print "%.2f sec." % time.clock()
 
 	if options['noPermutations']:
 		mfqlObj.result.removePermutations()
-
-	## debugging ###
-	#for se in mfqlObj.result.mfqlObj.resultSC:
-	#	print ">>>", se
-	#	for msmse in se.listMSMS:
-	#		print msmse.mass, msmse.listMark
-	#		for mark in msmse.listMark:
-	#			print mark.name, [x.precurmass for x in mark.se], mark.frsc, mark.nlsc
-	#			print mark.intensity
 
 	print "checking if there are still isobaric species ...",
 	mfqlObj.result.checkIsobaricSpeciesAfterSUCHTHAT()
@@ -1250,18 +1206,12 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	mfqlObj.result.generateReport(options)
 	print "%.2f sec." % time.clock()
 
+
 	if generateStatistics and mfqlObj.result.mfqlOutput:
 		print "generate statistics ...",
 		mfqlObj.result.generateStatistics(options)
 		print "%.2f sec." % time.clock()
 
-	#print "generate graphics ...",
-	#mfqlObj.result.generateGraphics()
-	#print "%.2f sec." % time.clock()
-
-		#if yacc.error:
-		#	print "ERROR", yacc.error
-		#	return None
 
 	del gprogressCount
 

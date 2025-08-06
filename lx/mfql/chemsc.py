@@ -13,6 +13,8 @@ from lx.mfql.runtimeStatic import TypeTolerance
 
 import platform
 
+print "PLATFORM: ", platform.machine()
+
 if platform.machine() == "i686":
 	if platform.python_version_tuple()[1] == '6': # Python 2.6
 		#import lx.mfql.calcsf26_32.calcsf26 as calcsf

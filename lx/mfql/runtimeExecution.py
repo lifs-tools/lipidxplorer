@@ -230,6 +230,7 @@ class TypeMFQL:
 
 		surveyEntry.listVariables += theResult
 
+
 	def genVariables_old(self, surveyEntry, plus_permutation = False):
 		'''This routine generates all combinations of fragments
 		for a precursor plus MS/MS. The problem are ambiguous
@@ -2724,6 +2725,7 @@ class TypeResult:
 								strCorr += ",%.9f" % attr
 							strCorr += ')'
 							str = eval(report[1] + ' % ' + strCorr)
+
 							rpt[report[0]] = str
 
 						else:
@@ -2830,9 +2832,9 @@ class TypeResult:
 				self.listHead = connectLists(self.listHead, query.reportHeads)
 
 				# append the dict entry to the result list
+
 				if boolAdd:
 					query.listReportOut.append(rpt)
-					rpt = odict()
 
 		# if there are results, then there is a self.listHead
 		if self.listHead:
@@ -3445,10 +3447,34 @@ class TypeResult:
 	def removePermutations(self):
 
 		for query in self.dictQuery:
+
+			# DEBUG explanation
+			# Before the fix, the output list (self.dictQuery[query].listVariables) was initially populated with the
+			# first element of listVar (in this line listVar_noPermutations = [listVar[0]]).
+			# This was element was the one with the lowest value of errppm, as self.dictQuery[query].listVariables
+			# before it is processed in this function is sorted by errppm ascending but not by absolute errppm!
+			# This is fixed here (in both FIX blocks) by appending the values to listVar in order of lowest absolute
+			# errppm ascending. All permutations with the same chemical structure are removed afterward.
+
+			# Another approach would be to find the code, where self.dictQuery[query].listVariables is sorted
+			# originally.
+
+			# FIX
 			listVar = []
-			for i in self.dictQuery[query].listVariables:
-				#listVar.append(sorted(i.items(), cmp = lambda x, y: cmp(x[1].mass, y[1].mass)))
-				listVar.append(sorted(i.items(), key = lambda x : x[1].mass))
+
+			if self.dictQuery[query].listVariables:
+				# Note that the Precursor is identified by the scope attribute as "MS1+" and "MS2+" (MSMS) respectively.
+
+				# MS1 only
+				if all(v.scope == "MS1+" for v in self.dictQuery[query].listVariables[0].values()):
+					for i in self.dictQuery[query].listVariables:
+						listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
+
+				# with MS2
+				else:
+					for i in sorted(self.dictQuery[query].listVariables, key=lambda d: abs(next(v for v in d.values() if v.scope in ["MS1+", "MS1-"]).errppm)):
+						listVar.append(sorted(i.items(), key=lambda x: x[1].mass))
+				# /FIX
 
 			# if there are no variables, we don't need to do anything
 			if len(listVar) > 0:
@@ -3463,6 +3489,12 @@ class TypeResult:
 						# compare two lists
 						lists_are_same = True
 						for index in range(len(i)):
+
+							# DEBUG explanation: in here, all following entries are sorted out, because they have the
+							# same chemical structure. The only one left, was the one with lowest errppm but not
+							# absolute lowest errpm.
+
+							# DEBUG explanation: this always holds, hence lists_are_same is always True
 							if i[index][1].chemsc != j[index][1].chemsc:
 								lists_are_same = False
 								break
@@ -3471,12 +3503,19 @@ class TypeResult:
 							isIn = True
 							break
 
+					# DEBUG explanation: therefore, this is never met
 					if not isIn:
 						listVar_noPermutations.append(i)
 
+				# FIX
+				# sort by mass after permutations are removed for more convenient output
+				listVar_noPermutations = sorted(listVar_noPermutations, key=lambda x: x[-1][1].mass)
+				# /FIX
+
 				self.dictQuery[query].listVariables = []
-				for i in listVar_noPermutations:
-					self.dictQuery[query].listVariables.append(dict(i))
+
+				# Append the sorted elements to self.dictQuery[query].listVariables
+				self.dictQuery[query].listVariables = [dict(i) for i in listVar_noPermutations]
 
 class TypeQuery:
 

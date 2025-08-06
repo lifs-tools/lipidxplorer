@@ -2725,7 +2725,7 @@ class TypeScan:
 			scanTermList.append(i.list())
 
 		self.mfqlObj.dictScanEntries[self.mfqlObj.queryName] = listResult
-
+		listResult
 		return listResult
 
 class TypeMark:
