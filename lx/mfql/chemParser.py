@@ -1,5 +1,5 @@
 # Parsers
-NAME, NUM, EOS, SP, NUMPAREN, RANGE, ENUM, SLPAREN, SRPAREN, SIMI, DB, CHARGE = range(12)
+NAME, NUM, EOS, SP, NUMPAREN, RANGE, ENUM, SLPAREN, SRPAREN, SIMI, DB, CHARGE = list(range(12))
 
 import re
 from lx.exceptions import LipidXException, SyntaxErrorException
@@ -72,7 +72,7 @@ def parse_sequence():
 	while ttype in (NAME, SP, RANGE, ENUM, DB, CHARGE):
 		# parenthesized expression or straight name
 		if ttype == NAME:
-			if sym2elt.has_key(tvalue):
+			if tvalue in sym2elt:
 				thisguy = deepcopy(sym2elt[tvalue])
 				#thisguy.set_count(1)
 			else:

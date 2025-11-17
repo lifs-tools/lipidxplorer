@@ -1,4 +1,4 @@
-import cPickle
+import pickle
 import re
 import wx
 import wx.lib.buttons as buttons
@@ -55,7 +55,7 @@ class DragList(wx.ListCtrl):
 			l.append(self.getItemInfo(idx))
 
 		# Pickle the items list.
-		itemdata = cPickle.dumps(l, 1)
+		itemdata = pickle.dumps(l, 1)
 		# create our own data format and use it in a
 		# custom data object
 		ldata = wx.CustomDataObject("ListCtrlItems")
@@ -145,7 +145,7 @@ class ListDrop(wx.PyDropTarget):
 		if self.GetData():
 			# convert it back to a list and give it to the viewer
 			ldata = self.data.GetData()
-			l = cPickle.loads(ldata)
+			l = pickle.loads(ldata)
 			self.dv._insert(x, y, l)
 
 		# what is returned signals the source what to do
@@ -221,7 +221,7 @@ class DragTree(wx.TreeCtrl):
 						#self.Delete(i[0])
 
 						## Create drop source and begin drag-and-drop.
-						itemdata = cPickle.dumps(i[1], 1)
+						itemdata = pickle.dumps(i[1], 1)
 						ldata = wx.CustomDataObject("ListCtrlItems")
 						ldata.SetData(itemdata)
 						data = wx.DataObjectComposite()
@@ -265,7 +265,7 @@ class DragTree(wx.TreeCtrl):
 				## Now make a data object for the  item list.
 
 				# Create drop source and begin drag-and-drop.
-				itemdata = cPickle.dumps(i, 1)
+				itemdata = pickle.dumps(i, 1)
 				ldata = wx.CustomDataObject("ListCtrlItems")
 				ldata.SetData(itemdata)
 				data = wx.DataObjectComposite()
@@ -405,7 +405,7 @@ class TreeDrop(wx.PyDropTarget):
 		if self.GetData():
 			# convert it back to a list and give it to the viewer
 			ldata = self.data.GetData()
-			l = cPickle.loads(ldata)
+			l = pickle.loads(ldata)
 			self.dv._insert(x, y, l)
 
 		# what is returned signals the source what to do
@@ -494,7 +494,7 @@ class ChooseGroupsFrame(wx.Dialog):
 		self.SetSizer(self.sizer_v)
 
 		from random import choice
-		from sys import maxint
+		from sys import maxsize
 
 		for item in self.items:
 			#self.dragList_left.InsertStringItem(maxint, item)

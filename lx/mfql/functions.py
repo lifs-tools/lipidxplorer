@@ -72,7 +72,7 @@ class InternFunctions:
 						currArguments[2].string]
 
 			# direct function call to post functions
-			if not self.mfqlObj.dictPostFuns.has_key(self.mfqlObj.queryName):
+			if self.mfqlObj.queryName not in self.mfqlObj.dictPostFuns:
 				self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {funName : funArgs}
 
 			return True
@@ -88,7 +88,7 @@ class InternFunctions:
 						currArguments[1].string]
 
 			# direct function call to post functions
-			if not self.mfqlObj.dictPostFuns.has_key(self.mfqlObj.queryName):
+			if self.mfqlObj.queryName not in self.mfqlObj.dictPostFuns:
 				self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {funName : funArgs}
 
 			return True
@@ -196,12 +196,12 @@ class InternFunctions:
 						# collect the intensities, get rid of double entries
 						# first argument is the intensity dictionary
 						sum = 0
-						for key in currArguments[0].dictIntensity.keys():
+						for key in list(currArguments[0].dictIntensity.keys()):
 							if currArguments[0].dictIntensity[key] != '-1':
 								sum += currArguments[0].dictIntensity[key]
 							else:
 								sum += 0
-						avg = sum / len(currArguments[0].dictIntensity.keys())
+						avg = sum / len(list(currArguments[0].dictIntensity.keys()))
 
 						# generate the result as TypeTmpResult
 						result = TypeTmpResult(
@@ -326,7 +326,7 @@ class InternFunctions:
 						# collect the intensities, get rid of double entries
 						# first argument is the intensity dictionary
 						sum = 0
-						for key in currArguments[0].dictIntensity.keys():
+						for key in list(currArguments[0].dictIntensity.keys()):
 							if currArguments[0].dictIntensity[key] != '-1':
 								currArguments[0].dictIntensity[key] = abs(currArguments[0].dictIntensity[key])
 
@@ -390,7 +390,7 @@ class InternFunctions:
 
 				# collect the intensities, get rid of double entries
 				toSum = [v[0]]
-				samples = v[0].dictIntensity.keys()
+				samples = list(v[0].dictIntensity.keys())
 				for i in v[1:]:
 					isIn = False
 					for j in toSum:
@@ -407,7 +407,7 @@ class InternFunctions:
 				for i in toSum:
 					isotopeMode = True
 					for k in samples:
-						if dictIntensityResult.has_key(k):
+						if k in dictIntensityResult:
 
 							if i.dictIntensity[k] >= 0.0:
 								isotopeMode = False
@@ -442,12 +442,12 @@ class InternFunctions:
 
 				# get vars from the functions attributes
 				v = None
-				if vars.has_key(varName):
+				if varName in vars:
 					v = vars[varName]
 
 				dictIntensityResult = {}
 				if v:
-					for i in v.intensity.keys():
+					for i in list(v.intensity.keys()):
 						if re.match(currArguments[1].string, i):
 							dictIntensityResult[i] = v.intensity[i]
 

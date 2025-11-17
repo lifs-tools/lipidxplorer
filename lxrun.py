@@ -129,8 +129,8 @@ def lpdxImportCLI(projpath = None):
 		try:
 			project.options['resultFile'] = args[1]
 		except IndexError:
-			print "ERROR: The result file was not specified. Use the option",
-			print " -r."
+			print("ERROR: The result file was not specified. Use the option", end=' ')
+			print(" -r.")
 	else:
 		project.options['resultFile'] = cliOptions.resultFile
 
@@ -140,7 +140,7 @@ def lpdxImportCLI(projpath = None):
 		opts.initialize("%s" % cliOptions.ini)
 		opts.setCurrentConfiguration(cliOptions.setting)
 		opts.readConfiguration()
-		for opt in opts.options.keys():
+		for opt in list(opts.options.keys()):
 			project.options[opt] = opts.options[opt]
 
 	# the settings come only from the command line (they overwrite existing options)
@@ -149,7 +149,7 @@ def lpdxImportCLI(projpath = None):
 		project.options['dumpMasterScanFile'] = project.options['masterScan'].split('.')[0] + '-dump.csv'
 
 	# the mfql files are comming from the commandline
-	if cliOptions.__dict__.has_key("queries"):
+	if "queries" in cliOptions.__dict__:
 		for q in cliOptions.queries.split(','):
 			mfql_file = q.strip()
 			if os.path.isdir(mfql_file): # collect the queries from the directory
@@ -163,7 +163,7 @@ def lpdxImportCLI(projpath = None):
 				l = mfql_file.split(os.sep)
 				dictMFQL[l[-1]] = mfql_file
 
-	for opt in cliOptions.__dict__.keys():
+	for opt in list(cliOptions.__dict__.keys()):
 		if not cliOptions.__dict__[opt] is None:
 			project.options[opt] = cliOptions.__dict__[opt]
 
@@ -183,10 +183,10 @@ def lpdxImportCLI(projpath = None):
 	# print the options
 	for k in sorted(options.keys()):
 		if not options.isEmpty(k):
-			print "{0:24} : {1:12}".format(k, str(options[k]))
+			print("{0:24} : {1:12}".format(k, str(options[k])))
 
 	for m in sorted(dictMFQL.keys()):
-		print "{0:24} : {1}".format(m, dictMFQL[m])
+		print("{0:24} : {1}".format(m, dictMFQL[m]))
 
 	###              collect the options               ###
 	######################################################

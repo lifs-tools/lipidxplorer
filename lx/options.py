@@ -4,30 +4,40 @@ import traceback
 from lx.exceptions import LipidXException
 from lx.mfql.runtimeStatic import TypeTolerance
 from lx.tools import odict
-from UserDict import DictMixin
+from collections.abc import MutableMapping as DictMixin
 
 class optionsDict(DictMixin):
     '''A special type of dictionary which handels its own exceptions.'''
 
     def __init__(self):
         self._data = {}
+        
+    def __iter__(self):
+        return iter(self._data)
 
+    def __len__(self):
+        return len(self._data)
+
+    
     def __setitem__(self, key, value):
         self._data[key] = value
+        
 
     def __getitem__(self, key):
         if self._isEmpty(self._data[key]):
             for line in traceback.format_stack()[:-1]:
-                print line.strip()
+                print(line.strip(), flush=True)
             raise LipidXException("The key '%s' is not given" % key)
         return self._data[key]
+
+
 
     def __delitem__(self, key):
         del self._data[key]
 
     def __repr__(self):
         result = []
-        for key in self._data.keys():
+        for key in list(self._data.keys()):
             result.append('%s: %s' % (repr(key), repr(self._data[key])))
         return ''.join(['{', ', '.join(result), '}'])
 
@@ -43,7 +53,7 @@ class optionsDict(DictMixin):
         return list(self._data.keys())
 
     def has_key(self, key):
-        return self._data.has_key(key)
+        return key in self._data
 
     def copy(self):
         copyDict = optionsDict()
@@ -55,7 +65,7 @@ class optionsDict(DictMixin):
 
     def getOrdinary(self):
         ordinary = {}
-        for key in self._data.keys():
+        for key in list(self._data.keys()):
             ordinary[key] = self._data[key]
         return ordinary
 
@@ -183,7 +193,7 @@ class Options:
 
         # fill 'self.options' if 'options' is given
         if not options is None:
-            for key in self.options.keys():
+            for key in list(self.options.keys()):
                 self.options[key] = options[key]
 
 
@@ -198,7 +208,7 @@ class Options:
     def isEmpty(self, option):
 
         if isinstance(option, type("")):
-            if option in self.options.keys():
+            if option in list(self.options.keys()):
                 option = self.options[option]
 
         if isinstance(option, type([])):
@@ -224,10 +234,10 @@ class Options:
     def testOptionsRun(self):
 
         if not self.isEmpty('optionalMStolerance'):
-            m = re.match('(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMStolerance'])
+            m = re.match(r'(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMStolerance'])
             if m is None:
                 if not self.options['optionalMStoleranceType'] is None and not self.options['optionalMStoleranceType'] == '':
-                    m = re.match('(\d+|\d+\.\d+)', self.options['optionalMStolerance'])
+                    m = re.match(r'(\d+|\d+\.\d+)', self.options['optionalMStolerance'])
                     if not m is None:
                         if float(m.group(1)) < 0.0:
                             raise LipidXException("The tolerance value for MS should be >= 0")
@@ -240,10 +250,10 @@ class Options:
                     raise LipidXException("The tolerance value for MS should be >= 0")
 
         if not self.isEmpty('optionalMSMStolerance'):
-            m = re.match('(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMSMStolerance'])
+            m = re.match(r'(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMSMStolerance'])
             if m is None:
                 if not self.options['optionalMSMStoleranceType'] is None and not self.options['optionalMSMStoleranceType'] == '':
-                    m = re.match('(\d+|\d+\.\d+)', self.options['optionalMSMStolerance'])
+                    m = re.match(r'(\d+|\d+\.\d+)', self.options['optionalMSMStolerance'])
                     if not m is None:
                         if float(m.group(1)) < 0.0:
                             raise LipidXException("The tolerance value for MS/MS should be >= 0")
@@ -308,10 +318,10 @@ class Options:
 
 
         if not self.isEmpty('MStolerance'):
-            m = re.match('(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['MStolerance'])
+            m = re.match(r'(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['MStolerance'])
             if m is None:
                 if not self.options['MStoleranceType'] is None and not self.options['MStoleranceType'] == '':
-                    m = re.match('(\d+|\d+\.\d+)', self.options['MStolerance'])
+                    m = re.match(r'(\d+|\d+\.\d+)', self.options['MStolerance'])
                     if not m is None:
                         if float(m.group(1)) < 0.0:
                             raise LipidXException("The tolerance value for MS should be >= 0")
@@ -324,10 +334,10 @@ class Options:
                     raise LipidXException("The tolerance value for MS should be >= 0")
 
         if not self.isEmpty('MSMStolerance'):
-            m = re.match('(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['MSMStolerance'])
+            m = re.match(r'(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['MSMStolerance'])
             if m is None:
                 if not self.options['MSMStoleranceType'] is None and not self.options['MSMStoleranceType'] == '':
-                    m = re.match('(\d+|\d+\.\d+)', self.options['MSMStolerance'])
+                    m = re.match(r'(\d+|\d+\.\d+)', self.options['MSMStolerance'])
                     if not m is None:
                         if float(m.group(1)) < 0.0:
                             raise LipidXException("The tolerance value for MS/MS should be >= 0")
@@ -349,39 +359,59 @@ class Options:
                 raise LipidXException("The threshold setting for MS/MS should be >= 0")
 
 
+        #if not self.isEmpty('MSminOccupation'):
+        #    if not self.options['MSminOccupation'] >= 0 and not float(self.options['MSminOccupation']) <= 1:
+        #        raise LipidXException("Min occupation setting for MS should be 0 >= 1.")
+        #if not self.isEmpty('MSMSminOccupation'):
+        #    if not self.options['MSMSminOccupation'] >= 0 and not float(self.options['MSMSminOccupation']) <= 1:
+        #        raise LipidXException("Min occupation setting for MS/MS should be 0 >= 1.")
+        
+        
+        #Ballal   
         if not self.isEmpty('MSminOccupation'):
-            if not self.options['MSminOccupation'] >= 0 and not float(self.options['MSminOccupation']) <= 1:
-                raise LipidXException("Min occupation setting for MS should be 0 >= 1.")
+            value = float(self.options['MSminOccupation'])
+            if value < 0 or value > 1:
+                raise LipidXException("Min occupation setting for MS should be between 0 and 1.")
+
         if not self.isEmpty('MSMSminOccupation'):
-            if not self.options['MSMSminOccupation'] >= 0 and not float(self.options['MSMSminOccupation']) <= 1:
-                raise LipidXException("Min occupation setting for MS/MS should be 0 >= 1.")
+            value = float(self.options['MSMSminOccupation'])
+            if value < 0 or value > 1:
+                raise LipidXException("Min occupation setting for MS/MS should be between 0 and 1.")
 
+## check why this check don't have any effect???????????????????ballal
 
-        if not self.isEmpty('MSresolutionDelta'):
-            if not self.options['MSresolutionDelta'] >= 0 and not self.options['MSresolutionDelta'] <= 1:
-                raise LipidXException("The resolution gradian setting for MS should be 0 >= 1.")
-        if not self.isEmpty('MSMSresolutionDelta'):
-            if not self.options['MSMSresolutionDelta'] >= 0 and not self.options['MSMSminOccupation'] <= 1:
-                raise LipidXException("Min occupation setting for MS/MS should be 0 >= 1.")
+        # if not self.isEmpty('MSresolutionDelta'):
+        #     val = float(self.options['MSresolutionDelta'])
+        #     print("MSresolutionDelta------------------------------------testoptions()------:",val)
+        #     if not (0 <= val <= 1):
+        #         raise LipidXException("The resolution gradient setting for MS should be between 0 and 1.")
 
+        # if not self.isEmpty('MSMSresolutionDelta'):
+        #     val = float(self.options['MSMSresolutionDelta'])
+        #     if not (0 <= val <= 1):
+        #         raise LipidXException("The resolution gradient setting for MS/MS should be between 0 and 1.")
+            
         if not self.isEmpty('alignmentMethodMS'):
-            if not self.options['alignmentMethodMS'] in ['linear', 'heuristic']:
+            if self.options['alignmentMethodMS'] not in ['linear', 'heuristic']:
                 raise LipidXException("The alignment method for MS is not set properly")
+
         if not self.isEmpty('alignmentMethodMSMS'):
-            if not self.options['alignmentMethodMSMS'] in ['linear', 'heuristic']:
+            if self.options['alignmentMethodMSMS'] not in ['linear', 'heuristic']:
                 raise LipidXException("The alignment method for MS/MS is not set properly")
-        if not self.options['scanAveragingMethod'] is None and not self.options['scanAveragingMethod'] == '':
-            if not self.options['scanAveragingMethod'] in ['linear', 'heuristic']:
+
+        if self.options['scanAveragingMethod'] is not None and self.options['scanAveragingMethod'] != '':
+            if self.options['scanAveragingMethod'] not in ['linear', 'heuristic']:
                 raise LipidXException("The alignment method for the scan averaging is not set properly")
 
-
         if not self.isEmpty('MSresolution'):
-            if not int(self.options['MSresolution']) > 0:
-                raise LipidXException("The MS resolution must not be < 0")
-        if not self.isEmpty('MSMSresolution'):
-            if not int(self.options['MSMSresolution']) > 0:
-                raise LipidXException("The MS/MS resolution must not be < 0")
+            if int(self.options['MSresolution']) <= 0:
+                raise LipidXException("The MS resolution must be > 0")
 
+        if not self.isEmpty('MSMSresolution'):
+            if int(self.options['MSMSresolution']) <= 0:
+                raise LipidXException("The MS/MS resolution must be > 0")
+
+##########################
 
         if not self.isEmpty('importMSMS'):
             if not self.options['importMSMS'] in ['True', 'False', True, False]:
@@ -402,12 +432,14 @@ class Options:
 
     def formatOptions(self):
         '''Reads and formats the settings of the current configuration for correctness.'''
-
-        floating_point_m = re.compile("[+-]?[0-9]*\.?[0-9]+")
+        
+        #print("[Options.formatOptions] Formatting options...", flush=True)
+        
+        floating_point_m = re.compile(r"[+-]?[0-9]*\.?[0-9]+")
 
         o = self.options
 
-        for option in o.keys():
+        for option in list(o.keys()):
             if not option in ['MScalibration', 'MSMScalibration']:
                 try:
                     if floating_point_m.match(o[option]):
@@ -416,7 +448,7 @@ class Options:
                     pass
 
         # convert Boolean values
-        for option in o.keys():
+        for option in list(o.keys()):
             if o[option] == 'True':
                 self.options_formatted[option] = True
             if o[option] == 'False':
@@ -469,10 +501,10 @@ class Options:
                 self.options_formatted['MSMSresolution'] = TypeTolerance('res', float(o['MSMSresolution']))
 
         if not self.isEmpty('MStolerance'):
-            m = re.match('(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['MStolerance'])
+            m = re.match(r'(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['MStolerance'])
             if m is None:
                 if not o['MStoleranceType'] is None and not o['MStoleranceType'] == '':
-                    m = re.match('(\d+|\d+\.\d+)', o['MStolerance'])
+                    m = re.match(r'(\d+|\d+\.\d+)', o['MStolerance'])
                     if not m is None:
                         try:
                             self.options_formatted['MStolerance'] = TypeTolerance(o['MStoleranceType'], float(o['MStolerance']))
@@ -481,10 +513,10 @@ class Options:
             else:
                 self.options_formatted['MStolerance'] = TypeTolerance(m.group(3), float(o['MStolerance']))
         if not self.isEmpty('MSMStolerance'):
-            m = re.match('(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['MSMStolerance'])
+            m = re.match(r'(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['MSMStolerance'])
             if m is None:
                 if not o['MSMStoleranceType'] is None and not o['MSMStoleranceType'] == '':
-                    m = re.match('(\d+|\d+\.\d+)', o['MSMStolerance'])
+                    m = re.match(r'(\d+|\d+\.\d+)', o['MSMStolerance'])
                     if not m is None:
                         self.options_formatted['MSMStolerance'] = TypeTolerance(o['MSMStoleranceType'], float(o['MSMStolerance']))
             else:
@@ -497,19 +529,19 @@ class Options:
 
 
         if not self.isEmpty('optionalMStolerance'):
-            m = re.match('(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMStolerance'])
+            m = re.match(r'(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMStolerance'])
             if m is None:
                 if not o['optionalMStoleranceType'] is None and not o['optionalMStoleranceType'] == '':
-                    m = re.match('(\d+|\d+\.\d+)', o['optionalMStolerance'])
+                    m = re.match(r'(\d+|\d+\.\d+)', o['optionalMStolerance'])
                     if not m is None:
                         self.options_formatted['optionalMStolerance'] = TypeTolerance(o['optionalMStoleranceType'], float(o['optionalMStolerance']))
             else:
                 self.options_formatted['optionalMStolerance'] = TypeTolerance(m.group(3), float(o['optionalMStolerance']))
         if not self.isEmpty('optionalMSMStolerance'):
-            m = re.match('(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMSMStolerance'])
+            m = re.match(r'(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMSMStolerance'])
             if m is None:
                 if not o['optionalMSMStoleranceType'] is None and not o['optionalMSMStoleranceType'] == '':
-                    m = re.match('(\d+|\d+\.\d+)', o['optionalMSMStolerance'])
+                    m = re.match(r'(\d+|\d+\.\d+)', o['optionalMSMStolerance'])
                     if not m is None:
                         self.options_formatted['optionalMSMStolerance'] = TypeTolerance(o['optionalMSMStoleranceType'], float(o['optionalMSMStolerance']))
             else:
@@ -531,29 +563,46 @@ class Options:
         # this option is not editable
         self.options_formatted['loopNr'] = 3
 
-        # the file paths
+        # --- the file paths (safe for None values)
         if not self.isEmpty('masterScan'):
-            self.options_formatted['masterScanFileImport'] = o['masterScanImport']
-            self.options_formatted['masterScanFileRun'] = o['masterScanRun']
+            self.options_formatted['masterScanFileImport'] = o.get('masterScanImport')
+            self.options_formatted['masterScanFileRun'] = o.get('masterScanRun')
+
+        master_scan_run = o.get('masterScanRun')
+
         if not self.isEmpty('dumpMasterScan'):
-            self.options_formatted['dumpMasterScanFile'] = os.path.splitext(o['masterScanRun'])[0] + "-dump.csv"
+            if master_scan_run:
+                self.options_formatted['dumpMasterScanFile'] = os.path.splitext(master_scan_run)[0] + "-dump.csv"
+            else:
+                self.options_formatted['dumpMasterScanFile'] = None
+
         if not self.isEmpty('complementMasterScan'):
-            self.options_formatted['complementMasterScanFile'] = os.path.splitext(o['masterScanRun'])[0] + "-complement.csv"
+            if master_scan_run:
+                self.options_formatted['complementMasterScanFile'] = os.path.splitext(master_scan_run)[0] + "-complement.csv"
+            else:
+                self.options_formatted['complementMasterScanFile'] = None
+        # convert 'None' strings to None values ## Ballal ##########
+        for option in list(o.keys()):
+            val = o[option]
+            if isinstance(val, str) and val.strip().lower() == 'none':
+                o[option] = None
+
+        ##############################
 
         # copy the rest of the string based options to the internal options
-        for opt in self.options.keys():
-            if not opt in self.options_formatted.keys():
+        for opt in list(self.options.keys()):
+            if not opt in list(self.options_formatted.keys()):
                 self.options_formatted[opt] = self.options[opt]
-
+                
 
     def formatOptionsRun(self):
         '''Reads and formats the settings of the current configuration for correctness.'''
 
-        floating_point_m = re.compile("[+-]?[0-9]*\.?[0-9]+")
+        floating_point_m = re.compile(r"[+-]?[0-9]*\.?[0-9]+")
 
         o = self.options
 
-        for option in o.keys():
+        for option in list(o.keys()):
             if not option in ['MScalibration', 'MSMScalibration']:
                 try:
                     if floating_point_m.match(o[option]):
@@ -562,26 +611,26 @@ class Options:
                     pass
 
         # convert Boolean values
-        for option in o.keys():
+        for option in list(o.keys()):
             if o[option] == 'True':
                 self.options_formatted[option] = True
             if o[option] == 'False':
                 self.options_formatted[option] = False
 
         if not self.options['optionalMStolerance'] is None:
-            m = re.match('(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMStolerance'])
+            m = re.match(r'(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMStolerance'])
             if m is None:
                 if not o['optionalMStoleranceType'] is None and not o['optionalMStoleranceType'] == '':
-                    m = re.match('(\d+|\d+\.\d+)', o['optionalMStolerance'])
+                    m = re.match(r'(\d+|\d+\.\d+)', o['optionalMStolerance'])
                     if not m is None:
                         self.options_formatted['optionalMStolerance'] = TypeTolerance(o['optionalMStoleranceType'], float(o['optionalMStolerance']))
             else:
                 self.options_formatted['optionalMStolerance'] = TypeTolerance(m.group(3), float(o['optionalMStolerance']))
         if not self.options['optionalMSMStolerance'] is None:
-            m = re.match('(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMSMStolerance'])
+            m = re.match(r'(\d+|\d+\.\d+)(\s)*(ppm|Da)', self.options['optionalMSMStolerance'])
             if m is None:
                 if not o['optionalMSMStoleranceType'] is None and not o['optionalMSMStoleranceType'] == '':
-                    m = re.match('(\d+|\d+\.\d+)', o['optionalMSMStolerance'])
+                    m = re.match(r'(\d+|\d+\.\d+)', o['optionalMSMStolerance'])
                     if not m is None:
                         self.options_formatted['optionalMSMStolerance'] = TypeTolerance(o['optionalMSMStoleranceType'], float(o['optionalMSMStolerance']))
             else:
@@ -596,11 +645,14 @@ class Options:
         self.options_formatted['loopNr'] = 3
 
         # copy the rest of the string based options to the internal options
-        for opt in self.options.keys():
-            if not opt in self.options_formatted.keys():
+        for opt in list(self.options.keys()):
+            if not opt in list(self.options_formatted.keys()):
                 self.options_formatted[opt] = self.options[opt]
 
     def getOptions(self):
+        # print("Start of getOptions:", id(self.options_formatted), type(self.options_formatted))
+        # print("Keys:", list(self.options_formatted.keys())[:5])
+    
         return self.options_formatted
 
     def getPrintOptions(self):

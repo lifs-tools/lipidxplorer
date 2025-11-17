@@ -746,7 +746,6 @@ class MyFrame(wx.Frame):
 							#outputCSV.write('%s,' % self.dictOutput[entry][file][col])
 							csvOut += '%s,' % self.dictOutput[entry][file][col]
 						elif dictOutputSamples[entry][file].has_key(col):
-							#outputCSV.write('%s,' % dictOutputSamples[entry][file][col])
 							csvOut += '%s,' % dictOutputSamples[entry][file][col]
 						else:
 							#outputCSV.write(',')

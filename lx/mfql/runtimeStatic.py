@@ -4,7 +4,8 @@ from lx.mfql.constants import *
 from lx.debugger import  Debug, DebugSet, DebugUnset, DebugMessage
 from copy import deepcopy, copy
 from fnmatch import fnmatch
-
+from math import *
+from functools import total_ordering
 
 class TypeBooleanTerm:
 
@@ -250,14 +251,14 @@ class TypeExpr:
 				elif (leftResult.dictIntensity and rightResult.float == 0) or\
 					(leftResult.dictIntensity and rightResult.float == 0.0):
 					boolResult = True
-					for key in leftResult.dictIntensity.keys():
+					for key in list(leftResult.dictIntensity.keys()):
 						if float(leftResult.dictIntensity[key]) != rightResult.float:
 							boolResult = False
 
 				elif (leftResult.float == 0 and rightResult.dictIntensity) or\
 					(leftResult.float == 0.0 and rightResult.dictIntensity):
 					boolResult = True
-					for key in rightResult.dictIntensity.keys():
+					for key in list(rightResult.dictIntensity.keys()):
 						if float(rightResult.dictIntensity[key]) != leftResult.float:
 							boolResult = False
 
@@ -627,11 +628,11 @@ class TypeExpression:
 			# add namespace
 			namespacedVariable = queryName + self.mfqlObj.namespaceConnector + self.leftSide.variable
 
-			if not self.mfqlObj.dictDefinitionTable[queryName].has_key(namespacedVariable):
+			if namespacedVariable not in self.mfqlObj.dictDefinitionTable[queryName]:
 				raise LipidXException("The variable %s is not defined with DEFINE." % self.leftSide.variable, queryName, -1)
 
 			#if not (vars.has_key(namespacedVariable) and vars[namespacedVariable]):
-			if vars.has_key(namespacedVariable) and vars[namespacedVariable]:
+			if namespacedVariable in vars and vars[namespacedVariable]:
 
 				# see, if left side is equipped with a attribute
 				if self.leftSide.attribute:
@@ -862,8 +863,8 @@ class TypeExpression:
 								raise SyntaxErrorException("The attribute %s is not supported " +\
 										"in LipidXplorer" % attribute)
 
-						except AttributeError, details:
-							print "\nAttributeError:", details
+						except AttributeError as details:
+							print("\nAttributeError:", details)
 							raise LipidXException("%s has no attribute %s" % (self.leftSide.variable, attribute))
 
 					else:
@@ -974,7 +975,7 @@ class TypeExpression:
 								chemsc = funResult,
 								type = TYPE_CHEMSC)
 
-			elif isinstance(funResult, basestring):
+			elif isinstance(funResult, str):
 				if not funResult == '-----':
 					leftSide = TypeTmpResult(
 									options = None,
@@ -1012,10 +1013,10 @@ class TypeExpression:
 			# add namespace
 			namespacedVariable = queryName + self.mfqlObj.namespaceConnector + self.rightSide.variable
 
-			if not self.mfqlObj.dictDefinitionTable[queryName].has_key(namespacedVariable):
+			if namespacedVariable not in self.mfqlObj.dictDefinitionTable[queryName]:
 				raise SyntaxErrorException("The variable %s is not defined with DEFINE." % self.rightSide.variable, fileName, -1)
 
-			if vars.has_key(namespacedVariable) and vars[namespacedVariable]:
+			if namespacedVariable in vars and vars[namespacedVariable]:
 				# see, if left side is equipped with a attribute
 				if self.rightSide.attribute:
 					if vars[namespacedVariable].encodedName != 'None':
@@ -1243,8 +1244,8 @@ class TypeExpression:
 								raise SyntaxErrorException("The attribute %s is not supported " +\
 										"in LipidXplorer" % attribute)
 
-						except AttributeError, details:
-							print "\nAttributeError:", details
+						except AttributeError as details:
+							print("\nAttributeError:", details)
 							raise LipidXException("%s has no attribute %s" % (self.rightSide.variable, attribute))
 
 					else:
@@ -1343,7 +1344,7 @@ class TypeExpression:
 								chemsc = funResult,
 								type = TYPE_CHEMSC)
 
-			elif isinstance(funResult, basestring):
+			elif isinstance(funResult, str):
 				if not funResult == '-----':
 					rightSide = TypeTmpResult(
 									options = None,
@@ -1451,7 +1452,7 @@ class TypeExpression:
 			elif leftSide.isType(TYPE_DICT_INTENS) and rightSide.isType(TYPE_DICT_INTENS):
 
 				dictIntensityResult = {}
-				for lkey in leftSide.dictIntensity.keys():
+				for lkey in list(leftSide.dictIntensity.keys()):
 					dictIntensityResult[lkey] = op(self.operator, leftSide.dictIntensity[lkey], rightSide.dictIntensity[lkey])
 
 				result = TypeTmpResult(
@@ -1464,7 +1465,7 @@ class TypeExpression:
 			elif leftSide.isType(TYPE_DICT_INTENS) and rightSide.isType(TYPE_FLOAT):
 
 				dictIntensityResult = {}
-				for lkey in leftSide.dictIntensity.keys():
+				for lkey in list(leftSide.dictIntensity.keys()):
 					dictIntensityResult[lkey] = op(self.operator, leftSide.dictIntensity[lkey], rightSide.float)
 
 				result = TypeTmpResult(
@@ -1477,7 +1478,7 @@ class TypeExpression:
 			elif leftSide.isType(TYPE_FLOAT) and rightSide.isType(TYPE_DICT_INTENS):
 
 				dictIntensityResult = {}
-				for lkey in rightSide.dictIntensity.keys():
+				for lkey in list(rightSide.dictIntensity.keys()):
 					dictIntensityResult[lkey] = op(self.operator, leftSide.float, rightSide.dictIntensity[lkey])
 
 				result = TypeTmpResult(
@@ -1507,117 +1508,7 @@ class TypeExpression:
 		result
 		return result
 
-class TypeMarkTerm:
 
-	def __init__(self, leftSide, rightSide, boolOp, mfqlObj):
-
-		self.leftSide = leftSide
-		self.rightSide = rightSide
-		self.operator = boolOp
-		self.mfqlObj = mfqlObj
-
-		self.result = None
-		self.noOfSymbols = 0
-
-	def evaluate(self, callback):
-
-		leftResult = False
-		rightResult = False
-
-		if isinstance(self.leftSide, TypeSFConstraint) or isinstance(self.leftSide, TypeElementSequence)\
-			or isinstance(self.leftSide, TypeFloat) or isinstance(self.leftSide, TypeList):
-			if res.has_key(self.leftSide.name) and res[self.leftSide.name] != []:
-				leftResult = True
-
-		elif isinstance(self.leftSide, TypeMarkTerm):
-			leftResult = self.leftSide.evaluate(callback)
-
-		if isinstance(self.rightSide, TypeSFConstraint) or isinstance(self.rightSide, TypeElementSequence)\
-			or isinstance(self.rightSide, TypeFloat) or isinstance(self.rightSide, TypeList):
-			if res.has_key(self.rightSide.name) and res[self.rightSide.name] != []:
-				rightResult = True
-
-		elif isinstance(self.rightSide, TypeMarkTerm):
-			rightResult = self.rightSide.evaluate(res)
-
-		if not rightResult: rightResult = False
-		if not leftResult: leftResult = False
-
-		if not self.operator:
-			result = rightResult
-
-		elif self.operator == 'NOT':
-			result = not rightResult
-
-		elif self.operator == 'AND':
-			result = leftResult and rightResult
-
-		elif self.operator == 'OR':
-			result = leftResult or rightResult
-
-		elif self.operator == '=>':
-			result = leftResult or (not leftResult and rightResult)
-
-		elif self.operator == '<=':
-			result = rightResult or (not rightResult and leftResult)
-
-		elif self.operator == '<=>':
-			result = leftResult and rightResult
-
-		elif self.operator == '->':
-			result = leftResult
-
-		elif self.operator == '<-':
-			result = rightResult
-
-		else:
-			raise LipidXException("Not a valid Boolean operator.")
-
-		return result
-		pass
-
-	def __getitem__(self, item):
-		for i in self.list():
-			if i.name == item:
-				return i
-
-	def list(self):
-		l = []
-		if isinstance(self.leftSide, TypeSFConstraint) or isinstance(self.leftSide, TypeElementSequence)\
-			or isinstance(self.leftSide, TypeFloat) or isinstance(self.leftSide, TypeList):
-			l.append(self.leftSide)
-		elif isinstance(self.leftSide, TypeMarkTerm):
-			l += self.leftSide.list()
-
-		if isinstance(self.rightSide, TypeSFConstraint) or isinstance(self.rightSide, TypeElementSequence)\
-			or isinstance(self.rightSide, TypeFloat) or isinstance(self.rightSide, TypeList):
-			l.append(self.rightSide)
-		elif isinstance(self.rightSide, TypeMarkTerm):
-			l += self.rightSide.list()
-
-		return l
-
-	def listBool(self):
-		l = []
-		if isinstance(self.leftSide, TypeSFConstraint) or isinstance(self.leftSide, TypeElementSequence)\
-			or isinstance(self.leftSide, TypeFloat) or isinstance(self.leftSide, TypeList):
-			l.append((self.leftSide, self.operator))
-		elif isinstance(self.leftSide, TypeMarkTerm):
-			l += self.leftSide.list()
-
-		if isinstance(self.rightSide, TypeSFConstraint) or isinstance(self.rightSide, TypeElementSequence)\
-			or isinstance(self.rightSide, TypeFloat) or isinstance(self.rightSide, TypeList):
-			l.append((self.rightSide, self.operator))
-		elif isinstance(self.rightSide, TypeMarkTerm):
-			l += self.rightSide.list()
-
-		return l
-
-	def evaluateStepwise(self, res):
-
-		list = self.listBool()
-
-		return list
 
 class TypeElementSequence:
 
@@ -1806,8 +1697,7 @@ class TypeFunction:
 		self.attribute = None
 
 	def evaluate(self, scane, vars, env, queryName, sc = None):
-
-		from math import *
+  
 		if self.name in self.funs.listFuns:
 			return self.funs.startFun(self.name, self.arguments, vars)
 		else:
@@ -1824,7 +1714,7 @@ class TypeFunction:
 					#arg.variable = self.mfqlObj.queryName + self.mfqlObj.namespaceConnector + arg.variable
 					namespacedVariable = self.mfqlObj.queryName + self.mfqlObj.namespaceConnector + arg.variable
 
-					if vars.has_key(namespacedVariable) and vars[namespacedVariable]:
+					if namespacedVariable in vars and vars[namespacedVariable]:
 
 						# see, if left side is equipped with a attribute
 						if arg.attribute:
@@ -1900,11 +1790,11 @@ class TypeFunction:
 									strEval += "%f," % vars[namespacedVariable].frmass
 
 							except AttributeError:
-								print "\nAttributeError:", details
+								print("\nAttributeError:", details)
 								raise LipidXException("The type of %s is not supported by %s()" % (arg.variable, self.name))
 
 						else:
-							print "\nAttributeError:", details
+							print("\nAttributeError:", details)
 							raise LipidXException("The type of %s is not supported by %s()" % (arg.variable, self.name))
 					else:
 						return '-----'
@@ -1920,7 +1810,7 @@ class TypeFunction:
 
 					elif result.chemsc:
 						strDict = "deepcopy(ElementSequence({"
-						for element in result.chemsc.values():
+						for element in list(result.chemsc.values()):
 							strDict += "'%s' : %d, " % (element.sym, element.get_count())
 						strDict += "'chg' : %d}))" % result.chemsc.charge
 						strEval += "%s," % strDict
@@ -1966,7 +1856,7 @@ class TypeFloat:
 			else:
 				self.options[op[0]] = op[1]
 
-
+@total_ordering
 class TypeTolerance:
 
 	def __init__(self, kind, t, smallestMass = 0.0, delta = 0.0):
@@ -1998,7 +1888,27 @@ class TypeTolerance:
 			raise ValueError("Wrong tolerance type given: %s" % kind)
 
 		self.res = self.tolerance # for more consistency
+####################Ballal ####################
 
+	def __eq__(self, other):
+		if not isinstance(other, TypeTolerance):
+			return NotImplemented
+		return self.getComparableValue() == other.getComparableValue()
+
+	def __lt__(self, other):
+		if not isinstance(other, TypeTolerance):
+			return NotImplemented
+		return self.getComparableValue() < other.getComparableValue()
+
+	def getComparableValue(self):
+		"""Returns a float value used for comparison"""
+		# Use a consistent metric: PPM if defined, otherwise DA
+		if self.kind == 'Da':
+			return self.da
+		else:
+			return self.getTinPPM()
+		
+##############################################################
 	def fitIn(self, mass, m):
 		"""Does mass fit in m +- tolerance? Or else:
 			fitIn(<experimental mass>, <theoretical mass>)"""
@@ -2132,7 +2042,7 @@ class InternFunctions:
 						currArguments[2].string]
 
 			# direct function call to post functions
-			if not self.mfqlObj.dictPostFuns.has_key(self.mfqlObj.queryName):
+			if self.mfqlObj.queryName not in self.mfqlObj.dictPostFuns:
 				self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {funName : funArgs}
 
 			return True
@@ -2148,7 +2058,7 @@ class InternFunctions:
 						currArguments[1].string]
 
 			# direct function call to post functions
-			if not self.mfqlObj.dictPostFuns.has_key(self.mfqlObj.queryName):
+			if self.mfqlObj.queryName not in self.mfqlObj.dictPostFuns:
 				self.mfqlObj.dictPostFuns[self.mfqlObj.queryName] = {funName : funArgs}
 
 			return True
@@ -2256,12 +2166,12 @@ class InternFunctions:
 						# collect the intensities, get rid of double entries
 						# first argument is the intensity dictionary
 						sum = 0
-						for key in currArguments[0].dictIntensity.keys():
+						for key in list(currArguments[0].dictIntensity.keys()):
 							if currArguments[0].dictIntensity[key] != '-1':
 								sum += currArguments[0].dictIntensity[key]
 							else:
 								sum += 0
-						avg = sum / len(currArguments[0].dictIntensity.keys())
+						avg = sum / len(list(currArguments[0].dictIntensity.keys()))
 
 						# generate the result as TypeTmpResult
 						result = TypeTmpResult(
@@ -2386,7 +2296,7 @@ class InternFunctions:
 						# collect the intensities, get rid of double entries
 						# first argument is the intensity dictionary
 						sum = 0
-						for key in currArguments[0].dictIntensity.keys():
+						for key in list(currArguments[0].dictIntensity.keys()):
 							if currArguments[0].dictIntensity[key] != '-1':
 								currArguments[0].dictIntensity[key] = abs(currArguments[0].dictIntensity[key])
 
@@ -2450,7 +2360,7 @@ class InternFunctions:
 
 				# collect the intensities, get rid of double entries
 				toSum = [v[0]]
-				samples = v[0].dictIntensity.keys()
+				samples = list(v[0].dictIntensity.keys())
 				for i in v[1:]:
 					isIn = False
 					for j in toSum:
@@ -2467,7 +2377,7 @@ class InternFunctions:
 				for i in toSum:
 					isotopeMode = True
 					for k in samples:
-						if dictIntensityResult.has_key(k):
+						if k in dictIntensityResult:
 
 							if i.dictIntensity[k] >= 0.0:
 								isotopeMode = False
@@ -2502,12 +2412,12 @@ class InternFunctions:
 
 				# get vars from the functions attributes
 				v = None
-				if vars.has_key(varName):
+				if varName in vars:
 					v = vars[varName]
 
 				dictIntensityResult = {}
 				if v:
-					for i in v.intensity.keys():
+					for i in list(v.intensity.keys()):
 						if re.match(currArguments[1].string, i):
 							dictIntensityResult[i] = v.intensity[i]
 
@@ -2535,60 +2445,60 @@ class TypeObject:
 			The attributes define the type of the object.
 		'''
 
-		if argv.has_key('mass'):
+		if 'mass' in argv:
 			self.mass = argv['mass']
-		if argv.has_key('float'):
+		if 'float' in argv:
 			self.float = argv['float']
 
-		if argv.has_key('error'):
+		if 'error' in argv:
 			self.error = argv['error']
 		else:
 			self.error = None
 
-		if argv.has_key('polarity'):
+		if 'polarity' in argv:
 			self.polarity = argv['polarity']
-		if argv.has_key('sumComposition'):
+		if 'sumComposition' in argv:
 			self.sumComposition = argv['sumComposition']
 
-		if argv.has_key('elementSequence'):
+		if 'elementSequence' in argv:
 			self.elementSequence = lpdxParser.parseElemSeq(argv['elementSequence'])
 			#self.elementSequence = argv['elementSequence']
 		else:
 			self.elementSequence = lpdxChemsf.ElementSequence()
 
-		if argv.has_key('retentionTime'):
+		if 'retentionTime' in argv:
 			self.retentionTime = argv['retentionTime']
 		else:
 			self.retentionTime = None # ordered float
 
-		if argv.has_key('scope'):
+		if 'scope' in argv:
 			self.scope = argv['scope']
 		else:
 			self.scope = None # r'MS[12][+-]'
 
-		if argv.has_key('hasMSMS'):
+		if 'hasMSMS' in argv:
 			self.hasMSMS = argv['hasMSMS']
 		else:
 			self.hasMSMS = None
 
-		if argv.has_key('sfconstraint'):
+		if 'sfconstraint' in argv:
 			self.sfconstraint = argv['sfconstraint']
 		else:
 			self.sfconstraint = None
 
-		if argv.has_key('intensity'):
+		if 'intensity' in argv:
 			self.intensity = argv['intensity']
 		else:
 			self.intensity = None # ordered float or dictionary
 
-		if argv.has_key('relIntensity'):
+		if 'relIntensity' in argv:
 			self.relIintensity = argv['relIintensity']
 		else:
 			self.relIintensity = None # ordered float or dictionary
 
-		if argv.has_key('neutralPart'):
+		if 'neutralPart' in argv:
 			self.neutralPart = argv['neutralPart']
-		if argv.has_key('chargedPart'):
+		if 'chargedPart' in argv:
 			self.chargedPart = argv['chargedPart']
 
 		if 'variable' in argv:

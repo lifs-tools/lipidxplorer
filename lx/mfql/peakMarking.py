@@ -5,20 +5,19 @@ from lx.mfql.runtimeStatic import TypeSFConstraint, TypeElementSequence,\
 from lx.exceptions import LipidXException
 from lx.spectraContainer import MSMSEntry
 
+from functools import total_ordering
+
+@total_ordering
 class TypeScan:
-
-	def __init__(self, mfqlObj, **argv):#, listScans, mfqlObj, **argv):
-
-	#	self.listScans = listScans
+	def __init__(self, mfqlObj, **argv): # , listScans, mfqlObj, **argv):
 		self.mfqlObj = mfqlObj
-
 		self.scanTerm = None
 
-		if argv.has_key('mark'):
+		if 'mark' in argv:
 			tmp = argv['mark']
 			if isinstance(tmp, TypeObject):
 				if tmp.elementSequence.isSFConstraint:
-					self.sfcontstraint = tmp.elementSequence
+					self.sfconstraint = tmp.elementSequence
 				else:
 					self.elementSequence = tmp.elementSequence
 					self.chemsc = tmp.elementSequence
@@ -32,50 +31,43 @@ class TypeScan:
 		self.maxocc = None
 		self.options = {}
 
-		#if argv.has_key('options'):
-		#	self.options = argv['options']
-#
-#			for op in self.options:
-#				if op[0] ==  'massrange':
-#					self.massrange = op[1]
-#				if op[0] == 'tolerance':
-#					self.tolerance = op[1]
-#				if op[0] == 'minocc':
-#					self.minocc = op[1]
-#				if op[0] == 'maxocc':
-#					self.maxocc = op[1]
+		self.name = argv.get('name')
+		self.sfconstraint = argv.get('sfconstraint')
+		self.scope = argv.get('scope')
+		self.masterscan = argv.get('masterscan')
+		self.expression = argv.get('expression')
 
-		if argv.has_key('name'):
-			self.name = argv['name']
-		else:
-			self.name = None
-		if argv.has_key('sfconstraint'):
-			self.sfconstraint = argv['sfconstraint']
-		else:
-			self.sfconstraint = None
-		if argv.has_key('scope'):
-			self.scope = argv['scope']
-		else:
-			self.scope = None
-		if argv.has_key('masterscan'):
-			self.masterscan = argv['masterscan']
-		else:
-			self.masterscan = None
-		if argv.has_key('expression'):
-			self.expression = argv['expression']
-		else:
-			self.expression = None
-
-		self.result = False # any mass found?
-		self.resultList = [] # if True -> the resulting list of marks
-
+		self.result = False
+		self.resultList = []
 		self.scanResults = []
 
-	def __cmp__(self, other):
-		if isinstance(other, string):
-			return cmp(self.name, other)
-		else:
-			return cmp(self, other)
+	def __eq__(self, other):
+		if isinstance(other, str):
+			return self.name == other
+		elif isinstance(other, TypeScan):
+			return self.name == other.name
+		return NotImplemented
+
+	def __lt__(self, other):
+		if isinstance(other, str):
+			return self.name < other
+		elif isinstance(other, TypeScan):
+			return self.name < other.name
+		return NotImplemented
+
+	def __repr__(self):
+		return (
+			f"<TypeScan name={self.name!r}, "
+			f"mass={getattr(self, 'mass', None)}, "
+			f"scope={self.scope!r}, "
+			f"sfconstraint={self.sfconstraint!r}, "
+			f"result={self.result}, "
+			f"results={len(self.resultList)} entries>"
+		)
+
+
+
+
 
 	def evaluate(self):
 		'''OUT: list of TypeMark()'''
@@ -92,9 +84,11 @@ class TypeScan:
 		positionMS = 0
 
 		groups = []
+  
 		for mo in self.scanTerm:
 			groups.append([])
 
+		#print("-------------------------------------------------  groups at the beggining of evaluate()  -------------------------------------------------------------", groups)
 		for se in self.mfqlObj.sc.listSurveyEntry:
 
 			for indexM in range(len(self.scanTerm)):
@@ -106,7 +100,6 @@ class TypeScan:
 				for m in self.scanTerm[indexM].list():
 
 					options = {}
-
 
 					boolPassStep = True
 
@@ -175,12 +168,12 @@ class TypeScan:
 						### searching in positive MS with sf-constraint
 						if m.scope == "MS1+" and se.polarity > 0:# and isinstance(m, TypeSFConstraint):
 
-							if not m.name in scanEntry.dictMarks.keys():
+							if not m.name in list(scanEntry.dictMarks.keys()):
 								scanEntry.dictMarks[m.name] = []
 
 							# sf-constraint given
 							if isinstance(m, TypeSFConstraint):
-
+							
 								scconst = m.elementSequence
 
 								if m.elementSequence:
@@ -249,7 +242,7 @@ class TypeScan:
 													notIn = False
 
 											if notIn:
-												if not m.name in scanEntry.dictMarks.keys():
+												if not m.name in list(scanEntry.dictMarks.keys()):
 													scanEntry.dictMarks[m.name] = []
 												scanEntry.dictMarks[m.name].append(mark)
 												se.listMark.append(mark)
@@ -302,13 +295,14 @@ class TypeScan:
 											notIn = False
 
 									if notIn:
-										if not m.name in scanEntry.dictMarks.keys():
+										if not m.name in list(scanEntry.dictMarks.keys()):
 											scanEntry.dictMarks[m.name] = []
 										scanEntry.dictMarks[m.name].append(mark)
 										se.listMark.append(mark)
 
 
 							elif isinstance(m, TypeElementSequence):
+							
 
 								scconst = None
 
@@ -370,7 +364,7 @@ class TypeScan:
 											notIn = False
 
 									if notIn:
-										if not m.name in scanEntry.dictMarks.keys():
+										if not m.name in list(scanEntry.dictMarks.keys()):
 											scanEntry.dictMarks[m.name] = []
 										scanEntry.dictMarks[m.name].append(mark)
 										se.listMark.append(mark)
@@ -437,7 +431,7 @@ class TypeScan:
 												notIn = False
 
 										if notIn:
-											if not ml.name in scanEntry.dictMarks.keys():
+											if not ml.name in list(scanEntry.dictMarks.keys()):
 												scanEntry.dictMarks[ml.name] = []
 											scanEntry.dictMarks[ml.name].append(mark)
 											se.listMark.append(mark)
@@ -489,19 +483,29 @@ class TypeScan:
 										notIn = False
 
 								if notIn:
-									if not m.name in scanEntry.dictMarks.keys():
+									if not m.name in list(scanEntry.dictMarks.keys()):
 										scanEntry.dictMarks[m.name] = []
 									scanEntry.dictMarks[m.name].append(mark)
 									se.listMark.append(mark)
 
+
+
+
 						### searching in negative MS
 						elif m.scope == "MS1-" and se.polarity < 0:# and isinstance(m, TypeSFConstraint):
-
-							if not m.name in scanEntry.dictMarks.keys():
+							
+							if not m.name in list(scanEntry.dictMarks.keys()):
+           
 								scanEntry.dictMarks[m.name] = []
+
+
 
 							# sf-constraint given
 							if isinstance(m, TypeSFConstraint):
+					          # debug print Ballal
+								#print("\n[DEBUG] Comparing masses")
+								#print(" - se.precurmass:", se.precurmass)
+								
 
 								scconst = m.elementSequence
 
@@ -511,7 +515,8 @@ class TypeScan:
 
 									# precursor mass found, adding to result list
 									if newChemsc != []:
-
+										print("evaluate....................MS1-...........newChemsc.........type(se.precurmass)",newChemsc, type(se.precurmass))
+         
 										se.listPrecurmassSF = unionSF(se.listPrecurmassSF, newChemsc, self.mfqlObj.queryName)
 
 										takeScanEntry = True
@@ -520,6 +525,7 @@ class TypeScan:
 										scanEntry.encodedName = "%s:%d" % (m.name, int(se.precurmass))
 
 										for i in newChemsc:
+              
 											if not se.charge is None:
 												errppm = (-((i.getWeight() - se.precurmass) * 1000000) / se.precurmass) * abs(se.charge)
 												errda = -(i.getWeight() - se.precurmass) * abs(se.charge)
@@ -532,8 +538,10 @@ class TypeScan:
 											else:
 												errres = 1000000
 											self.mfqlObj.markIndex += 1
+           
 											occ = self.mfqlObj.sc.getOccupation(se.dictIntensity, se.dictScans,
 													threshold=self.mfqlObj.options["MSthreshold"])
+           
 											mark = TypeMark(
 												type = 0,
 												se = se,
@@ -562,6 +570,10 @@ class TypeScan:
 												markIndex = [self.mfqlObj.markIndex],
 												positionMS = positionMS,
 												positionMSMS = None)
+											print("mark.name...........................Name:", mark.name)
+											print("mark.chemsc........................ChemSC:", mark.chemsc)
+											print("mark.mass............................Mass:", mark.mass)
+
 
 											notIn = True
 											for i in se.listMark:
@@ -569,10 +581,12 @@ class TypeScan:
 													notIn = False
 
 											if notIn:
+												
 												se.listMark.append(mark)
-												if not m.name in scanEntry.dictMarks.keys():
+												if not m.name in list(scanEntry.dictMarks.keys()):
 													scanEntry.dictMarks[m.name] = []
 												scanEntry.dictMarks[m.name].append(mark)
+												print("scanEntry.dictMarks[m.name].append(mark).........................###########################")
 
 							elif isinstance(m, TypeElementSequence):
 
@@ -637,7 +651,7 @@ class TypeScan:
 
 									if notIn:
 										se.listMark.append(mark)
-										if not m.name in scanEntry.dictMarks.keys():
+										if not m.name in list(scanEntry.dictMarks.keys()):
 											scanEntry.dictMarks[m.name] = []
 										scanEntry.dictMarks[m.name].append(mark)
 
@@ -704,7 +718,7 @@ class TypeScan:
 
 										if notIn:
 											se.listMark.append(mark)
-											if not ml.name in scanEntry.dictMarks.keys():
+											if not ml.name in list(scanEntry.dictMarks.keys()):
 												scanEntry.dictMarks[ml.name] = []
 											scanEntry.dictMarks[ml.name].append(mark)
 
@@ -752,7 +766,7 @@ class TypeScan:
 
 								if not mark in se.listMark:
 									se.listMark.append(mark)
-									if not m.name in scanEntry.dictMarks.keys():
+									if not m.name in list(scanEntry.dictMarks.keys()):
 										scanEntry.dictMarks[m.name] = []
 									scanEntry.dictMarks[m.name].append(mark)
 
@@ -776,7 +790,7 @@ class TypeScan:
 						elif m.scope == "MS2+" and se.polarity > 0\
 								and se.listPrecurmassSF != []:
 
-							if not m.name in scanEntry.dictMarks.keys():
+							if not m.name in list(scanEntry.dictMarks.keys()):
 								scanEntry.dictMarks[m.name] = []
 
 							positionMSMS = 0
@@ -1807,7 +1821,7 @@ class TypeScan:
 						elif m.scope == "MS2-" and se.polarity < 0\
 								and se.listPrecurmassSF != []:
 
-							if not m.name in scanEntry.dictMarks.keys():
+							if not m.name in list(scanEntry.dictMarks.keys()):
 								scanEntry.dictMarks[m.name] = []
 
 							positionMSMS = 0
@@ -2683,29 +2697,14 @@ class TypeScan:
 					positionMS += 1
 
 				if takeScanEntry:
-					if self.scanTerm[indexM].evaluate(scanEntry):
+					#print("#####################################takeScanEntry###################################### true")
+					if self.scanTerm[indexM].evaluate(scanEntry):     ###TypeMarkTerm evaluate
+						
 						groups[indexM].append(scanEntry)
-
-		#dbgstr  = "\n\n\n**************************************************************\n"
-		#dbgstr += "\nQuery: %s" % self.mfqlObj.queryName
-		#dbgstr += "\n"
-		#dbgout(dbgstr)
-		#for se in self.mfqlObj.sc.listSurveyEntry:
-		#	#if se.listMark != []:
-		#	#	dbgstr = "\n%s, %s" % (se.precurmass, se.listMark)
-		#	for msmse in se.listMSMS:
-		#		if msmse.listMark != []:
-		#			isPC = False
-		#			for mark in msmse.listMark:
-		#				if re.match(".*headPC.*", mark.name):
-		#					isPC = True
-		#			if isPC:
-		#				dbgstr += "\n%s" % msmse.listMark
-		#			#if len(msmse.listMark) == 1:
-					#	for mark in msmse.listMark:
-					#		dbgstr += "\n%s %s %s %s" % (mark.name, [x.precurmass for x in mark.se], mark.frsc, mark.nlsc)
-		#	#if se.listMark != []:
-		#		dbgout(dbgstr)
+						#print("#####################################TypeMarkTerm evaluate done, added in groups###################################### true")
+      
+					#else:
+						#print("#####################################takeScanEntry###################################### False")
 
 				try:
 					if takeScanEntry:
@@ -2714,7 +2713,7 @@ class TypeScan:
 				except AttributeError:
 					raise LipidXException("Your MasterScan is imported with an old version " +\
 							"of LipidXplorer. Please import it again with this version.")
-
+		#print("+++++++++++++++++++++++++++++++++++++++ groups at the end of evaluate() ####################################################", groups)
 		listResult = groups
 
 		positionPseudoMS = 0
@@ -2726,53 +2725,53 @@ class TypeScan:
 
 		self.mfqlObj.dictScanEntries[self.mfqlObj.queryName] = listResult
 		listResult
+		#print("listResult...................................++++++++++++++++++++++++++++++++++++++++",listResult)
 		return listResult
 
+
+
+@total_ordering
 class TypeMark:
 
 	def __init__(self, type, se, msmse, isnl, name, encodedName, scope, options,
-			chemsc, scconst, mass, isSFConstraint, expAccuraccy, errppm, errda, errres, binsize,
-			charge, occ, frsc,
-			frmass, nlsc, nlmass, precursor, markIndex, positionMS, positionMSMS):
+				chemsc, scconst, mass, isSFConstraint, expAccuraccy, errppm, errda, errres, binsize,
+				charge, occ, frsc, frmass, nlsc, nlmass, precursor, markIndex, positionMS, positionMSMS):
 
-		self.type = type # 0 - MS, 1 - MS/MS
-		self.se = [se] # the SurveyEntry with the precursor of the Mark
-		self.msmse = msmse # the MSMSEntry, if there is one
-		self.name = name # the marks name
-		self.isnl = isnl # True/False
-		self.encodedName = encodedName # long name
+		self.type = type  # 0 - MS, 1 - MS/MS
+		self.se = [se]  # the SurveyEntry with the precursor of the Mark
+		self.msmse = msmse  # the MSMSEntry, if there is one
+		self.name = name  # the mark's name
+		self.isnl = isnl  # True/False
+		self.encodedName = encodedName  # long name
 		self.scope = scope
-		self.precursor = precursor # depricated
-		self.options = options # options
-		self.isSFConstraint = isSFConstraint # is it an sc-constraint?
-		self.expAccuraccy = expAccuraccy # is the 'expected' accuracy as given by the user
-		self.errppm = errppm # error in ppm
-		self.errda = errda # error in da
-		self.errres = errres # error in resolution
-		self.binsize = binsize # the binsize referres to the massWindow of SurveyEntry and MSMSEntry
-		self.charge = charge # the ...
-		self.occ = occ # the occupation threshold
-		self.chemsc = chemsc # chemical sum composition. Should always be there!
-		self.scconst = scconst # the sc constraint
-		self.mass = mass # mass of the mark: mass of the fragment if fragment; mass of the given neutral loss else
-		self.frsc = frsc # is None, if one searched for nl, but the precursor mass had no sum composition
-		self.isofrsc = frsc # this is needed as extra variable for isotopic correction
-		self.frmass = frmass # the mass of the fragment
-		self.nlsc = nlsc # is None, if one searched for fr, but the precursor mass had no sum composition
-		self.isonlsc = nlsc # this is needed as extra variable for isotopic correction
-		self.nlmass = nlmass # precursor mass minus fragment mass
+		self.precursor = precursor  # deprecated
+		self.options = options  # options
+		self.isSFConstraint = isSFConstraint  # is it an sc-constraint?
+		self.expAccuraccy = expAccuraccy  # expected accuracy as given by the user
+		self.errppm = errppm  # error in ppm
+		self.errda = errda  # error in Da
+		self.errres = errres  # error in resolution
+		self.binsize = binsize  # binsize refers to massWindow of SurveyEntry and MSMSEntry
+		self.charge = charge
+		self.occ = occ  # occupation threshold
+		self.chemsc = chemsc  # chemical sum composition. Should always be there!
+		self.scconst = scconst  # the SC constraint
+		self.mass = mass  # mass of the mark
+		self.frsc = frsc  # None if searching for NL and precursor had no SC
+		self.isofrsc = frsc  # needed for isotopic correction
+		self.frmass = frmass  # fragment mass
+		self.nlsc = nlsc  # None if searching for FR and precursor had no SC
+		self.isonlsc = nlsc  # needed for isotopic correction
+		self.nlmass = nlmass  # precursor mass minus fragment mass
 		self.markIndex = markIndex
 		self.positionMS = positionMS
 		self.positionMSMS = positionMSMS
-		#self.isobaric = ' '
-		self.isobaric = []
+		self.isobaric = []  # previously was string, now list
 
-		self.isMultiple = False # TODO
+		self.isMultiple = False  # TODO
 
-		# this is a very crappy style. The following attribute is just used for the MS/MS isotopic correction
-		# where we put together several TypeMarks and store their names. Actually this should be an extra
-		# object, but this would make it maybe more complicated and slower.
-		self.listNames = [] # TODO
+		# HACK: used only for isotopic correction when combining several TypeMarks
+		self.listNames = []  # TODO
 
 		# generate a hash tuple
 		if self.chemsc:
@@ -2784,61 +2783,75 @@ class TypeMark:
 		else:
 			self.hash = (self.positionMS, self.positionMSMS, None)
 
-		# fill importatent variables
+		# set mass & intensity attributes
 		if self.type == 0:
 			self.float = se.precurmass
 			self.intensity = se.dictIntensity
-		elif self.type == 1:
-			if not msmse is None:
-				self.float = msmse.mass
-				self.intensity = msmse.dictIntensity
+		elif self.type == 1 and msmse is not None:
+			self.float = msmse.mass
+			self.intensity = msmse.dictIntensity
 
 	def __repr__(self):
+		return f"{self.encodedName}:{self.scope}"
 
-		str = self.encodedName + ':' + self.scope
-		return str
-
-	def __cmp__(self, other):
-
+	########################### Ballal
+	def __eq__(self, other):
 		if isinstance(other, str):
-			return cmp(self.encodedName.split(':')[0], other)
+			return self.encodedName.split(':')[0] == other
+
+		if not isinstance(other, TypeMark):
+			return NotImplemented
 
 		if self.encodedName and other.encodedName:
 			if self.encodedName == other.encodedName:
 				if self.chemsc and other.chemsc:
-					return cmp(self.chemsc, other.chemsc)
+					return self.chemsc == other.chemsc
 				else:
-					return cmp(self.float, other.float)
+					return getattr(self, 'float', None) == getattr(other, 'float', None)
 			else:
-				#return cmp(self.float, other.float)
-				return cmp(self.encodedName, other.encodedName)
+				return self.encodedName == other.encodedName
 
+		return (
+			self.name == other.name and
+			self.scope == other.scope and
+			self.se == other.se and
+			self.msmse == other.msmse
+		)
 
-		elif self.name == other.name:
-			if self.scope == other.scope:
-				if self.se and other.se:
-					if self.se == other.se:
-						if self.msmse and other.msmse:
-							return cmp(self.msmse, other.msmse)
-						else:
-							return 0
-					elif self.msmse and other.msmse:
-						return cmp(self.msmse, other.msmse)
-					else:
-						return 0
+	def __lt__(self, other):
+		if isinstance(other, str):
+			return self.encodedName.split(':')[0] < other
+
+		if not isinstance(other, TypeMark):
+			return NotImplemented
+
+		if self.encodedName and other.encodedName:
+			if self.encodedName == other.encodedName:
+				if self.chemsc and other.chemsc:
+					return self.chemsc < other.chemsc
 				else:
-					return 0
+					return getattr(self, 'float', None) < getattr(other, 'float', None)
 			else:
-				if self.scope == "MS1+" and other.scope == "MS1+":
-					return 0
-				if self.scope == "MS2+" and other.scope == "MS2+":
-					return 0
-				if self.scope == "MS1+" and other.scope == "MS2+":
-					return 1
-				if self.scope == "MS2+" and other.scope == "MS1+":
-					return -1
-		else:
-			return cmp(self.name, other.name)
+				return self.encodedName < other.encodedName
+
+		if self.name != other.name:
+			return self.name < other.name
+
+		if self.scope != other.scope:
+			# define MS1+ > MS2+ arbitrarily
+			scope_order = {"MS1+": 1, "MS2+": 0}
+			return scope_order.get(self.scope, -1) < scope_order.get(other.scope, -1)
+
+		if self.se != other.se:
+			return self.se < other.se
+
+		if self.msmse != other.msmse:
+			return self.msmse < other.msmse
+
+		return False  # fallback
+
+    
+    ##############################################################
 
 	def diff(self, other):
 		'''Shows the differences of two marks.'''
@@ -2993,13 +3006,18 @@ class TypeMarkTerm:
 		self.noOfSymbols = 0
 
 	def evaluate(self, res):
-
+		#print("TypeMarkTerm----------------------------------evaluate()")
 		leftResult = False
 		rightResult = False
+		# print("Evaluating:", self.operator)
+		# print("Left side:", self.leftSide)
+		# print("Right side:", self.rightSide)
+		# print("res:", res)
 
+############## ballal changed it ####################################
 		if isinstance(self.leftSide, TypeSFConstraint) or isinstance(self.leftSide, TypeElementSequence)\
 			or isinstance(self.leftSide, TypeFloat) or isinstance(self.leftSide, TypeList):
-			if res.has_key(self.leftSide.name) and res[self.leftSide.name] != []:
+			if self.leftSide.name in res.dictMarks and res.dictMarks[self.leftSide.name] != []:
 				leftResult = True
 
 		elif isinstance(self.leftSide, TypeMarkTerm):
@@ -3007,11 +3025,13 @@ class TypeMarkTerm:
 
 		if isinstance(self.rightSide, TypeSFConstraint) or isinstance(self.rightSide, TypeElementSequence)\
 			or isinstance(self.rightSide, TypeFloat) or isinstance(self.rightSide, TypeList):
-			if res.has_key(self.rightSide.name) and res[self.rightSide.name] != []:
+			if self.rightSide.name in res.dictMarks and res.dictMarks[self.rightSide.name] != []:
 				rightResult = True
 
 		elif isinstance(self.rightSide, TypeMarkTerm):
 			rightResult = self.rightSide.evaluate(res)
+   
+   ########################################
 
 		if not rightResult: rightResult = False
 		if not leftResult: leftResult = False
@@ -3046,6 +3066,7 @@ class TypeMarkTerm:
 		else:
 			raise LipidXException("Not a valid Boolean operator.")
 
+		#print("TypeMarkTerm evaluate result-----------------------------------------------------------------------------", result)
 		return result
 		pass
 
@@ -3115,22 +3136,22 @@ class TypeScanEntry:
 		else:
 			str = '* > '
 
-		for i in self.dictMarks.keys():
+		for i in list(self.dictMarks.keys()):
 			for m in self.dictMarks[i]:
 				str += ' ' + m.encodedName + '; '
 		return str
 
 	def __getitem__(self, item):
 		if isinstance(item, int) or isinstance(item, slice):
-			return self.dictMarks.values()[item]
+			return list(self.dictMarks.values())[item]
 		else:
 			return self.dictMarks[item]
 
 	def __len__(self):
-		return len(self.dictMarks.keys()) + 1
+		return len(list(self.dictMarks.keys())) + 1
 
 	def has_key(self, item):
-		return self.dictMarks.has_key(item)
+		return item in self.dictMarks
 
 	def keys(self):
-		return self.dictMarks.keys()
+		return list(self.dictMarks.keys())

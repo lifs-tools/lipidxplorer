@@ -1,7 +1,7 @@
-try:
-	import ply.lex as lex
-except ImportError:
-	import lx.mfql.ply.lex as lex
+#try:
+import ply.lex as lex
+#except ImportError:
+#	import lx.mfql.ply.lex as lex
 
 from lx.mfql.runtimeStatic import *
 from lx.mfql.runtimeExecution import *
@@ -116,7 +116,7 @@ def t_UNDERSCORE(t):
 
 def t_error(t):
 	if not ord(t.value[0]) == 13:
-		print "Illegal character %s (%s) in line %d" % (t.value[0], ord(t.value[0]), t.lexer.lineno)
+		print("Illegal character %s (%s) in line %d" % (t.value[0], ord(t.value[0]), t.lexer.lineno))
 	t.lexer.skip(1)
 
 # build lexer
@@ -170,13 +170,17 @@ def p_script(p):
 
 def p_script_error(p):
 	'''script : error variables identification'''
-	print "SYNTAX ERROR: 'QUERYNAME' is missing"
+	print("SYNTAX ERROR: 'QUERYNAME' is missing")
 
 
 ### VARIABLES ###
 
 def p_scriptname(p):
 	'''scriptname : QUERYNAME IS getQueryName SEMICOLON'''
+	# print("p_scriptname(p)..............####################mfqlParser.py",type(p))
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
 
 	global gprogressCount
 	global numQueries
@@ -211,6 +215,8 @@ def p_getQueryName(p):
 
 #	'''tagname : ID'''
 	mfqlObj.queryName = p[1]
+## added by Ballal
+	#p[0] = p[1]  # <-- This makes p[3] valid in p_scriptname
 
 
 def p_variables_loop(p):
@@ -222,7 +228,11 @@ def p_variables_endloop(p):
 def p_var_normal(p):
 	'''var : DEFINE ID IS object options SEMICOLON
 			| DEFINE ID IS object options AS NEUTRALLOSS SEMICOLON'''
-
+	# print("p_var_normal(p)..............##########################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+	
 	if len(p) == 7 and p[5] != None:
 		p[4].addOptions(p[5])
 
@@ -259,6 +269,7 @@ def p_var_normal(p):
 
 	mfqlObj.dictDefinitionTable[mfqlObj.queryName][name] = p[4]
 
+
 #def p_var_list(p):
 #	'''var : DEFINE list IS object options SEMICOLON'''
 
@@ -274,7 +285,11 @@ def p_var_normal(p):
 
 def p_var_emptyVar(p):
 	'''var : DEFINE ID options SEMICOLON'''
-
+	# print("p_var_emptyVar(p)..............############################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	if len(p) == 5 and p[3] != None:
 		o = TypeSFConstraint(elementSequence = ElementSequence())
 		o.addOptions(p[3])
@@ -291,11 +306,20 @@ def p_var_emptyVar(p):
 
 def p_object_withAttr(p):
 	'''object : withAttr'''
+	# print("p_object_withAttr(p)..............################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	p[0] = p[1]
 
 def p_object_onlyObj(p):
 	'''object : onlyObj'''
-
+	# print("p_object_onlyObj(p)..............###################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	if len(p) == 2:
 		p[0] = p[1]
 
@@ -304,16 +328,32 @@ def p_object_onlyObj(p):
 
 def p_onlyObj_ID_itemAccess(p):
 	'''onlyObj : ID LBRACE ID RBRACE'''
+	# print("p_onlyObj_ID_itemAccess(p)..............##################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
 	p[0] = TypeVariable(variable = p[1], item = p[3])
 	mfqlObj.listDataTable.append(p[0])
+	
 
 def p_onlyObj_ID(p):
 	'''onlyObj : ID'''
+	# print("p_onlyObj_ID(p)..............#########################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	p[0] = TypeVariable(variable = p[1])
 	mfqlObj.listDataTable.append(p[0])
 
+
 def p_onlyObj_list(p):
 	'''onlyObj : list'''
+	# print("p_onlyObj_list(p)..............##########################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	p[0] = TypeList(list = p[1])
 
 	#mfqlObj.listDataTable.append(p[1])
@@ -324,28 +364,53 @@ def p_onlyObj_varcontent(p):
 
 def p_onlyObj_function1(p):
 	'''onlyObj : ID LPAREN arguments RPAREN LBRACE ID RBRACE'''
+	# print("p_onlyObj_function1(p)..............#########################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	p[0] = TypeFunction(name = p[1], arguments = p[3], mfqlObj = mfqlObj, item = p[6])
 	mfqlObj.listDataTable.append(p[1])
 
 def p_onlyObj_function2(p):
 	'''onlyObj : ID LPAREN arguments RPAREN'''
+	# print("p_onlyObj_function2(p)..............########################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	p[0] = TypeFunction(name = p[1], arguments = p[3], mfqlObj = mfqlObj)
 	mfqlObj.listDataTable.append(p[1])
 
 def p_withAttr_accessItem_(p):
 	'''withAttr : ID DOT ID LBRACE ID RBRACE'''
+	# print("p_withAttr_accessItem_(p)..............#####################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	#p[0] = TypeItem(variable = p[1], attribute = p[3], item = p[5])
 	p[0] = TypeVariable(variable = p[1], attribute = p[3], item = p[5])
 	mfqlObj.listDataTable.append(p[0])
 
 def p_withAttr_accessItem_string(p):
 	'''withAttr : ID DOT ID LBRACE STRING RBRACE'''
+	# print("p_withAttr_accessItem_string(p)..............################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	#p[0] = TypeItem(variable = p[1], attribute = p[3], item = p[5])
 	p[0] = TypeVariable(variable = p[1], attribute = p[3], item = p[5])
 	mfqlObj.listDataTable.append(p[0])
 
 def p_withAttr_id(p):
 	'''withAttr : ID DOT ID'''
+	# print("p_withAttr_id(p)..............#################################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 #	p[0] = TypeAttribute(
 #		variable = mfqlObj.dictDefinitionTable[p[1]],
 #		attribute = p[3])
@@ -355,6 +420,11 @@ def p_withAttr_id(p):
 
 def p_withAttr_varcontent(p):
 	'''withAttr : varcontent DOT ID'''
+	# print("p_withAttr_varcontent(p)..............############################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	#p[0] = TypeAttribute(mass = p[1], attribute = p[3])
 	p[0] = TypeVariable(variable = p[1], attribute = p[3])
 
@@ -362,6 +432,11 @@ def p_withAttr_varcontent(p):
 
 def p_withAttr_list(p):
 	'''withAttr : list DOT ID'''
+	# print("p_withAttr_list(p)..............#################################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	p[0] = TypeAttribute(sequence = p[1], attribute = p[3])
 
 	mfqlObj.listDataTable.append(p[0])
@@ -385,13 +460,21 @@ def p_arguments_multi(p):
 def p_list(p):
 	'''list : LBRACKET listcontent RBRACKET'''
 	#'''list : LPAREN listcontent RPAREN'''
-
+	# print("p_list(p)..............##############################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	p[0] = p[2]
 	mfqlObj.listDataTable.append(p[0])
 
 def p_listcontent_cont(p):
 	'''listcontent : listcontent COMMA object'''
-
+	# print("p_listcontent_cont(p).............#######################################.mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	p[0] = p[1]
 	if len(p) == 4:
 		p[0].append(p[3])
@@ -411,9 +494,13 @@ def p_varcontent_tolerance(p):
 
 def p_varcontent_float(p):
 	'''varcontent : FLOAT'''
-
+	# print("p_varcontent_float(p)..............##########################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	p[0] = TypeFloat(float = float(p[1]), mass = float(p[1]))
-
+	
 #def p_varcontent_negfloat(p):
 #	'''varcontent : MINUS FLOAT'''
 #
@@ -445,12 +532,18 @@ def p_varcontent_string(p):
 
 def p_varcontent_sfstring(p):
 	'''varcontent : SFSTRING'''
-	print " p_varcontent_sfstring  p.................",p[1]
-	es = parseElemSeq(p[1].strip('\''))
+	# print(" p_varcontent_sfstring  p[1].................###########################mfqlParser.py",p[1])
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
+	es = parseElemSeq(p[1].strip("'"))
+ 
 	if isinstance(es, SCConstraint):
 		p[0] = TypeSFConstraint(elementSequence = es)
 	else:
 		p[0] = TypeElementSequence(elementSequence = es, options = {})
+	#print(" p_varcontent_sfstring  .es..........",es)
 
 ### OPTIONS ###
 
@@ -501,7 +594,11 @@ def p_tolerancetype(p):
 					 | INTEGER DA
 		 			 | INTEGER RES
 					 | INTEGER PPM'''
-
+	# print("p_tolerancetype(p)..............##########################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	if float(p[1]) <= 0.0:
 		raise LogicErrorException(
 			"Tolerance value as given in the query '%s' can not be smaller" % mfqlObj.queryName +\
@@ -514,6 +611,10 @@ def p_tolerancetype(p):
 def p_identification_normal_old(p):
 	'''identification : IDENTIFY tagname WHERE marks evalMarks suchthat REPORT report
 		  			  | IDENTIFY tagname WHERE marks evalMarks REPORT report'''
+	# print("p_identification_normal_old(p)..............mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
 
 	raise LipidXException("Please remove the query name after 'IDENTIFY'." + \
 			" This is not supported anymore.")
@@ -524,10 +625,10 @@ def p_identification_normal_old(p):
 		genMasterScan(mfqlObj)
 
 	elif mfqlObj.parsePart == 'identification':
-		print "generating combinatorics ...",
+		print("generating combinatorics ...", end=' ')
 		for se in mfqlObj.sc.listSurveyEntry:
 			mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.perf_counter())
 
 	if len(p) == 8:
 
@@ -557,22 +658,26 @@ def p_identification_normal_old(p):
 def p_identification_normal_new(p):
 	'''identification : IDENTIFY marks evalMarks suchthat REPORT report
 		  			  | IDENTIFY marks evalMarks REPORT report'''
-
+	# print("p_identification_normal_new(p)..............##################################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	### next the report is generated ###
 	if mfqlObj.parsePart == 'genTargetList':
 		genMasterScan(mfqlObj)
 
 	elif mfqlObj.parsePart == 'identification':
-		print "generating combinatorics ...",
+		print("generating combinatorics ...", end=' ')
 		for se in mfqlObj.sc.listSurveyEntry:
 			mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.perf_counter())
 
 	if mfqlObj.parsePart == 'identification':
-		print "generating combinatorics ...",
+		print("generating combinatorics ...", end=' ')
 		for se in mfqlObj.sc.listSurveyEntry:
 			mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.perf_counter())
 
 	if len(p) == 6:
 
@@ -617,13 +722,19 @@ def p_marks(p):
 #	mfqlObj.scan = TypeScan(mfqlObj = mfqlObj)
 #	mfqlObj.scan.scanTerm = []
 
+	# print("p_marks(p)..............##############################################mfqlObj.scan.scanTerm.append#################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token--------------- {tok.type} = {tok.value}")
+#################
+
 	if mfqlObj.parsePart == 'identification':
 		if not mfqlObj.scan.wasOR:
 			mfqlObj.scan.scanTerm.append(p[1])
 
 			# find variables which are DEFINEd but not used in IDENTIFY
 			# they might be used later in SUCHTHAT
-			for i in mfqlObj.dictDefinitionTable[mfqlObj.queryName].keys():
+			for i in list(mfqlObj.dictDefinitionTable[mfqlObj.queryName].keys()):
 				if not i in [x.name for x in p[1].list()]:
 					name = i.split(mfqlObj.namespaceConnector)
 					raise SyntaxErrorException("The variable '%s' in query '%s'has to be used in IDENTIFY" %\
@@ -633,6 +744,7 @@ def p_marks(p):
 							#mfqlObj.addEmptyVariable(i,
 							#mfqlObj.dictDefinitionTable[mfqlObj.queryName][i])
 
+			
 	#mfqlObj.scan.scanTerm = p[1]
 
 def p_booleanterm_paren(p):
@@ -722,10 +834,15 @@ def p_boolmarks_toScan(p):
 
 def p_evalMarks(p):
 	'''evalMarks : '''
+	# print("p_evalMarks(p)..............#############################################################mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	if mfqlObj.parsePart == 'identification':
-		print "IDENTIFY the masses of interest ...",
+		print("IDENTIFY the masses of interest ...", end=' ')
 		mfqlObj.scan.evaluate()
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.perf_counter())
 	pass
 
 def p_suchthat_single(p):
@@ -741,13 +858,17 @@ def p_body_bool(p):
 
 def p_bterm(p):
 	'''bterm : booleanterm'''
+	# print("p_bterm(p).............#################################################################.mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}") 
 
 	report = []
 
 	# apply SUCHTHAT filter if vars were found
 	if mfqlObj.parsePart == 'report':
 
-		print "testing constraints of SUCHTHAT ...",
+		print("testing constraints of SUCHTHAT ...", end=' ')
 		report = []
 		count = 0
 		for se in mfqlObj.result[mfqlObj.queryName].sc:
@@ -763,7 +884,7 @@ def p_bterm(p):
 
 					# check if the variable of se contain at least one coming from the current query
 					isIn = False
-					for key in vars.keys():
+					for key in list(vars.keys()):
 						if mfqlObj.queryName == key.split(mfqlObj.namespaceConnector)[0]:
 							isIn = True
 							break
@@ -794,7 +915,7 @@ def p_bterm(p):
 													queryName = mfqlObj.queryName)]
 
 										if tmpRes[1] != []:
-											for key in vars_plus_empty.keys():
+											for key in list(vars_plus_empty.keys()):
 												for se in vars_plus_empty[key].se:
 													if se:
 														se.isTakenBySuchthat = True
@@ -830,7 +951,7 @@ def p_bterm(p):
 											queryName = mfqlObj.queryName)]
 
 								if tmpRes[1] != []:
-									for key in vars.keys():
+									for key in list(vars.keys()):
 										for se in vars[key].se:
 											if se:
 												se.isTakenBySuchthat = True
@@ -853,7 +974,7 @@ def p_bterm(p):
 								#result.append(tmpRes)
 
 		p[0] = report
-		print "%.2f sec. for %d comparisons" % (time.clock(), count)
+		print("%.2f sec. for %d comparisons" % (time.perf_counter(), count))
 
 def p_booleanterm_logic(p):
 	'''booleanterm : booleanterm AND booleanterm
@@ -982,7 +1103,11 @@ def p_expression_content(p):
 
 def p_scan_object(p):
 	'''scan : object IN scope options'''
-
+	# print("p_scan_object(p).............################################################################.mfqlParser.py")
+	# print("p as list:", list(p))
+	# for tok in p.slice:
+	# 	print(f"Token {tok.type} = {tok.value}")
+  
 	if not isinstance(p[1], TypeVariable):
 		raise LipidXException
 
@@ -1038,6 +1163,7 @@ def p_scan_object(p):
 			pass
 
 	p[0] = mfqlObj.dictDefinitionTable[mfqlObj.queryName][v]
+	#print("p as list: p_scan_object ..........", list(p),p[0])
 
 def p_scope(p):
 	'''scope : MS1 MINUS
@@ -1074,7 +1200,7 @@ def p_rContent(p):
 
 def p_error(p):
 	if not p:
-		print "SYNTAX ERROR at EOF"
+		print("SYNTAX ERROR at EOF")
 		raise SyntaxErrorException("SYNTAX ERROR at EOF")
 	else:
 		#print "SYNTAX ERROR at '%s' in line %d of file '%s' " % (p.value, p.lineno, mfqlObj.queryName)
@@ -1091,7 +1217,7 @@ parser = yacc.yacc(debug = 0, optimize = 0)
 def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrectionMSMS,
 		complementSC, parent, progressCount, generateStatistics, mode = ""):
 
-	time.clock()
+	time.perf_counter()
 
 	global mfqlObj
 	global gprogressCount
@@ -1102,10 +1228,12 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	gprogressCount = progressCount
 
 	options = mfqlObj.options
-	#print "mfqlFiles/dictData in mfqlParser.py..........", dictData
+	
 	if mode == 'generateTargetList':
+    	
+		print("generateTargetList mfqlParser.py..........")
 		###  ###
-		for k in dictData.keys():
+		for k in list(dictData.keys()):
 
 			mfqlObj.filename = k
 			numQueries = 0
@@ -1120,8 +1248,8 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 	### do the IDENTIFY(cation) ###
 
-	for k in dictData.keys():
-
+	for k in list(dictData.keys()):
+		
 		mfqlObj.filename = k
 		numQueries = 0
 
@@ -1133,7 +1261,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 	if isotopicCorrectionMS:
 		#mfqlObj.result.isotopicCorrectionMSMS()
-		print "type II isotopic correction in MS ...",
+		print("type II isotopic correction in MS ...", end=' ')
 		mfqlObj.result.isotopicCorrectionMS()
 
 		#gprogressCount += 1
@@ -1143,44 +1271,44 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		#		parent.debug.progressDialog.Destroy()
 		#		return parent.CONST_THREAD_USER_ABORT
 
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.perf_counter())
 	else:
-		print "type II isotopic correction for MS is switched off"
+		print("type II isotopic correction for MS is switched off")
 
 
 	# testwise put it here before MS/MS correction, because MS/MS correction has to
 	# note the change first
-	print "generating result MasterScan ...",
+	print("generating result MasterScan ...", end=' ')
 	mfqlObj.result.generateResultSC()
-	print "%.2f sec." % time.clock()
+	print("%.2f sec." % time.perf_counter())
 
 	if isotopicCorrectionMSMS:
-		print "type II isotopic correction in MS/MS ...",
+		print("type II isotopic correction in MS/MS ...", end=' ')
 		mfqlObj.result.isotopicCorrectionMSMS()
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.perf_counter())
 	else:
-		print "type II isotopic correction for MS/MS is switched off"
+		print("type II isotopic correction for MS/MS is switched off")
 
 	if not Debug("noMonoisotopicCorrection"):
-		print "type I isotopic correction in MS and MS/MS ...",
+		print("type I isotopic correction in MS and MS/MS ...", end=' ')
 		if isotopicCorrectionMS or isotopicCorrectionMSMS:
 			mfqlObj.result.correctMonoisotopicPeaks()
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.perf_counter())
 
 	if Debug("removeIsotopes"):# and (isotopicCorrectionMS or isotopicCorrectionMSMS):
 		mfqlObj.result.removeIsotopicCorrected()
 
-	print "generate query result MasterScans ...",
+	print("generate query result MasterScans ...", end=' ')
 	mfqlObj.result.generateQueryResultSC()
-	print "%.2f sec." % time.clock()
+	print("%.2f sec." % time.perf_counter())
 
 	# check for isobaric species
-	print "checking if there are isobaric species ...",
+	print("checking if there are isobaric species ...", end=' ')
 	mfqlObj.result.checkIsobaricSpeciesBeforeSUCHTHAT()
-	print "%.2f sec." % time.clock()
+	print("%.2f sec." % time.perf_counter())
 
 	### do the REPORT ###
-	for k in dictData.keys():
+	for k in list(dictData.keys()):
 
 		mfqlObj.filename = k
 
@@ -1189,30 +1317,38 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		lexer.lineno = 1
 		parser.parse(dictData[k], lexer = lexer, tracking = True)
 
+	## test Ballal
+	#print_mfqlObj_info(mfqlObj)
+##################
+
+    
 	if complementSC:
 
-		print "generate complement MasterScan ..."
+		print("generate complement MasterScan ...")
 		mfqlObj.result.generateComplementSC()
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.perf_counter())
 
 	if options['noPermutations']:
 		mfqlObj.result.removePermutations()
 
-	print "checking if there are still isobaric species ...",
+	print("checking if there are still isobaric species ...", end=' ')
 	mfqlObj.result.checkIsobaricSpeciesAfterSUCHTHAT()
-	print "%.2f sec." % time.clock()
+	print("%.2f sec." % time.perf_counter())
 
-	print "generate report ...",
+	print("generate report ...", end=' ')
 	mfqlObj.result.generateReport(options)
-	print "%.2f sec." % time.clock()
+	print("%.2f sec." % time.perf_counter())
 
 
 	if generateStatistics and mfqlObj.result.mfqlOutput:
-		print "generate statistics ...",
+		print("generate statistics ...", end=' ')
 		mfqlObj.result.generateStatistics(options)
-		print "%.2f sec." % time.clock()
+		print("%.2f sec." % time.perf_counter())
 
-
+## test Ballal
+	# print("2nd mfqlobj print.........................")
+	# print_mfqlObj_info(mfqlObj)
+##################
 	del gprogressCount
 
 	gprogressCount = 0
@@ -1221,3 +1357,51 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	else:
 		return (gprogressCount, None)
 
+
+
+## test Ballal
+
+def print_mfqlObj_info(mfqlObj):
+    print("\n--- MFQL Object Debug Info ---")
+
+    # Basic config
+    print(f"Options: {mfqlObj.options}")
+    print(f"Current Scan: {mfqlObj.scan}")
+    print(f"Query Name: {mfqlObj.queryName}")
+    print(f"Namespace Connector: {mfqlObj.namespaceConnector}")
+    print(f"Computation Mode: {mfqlObj.computationMode}")
+    print(f"Current Environment: {mfqlObj.currentEnvironment}")
+    print(f"Computation Mode: {mfqlObj.computationMode}")
+
+    # Current query execution state
+    print(f"Current Query: {mfqlObj.currQuery}")
+    print(f"Current SC: {mfqlObj.currSC}")
+    print(f"Current Vars: {mfqlObj.currVars}")
+    print(f"Precursor: {mfqlObj.precursor}")
+
+    # Scan/definition dictionaries
+    print(f"Definition Table Keys: {list(mfqlObj.dictDefinitionTable.keys())}")
+    print(f"Scan Table Keys: {list(mfqlObj.dictScanTable.keys())}")
+    print(f"Scan Entries Keys: {list(mfqlObj.dictScanEntries.keys())}")
+
+    # Symbol and environment tables
+    print(f"Symbol Table Count: {mfqlObj.countSymbolTable}")
+    print(f"Allocated Symbols Count: {mfqlObj.countAlloc}")
+    print(f"Environment Count: {mfqlObj.environmentCount}")
+    print(f"Symbol Table Keys: {list(mfqlObj.dictSymbolTable.keys())}")
+    print(f"Dynamic Symbol Table Keys: {list(mfqlObj.dictDynSymTable.keys())}")
+    print(f"Environment Keys: {list(mfqlObj.dictEnvironment.keys())}")
+
+    # Data & results
+    print(f"List of Query Names: {mfqlObj.listQueryNames}")
+    print(f"Data Table Length: {len(mfqlObj.listDataTable)}")
+    print(f"Result List Length: {len(mfqlObj.listResult)}")
+    print(f"Report List Length: {len(mfqlObj.listReport)}")
+    print(f"MasterScan Result Length: {len(mfqlObj.resultSC)}")
+    print(f"Complement SC: {mfqlObj.complementSC is not None}")
+
+    # Post-processing
+    print(f"Post-processing Functions: {list(mfqlObj.dictPostFuns.keys())}")
+    print(f"Mark Index: {mfqlObj.markIndex}")
+
+    print("--- End MFQL Debug Info ---\n")

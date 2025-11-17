@@ -1,9 +1,9 @@
 import re, os, sys
 import numpy
 from math import sqrt
-import cPickle as pickle
+import pickle as pickle
 from lx.mfql.chemParser import parseElemSeq
-from tools import reportout
+from .tools import reportout
 
 def getCalibrationPoints(lTable, lSpectrum, tolerance):
 
@@ -311,9 +311,9 @@ def loadSC(filename):
 		sc = pickle.load(scFile)
 
 	# for backwards compatiblty
-	if not sc.options.has_key('MStolerance'):
+	if 'MStolerance' not in sc.options:
 		sc.options['MStolerance'] = sc.options['MSaccuracy']
-	if not sc.options.has_key('MSMStolerance'):
+	if 'MSMStolerance' not in sc.options:
 		sc.options['MSMStolerance'] = sc.options['MSMSaccuracy']
 
 	return sc
@@ -335,26 +335,26 @@ def selectSurveyEntries(sc, listArgs):
 	for i in listArgs:
 		
 		# overwrite standart tolerance
-		if i.has_key('MStolerance'): MStolerance = 1000000 / i['MStolerance']
+		if 'MStolerance' in i: MStolerance = 1000000 / i['MStolerance']
 		else: MStolerance = sc.options['MStolerance']
 
 		# mass range constraint
-		if i.has_key('massrange'): massrange = i['massrange'] 
+		if 'massrange' in i: massrange = i['massrange'] 
 		else: massrange = (0, 30000)
 		
 		# set sample occupation threshold
-		if i.has_key('occupationThreshold'): occThrld = i['occupationThreshold'] 
+		if 'occupationThreshold' in i: occThrld = i['occupationThreshold'] 
 		else: occThrld = 0
 	
 		# set sample occupation threshold
-		if i.has_key('minIntensityDelta'): minInsD = i['minIntensityDelta'] 
+		if 'minIntensityDelta' in i: minInsD = i['minIntensityDelta'] 
 		else: minInsD = 0
 	
 		# set sample occupation threshold
-		if i.has_key('maxIntensityDelta'): maxInsD = i['maxIntensityDelta'] 
+		if 'maxIntensityDelta' in i: maxInsD = i['maxIntensityDelta'] 
 		else: maxInsD = 2
 	
-		if i.has_key('sf-constraint'):
+		if 'sf-constraint' in i:
 			for j in sc.listSurveyEntry:
 				
 				# test for mass range
@@ -363,29 +363,29 @@ def selectSurveyEntries(sc, listArgs):
 					# test for occupation threshold
 					percsum = 0.0
 					for k in sc.listSamples:
-						if j.dictIntensity.has_key(k) and j.dictIntensity[k] != 0:
+						if k in j.dictIntensity and j.dictIntensity[k] != 0:
 							percsum += 1                                        
 					percsum = percsum / samples
 
 					# test for min/max intensity delta
 					breakBool = False
-					if i.has_key('minIntensityDelta') or i.has_key('maxIntensityDelta'):
+					if 'minIntensityDelta' in i or 'maxIntensityDelta' in i:
 						dictRelIntensity = {}
 						
 						# find biggest intensity	
 						maxInt = 0
 						for k in sc.listSamples:
-							if j.dictIntensity.has_key(k) and maxInt < j.dictIntensity[k]: maxInt = j.dictIntensity[k]
+							if k in j.dictIntensity and maxInt < j.dictIntensity[k]: maxInt = j.dictIntensity[k]
 
 						# calc relative intensity
 						for k in sc.listSamples:
-							if j.dictIntensity.has_key(k): 
+							if k in j.dictIntensity: 
 								dictRelIntensity[k] = j.dictIntensity[k] / maxInt
 						
 						# check for max/minIntensityDelta
 						for k in sc.listSamples:
 							for l in sc.listSamples:
-								if dictRelIntensity.has_key(k) and dictRelIntensity.has_key(l):
+								if k in dictRelIntensity and l in dictRelIntensity:
 									if abs(dictRelIntensity[k] - dictRelIntensity[l]) < minInsD: 
 										boolBreak = True
 										break
@@ -418,18 +418,18 @@ def sSEwithSGR(sc, listArgs):
 	for i in listArgs:
 		
 		# overwrite standart tolerance
-		if i.has_key('MStolerance'): MStolerance = 1000000 / i['MStolerance']
+		if 'MStolerance' in i: MStolerance = 1000000 / i['MStolerance']
 		else: MStolerance = sc.options['MStolerance']
 
 		# mass range constraint
-		if i.has_key('massrange'): massrange = i['massrange'] 
+		if 'massrange' in i: massrange = i['massrange'] 
 		else: massrange = (0, 30000)
 		
 		# set sample occupation threshold
-		if i.has_key('occupationThreshold'): occThrld = i['occupationThreshold'] 
+		if 'occupationThreshold' in i: occThrld = i['occupationThreshold'] 
 		else: occThrld = 0
 	
-		if i.has_key('sf-constraint'):
+		if 'sf-constraint' in i:
 			for j in sc.listSurveyEntry:
 				
 				# test for mass range
@@ -438,7 +438,7 @@ def sSEwithSGR(sc, listArgs):
 					# test for occupation threshold
 					percsum = 0.0
 					for k in sc.listSamples:
-						if j.dictIntensity.has_key(k) and j.dictIntensity[k] != 0:
+						if k in j.dictIntensity and j.dictIntensity[k] != 0:
 							percsum += 1                                        
 					percsum = percsum / samples
 				
@@ -466,7 +466,7 @@ class linkedList:
 		self.list.append(data)
 		self.length += 1
 
-	def next(self):
+	def __next__(self):
 		self.index += 1
 		return self.list[self.index]
 
@@ -519,7 +519,7 @@ EID (experimantal ...) we use two scores:
 		return None
 
 	# other initialization
-	if options.has_key('MStolerance'):
+	if 'MStolerance' in options:
 		MStolerance = 1000000 / options['MStolerance']
 	else:
 		MStolerance = scan.options['MStolerance']
@@ -552,10 +552,10 @@ and name a string identifyer for the sequence. The return value is
 a Sequence object. Possible options are:
 	massrange, MStolerance, MSMStolerance"""
 
-	if options.has_key('MStolerance'): MStolerance = 1000000 / options['MStolerance']
+	if 'MStolerance' in options: MStolerance = 1000000 / options['MStolerance']
 	else: MStolerance = scan.options['MStolerance']
 
-	if options.has_key('MSMStolerance'): MSMStolerance = 1000000 / options['MSMStolerance']
+	if 'MSMStolerance' in options: MSMStolerance = 1000000 / options['MSMStolerance']
 	else: MSMStolerance = scan.options['MSMStolerance']
 
 	selectSurveyEntries(scan, [{'sf-constraint' : sfconstraint, 'massrange' : options['massrange']}])
@@ -573,7 +573,7 @@ def selectConnectedSurveyEntries(scan, diff, options):
 	if isinstance(diff, ElementSequence):
 		diff = diff.getWeight()
 
-	if not options.has_key('posToNeg'):	
+	if 'posToNeg' not in options:	
 		raise "Options has at least to contain 'posToNeg'"
 
 	posList = scan.get_posSurveyEntry()

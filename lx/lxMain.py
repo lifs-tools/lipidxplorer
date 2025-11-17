@@ -27,9 +27,11 @@ def startImport(options, queries = None, parent = None, worker = None, lipidxplo
 	listIntermission = lpdxImportDEF_new(
 			options = options,
 			parent = parent)
-
+ 
+	print("options data type startImport()", type(options)) # <class 'lx.options.optionsDict'>
+ 
 	if lipidxplorer:
-		if not options['spectraFormat'] in ['dta/csv', 'mzXML', 'mzML']:
+		if not options['spectraFormat'] in ['dta/csv', 'mzML']:
 			raise LipidXException("The spectra format *.%s is not supported" % options['spectraFormat'])
 
 	#if optimization:
@@ -38,16 +40,11 @@ def startImport(options, queries = None, parent = None, worker = None, lipidxplo
 	else:
 		from lx.spectraImport import doImport
 
-	#if parent:
-		#max = len(listIntermission[5]) + 3
-
-		#if not parent is None:
-		#	parent.debug.progressDialog = wx.ProgressDialog(
-		#			"Importing spectra",
-		#			"Finished, if the bar is filled completely.",
-		#			max,
-		#			style = wx.PD_CAN_ABORT)
-
+  
+################### Ballal #########################
+	options['importMSMS'] = True
+ ############################################
+ 
 	# listIntermission: (options, scan, importDir, output, parent, listFiles, isTaken, isGroup)
 	if parent: # if started from GUI, put it in a thread
 		worker.beginThread(doImport,
@@ -84,7 +81,7 @@ def startImport(options, queries = None, parent = None, worker = None, lipidxplo
 def startMFQL(options = {}, queries = {}, parent = None):
 
 	# get the starting time for speed measure
-	start = time.clock()
+	start = time.perf_counter()
 
 	progressCount = 0
 
@@ -92,12 +89,13 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	mfqlFiles = odict()
 	if queries != {}:
 		for arg in queries:
-			if re.match('(.*\.mfql$)|(.*\.py$)', arg):
+			if re.match(r'(.*\.mfql$)|(.*\.py$)', arg):
 				#mfqlFiles[arg] = open(arg, 'r').read()
 				with open(queries[arg], 'r') as mfqlFile:
 					mfqlFiles[arg] = mfqlFile.read()
-	print "mfqlFiles in startMFQL", mfqlFiles
-	print "\n****** Starting MFQL interpretation ******\n"
+     
+	print("mfqlFiles in startMFQL in lxMain.py", mfqlFiles)
+	print("\n****** Starting MFQL interpretation ******\n")
 
 	# collect masterscan file
 	if options['masterScanRun']:
@@ -108,12 +106,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 			raise LipidXException("The MasterScan does not exist. You need to generate it by importing " + \
 					"your samples. Please have a look into the LipidXplorer tutorial to find out how to " + \
 					"import spectra and generate a MasterScan.")
-		#progressCount += 1
-		#if parent:
-		#	(cont, skip) = parent.debug.progressDialog.Update(progressCount)
-		#	if not cont:
-		#		parent.debug.progressDialog.Destroy()
-		#		return parent.CONST_THREAD_USER_ABORT
+
 
 	else:
 		raise ValueError("MasterScan file has to be specificated with -s")
@@ -123,8 +116,10 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	# give the options from the settings
 	mfqlObj.options = options
 
+	#print("mfqlObj.sc.options.keys()", ", ".join(list(mfqlObj.sc.options.keys())))
+
 	# give the options from the loaded MasterScan
-	for i in mfqlObj.sc.options.keys():
+	for i in list(mfqlObj.sc.options.keys()):
 		if i in Options.importOptions and (not mfqlObj.sc.options.isEmpty(i)):
 			mfqlObj.options[i] = mfqlObj.sc.options[i]
 
@@ -134,6 +129,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	else:
 		mfqlObj.outputSeperator = ','
 
+	#print("type(mfqlFiles), type(mfqlObj), type(masterscan) in StartMFQL..", type(mfqlFiles), type(mfqlObj), type(masterscan))
 	(progressCount, returnValue) = startParsing(mfqlFiles,
 				mfqlObj,
 				masterscan,
@@ -166,7 +162,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 		else:
 			strResult = ''
 
-		for k in result.dictQuery.values():
+		for k in list(result.dictQuery.values()):
 			if not options['compress']:
 				strResult += "\n###,%s\n" % k.name
 			strResult += k.strOutput
@@ -179,15 +175,18 @@ def startMFQL(options = {}, queries = {}, parent = None):
 
 		# put out
 		if not options['resultFile']:
-			print strResult
+			print(strResult)
 		else:
 			if parent:
+				print("\n Results written parent", strResult)
 				parent.writeOutput(options['resultFile'], strResult)
 			else:
 				with open(options['resultFile'], 'w') as f:
+					print("\n Results written", strResult)
 					f.write(strResult)
+					
 	else:
-		print "\n <Query returned no result.>\n"
+		print("\n <Query returned no result.>\n")
 
 	# maybe dump the complementary MasterScan
 	if options['complementMasterScan']:
@@ -214,7 +213,7 @@ def startMFQL(options = {}, queries = {}, parent = None):
 	del masterscan
 	del mfqlObj
 
-	print "\nOverall time needed for identification: %d:%d" % ((time.clock() - start) / 60, (time.clock() - start) % 60)
+	print("\nOverall time needed for identification: %d:%d" % ((time.perf_counter() - start) / 60, (time.perf_counter() - start) % 60))
 
 	# return successfull
 	if parent:

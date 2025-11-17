@@ -364,3 +364,4 @@ class PythonSTC(stc.StyledTextCtrl):
 
 _USE_PANEL = 1
 
+

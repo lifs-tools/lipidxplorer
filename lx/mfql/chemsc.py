@@ -11,38 +11,12 @@ import os
 from copy import deepcopy, copy
 from lx.mfql.runtimeStatic import TypeTolerance
 
-import platform
+import lx.mfql.calcsf_cached as calcsf
+from functools import total_ordering
 
-print "PLATFORM: ", platform.machine()
+sys.path.append(".." + os.sep + "lib" + os.sep)
 
-if platform.machine() == "i686":
-	if platform.python_version_tuple()[1] == '6': # Python 2.6
-		#import lx.mfql.calcsf26_32.calcsf26 as calcsf
-		import lx.mfql.calcsf26_32.calcsf as calcsf
-	if platform.python_version_tuple()[1] == '7': # Python 2.7
-		import lx.mfql.calcsf27_32.calcsf as calcsf
-elif platform.machine() == "x86":
-	if platform.python_version_tuple()[1] == '6': # Python 2.6
-		#import lx.mfql.calcsf26_32.calcsf26 as calcsf
-		import lx.mfql.calcsf26_32.calcsf as calcsf
-	if platform.python_version_tuple()[1] == '7': # Python 2.7
-		import lx.mfql.calcsf27_32.calcsf as calcsf
-elif platform.machine() == "AMD64":
-	if platform.python_version_tuple()[1] == '6': # Python 2.6
-		import lx.mfql.calcsf26_64.calcsf as calcsf
-	if platform.python_version_tuple()[1] == '7': # Python 2.7
-		import lx.mfql.calcsf27_64.calcsf as calcsf
-sys.path.append('..' + os.sep + 'lib' + os.sep)
 
-#if sys.platform == 'win32' or sys.platform == 'cygwin':
-#	if sys.version[0] == '2' and sys.version[2] == '6':
-#		import calcsf26 as calcsf
-#	elif sys.version[0] == '2' and sys.version[2] == '5':
-#		import calcsf25 as calcsf
-#	else:
-#		import calcsf25 as calcsf
-#else:
-#	import calcsf
 
 #define C 12.0
 #define H 1.0078250321
@@ -161,6 +135,10 @@ def build_dict(s):
 
 sym2elt = build_dict(_data)
 
+
+
+
+
 class ConstElement(Element):
 
 	def __init__(self, symbol, name, molweight, count = 0):
@@ -203,6 +181,17 @@ def build_dict_const(s):
 sym2elt_const = build_dict_const(_data)
 del _data
 
+
+
+
+
+
+
+
+
+
+
+
 class RangeElement(Element):
 	def __init__(self, symbol, name, molweight, count = 0):
 		"""An element. If count == 0 then range == []"""
@@ -219,7 +208,7 @@ class RangeElement(Element):
 		self._constElement = True
 
 	def set_range(self, l, r, s = 1):
-		self._range = range(l,r,s)
+		self._range = list(range(l,r,s))
 		self._rangeElement = True
 
 	def set_enum(self, enum):
@@ -256,241 +245,142 @@ def diff(n1, n2):
 	else:
 		return 0
 
+
+
+###### Ballal edited it 
+
+@total_ordering
 class ElementSequence:
-
 	def __init__(self):
-
-		#from lpdxTools import permute2
-
 		self.charge = 0
 		self.polarity = 0
-
-		self._seq = {}
-
-		self._db = 0
-		self._weight = 0
-
+		self._seq = {}  # symbol -> ConstElement
+		self._db = None
+		self._weight = None
 		self.scriptTag = []
-
-		#print ">>>", seq
-		#for line in traceback.format_stack()[:-1]:
-		#	print line.strip()
-		#exit(0)
 
 	def append(self, t):
 		self._seq[t.sym] = t
 
 	def checkElements(self):
 		for i in self._seq.values():
-			if i.__class__ != ConstElement:
+			if not isinstance(i, ConstElement):
 				raise TypeError("ElementSequence only allows ConstElement")
 
 	def get_seq(self):
 		return self._seq
 
 	def get_element(self, e):
-		try:
-			return self._seq[e]
-		except KeyError:
-			return None
+		return self._seq.get(e)
 
 	def keys(self):
-		return self._seq.keys()
+		return list(self._seq.keys())
 
 	def values(self):
-		return self._seq.values()
-
-	def has_key(self, k):
-		return self._seq.has_key(k)
+		return list(self._seq.values())
 
 	def __len__(self):
-		return len(self._seq.keys())
+		return len(self._seq)
 
 	def __repr__(self):
-		""" Return sum form in a good readable string """
-		l = ""
-		for i in self._seq.values():
-			l += "%s%d " % (i.sym, i._count)
-		return l
+		return " ".join(f"{e.sym}{e._count}" for e in self._seq.values())
 
-	def __cmp__(self, elemseq):
+	def __eq__(self, other):
+		if not isinstance(other, ElementSequence):
+			return NotImplemented
+		return all(
+			self._seq.get(sym, ConstElement(sym, "", 0, 0))._count ==
+			other._seq.get(sym, ConstElement(sym, "", 0, 0))._count
+			for sym in set(self._seq) | set(other._seq)
+		)
 
-		if elemseq.__class__ == ElementSequence:
+	def __lt__(self, other):
+		if not isinstance(other, ElementSequence):
+			return NotImplemented
+		# Sort elements by symbol for consistent comparison
+		self_items = sorted((k, v._count) for k, v in self._seq.items())
+		other_items = sorted((k, v._count) for k, v in other._seq.items())
+		return self_items < other_items
 
-			if len(elemseq) == len(self):
-				for elem in self._seq.keys():
-					if elemseq._seq.has_key(elem):
-						if self._seq[elem]._count != elemseq._seq[elem]._count:
-							return -1
-					else:
-						return -1
-			else:
-				return -1
-		else:
-			raise TypeError("Comparison between chemical sum" +\
-					" compositions and sc-constraints is not possible")
-
-		return 0
-
-		#for i in range(len(self.seq)):
-		#	elem = elemseq[self.seq[i].sym]
-		#	#if self.seq[i]._range != [0]:
-		#	if elem:
-		#		#if elem._range != [0] and elem._range != []:
-		#		if self.seq[i]._range != elem._range:
-		#			return -1
-		#		#else:
-		#		#	pass # do nothing, because the element is not there
-		#	else:
-		#		return -1
-		#	#elif self.seq[-1] == self.seq[i]:
-		#	#	return 0
-		#return 0
+	def __hash__(self):
+		return hash(tuple(sorted((k, v._count) for k, v in self._seq.items())))
 
 	def sorted(self):
-		return sorted(self.seq, key = lambda x: x.sym)
+		return sorted(self._seq.values(), key=lambda x: x.sym)
 
-	def __delitem__(self, t):
-		del self._seq[t]
+	def __delitem__(self, key):
+		del self._seq[key]
 
-	def __getitem__(self, elem):
-		"""in: Symbol of an element
-
-		out: the Element Object or None if it is not in the sequence"""
-
-		if elem == 'db':
+	def __getitem__(self, key):
+		if key == 'db':
 			return self.get_DB()
+		return self._seq.get(key)._count if key in self._seq else 0
+
+	def __setitem__(self, key, value):
+		if key in self._seq:
+			self._seq[key]._count = value
 		else:
-			try:
-				return self._seq[elem]._count
-			except KeyError:
-				return 0
+			raise KeyError(f"Element '{key}' not found in sequence")
 
-		return 0
-
-	def __setitem__(self, elem, input):
-		"""in: Symbol of an element
-
-		out: the Element Object or None if it is not in the sequence"""
-
-		self._seq[elem]._count = input
-		return None
-
-	def __add__(self, elemseq):
-
-		#for i in set(self._seq.keys()).union(set(elemseq._seq.keys())):
-		#	if self._seq.has_key(i) and elemseq._seq.has_key(i):
-		#		self._seq[i]._count += elemseq._seq[i]._count
-		#	elif self._seq.has_key(i) and not elemseq._seq.has_key(i):
-		#		pass
-		#	elif not self._seq.has_key(i) and elemseq._seq.has_key(i):
-		#		self._seq[i] = elemseq.get_element(i)
-
-		## reset weight and db
-		#self._weight = 0.0
-		#self._db = 0.0
-
-		#return self
-
+	def __add__(self, other):
 		result = deepcopy(self)
-
-		for i in set(result._seq.keys()).union(set(elemseq._seq.keys())):
-			if result._seq.has_key(i) and elemseq._seq.has_key(i):
-				result._seq[i]._count += elemseq._seq[i]._count
-			elif result._seq.has_key(i) and not elemseq._seq.has_key(i):
-				pass
-			elif not result._seq.has_key(i) and elemseq._seq.has_key(i):
-				result._seq[i] = elemseq.get_element(i)
-
-		# reset weight and db
-		result._weight = 0.0
-		result._db = 0.0
-
+		for key in set(result._seq) | set(other._seq):
+			if key in result._seq and key in other._seq:
+				result._seq[key]._count += other._seq[key]._count
+			elif key in other._seq:
+				result._seq[key] = deepcopy(other._seq[key])
+		result._weight = None
+		result._db = None
 		return result
 
-	def __sub__(self, elemseq):
-
+	def __sub__(self, other):
 		result = deepcopy(self)
-
-		for i in elemseq._seq.keys():
-			if result._seq.has_key(i):
-				result._seq[i]._count -= elemseq._seq[i]._count
-				if result._seq[i]._count < 0:
-					del result._seq[i]
-			else:
-				pass
-
-		# reset weight and db
-		result._weight = 0.0
-		result._db = 0.0
-
+		for key in other._seq:
+			if key in result._seq:
+				result._seq[key]._count -= other._seq[key]._count
+				if result._seq[key]._count <= 0:
+					del result._seq[key]
+		result._weight = None
+		result._db = None
 		return result
 
-	def __mul__(self, int):
-
+	def __mul__(self, factor):
 		result = deepcopy(self)
-
-		for i in result._seq.keys():
-			result._seq[i] *= int
-
-		# reset weight and db
-		result._weight = 0.0
-		result._db = 0.0
-
+		for k in result._seq:
+			result._seq[k]._count *= factor
+		result._weight = None
+		result._db = None
 		return result
 
 	def get_DB(self):
-
-		# see http://en.wikipedia.org/wiki/Degree_of_unsaturation
-
-		if self._db == 0.0:
-
-			cRDB = 2
-			cRDB += (self['C'] * 2) + (self['H'] * -1) + (self['Cl'] * -1) +\
-					self['N'] + (self['Na'] * -1) + self['P'] - \
-					self['D'] + (self['Ci'] * 2) + self['Ni'] - self['F'] +\
-					(self['I'] * 5) - self['K'] - self['Cs'] -\
-					self['Br'] + (self['Li'] * -1)
-			cRDB /= 2.0
-			self._db = cRDB
-
+		if self._db is not None:
+			return self._db
+		cRDB = 2
+		cRDB += (self['C'] * 2) + (self['H'] * -1) + (self['Cl'] * -1) + \
+				self['N'] + (self['Na'] * -1) + self['P'] - \
+				self['D'] + (self['Ci'] * 2) + self['Ni'] - self['F'] + \
+				(self['I'] * 5) - self['K'] - self['Cs'] - \
+				self['Br'] + (self['Li'] * -1)
+		self._db = cRDB / 2.0
 		return self._db
 
-	def getWeight(self, truemz = False):
-
-		if self._weight == 0.0:
-
-			for thing in self._seq.values():
-				self._weight += float(thing.get_weight())
-
-			if self.charge != 0:
-				if truemz:
-					self._weight = (self._weight + self.charge * -0.00055)
-				else:
-					self._weight = (self._weight + self.charge * -0.00055) / abs(self.charge)
-
+	def getWeight(self, truemz=False):
+		if self._weight is not None:
+			return self._weight
+		total = sum(e.get_weight() for e in self._seq.values())
+		if self.charge != 0:
+			total += self.charge * -0.00055
+			if not truemz:
+				total /= abs(self.charge)
+		self._weight = total
 		return self._weight
-
 
 	def set_charge(self, c):
 		self.charge = c
-		if c > 0:
-			self.polarity = 1
-		elif c < 0:
-			self.polarity = -1
-		else:
-			self.polarity = 0
-
-	#def putweights(self, s, l):
-	#	""" l is a sequence in the same order as the values in s """
-	#	# generate l
-	#	ret = []
-	#	i = 0
-	#	for j in s:
-	#		ret.append(float(s[i]) * sym2elt[l[i]].mw)
-	#		#ret.append(s[i] * l[i])
-	#		i = i + 1
-	#	return ret
+		self.polarity = (1 if c > 0 else -1 if c < 0 else 0)
+ 
+##################################
+ 
 
 
 class SCConstraint(ElementSequence):
@@ -506,7 +396,7 @@ class SCConstraint(ElementSequence):
 		self._seq[t.sym] = t
 
 	def checkElements(self):
-		for i in self._seq.values():
+		for i in list(self._seq.values()):
 			if i.__class__ != RangeElement:
 				raise TypeError("SCConstraint only allows RangeElement")
 
@@ -514,14 +404,14 @@ class SCConstraint(ElementSequence):
 
 		minMass = 0
 		maxMass = 0
-		for i in self._seq.keys():
+		for i in list(self._seq.keys()):
 			minMass += self._seq[i]._range[0] * self._seq[i].mw
 			maxMass += self._seq[i]._range[-1] * self._seq[i].mw
 
 		if minMass == maxMass:
 			minMass -= 1
 			maxMass += 1
-
+		#print(".........getMassRange...........",minMass / abs(self.charge), maxMass / abs(self.charge))
 		return (minMass / abs(self.charge), maxMass / abs(self.charge))
 
 	def __getitem__(self, elem):
@@ -542,7 +432,7 @@ class SCConstraint(ElementSequence):
 	def __repr__(self):
 		""" Return sum form in a good readable string """
 		l = ""
-		for i in self._seq.values():
+		for i in list(self._seq.values()):
 
 			if i.isEnum():
 				l = l + i.sym + "["
@@ -707,7 +597,7 @@ class SCConstraint(ElementSequence):
 		"""See if the self sc constraint covers the given elemseq"""
 		import types
 
-		if type(elemseq) == types.ListType:
+		if type(elemseq) == list:
 			flagelem = False
 			for k in elemseq:
 				if self.covers(k):
@@ -717,8 +607,8 @@ class SCConstraint(ElementSequence):
 			if elemseq.__class__ != ElementSequence:
 				raise TypeError("covers() needs an ElementSequence as parameter")
 
-			for elem in elemseq.keys():
-				if self._seq.has_key(elem) and elemseq[elem] in self._seq[elem]._range:
+			for elem in list(elemseq.keys()):
+				if elem in self._seq and elemseq[elem] in self._seq[elem]._range:
 					pass
 				else:
 					return False
@@ -739,7 +629,7 @@ class SCConstraint(ElementSequence):
 
 		# symbol list of the sequence
 		l = []
-		for i in self._seq.values():
+		for i in list(self._seq.values()):
 			l.append(i.sym)
 
 		if isinstance(tolerance, TypeTolerance):
@@ -1038,8 +928,8 @@ class SCConstraint(ElementSequence):
 		a sf-constrain.
 		"""
 		buf = deepcopy(self)
-		for i in elemseq.keys():
-			if self.has_key(i.sym):
+		for i in list(elemseq.keys()):
+			if i.sym in self:
 				# normal case
 				if len(self._seq[i.sym]._range) == 1 and len(i._range) == 1:
 					elem._range[0] -= i._range[0]
@@ -1062,7 +952,7 @@ def calcSFbyMass(mass, sfconstraint, tolerance, nearest=False):
 	nearest in Boolean
 OUT: list of SurveyEntry
 """
-	#print "calcSFbyMass......... mass, sfconstraint, tolerance, nearest ", mass,sfconstraint, tolerance,nearest
+	#print("calcSFbyMass......... mass, sfconstraint, tolerance, nearest ", mass,sfconstraint, tolerance,nearest)
 	if not sfconstraint:
 		raise "No SF given"
 

@@ -20,7 +20,7 @@ Converted to Python 1/10/08 by
 Brian H. Clowers bhclowers@gmail.com
 '''
 import numpy as N
-import numpy.fft.fftpack as F
+import numpy.fft as F
 import time
 
 def next2pow(x):
@@ -103,25 +103,25 @@ def isotope(elemC, elemH, elemO, elemN, elemS, elemP, WINDOW_SIZE = 100, RESOLUT
 	t_fft=0
 	t_mult=0
 
-	for i in xrange(MAX_ELEMENTS):
+	for i in range(MAX_ELEMENTS):
 
 		tA=N.zeros(WINDOW_SIZE)
-		for j in xrange(MAX_ISOTOPES):
+		for j in range(MAX_ISOTOPES):
 			if A[i][j,0] != 0:
 				#removed +1 after R)+1 --we're using python
 				tA[int(N.round(A[i][j,0]*R))]=A[i][j,1]#;  % put isotopic distribution in tA
 
 		#print 'Calculate FFT...'
-		t0 = time.clock()
+		t0 = time.perf_counter()
 		tA=F.fft(tA) # FFT along elements isotopic distribution  O(nlogn)
-		t_fft = time.clock()-t0
+		t_fft = time.perf_counter()-t0
 		#print 'Multiply vectors...'
-		t0 = time.clock()
+		t0 = time.perf_counter()
 		tA=tA**M[i]#  % O(n)
 		#################
 		ptA = ptA*tA#  % O(n)#this is where it is messing UP
 		#################
-		t1 = time.clock()
+		t1 = time.perf_counter()
 		t_mult=t1-t0
 
 
@@ -194,14 +194,14 @@ def isotopicValuesInter(elemC, elemH, elemO, elemN, elemS, elemP, elemCNL, elemH
 
 	(MA, ptA) = isotope(elemC, elemH, elemO, elemN, elemS, elemP, 20, 0.1)
 	one = ptA[0]
-	F = map(lambda x: x / one, ptA)
+	F = [x / one for x in ptA]
 	while len(F) < 5:
 		F.append(0.0)
 	monoisotopic = one
 
 	(MA, ptA) = isotope(elemCNL, elemHNL, elemONL, elemNNL, elemSNL, elemPNL, 20 ,0.1)
 	one = ptA[0]
-	N = map(lambda x: x / one, ptA)
+	N = [x / one for x in ptA]
 	while len(N) < 5:
 		N.append(0.0)
 
@@ -243,12 +243,12 @@ def isotopicValuesInterM(elemC, elemH, elemO, elemN, elemS, elemP, elemCNL, elem
 	elemSNL = 0
 
 	(MA, ptA) = isotope(elemC, elemH, elemO, elemN, elemS, elemP, 20, 0.1)
-	F = map(lambda x: x, ptA)
+	F = [x for x in ptA]
 	while len(F) < 5:
 		F.append(0.0)
 
 	(MA, ptA) = isotope(elemCNL, elemHNL, elemONL, elemNNL, elemSNL, elemPNL, 20 ,0.1)
-	N = map(lambda x: x, ptA)
+	N = [x for x in ptA]
 	while len(N) < 5:
 		N.append(0.0)
 

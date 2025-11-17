@@ -16,7 +16,7 @@ class MyApp(wx.App):
 		self.frame = lpdxGUI.LpdxFrame(None, -1, "",
 				rawimport = False,
 				lipidxplorer = True,
-				version = "1.2.9")
+				version = "1.5")
 		self.frame.SetIcon(wx.Icon("lx/stuff/lipidx_ico2.ico", wx.BITMAP_TYPE_ICO))
 		self.frame.Show(True)
 		self.frame.Center()
@@ -32,5 +32,6 @@ def main():
 	## end of the software
 
 
+
 if __name__ == "__main__":
-	main()
+    main()

@@ -15,7 +15,7 @@
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 
-from types import TupleType
+#from types import TupleType
 
 class ClusteringError(Exception):
    pass
@@ -130,7 +130,7 @@ def printmatrix(list):
    format =  " %%%is |" % maxlen
    format = "|" + format*colcount
    for row in list:
-      print format % tuple(row)
+      print(format % tuple(row))
 
 def magnitude(a):
    "calculates the magnitude of a vecor"
@@ -219,7 +219,7 @@ class Cluster:
       """
       flattened_items = []
       if len(args) == 0: collection = self.__items
-      else:              collection = args[0].items()
+      else:              collection = list(args[0].items())
 
       for item in collection:
          if isinstance(item, Cluster):
@@ -239,12 +239,12 @@ class Cluster:
       """
       Pretty-prints this cluster. Useful for debuging
       """
-      print depth*"   " + "[level %s]" % self.__level
+      print(depth*"   " + "[level %s]" % self.__level)
       for item in self.__items:
          if isinstance(item, Cluster):
             item.display(depth+1)
          else:
-            print depth*"   "+"%s" % item
+            print(depth*"   "+"%s" % item)
 
    def topology(self):
       """
@@ -429,7 +429,7 @@ class HierarchicalClustering(BaseClusterMethod):
       elif method == 'uclus':
          self.linkage = self.uclusDistance
       else:
-         raise ValueError, 'distance method must be one of single, complete, average of uclus'
+         raise ValueError('distance method must be one of single, complete, average of uclus')
 
    def uclusDistance(self, x, y):
       """
@@ -639,13 +639,13 @@ class KMeansClustering:
       self.__initial_length = len(data)
 
       # test if each item is of same dimensions
-      if len(data) > 1 and isinstance(data[0], TupleType):
+      if len(data) > 1 and isinstance(data[0], tuple):
          control_length = len(data[0])
          for item in data[1:]:
             if len(item) != control_length:
                raise ValueError("Each item in the data list must have the same amount of dimensions. Item", item, "was out of line!")
       # now check if we need and have a distance function
-      if len(data) > 1 and not isinstance(data[0], TupleType) and distance is None:
+      if len(data) > 1 and not isinstance(data[0], tuple) and distance is None:
          raise ValueError("You supplied non-standard items but no distance function! We cannot continue!")
       # we now know that we have tuples, and assume therefore that it's items are numeric
       elif distance is None:
@@ -729,7 +729,7 @@ available. You supplied %d items, and asked for %d clusters.""" %
       """
       # initialise the clusters with empty lists
       self.__clusters = []
-      for x in xrange(clustercount): self.__clusters.append([])
+      for x in range(clustercount): self.__clusters.append([])
 
       # distribute the items into the clusters
       count = 0
@@ -866,14 +866,14 @@ def get_cluster_elements(clust):
 
 def printclust(clust,labels=None,n=0):
 	# indent to make a hierarchy layout
-	for i in range(n): print ' ',
+	for i in range(n): print(' ', end=' ')
 	if clust.id<0:
 		# negative id means that this is branch
-		print '-'
+		print('-')
 	else:
 		# positive id means that this is an endpoint
-		if labels==None: print clust.id
-		else: print labels[clust.id]
+		if labels==None: print(clust.id)
+		else: print(labels[clust.id])
 
 	# now print the right and left branches
 	if clust.left!=None: printclust(clust.left,labels=labels,n=n+1)

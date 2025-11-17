@@ -4,7 +4,7 @@ from math import sqrt
 from glob import glob
 from lx.fileReader.mzAPI import mzFile
 from lx.fileReader.mzxml import PrecursorSort, MzXMLFileReader
-from lx.alignment import specEntry, linearAlignment, heuristicAlignment, mergeSumIntensity, doClusterSample, lpdxClusterMSMS
+from lx.alignment import specEntry, linearAlignment, mergeSumIntensity, doClusterSample, lpdxClusterMSMS
 from lx.tools import reportout
 from lx.spectraContainer import Sample, MSMass, MSMS
 from lx.exceptions import LipidXException
@@ -20,7 +20,7 @@ from lx.debugger import Debug
 
 # make a regular expression object for recognizing the entries
 # of a .dta file
-regDta = re.compile("(\d+\.?\d*)(\s|\t)+([-]?\d+\.?\d*)")
+regDta = re.compile(r"(\d+\.?\d*)(\s|\t)+([-]?\d+\.?\d*)")
 
 fadi_percentageMSMS = None # var used for filtering this is dirty code, TODO remove this global variable
 
@@ -50,7 +50,7 @@ def add_Sample(
 	# is the given file a hidden Directory?
 	s = specFile.split(os.sep)
 	for i in s:
-		if re.match('(^\.\w+).*', i):
+		if re.match(r'(^\.\w+).*', i):
 			raise LipidXException("The given path %s is not " +\
 					"accepted by LipidXplorer." % specFile)
 
@@ -68,13 +68,15 @@ def add_Sample(
 		t2 = options['timerange'][1] / 60
 		reportout("Limiting timerange from %f to %f (sec), %f to %f (min)" % (options['timerange'][0], options['timerange'][1], t1, t2))
 
-	if options['pisSpectra']:
-		msm1 = options['MSMSmassrange'][0]
-		msm2 = options['MSMSmassrange'][1]
-	else:
-		msm1 = options['MSmassrange'][0]
-		msm2 = options['MSmassrange'][1]
-
+	# if options['pisSpectra']:
+	# 	msm1 = options['MSMSmassrange'][0]
+	# 	msm2 = options['MSMSmassrange'][1]
+	# else:
+	# 	msm1 = options['MSmassrange'][0]
+	# 	msm2 = options['MSmassrange'][1]
+	msm1 = options['MSmassrange'][0]
+	msm2 = options['MSmassrange'][1]
+ 
 	if options['MSMSmassrange']:
 		msmsm1 = options['MSMSmassrange'][0]
 		msmsm2 = options['MSMSmassrange'][1]
@@ -255,7 +257,8 @@ def add_Sample(
 		# as per fadi this is called on ms1
 		fadi_denominator = count
 		fadi_percentage = options['MSfilter']
-		listClusters = linearAlignment(dictSpecEntry.keys(),
+
+		listClusters = linearAlignment(list(dictSpecEntry.keys()),
 							dictSpecEntry,
 							options['MSresolution'],
 							merge = mergeSumIntensity,
@@ -301,11 +304,11 @@ def add_Sample(
 
 			# get the averaged intensity
 			for sample in keys:#cl.keys():
-				if cl.has_key(sample) and cl[sample].content != {}:
+				if sample in cl and cl[sample].content != {}:
 					sumMass += cl[sample].mass
 					sumMassIntensity += cl[sample].mass * cl[sample].content['intensity']
 					sumIntensity += cl[sample].content['intensity']
-					if cl[sample].content.has_key('intensity_rel'):
+					if 'intensity_rel' in cl[sample].content:
 						sumIntensity_relative += cl[sample].content['intensity_rel']
 
 			# empty intensity? make an empty entry
@@ -371,8 +374,7 @@ def add_Sample(
 
 	# maybe there is no MS/MS?
 	if len(ms2Scans) > 0:
-		for ms2scan_entry in sorted(ms2Scans,
-				cmp = lambda x,y : cmp(x['precursorMz'], y['precursorMz'])):
+		for ms2scan_entry in sorted(ms2Scans, key=lambda x: x['precursorMz']):
 			if ms2scan_entry['scan'] != []:
 
 				# add the fragment mass to the fragment spectrum
@@ -442,6 +444,8 @@ def add_Sample(
 	return (specName, lpdxSample.base_peak_ms1, nb_ms_scans, nb_ms_peaks, nb_msms_scans, nb_msms_peaks)
 
 
+
+
 def add_Sample_AVG(
 		sc = None,
 		specFile = None,
@@ -463,7 +467,7 @@ def add_Sample_AVG(
 	# is the given file a hidden Directory?
 	s = specFile.split(os.sep)
 	for i in s:
-		if re.match('(^\.\w+).*', i):
+		if re.match(r'(^\.\w+).*', i):
 			raise LipidXException("The given path %s is not " +\
 					"accepted by LipidXplorer." % specFile)
 
@@ -519,7 +523,7 @@ def add_Sample_AVG(
 	# get base peak intensity
 	basePeakIntensity = 0
 	for i in spectrum:
-		print "%.4f,%.1f" % (i[0], i[1])
+		print("%.4f,%.1f" % (i[0], i[1]))
 		if i[1] > basePeakIntensity:
 			basePeakIntensity = i[1]
 
@@ -690,8 +694,7 @@ def add_Sample_AVG(
 
 	# maybe there is no MS/MS?
 	if len(ms2Scans) > 0:
-		for ms2scan_entry in sorted(ms2Scans,
-				cmp = lambda x,y : cmp(x['precursorMz'], y['precursorMz'])):
+		for ms2scan_entry in sorted(ms2Scans, key=lambda x: x['precursorMz']):
 			if ms2scan_entry['scan'] != []:
 
 				# add the fragment mass to the fragment spectrum
@@ -766,7 +769,7 @@ directory>, <the resolution of the mass spec machine>
 	# is the given file a hidden Directory?
 	s = specFile.split(os.sep)
 	for i in s:
-		if re.match('(^\.\w+).*', i):
+		if re.match(r'(^\.\w+).*', i):
 			raise LipidXException("The given path %s is not " +\
 					"accepted by LipidXplorer." % specFile)
 	specName = s[-1]
@@ -980,8 +983,7 @@ directory>, <the resolution of the mass spec machine>
 
 	# maybe there is no MS/MS?
 	if len(ms2Scans) > 0:
-		for ms2scan_entry in sorted(ms2Scans,
-				cmp = lambda x,y : cmp(x['precursorMz'], y['precursorMz'])):
+		for ms2scan_entry in sorted(ms2Scans, key=lambda x: x['precursorMz']):
 			if ms2scan_entry['scan'] != []:
 
 				# add the fragment mass to the fragment spectrum
@@ -1029,7 +1031,8 @@ directory>, <the resolution of the mass spec machine>
 		if scanAveraging == 'linear':
 			fadi_denominator = count
 			fadi_percentage = options['MSfilter']
-			listClusters = linearAlignment(dictSpecEntry.keys(),
+
+			listClusters = linearAlignment(list(dictSpecEntry.keys()),
 								dictSpecEntry,
 								options['MSresolution'],
 								merge = mergeSumIntensity,
@@ -1037,21 +1040,15 @@ directory>, <the resolution of the mass spec machine>
 								mergeDeltaRes = options['MSresolutionDelta'],
 								fadi_denominator = fadi_denominator, fadi_percentage=fadi_percentage)
 
-		elif scanAveraging == 'heuristic':
-			listClusters = heuristicAlignment(dictSpecEntry.keys(),
-								dictSpecEntry,
-								options['MSresolution'],
-								merge = mergeSumIntensity,
-								mergeTolerance = options['MSresolution'],
-								mergeDeltaRes = options['MSresolutionDelta'])
+		
 
 		if (Debug("scanclusters")):
 			# for debugging
 			strings = []
 			for cl in listClusters:
 				str = ''
-				for sample in dictSpecEntry.keys():#cl.keys():
-					if cl.has_key(sample):
+				for sample in list(dictSpecEntry.keys()):#cl.keys():
+					if sample in cl:
 						if cl[sample].content:
 							str +=  "  {0:>9.4f} - {1:>12.1f}  ".format(cl[sample].mass, cl[sample].content['intensity'])
 							#str +=  "  %.4f  " % cl[sample].content['intensity']
@@ -1059,15 +1056,15 @@ directory>, <the resolution of the mass spec machine>
 							try:
 								str +=  " /{0:>9.4f} - {1:>12}/ ".format(cl[sample].mass, '')
 							except TypeError:
-								print "TypeError:", cl[sample].mass
+								print("TypeError:", cl[sample].mass)
 							except :
 								import sys
-								print(sys.exc_info()[0])
+								print((sys.exc_info()[0]))
 					else:
 						str +=  " /{0:>9} - {1:>12}/ ".format('empty', '')
 				strings.append(str)
 
-			print('\n'.join(strings))
+			print(('\n'.join(strings)))
 
 
 		### averaging of the MS1 scans ###
@@ -1101,12 +1098,12 @@ directory>, <the resolution of the mass spec machine>
 			sumIntensity = 0
 			sumIntensity_relative = 0
 
-			for sample in dictSpecEntry.keys():
-				if cl.has_key(sample) and cl[sample].content != {}:
+			for sample in list(dictSpecEntry.keys()):
+				if sample in cl and cl[sample].content != {}:
 					sumMass += cl[sample].mass
 					sumMassIntensity += cl[sample].mass * cl[sample].content['intensity']
 					sumIntensity += cl[sample].content['intensity']
-					if cl[sample].content.has_key('intensity_rel'):
+					if 'intensity_rel' in cl[sample].content:
 						sumIntensity_relative += cl[sample].content['intensity_rel']
 
 			out = specEntry(
@@ -1265,7 +1262,7 @@ def add_DTASample(sc, sampleDir, sampleName, MSmassrange = None, MSMSmassrange =
 	# strName: name of the dest directory (destDir)
 
 	if sampleDir != "":
-		if re.compile('.*\%sneg_.*$' % (os.sep)).match(sampleDir): polarity = -1
+		if re.compile(r'.*\%sneg_.*$' % (os.sep)).match(sampleDir): polarity = -1
 		else: polarity = 1
 	else:
 		polarity = None
@@ -1290,8 +1287,8 @@ def add_DTASample(sc, sampleDir, sampleName, MSmassrange = None, MSMSmassrange =
 	csv = ""
 	dta = False
 
-	mdta = re.compile(".*\.dta")
-	mcsv = re.compile(".*\.csv")
+	mdta = re.compile(r".*\.dta")
+	mcsv = re.compile(r".*\.csv")
 
 	if MSmassrange:
 		#msm1 = float(re.match("\(\s*(\d+\.?\d+)\s*,\s*(\d+\.?\d+)\s*\)", MSmassrange).group(1))
@@ -1313,7 +1310,7 @@ def add_DTASample(sc, sampleDir, sampleName, MSmassrange = None, MSMSmassrange =
 			for namef in files:
 
 				# sort out hidden files
-				if not (re.match('(^\.\w+).*|.*(\\\.)|(\/\.).*', namef)) and \
+				if not (re.match(r'(^\.\w+).*|.*(\\\.)|(\/\.).*', namef)) and \
 						(len(namef.split(os.sep)) <= 1):
 
 					if mdta.match(namef):
@@ -1334,6 +1331,10 @@ def add_DTASample(sc, sampleDir, sampleName, MSmassrange = None, MSMSmassrange =
 
 			# if both - .dta and .csv - are given
 			elif dirmsms != "" and csv != "" and dta and importMSMS:
+         ############## test ballal #############
+				print("MSfilter in add_DTA ####################################:", sc.options['MSfilter'])
+				print("MSMSfilter in add_DTA ####################################:", sc.options['MSMSfilter'])
+    #############################
 				loadMSMS(lpdxSample, dirmsms, sc.options['MSMSresolution'], sc.options)
 				basePeakIntensity = lpdxSample.fillTable(lpdxSample.openAndRead(csv), sampleName, sampleDir, sc.options['MSthreshold'], thresholdType)
 
@@ -1392,7 +1393,7 @@ def loadMSMS(sample, dirmsms, resolution, options):
 	# load all .dta files
 	files = glob(fnp + "%s/*.dta" % fn2)
 	if files == []:
-		raise "No .dta files in directory ", i
+		raise Exception("No .dta files in directory ", i)
 
 	dtalist = dtalist + files
 
@@ -1437,7 +1438,7 @@ def loadMSMS(sample, dirmsms, resolution, options):
 					fileName = i,
 					MSMSthreshold = options['MSMSthreshold']))
 
-	print "Number of *.dta files:", count
+	print("Number of *.dta files:", count)
 
 	sample.listMsms.sort()
 
