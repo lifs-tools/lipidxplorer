@@ -2035,7 +2035,7 @@ intensity."""))
 	def OnMenuProjectSaveAs(self, evt):
 
 		project = self.readOptions()
-
+		print("OnMenuProjectSaveAs    project options:", project.options)
 		# initialize config parser and fill it with the options
 		sectionP = "project"
 		sectionQ = "mfql"
@@ -2043,7 +2043,8 @@ intensity."""))
 		configParser.add_section(sectionP)
 		configParser.add_section(sectionQ)
 		for opt in list(project.options.keys()):
-			configParser.set(sectionP, opt, project.options[opt])
+			#print("OnMenuProjectSaveAs    option:", opt, "value:", project.options[opt])
+			configParser.set(sectionP, opt, str(project.options[opt])) # in python3 configparser only accepts strings
 		for query in list(project.mfql.keys()):
 			configParser.set(sectionQ, query + "-name", query)
 			configParser.set(sectionQ, query, project.mfql[query])
@@ -2095,7 +2096,8 @@ intensity."""))
 		configParser.add_section(sectionP)
 		configParser.add_section(sectionQ)
 		for opt in list(project.options.keys()):
-			configParser.set(sectionP, opt, project.options[opt])
+			print("OnMenuProjectSave    option:", opt, "value:", project.options[opt])
+			configParser.set(sectionP, opt, str(project.options[opt])) # in python3 configparser only accepts strings
 		for query in list(project.mfql.keys()):
 			configParser.set(sectionQ, query + "-name", query)
 			configParser.set(sectionQ, query, project.mfql[query])
@@ -2122,8 +2124,8 @@ intensity."""))
 		project.options['importDir'] = self.text_ctrl_ImportDataSection.GetValue()
 		project.options['masterScanImport'] = self.text_ctrl_OutputMasterScanSection.GetValue() # in expectation of a project file
 		project.options['masterScanRun'] = self.text_ctrl_MasterScanSection.GetValue() # in expectation of a project file
-		
-
+		project.options['importMSMS'] ="True" ########## Ballal 
+		project.options['pisSpectra'] = "False" ########## Ballal
 		project.options['dataType'] = self.combo_ctrl_ImportDataSection.GetValue()
 		project.options['ini'] = self.text_ctrl_LoadIniSection.GetValue()
 		project.options['setting'] = self.choice_SelectSettingSection.GetSelection()

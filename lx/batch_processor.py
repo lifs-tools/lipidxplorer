@@ -333,17 +333,17 @@ def process_sample(args: tuple) -> Dict[str, Any]:
 def run_batch(options: dict, queries: list, n_cores: int = None):
     """
     Batch controller:
-      1) Find mzML files
+      1) Find files
       2) Process in parallel
       3) Collect valid per-sample tables
       4) (Optionally) save per-sample CSVs
       5) Merge via merge_lipid_results()
-      6) Save <resultFile>_batch.csv
+      6) Save 
     """
 
 
     import_dir = Path(options.get("importDir", "")).resolve()
-    mzml_files = sorted(import_dir.glob("*.mzML"))  ####### change it Ballal #########
+    mzml_files = sorted(import_dir.glob("*.mzML"))  ####### change it Ballal, add csv/dta #########
     if not mzml_files:
         print(f"No mzML files found in {import_dir}", flush=True)
         return {}
