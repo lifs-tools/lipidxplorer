@@ -2108,6 +2108,11 @@ intensity."""))
 
 		with open(self.projectFile, 'w') as f:
 			configParser.write(f)
+    ############## ballal##########
+	def normalize(self, value):
+		value = value.strip() if isinstance(value, str) else value
+		return value if value not in (None, '', []) else None
+	#####################################
 
 	def readOptions(self):
 
@@ -2169,10 +2174,21 @@ intensity."""))
 		project.options['sumFattyAcids'] = self.outputOptionSetting.checkBox_sumFattyAcids.GetValue()
 		project.options['settingsPrefix'] = self.outputOptionSetting.checkBox_settingsPrefix.GetValue()
 		project.options['resultFile'] = self.text_ctrl_OutputSection.GetValue() # here starts the RUN panel
-		project.options['optionalMStolerance'] = self.text_ctrl_RunOptions_MS.GetValue()
-		project.options['optionalMSMStolerance'] = self.text_ctrl_RunOptions_MSMS.GetValue()
-		project.options['optionalMStoleranceType'] = self.choice_RunOptions_MS_type.GetString(self.choice_RunOptions_MS_type.GetSelection())
-		project.options['optionalMSMStoleranceType'] = self.choice_RunOptions_MSMS_type.GetString(self.choice_RunOptions_MSMS_type.GetSelection())
+		########### ballal##############
+		project.options['optionalMStolerance'] = self.normalize(self.text_ctrl_RunOptions_MS.GetValue())
+		project.options['optionalMSMStolerance'] = self.normalize(self.text_ctrl_RunOptions_MSMS.GetValue())
+		idx = self.choice_RunOptions_MS_type.GetSelection()
+		if idx == wx.NOT_FOUND:
+			project.options['optionalMStoleranceType'] = None
+		else:
+			project.options['optionalMStoleranceType'] = self.normalize(self.choice_RunOptions_MS_type.GetString(idx))
+		idx = self.choice_RunOptions_MSMS_type.GetSelection()
+		if idx == wx.NOT_FOUND:
+			project.options['optionalMSMStoleranceType'] = None
+		else:
+			project.options['optionalMSMStoleranceType'] = self.normalize(
+				self.choice_RunOptions_MS_type.GetString(idx))
+		########################
 		project.options['isotopicCorrectionMS'] = self.checkBox_OptionsSection_isocorrect_ms.GetValue()
 		project.options['isotopicCorrectionMSMS'] = self.checkBox_OptionsSection_isocorrect_msms.GetValue()
 		project.options['complementMasterScan'] = self.checkBox_OptionsSection_complement_sc.GetValue()
@@ -3939,14 +3955,14 @@ intensity."""))
 
 		# get the options from GUI settings
 		project = self.readOptions()
-		print("project = self.readOptions()",type(project.options), project.options) # (<class 'lx.tools.odict'>)
-  
+		#print("project = self.readOptions()",type(project.options), project.options) # (<class 'lx.tools.odict'>)
+		#exit()
 		# test if all options are correct
 		project.testOptions()
 
 		# change them into the right format
 		project.formatOptions()
-		print("project.formatOptions()", type(project.options), project.options)
+		#print("project.formatOptions()", type(project.options), project.options)
 
 
 		# get options
