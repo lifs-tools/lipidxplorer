@@ -399,22 +399,22 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 		print("Save output to %s." % output)
 		saveSC(scan, output)
 
-	total_runtime = time.perf_counter() - starttime
-	reportout("%.2f sec. for the whole import process" % (total_runtime))
-	reportout("\n")
-	stats_file_entry["total_runtime"] = total_runtime
+		total_runtime = time.perf_counter() - starttime
+		reportout("%.2f sec. for the whole import process" % (total_runtime))
+		reportout("\n")
+		stats_file_entry["total_runtime"] = total_runtime
 
-	stats_file_keys = ["nb_ms_scans", "nb_ms_peaks", "nb_msms_scans", "nb_msms_peaks", "nb_ms_peaks_after_alg", "loading_time", "calibration_time", "alignment_time", "total_runtime"]
-	stats_file_data = [stats_file_entry]
-	stats_file = os.path.splitext(output)[0] + "-stats.csv"
-	try:
-		with open(stats_file, 'w') as csvfile:
-			writer = csv.DictWriter(csvfile, fieldnames=stats_file_keys)
-			writer.writeheader()
-			for data in stats_file_data:
-				writer.writerow(data)
-	except IOError:
-		raise LipidXException("Writing of statistics to file '%s' failed." % stats_file)
+		stats_file_keys = ["nb_ms_scans", "nb_ms_peaks", "nb_msms_scans", "nb_msms_peaks", "nb_ms_peaks_after_alg", "loading_time", "calibration_time", "alignment_time", "total_runtime"]
+		stats_file_data = [stats_file_entry]
+		stats_file = os.path.splitext(output)[0] + "-stats.csv"
+		try:
+			with open(stats_file, 'w') as csvfile:
+				writer = csv.DictWriter(csvfile, fieldnames=stats_file_keys)
+				writer.writeheader()
+				for data in stats_file_data:
+					writer.writerow(data)
+		except IOError:
+			raise LipidXException("Writing of statistics to file '%s' failed." % stats_file)
 
 	if parent:
 		#parent.debug.progressDialog.Destroy()

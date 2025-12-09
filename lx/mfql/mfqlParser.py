@@ -1308,6 +1308,11 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	print("%.2f sec." % time.perf_counter())
 
 	### do the REPORT ###
+ 
+	
+	# if options['batch_mode']:
+	# 	print("No report generation in batch mode.")
+	# else:
 	for k in list(dictData.keys()):
 
 		mfqlObj.filename = k
@@ -1335,6 +1340,11 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	mfqlObj.result.checkIsobaricSpeciesAfterSUCHTHAT()
 	print("%.2f sec." % time.perf_counter())
 
+	
+	# if options['batch_mode']:
+	# 	#print("don't save MasterScan")
+	# 	print("No report generation in batch mode.")
+	# else:
 	print("generate report ...", end=' ')
 	mfqlObj.result.generateReport(options)
 	print("%.2f sec." % time.perf_counter())

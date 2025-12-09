@@ -14,12 +14,13 @@ import threading
 import multiprocessing
 import traceback
 import subprocess, json
-from pathlib import Path
+
 
 from wx.lib.newevent import NewEvent
 import queue
 import pickle
 import io
+from pathlib import Path
 
 sysPath = '..' + os.sep + 'lib'
 sys.path.append(sysPath)
@@ -563,6 +564,13 @@ class TextOutFrame(wx.Frame):
     def OnCloseWindow(self, evt):
         self.Show(False)
         self.parent.debugOpen = False
+        
+    def AppendText(self, text):
+        self.text_ctrl.AppendText(text)
+        self.text_ctrl.ShowPosition(self.text_ctrl.GetLastPosition())
+		
+		
+
 
 
 class SetDebugFrame(wx.Frame):
@@ -3116,17 +3124,19 @@ intensity."""))
         
         
         
-
 	def On_button_RUN_batch(self, evt):
 		"""
-		Launch batch processing in a separate Python process.
+		Launch batch processing in a background thread.
 
 		- Collects options + MFQL queries from the GUI/project
-		- Sends them as a pickle payload to lx.batch_process_start
-		- lx.batch_process_start creates a multiprocessing pool (safe on Windows)
-		- This GUI stays responsive and displays subprocess output live
+		- Calls lx.batch_processor.run_batch() in a background thread
+		- run_batch() internally uses multiprocessing.Pool (spawn) → safe for Windows + PyInstaller
+		- GUI stays responsive and displays output in real time
 		"""
+
 		import pickle, platform, sys, os, wx
+		from pathlib import Path
+		from lx.logger import TeeLogger
 
 		self.button_RUN_batch.Disable()
 		self.isRunning = True
@@ -3139,26 +3149,23 @@ intensity."""))
 			project.load(self.projectFile)
 			self.project = project
 
-			queries_raw = getattr(self.project, "mfql", {})  # dict: name→path
+			queries_raw = getattr(self.project, "mfql", {})
 			self.project.options["batch_mode"] = True
+			self.project.options["savePerSample"] = bool(self.checkbox_save_per_sample.IsChecked())
 
-			if self.checkbox_save_per_sample.IsChecked():
-				self.project.options["savePerSample"] = True
-			else:
-				print("User does not want to save per-sample results")
-				self.project.options["savePerSample"] = False
-
-			# Normalize datatypes
 			self.options_to_readoptions_shape()
 			self.project.testOptions()
 			self.project.formatOptions()
 			options = self.project.getOptions()
 
 			print("Running in batch mode: MasterScan will not be saved.")
-			queries_payload = [{"name": k, "path": v} for k, v in queries_raw.items()]
+
+			queries_payload = [
+				{"name": k, "path": str(Path(v).resolve())}
+				for k, v in queries_raw.items()
+			]
 
 		else:
-			# Project not loaded — build everything manually
 			print("No project loaded for batch processing.")
 			if not self.validate_before_batch():
 				wx.MessageBox(
@@ -3169,7 +3176,6 @@ intensity."""))
 
 			project = self.readOptions_batch()
 
-			# Collect all MFQL scripts listed in the GUI textbox
 			self.dictMFQLScripts = {}
 			lines = [line.strip() for line in self.listbox_MFQL_batch.GetValue().splitlines() if line.strip()]
 			for dir_path in lines:
@@ -3185,64 +3191,22 @@ intensity."""))
 			options = project.options
 			options["batch_mode"] = True
 			options["importMSMS"] = True
-			options['spectraFormat'] = self.combo_ctrl_ImportDataSection.GetValue()
-			options['masterScanImport'] = self.text_ctrl_ImportDataSection.GetValue() # Not used in batch, but set anyway
-			options['resultFile'] = self.text_ctrl_ImportDataSection.GetValue()
-			if self.checkbox_save_per_sample.IsChecked():
-				options["savePerSample"] = True
-			else:
-				options["savePerSample"] = False
-    
+			options["spectraFormat"] = self.combo_ctrl_ImportDataSection.GetValue()
+			options["masterScanImport"] = self.text_ctrl_ImportDataSection.GetValue()
+			options["resultFile"] = self.text_ctrl_ImportDataSection.GetValue()
+			options["savePerSample"] = bool(self.checkbox_save_per_sample.IsChecked())
+
 			project.testOptions()
 			project.formatOptions()
 			options = project.getOptions()
-			queries_payload = [{"name": k, "path": v} for k, v in self.dictMFQLScripts.items()]
+
+			queries_payload = [
+				{"name": k, "path": str(Path(v).resolve())}
+				for k, v in self.dictMFQLScripts.items()
+			]
 
 		# -----------------------------
-		# Final payload (now pickled)
-		# -----------------------------
-		payload = {"options": options, "queries": queries_payload}
-		print("options for batch processing:", options)
-		#exit()
-		# -----------------------------
-		# Launch the batch subprocess
-		# -----------------------------
-		cmd = [sys.executable, "-u", "-m", "lx.batch_process_start"]
-
-		try:
-			proc = subprocess.Popen(
-				cmd,
-				stdin=subprocess.PIPE,     # binary input for pickle
-				stdout=subprocess.PIPE,    # binary output for live reading
-				stderr=subprocess.STDOUT,  # merge stderr into stdout
-				bufsize=0                  # unbuffered binary I/O
-			)
-		except Exception as e:
-			wx.MessageBox(
-				f"Failed to start batch process:\n{e}",
-				"Execution Error", wx.OK | wx.ICON_ERROR
-			)
-			self.button_RUN_batch.Enable()
-			self.isRunning = False
-			return
-
-		# -----------------------------
-		# Send pickle payload to the subprocess
-		# -----------------------------
-		try:
-			pickle.dump(payload, proc.stdin)
-			proc.stdin.close()  # Important: close stdin so the child sees EOF
-		except Exception as e:
-			wx.MessageBox(
-				f"Failed to send payload:\n{e}",
-				"Execution Error", wx.OK | wx.ICON_ERROR
-			)
-			self.button_RUN_batch.Enable()
-			self.isRunning = False
-			return
-
-		# -----------------------------
-		#  Create the GUI debug window
+		# Create GUI debug window
 		# -----------------------------
 		try:
 			if hasattr(self, "debug") and self.debug:
@@ -3251,57 +3215,68 @@ intensity."""))
 		except Exception:
 			pass
 
+		import_dir = Path(options.get("importDir", "")).resolve()
+
 		self.debug = TextOutFrame(self, -1, "Batch Debug")
-		self.debug.text_ctrl.AppendText(f"LipidXplorer version: {self.version}\n")
-		self.debug.text_ctrl.AppendText(
-			f"Python version: {sys.version} ({sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]}) "
-			f"{platform.machine()}\n\n"
-		)
-		self.debug.text_ctrl.AppendText("Starting batch process...\n")
-		self.debug.Show(True)
 		self.debugOpen = True
+		self.debug.Show(True)
 
 		# -----------------------------
-		# Thread to read subprocess output live
+		# Unified logger (GUI + file)
 		# -----------------------------
-		def read_stdout_live(pipe, debug):
-			"""Read binary stdout and decode safely."""
-
-			reader = io.TextIOWrapper(pipe, encoding="utf-8", errors="replace")
-			for line in reader:
-				debug.write(line)
-			pipe.close()
-
-
-		reader_thread = threading.Thread(target=read_stdout_live, args=(proc.stdout, self.debug), daemon=True)
-		reader_thread.start()
+		log_path = os.path.join(import_dir, "batch_log.txt")
+		self.logger = TeeLogger(
+			gui_writer=self.debug,
+			file_path=log_path,
+			also_stdout=False
+		)
+		self.logger.log("Starting batch process...")
+		#redirect all print() in this process to this logger
+		self.logger.install_as_print()
+		# -----------------------------
+		# Payload passed to thread (not subprocess)
+		# -----------------------------
+		payload = {
+			"options": options,
+			"queries": queries_payload,
+			"log_file": log_path
+		}
 
 		# -----------------------------
-		#  Periodically check for process completion
+		# Run batch in background thread (NOT subprocess)
 		# -----------------------------
-		def check_process():
-			if proc.poll() is None:
-				wx.CallLater(200, check_process)
-			else:
-				self.debug.text_ctrl.AppendText("\nBatch process completed.\n")
-				reader_thread.join(timeout=1.0)
-				self.button_RUN_batch.Enable()
-				self.isRunning = False
-				rc = proc.returncode
-				self.debug.text_ctrl.AppendText(f"Exit code: {rc}\n")
-				if rc != 0:
-					wx.MessageBox(
-						"Batch process failed. Check debug log for details.",
-						"Error", wx.OK | wx.ICON_ERROR
-					)
-				else:
-					print("Batch process completed successfully.")
+		def run_in_thread():
+			from lx.batch_processor import run_batch
+		# Reinstall print redirection inside this thread
+			self.logger.install_as_print()
 
-		wx.CallLater(200, check_process)
+			try:
+				summary = run_batch(
+					payload["options"],
+					payload["queries"],
+					log_file=payload["log_file"]
+				)
+
+				wx.CallAfter(self.debug.text_ctrl.AppendText, "\nBatch processing completed.\n")
+				wx.CallAfter(self.button_RUN_batch.Enable)
+				wx.CallAfter(setattr, self, "isRunning", False)
+
+			except Exception as e:
+				wx.CallAfter(self.debug.text_ctrl.AppendText, f"\nBatch failed: {e}\n")
+				wx.CallAfter(self.button_RUN_batch.Enable)
+				wx.CallAfter(setattr, self, "isRunning", False)
 
 
-   
-   
+
+		# Start background thread
+		import threading
+		threading.Thread(target=run_in_thread, daemon=True).start()
+
+
+
+
+
+
 	def validate_before_batch(self):
 
 		#Check TextCtrl
@@ -3970,7 +3945,7 @@ intensity."""))
 		# get options
 
 		options = project.getOptions()
-		print("options = project.getOptions()", type(options),options) ##<class 'lx.options.optionsDict'>
+		#print("options = project.getOptions()", type(options),options) ##<class 'lx.options.optionsDict'>
 
 
 		self.button_StartImport.Disable()
@@ -4719,6 +4694,8 @@ intensity."""))
 
 			# get options
 			options = project.getOptions()
+   
+			options["batch_mode"] = False
 
 			# put the dump file for dumping without importing
 			self.filePath_Dump = options['dumpMasterScanFile']

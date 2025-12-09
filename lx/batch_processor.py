@@ -1,9 +1,10 @@
-# lx/batch_processor.py ######### Ballal #########
+## lx/batch_processor.py ######### Ballal #########
+
 import os
 import time
 import traceback
 from pathlib import Path
-import multiprocessing as mp
+
 from typing import Dict, List, Any
 import pandas as pd
 import gc  # For manual memory cleanup
@@ -12,9 +13,10 @@ import io
 import re
 import csv
 import numpy as np
-
-    
-
+import subprocess
+import pickle
+import sys
+import multiprocessing as mp
 from lx.spectraImport import doImport
 from lx.spectraImport import lpdxImportDEF_new
 from lx.exceptions import LipidXException
@@ -24,6 +26,17 @@ from lx.mfql.runtimeExecution import TypeMFQL
 from lx.mfql.mfqlParser import startParsing
 from lx.tools import odict
 
+
+# ===========================================================================
+# --- ADDED FOR UNIFIED LOGGING (Workers + Batch Controller)
+# ===========================================================================
+from lx.logger import TeeLogger
+import builtins
+LOGGER = None   # Will be set by run_batch()
+# ===========================================================================
+
+
+
 # ============================================================
 # Real LipidXplorer implementations (Batch-safe)
 # ============================================================
@@ -31,27 +44,9 @@ def build_master_scan(file_path: str, options: dict):
     """
     Create a MasterScan in memory for one sample using LipidXplorer's
     normal import pipeline, but skip directory scanning and saving.
-
-    Parameters
-    ----------
-    file_path : str
-        Path to the sample file (.mzML or .dta/csv)
-    options : dict
-        Import options (same structure as in the GUI)
-
-    Returns
-    -------
-    scan : MasterScan
-        The in-memory MasterScan object, ready for MFQL queries
     """
+    print(f"[build_master_scan] Building MasterScan for {file_path}", flush=True)
 
-    #print(f"[build_master_scan] Building MasterScan for {file_path}", flush=True)
-
-    # Prepare import setup — equivalent to startImport() in normal mode
-    # options['importMSMS'] = True
-    # options['batch_mode'] = True  # prevent saveSC
-
-    # lpdxImportDEF_new() returns tuple (options, scan, importDir, output, parent, listFiles, isTaken, isGroup)
     listIntermission = lpdxImportDEF_new(
         parent=None,
         options=options
@@ -64,21 +59,20 @@ def build_master_scan(file_path: str, options: dict):
         listIntermission[2],
         listIntermission[3],
         listIntermission[4],
-        [[file_path, os.path.dirname(file_path)]],  # <-- listFiles
+        [[file_path, os.path.dirname(file_path)]],
         True,
         False,
     )
 
-    # Run the actual import process to fill the MasterScan
     doImport(
-        listIntermission[0],  # options
-        listIntermission[1],  # scan
-        listIntermission[2],  # importDir
-        listIntermission[3],  # output
-        listIntermission[4],  # parent
-        listIntermission[5],  # listFiles
-        listIntermission[6],  # isTaken
-        listIntermission[7],  # isGroup
+        listIntermission[0],
+        listIntermission[1],
+        listIntermission[2],
+        listIntermission[3],
+        listIntermission[4],
+        listIntermission[5],
+        listIntermission[6],
+        listIntermission[7],
         options['alignmentMethodMS'],
         options['alignmentMethodMSMS'],
         options['scanAveragingMethod'],
@@ -86,134 +80,76 @@ def build_master_scan(file_path: str, options: dict):
     )
 
     print("[build_master_scan] MasterScan built successfully.", flush=True)
-    # print("listIntermission[0] (optionsDict)................")
-    # ops = listIntermission[0]
-
-    # for k, v in ops._data.items():
-    #     print(f"  {k}: {v}")
-        
-
-    return listIntermission[1]  # return the scan object
+    return listIntermission[1]
 
 
 
 def run_mfql_on_scan(scan, query_path, options):
     """
-    Run ONE MFQL file against a given MasterScan and return a DataFrame
-    that matches the output of a normal single-run (startMFQL).
-
-    Steps:
-      1. Build MFQL input dict {query_name: query_text}.
-      2. Create TypeMFQL bound to the current MasterScan.
-      3. Merge import-related options from the scan.
-      4. Call startParsing() to execute the MFQL logic.
-      5. Extract header (listHead) and query results (strOutput).
-      6. Build a pandas DataFrame with proper columns.
-      7. Clean up large objects to keep memory low.
-
-    Returns:
-        pd.DataFrame: MFQL hit table for this sample.
+    Run one MFQL file against a MasterScan.
     """
 
-    # ---------------------------------------------------------
-    # 1. Read MFQL query text and create mapping {filename: text}
-    # ---------------------------------------------------------
     q_name = Path(query_path).name
     with open(query_path, "r", encoding="utf-8") as f:
         q_text = f.read()
-        
+
     mfqlFiles = odict()
     mfqlFiles[q_name] = q_text
 
-    # ---------------------------------------------------------
-    # 2. Initialize MFQL object linked to the MasterScan
-    # ---------------------------------------------------------
     mfqlObj = TypeMFQL(masterScan=scan)
-
-    # Assign user-defined import options (already optionsDict type)
     mfqlObj.options = options
 
-    # ---------------------------------------------------------
-    # 3. Merge runtime import-related options from MasterScan
-    #    (mirrors startMFQL behavior)
-    # ---------------------------------------------------------
     for key in list(mfqlObj.sc.options.keys()):
         if key in Options.importOptions:
             try:
-                # copy value only if non-empty on the scan side
                 if not mfqlObj.sc.options.isEmpty(key):
                     mfqlObj.options[key] = mfqlObj.sc.options[key]
             except Exception:
-                # some keys may intentionally be empty, e.g. MSMScalibration=""
                 continue
 
-    # ---------------------------------------------------------
-    # 4. Choose correct separator: comma or tab
-    # ---------------------------------------------------------
     mfqlObj.outputSeperator = '\t' if options.get('tabLimited') else ','
 
-    # ---------------------------------------------------------
-    # 5. Run the full MFQL pipeline (identification + report)
-    # ---------------------------------------------------------
     startParsing(
         mfqlFiles,
         mfqlObj,
         scan,
-        isotopicCorrectionMS   = options.get('isotopicCorrectionMS', True),
-        isotopicCorrectionMSMS = options.get('isotopicCorrectionMSMS', True),
-        complementSC           = options.get('complementMasterScan', False),
-        parent                 = None,
-        progressCount          = 0,
-        generateStatistics     = options.get('statistics', False)
+        isotopicCorrectionMS=options.get('isotopicCorrectionMS', True),
+        isotopicCorrectionMSMS=options.get('isotopicCorrectionMSMS', True),
+        complementSC=options.get('complementMasterScan', False),
+        parent=None,
+        progressCount=0,
+        generateStatistics=options.get('statistics', False)
     )
 
-    # ---------------------------------------------------------
-    # 6. Extract results from the MFQL object
-    # ---------------------------------------------------------
     result = mfqlObj.result
-
-    # If no output generated, return empty DataFrame
     if not getattr(result, "mfqlOutput", False):
-        try:
-            del mfqlObj
-        except Exception:
-            pass
+        del mfqlObj
         return pd.DataFrame()
 
-    # Header row — same as the single-run CSV header
     header = list(result.listHead) if hasattr(result, "listHead") else None
 
-    # Collect all query result blocks (string CSV fragments)
     dfs = []
     for qres in result.dictQuery.values():
-        output_text = qres.strOutput.strip()
-        if not output_text:
+        text = qres.strOutput.strip()
+        if not text:
             continue
 
-        # Convert the raw text block into a DataFrame
-        buf = io.StringIO(output_text)
+        buf = io.StringIO(text)
         if header:
-            # use header from listHead (no header row inside the data)
             df_block = pd.read_csv(buf, sep=mfqlObj.outputSeperator, names=header, header=None)
         else:
             df_block = pd.read_csv(buf, sep=mfqlObj.outputSeperator)
 
-        # Tag the query name (for downstream merging)
         df_block["query_name"] = qres.name
         dfs.append(df_block)
 
-    # Merge all query blocks into one DataFrame for this sample
     df = pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
-    #print(f"[run_mfql_on_scan] Query {q_name} returned {len(df)} hits.",list(df.columns.values), flush=True)
-    # ---------------------------------------------------------
-    # 7. Cleanup large objects to free memory in worker process
-    # ---------------------------------------------------------
+
     try:
-        if hasattr(result, "dictQuery"):
-            del result.dictQuery
+        del result.dictQuery
         del result
         del mfqlObj
-    except Exception:
+    except:
         pass
 
     return df
@@ -221,226 +157,267 @@ def run_mfql_on_scan(scan, query_path, options):
 
 
 
-# ============================================================
-# Worker: executes per-sample file (one process per sample)
-# ============================================================
+##################### for testing #######################
+# def process_sample(args):
+#     file_path, sample_id, options, queries, out_dir = args
+#     print(f"[PID] test build scan {sample_id}", flush=True)
+#     scan = build_master_scan(file_path, options)
+#     del scan
+#     return {"sample_id": sample_id, "status": "OK", "path": None}
 
+#################################
+
+
+# ============================================================
+# Worker: executes per-sample file
+# ============================================================
 def process_sample(args: tuple) -> Dict[str, Any]:
     """
-    Worker function — executed in a separate process for each sample.
+    Worker function for one sample.
 
-    Workflow:
-      1. Build an in-memory MasterScan from the sample  file.
-      2. Run all MFQL queries against that MasterScan (via run_mfql_on_scan).
-      3. Combine all query results into a single DataFrame.
-      4. Return metadata and results to the main process.
-
-    Args:
-        args (tuple): (file_path, sample_id, options, queries)
-            - file_path : str  →  file path for this sample
-            - sample_id : str  → short sample name (filename stem)
-            - options   : optionsDict (or dict) → import settings
-            - queries   : list[dict] → MFQL query descriptors [{name, path}, ...]
+    Args (tuple):
+        file_path: full path to mzML file
+        sample_id: sample name (stem)
+        options:   options dict (will be deep-copied in worker)
+        queries:   list of {"name": ..., "path": ...} MFQL queries
+        out_dir:   directory where per-sample CSVs are written
+        log_file:  (kept for compatibility, not used here)
 
     Returns:
-        dict: {
-            "sample_id": str,
-            "table": pd.DataFrame,
-            "status": "OK" or "ERROR",
-            "error": str (optional)
-        }
+        dict with fields:
+            - sample_id
+            - status: "OK" or "ERROR"
+            - path: path to per-sample CSV (or None)
+            - error: error message (if any)
     """
-    # ---------------------------------------------------------------
-    # 0. Unpack arguments and basic setup
-    # ---------------------------------------------------------------
-    file_path, sample_id, options, queries = args
-    pid = os.getpid()      # for logging clarity
-    t0 = time.time()       # for performance timing
 
-    print(f"[PID {pid}] Starting sample '{sample_id}' ({len(queries)} queries)", flush=True)
+    file_path, sample_id, options, queries, out_dir, log_file = args
+
+    # Per-worker deep copy so processes don't share mutable state
+    import copy as _copy
+    options = _copy.deepcopy(options)
+
+    pid = os.getpid()
+    t0 = time.time()
+    print(f"[PID {pid}] START sample='{sample_id}' file='{file_path}' ({len(queries)} queries)", flush=True)
 
     try:
         # -----------------------------------------------------------
-        # 1. Build MasterScan for this sample
+        # Build MasterScan
         # -----------------------------------------------------------
-        # The MasterScan is created *in-memory only* (not saved to disk).
-        # It contains aligned spectra and peak data ready for MFQL.
+        print(f"[PID {pid}] Building MasterScan for '{sample_id}'", flush=True)
         scan = build_master_scan(file_path, options)
+        print(f"[PID {pid}] MasterScan READY for '{sample_id}'", flush=True)
 
         # -----------------------------------------------------------
-        # 2. Run all MFQL queries for this sample
+        # Run all MFQL queries on this scan
         # -----------------------------------------------------------
-        all_hits = []  # will collect all query DataFrames
-
+        all_hits = []
         for i, q in enumerate(queries, 1):
             q_name, q_path = q["name"], q["path"]
+            print(f"[PID {pid}] ({i}/{len(queries)}) Running MFQL '{q_name}' on '{sample_id}'", flush=True)
             try:
-                print(f"    [PID {pid}] ({i}/{len(queries)}) Running {q_name}", flush=True)
-
-                # Execute the MFQL query using the shared helper
                 hits = run_mfql_on_scan(scan, q_path, options)
-
-                # If no results were found, skip
-                if hits is None or hits.empty:
-                    print(f"    [PID {pid}] No hits for {q_name}", flush=True)
-                    continue
-
-                # Annotate each row with the sample + query name
-                hits["sample_id"] = sample_id
-                hits["query_name"] = q_name
-
-                # Append for merging later
-                all_hits.append(hits)
-
-            except Exception as e:
-                # Catch and log query-specific errors
-                print(f"    [PID {pid}] Error in {q_name}: {e}", flush=True)
+            except Exception as e_q:
+                print(f"[PID {pid}] ERROR in MFQL '{q_name}' on '{sample_id}': {e_q}", flush=True)
                 traceback.print_exc()
                 continue
 
-        # -----------------------------------------------------------
-        # 3. Merge all query results for this sample
-        # -----------------------------------------------------------
+            if hits is None or hits.empty:
+                print(f"[PID {pid}] No hits for MFQL '{q_name}' on '{sample_id}'", flush=True)
+                continue
+
+            hits["sample_id"] = sample_id
+            hits["query_name"] = q_name
+            all_hits.append(hits)
+
         if all_hits:
             df = pd.concat(all_hits, ignore_index=True)
         else:
-            df = pd.DataFrame()  # no hits at all
+            df = pd.DataFrame()
 
         duration = time.time() - t0
-        print(f"[PID {pid}] Finished '{sample_id}' in {duration:.2f}s ({len(df)} hits)", flush=True)
+        print(f"[PID {pid}] FINISHED MFQL for '{sample_id}' in {duration:.2f}s ({len(df)} rows)", flush=True)
 
         # -----------------------------------------------------------
-        # 4. Clean up to free memory
+        # Write per-sample CSV (only if there are hits)
         # -----------------------------------------------------------
-        del scan, all_hits
+        if df.empty:
+            out_path = None
+            print(f"[PID {pid}] No hits for '{sample_id}', no CSV written.", flush=True)
+        else:
+            out_dir_path = Path(out_dir)
+            out_dir_path.mkdir(parents=True, exist_ok=True)
+            out_path = out_dir_path / f"{sample_id}.csv"
+            df.to_csv(out_path, index=False)
+            print(f"[PID {pid}] Wrote per-sample CSV '{out_path}'", flush=True)
+
+        # Cleanup big objects
+        try:
+            del scan, all_hits, df
+        except Exception:
+            pass
         gc.collect()
 
-        # Return sample summary + results to parent
-        return {"sample_id": sample_id, "table": df, "status": "OK"}
+        print(f"[PID {pid}] DONE sample='{sample_id}'", flush=True)
+        return {
+            "sample_id": sample_id,
+            "status": "OK",
+            "path": str(out_path) if out_path else None
+        }
 
     except Exception as e:
-        # Catch any top-level errors so one sample doesn’t crash the batch
-        print(f"[PID {pid}] Fatal error in '{sample_id}': {e}", flush=True)
+        print(f"[PID {pid}] FATAL ERROR in sample '{sample_id}': {e}", flush=True)
         traceback.print_exc()
-        return {"sample_id": sample_id, "status": "ERROR", "error": str(e)}
-
+        return {
+            "sample_id": sample_id,
+            "status": "ERROR",
+            "path": None,
+            "error": str(e)
+        }
 
 
 # ============================================================
-# Controller: manages pool + collects + merges results
+# Controller: manages pool + collects + merges
 # ============================================================
-
-def run_batch(options: dict, queries: list, n_cores: int = None):
+def run_batch(options: dict, queries: list, n_cores: int = None, log_file=None):
     """
     Batch controller:
-      1) Find files
-      2) Process in parallel
-      3) Collect valid per-sample tables
-      4) (Optionally) save per-sample CSVs
-      5) Merge via merge_lipid_results()
-      6) Save 
+      1) Find mzML files.
+      2) Process in parallel using a multiprocessing Pool.
+      3) Each worker writes its per-sample CSV to disk and returns only
+         small metadata (sample_id, status, path).
+      4) The parent streams results with imap_unordered so it never
+         holds all worker outputs in memory at once.
+      5) Collect paths of CSVs with hits.
+      6) Merge via merge_lipid_results().
+      7) Save final batch_results.csv.
+      8) Optionally keep or delete per-sample CSVs depending on
+         options["savePerSample"].
     """
 
+    # Simple log helper. If the GUI installs a TeeLogger as print(),
+    # these messages will go to the GUI + file automatically.
+    def log(*a):
+        print(" ".join(str(x) for x in a), flush=True)
 
     import_dir = Path(options.get("importDir", "")).resolve()
-    mzml_files = sorted(import_dir.glob("*.mzML"))  ####### change it Ballal, add csv/dta #########
+
+    # -----------------------------------------------------------
+    # Find all mzML files
+    # -----------------------------------------------------------
+    mzml_files = sorted(import_dir.rglob("*.mzML")) ################ need to change for csv too
     if not mzml_files:
-        print(f"No mzML files found in {import_dir}", flush=True)
+        log(f"No mzML files found in {import_dir}")
         return {}
 
-    print(f"Found {len(mzml_files)} mzML files for batch processing.", flush=True)
+    log(f"Found {len(mzml_files)} mzML files for batch processing.")
 
-    tasks = [(str(f), f.stem, copy.deepcopy(options), queries) for f in mzml_files]
-
-    n_cores = n_cores or min(mp.cpu_count(), 8)
-    print(f"Using {n_cores} cores (CPU count = {mp.cpu_count()})", flush=True)
-
-    start = time.time()
-    
-    with mp.Pool(processes=n_cores) as pool:
-        results = pool.map(process_sample, tasks)
-        
-    duration = time.time() - start
-    print(f"\nAll samples processed in {duration:.2f}s\n", flush=True)
-
-    print("Collecting valid per-sample results...", flush=True)
-    valid_results = [r for r in results if r.get("status") == "OK" and not r["table"].empty]
-    if not valid_results:
-        print("No valid per-sample results found.", flush=True)
-        return {}
-
-    # optionally save per-sample CSVs
-    import_dir = Path(import_dir)
-
-    # Create subfolder inside import_dir
+    # Directory where workers will store per-sample CSVs
     per_sample_dir = import_dir / "per_sample_results"
     per_sample_dir.mkdir(parents=True, exist_ok=True)
 
     save_per_sample = bool(options.get("savePerSample", False))
-    sample_csv_paths = []
 
-    if save_per_sample:
-        print("Saving individual per-sample CSVs...", flush=True)
+    # -----------------------------------------------------------
+    # Build tasks (one sample per worker call)
+    # -----------------------------------------------------------
+    tasks = [
+        (str(f), f.stem, options, queries, str(per_sample_dir), log_file)
+        for f in mzml_files
+    ]
 
-    for r in valid_results:
-        df = r["table"]
-        sample_name = r.get("sample_id") or r.get("name") or "sample"
+    # -----------------------------------------------------------
+    # Limit number of cores to at most half of CPU count
+    # -----------------------------------------------------------
+    cpu_total = mp.cpu_count()
+    max_workers = max(1, cpu_total // 2)
+    if n_cores is None or n_cores < 1:
+        n_cores = max_workers
+    else:
+        n_cores = min(n_cores, max_workers)
 
-        # Save inside the new folder
-        p = per_sample_dir / f"{sample_name}.csv"
+    log(f"Using {n_cores} worker process(es) (CPU count = {cpu_total})")
 
-        df.to_csv(p, index=False)
-        sample_csv_paths.append(str(p))
+    sample_csv_paths: List[str] = []
+    n_ok = 0
+    n_err = 0
 
-    if save_per_sample:
-        print(f"Saved {len(sample_csv_paths)} per-sample CSVs in {per_sample_dir}.", flush=True)
+    start = time.time()
 
-    # If user doesn't want per-sample files, we still need paths.
-    # We already wrote temporary CSVs above to avoid in-memory to-file conversion during merge;
-  
-    if not save_per_sample:
-        # We'll delete them after final save
-        pass
+    # -----------------------------------------------------------
+    # Run multiprocessing Pool with 'spawn' context
+    # -----------------------------------------------------------
+    ctx = mp.get_context("spawn")
 
-    #print("Merging all per-sample results...", flush=True)
+    with ctx.Pool(processes=n_cores) as pool:
+        for r in pool.imap_unordered(process_sample, tasks, chunksize=1):
+            status = r.get("status")
+            path = r.get("path")
+            sid = r.get("sample_id")
+
+            if status == "OK" and path:
+                sample_csv_paths.append(path)
+                n_ok += 1
+                log(f"[MAIN] OK sample='{sid}' path='{path}' (total OK={n_ok})")
+            else:
+                n_err += 1
+                log(f"[MAIN] ERROR/EMPTY sample='{sid}' status='{status}' (total ERR/EMPTY={n_err})")
+
+    duration = time.time() - start
+    log(f"All samples processed in {duration:.2f}s")
+
+    if not sample_csv_paths:
+        log("No valid per-sample results found.")
+        return {}
+
+    # -----------------------------------------------------------
+    # Merge per-sample CSVs into one final table
+    # -----------------------------------------------------------
+    log("Merging per-sample results...")
     final_df = merge_lipid_results(sample_csv_paths)
 
-    # Output path
-    # normal_result_path = options.get("resultFile")
-    # if normal_result_path:
-    #     normal_result_path = Path(normal_result_path)
-    #     batch_result_path = normal_result_path.with_name(
-    #         normal_result_path.stem + "_batch" + normal_result_path.suffix
-    #     )
-    # else:
+    # Output path for the final batch results
     batch_result_path = import_dir / "batch_results.csv"
-
-
     final_df.to_csv(batch_result_path, index=False, encoding="utf-8")
-    #print(f"Saved merged results to {batch_result_path} ({len(final_df)} rows)", flush=True)
+    log(f"Saved merged results to {batch_result_path} ({len(final_df)} rows)")
 
-    # Build summary BEFORE cleanup so valid_results is still in scope
+    # -----------------------------------------------------------
+    # Build summary
+    # -----------------------------------------------------------
     summary = {
         "processed": len(mzml_files),
-        "ok": len(valid_results),
-        "errors": len(mzml_files) - len(valid_results),
-        #"rows": len(final_df),
+        "ok": n_ok,
+        "errors": len(mzml_files) - n_ok,
         "duration_sec": round(duration, 2),
         "cores_used": n_cores,
         "output_file": str(batch_result_path),
     }
 
-    # Cleanup temp per-sample CSVs if not saving
-    if not save_per_sample:
+    # -----------------------------------------------------------
+    #Cleanup per-sample CSVs if user does NOT want to keep them
+    # -----------------------------------------------------------
+    if save_per_sample:
+        log(f"Saved {len(sample_csv_paths)} per-sample CSVs in {per_sample_dir}.")
+    else:
+        log("User does not want to keep per-sample results. Deleting temporary CSVs...")
         for tmp in sample_csv_paths:
-            try: os.remove(tmp)
-            except Exception: pass
+            try:
+                os.remove(tmp)
+            except Exception:
+                pass
 
-    del results, valid_results
     gc.collect()
 
-    print(f"Summary: {summary}", flush=True)
+    log(f"Summary: {summary}")
     return summary
+
+
+
+
+
+# The merge_lipid_results()
+# -------------------------------------------------------------------
 
 def merge_lipid_results(sample_files):
     """
@@ -473,7 +450,7 @@ def merge_lipid_results(sample_files):
     except Exception:
         pass
 
-    # === 1. Detect delimiter for each CSV (comma, semicolon, tab, etc.) ===
+    # Detect delimiter for each CSV (comma, semicolon, tab, etc.) ===
     def detect_delimiter(path):
         with open(path, "r", newline="") as f:
             sample = f.read(4096)
@@ -483,7 +460,7 @@ def merge_lipid_results(sample_files):
             except Exception:
                 return ","  # default fallback
 
-    # === 2. Read and prepare each file ===
+    # Read and prepare each file ===
     dfs = []
     for p in sample_files:
         delim = detect_delimiter(p)
@@ -515,11 +492,11 @@ def merge_lipid_results(sample_files):
         dfs.append(df)
         #print(f"Loaded {p} ({df.shape[0]} rows, {df.shape[1]} cols)")
 
-    # === 3. Concatenate all datasets ===
+    # Concatenate all datasets ===
     wide = pd.concat(dfs, axis=1, join="outer")
     #print(f"Concatenated shape: {wide.shape}")
 
-    # === 4. Coalesce duplicate columns (same metadata repeated across files) ===
+    # Coalesce duplicate columns (same metadata repeated across files) ===
     coalesced = pd.DataFrame(index=wide.index)
     for col_name in wide.columns.unique():
         block = wide.loc[:, wide.columns == col_name]
@@ -531,10 +508,10 @@ def merge_lipid_results(sample_files):
             coalesced[col_name] = filled.iloc[:, 0]
     #print(f"Coalesced to {coalesced.shape[1]} unique columns")
 
-    # === 5. Drop irrelevant columns if present ===
+    # Drop irrelevant columns if present ===
     coalesced = coalesced.drop(columns=["query_name", "sample_id"], errors="ignore")
 
-    # === 6. Reorder columns by logical metadata → intensity → identifiers ===
+    # Reorder columns by logical metadata → intensity → identifiers ===
     head_meta = [
         "LipidClass","Mass","IsobaricClass","ChemicalFormula","DerivatizedForm",
         "AdductIon","LipidCategory","ScanPolarity"
@@ -587,7 +564,7 @@ def merge_lipid_results(sample_files):
     final_cols = [c for c in ordered_blocks + remaining if c in coalesced.columns]
     coalesced = coalesced[final_cols]
 
-    # === 7. Sort rows, group IS, fill intensities, and add blank separators ===
+    # Sort rows, group IS, fill intensities, and add blank separators ===
     #print("Sorting rows, grouping IS, and cleaning intensities...")
 
     df = coalesced.copy()
@@ -622,7 +599,7 @@ def merge_lipid_results(sample_files):
     else:
         non_is_df = non_is_df.sort_values(["LipidClass", "__orig_pos__"],
                                           ascending=[True, True], kind="mergesort")
-
+ 
     # Combine IS block first, then all other sorted classes
     ordered = pd.concat([is_df, non_is_df], ignore_index=True)
     ordered = ordered.drop(columns=["__orig_pos__"], errors="ignore")
