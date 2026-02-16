@@ -1367,18 +1367,34 @@ class LpdxFrame(wx.Frame):
 
 		# --- Batch Mode Checkbox ---
 
+		# Label
 		self.label_occupational_threshold = wx.StaticText(
-			self.notebook_1_pane_2, -1, "Occupational Threshold(Result): 0.25"
+			self.notebook_1_pane_2,
+			-1,
+			"Occupational Threshold (Result):"
 		)
-		self.label_occupational_threshold.SetToolTip(
-			wx.ToolTip(
-				"Minimum fraction of samples that must have Intensity > 0\n"
-				"for a lipid to be retained in the merged result.\n"
-				"Example: 0.25 = at least 25% of samples."
-			)
+
+		# Editable numeric control (0.00 – 1.00)
+		self.spin_occupational_threshold = wx.SpinCtrlDouble(
+			self.notebook_1_pane_2,
+			-1,
+			min=0.0,
+			max=1.0,
+			initial=0.25,
+			inc=0.05
+		)
+
+		self.spin_occupational_threshold.SetDigits(2)  # show 2 decimal places
+
+		# Tooltip
+		self.spin_occupational_threshold.SetToolTip(
+			"Minimum fraction of samples that must have Intensity > 0\n"
+			"for a lipid to be retained.\n"
+			"Example: 0.25 = at least 25% of samples."
 		)
   
 		self.label_occupational_threshold.Hide()  # hide the label for occupational threshold
+		self.spin_occupational_threshold.Hide()  # hide the spin control for occupational threshold
 		self.checkBox_BatchMode = wx.CheckBox(self.notebook_1_pane_2, -1, "Batch Mode")
 
 		# --- Batch Panel (initially hidden) ---
@@ -1461,6 +1477,7 @@ class LpdxFrame(wx.Frame):
 			if is_batch_checked:
 				self.batchPanel.Show()
 				self.label_occupational_threshold.Show()
+				self.spin_occupational_threshold.Show()
 				self.text_ctrl_ImportDataSection.Clear()
 				self.label_OutputMasterScanSection.SetLabel("Select *.ini settings file")
 				self.text_ctrl_OutputMasterScanSection.Clear()
@@ -1476,6 +1493,7 @@ class LpdxFrame(wx.Frame):
 			else:
 				self.batchPanel.Hide()
 				self.label_occupational_threshold.Hide()
+				self.spin_occupational_threshold.Hide()
 				self.text_ctrl_ImportDataSection.Clear()
 				self.label_OutputMasterScanSection.SetLabel("Specify output MasterScan file")
 				self.text_ctrl_OutputMasterScanSection.Clear()
@@ -1525,8 +1543,11 @@ class LpdxFrame(wx.Frame):
 		top_row = wx.BoxSizer(wx.HORIZONTAL)
 		top_row.AddSpacer(80) # left spacer to simulate margin
 		top_row.AddStretchSpacer(1)
-		top_row.Add(self.label_occupational_threshold, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 15)
+		# Add to row
+		top_row.Add(self.label_occupational_threshold, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 8)
+		top_row.Add(self.spin_occupational_threshold, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 20)
 		top_row.Add(self.checkBox_BatchMode, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 10)
+
 		main_vbox.Add(top_row, 0, wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, 5)
 
 
@@ -3447,12 +3468,15 @@ intensity."""))
 		# Reinstall print redirection inside this thread
 			self.logger.install_as_print()
 			n_cores = int(self.spin_cores.GetValue())
+			occupation_threshold = float(self.spin_occupational_threshold.GetValue())
+
 			print(f"Batch thread started. Using {n_cores} cores for processing.")
 			try:
 				summary = run_batch(
 					payload["options"],
 					payload["queries"],
 					log_file=payload["log_file"],
+					occurrence_threshold=occupation_threshold,
     				n_cores=n_cores	
 				)
 

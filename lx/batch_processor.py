@@ -280,7 +280,7 @@ def process_sample(args: tuple) -> Dict[str, Any]:
 # ============================================================
 # Controller: manages pool + collects + merges
 # ============================================================
-def run_batch(options: dict, queries: list, n_cores: int = None, log_file=None):
+def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_threshold: float = None, log_file=None):
     """
     Batch controller:
       1) Find mzML files.
@@ -366,7 +366,7 @@ def run_batch(options: dict, queries: list, n_cores: int = None, log_file=None):
     # Merge per-sample CSVs into one final table
     # -----------------------------------------------------------
     log("Merging per-sample results...")
-    final_df = merge_lipid_results(sample_csv_paths, mzml_files=mzml_files)
+    final_df = merge_lipid_results(sample_csv_paths, mzml_files=mzml_files, occurrence_threshold=occurrence_threshold)
 
     # Output path for the final batch results
     batch_result_path = import_dir / "batch_results.csv"
@@ -409,8 +409,8 @@ def run_batch(options: dict, queries: list, n_cores: int = None, log_file=None):
 
 # The merge_lipid_results()
 # -------------------------------------------------------------------
-
-def merge_lipid_results(sample_files, mzml_files=None):
+    
+def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None):
     """
     Merge multiple per-sample lipidomics result CSVs into a single clean batch table.
 
@@ -591,7 +591,7 @@ def merge_lipid_results(sample_files, mzml_files=None):
     # -----------------------------------------------------------
     # Apply occupation threshold to Intensity block only
     # -----------------------------------------------------------
-    occupation_threshold = 0.25  # 25%
+    occupation_threshold = occurrence_threshold  # 25%
 
     if intensity_block:
         n_positive = (df[intensity_block] > 0).sum(axis=1)
@@ -602,7 +602,7 @@ def merge_lipid_results(sample_files, mzml_files=None):
         after = len(df)
 
         print(f"Occupation filter removed {before - after} lipids "
-            f"(threshold={occupation_threshold*100:.0f}%)")
+            f"(threshold={occupation_threshold})")
 
 
 
