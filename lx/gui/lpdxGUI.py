@@ -11,10 +11,9 @@ import csv
 import re
 import configparser
 import threading
-import multiprocessing
 import traceback
 import subprocess, json
-
+import multiprocessing as mp
 
 from wx.lib.newevent import NewEvent
 import queue
@@ -53,6 +52,10 @@ from lx.debugger import Debug, DebugSet, DebugUnset
 
 from lx.batch_processor import run_batch
 
+
+
+
+
 balloontip = True
 try:
     from agw import balloontip as BT
@@ -61,6 +64,15 @@ except ImportError: # if it's not there locally, try the wxPython lib.
 		import wx.lib.agw.balloontip as BT
 	except ImportError:
 		balloontip = False
+
+
+def resource_path(*parts):
+    if hasattr(sys, "_MEIPASS"):          # PyInstaller
+        base = Path(sys._MEIPASS)
+    else:
+        # this file is in .../lx/gui/, so go up two levels to project root
+        base = Path(__file__).resolve().parents[2]
+    return str(base.joinpath(*parts))
 
 
 #import lpdxSCC
@@ -1354,12 +1366,26 @@ class LpdxFrame(wx.Frame):
 			"Opens a dialog box for selection of the MasterScan database."))
 
 		# --- Batch Mode Checkbox ---
+
+		self.label_occupational_threshold = wx.StaticText(
+			self.notebook_1_pane_2, -1, "Occupational Threshold(Result): 0.25"
+		)
+		self.label_occupational_threshold.SetToolTip(
+			wx.ToolTip(
+				"Minimum fraction of samples that must have Intensity > 0\n"
+				"for a lipid to be retained in the merged result.\n"
+				"Example: 0.25 = at least 25% of samples."
+			)
+		)
+  
+		self.label_occupational_threshold.Hide()  # hide the label for occupational threshold
 		self.checkBox_BatchMode = wx.CheckBox(self.notebook_1_pane_2, -1, "Batch Mode")
 
 		# --- Batch Panel (initially hidden) ---
 		self.batchPanel = wx.Panel(self.notebook_1_pane_2)
 		self.batchPanel.Hide()
-
+  
+  
 		# --- Batch Panel controls ---
 		self.label_cfg = wx.StaticText(self.batchPanel, -1, "Select a Configuration")
 		self.label_cfg.SetFont(self.header_font)
@@ -1375,18 +1401,53 @@ class LpdxFrame(wx.Frame):
 			choices=listConfigurations_batch
 		)
 
-		self.label_mfql = wx.StaticText(self.batchPanel, -1, "MFQL directory")
-		self.listbox_MFQL_batch = wx.TextCtrl(self.batchPanel,style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_DONTWRAP)
-		self.button_Browse_MFQL = wx.Button(self.batchPanel, -1, "Browse")
+		self.label_mfql = wx.StaticText(self.batchPanel, -1, "MFQL directories (multiple allowed)")
+		# self.listbox_MFQL_batch = wx.TextCtrl(self.batchPanel,style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_DONTWRAP,
+		# size=(-1, 120) )  # ← height in pixels)
+		# self.button_Browse_MFQL = wx.Button(self.batchPanel, -1, "Browse")
+		self.listbox_MFQL_batch = wx.ListBox(self.batchPanel, style=wx.LB_EXTENDED)  # multi-select
+		self.button_Browse_MFQL_batch = wx.Button(self.batchPanel, -1, "Browse")
+		self.button_Delete_MFQL_batch = wx.Button(self.batchPanel, -1, "Delete")
+		self.button_Browse_MFQL_batch.SetToolTip(wx.ToolTip(
+			"Opens a dialog box for selection of the folders containing the MFQL scripts."))
 
 		# --- RUN button and checkbox side-by-side ---
 		hbox_run = wx.BoxSizer(wx.HORIZONTAL)
 
+		cpu_total = mp.cpu_count()
+		max_workers = max(1, cpu_total)  
+
+		self.label_cores = wx.StaticText(
+			self.batchPanel,
+			-1,
+			"Number of CPU cores to use:"
+		)
+
+		self.spin_cores = wx.SpinCtrl(
+			self.batchPanel,
+			-1,
+			min=1,
+			max=max_workers,
+			initial= cpu_total // 2
+		)
+
+		self.spin_cores.SetToolTip(
+			wx.ToolTip(f"Detected cores: {cpu_total}")
+		)
+		
+  
 		# RUN button
 		self.button_RUN_batch = wx.Button(self.batchPanel, -1, "RUN")
 
 		# Checkbox: "Save per sample result"
 		self.checkbox_save_per_sample = wx.CheckBox(self.batchPanel, -1, "Save per sample result")
+		self.checkbox_save_per_sample.SetToolTip(
+			wx.ToolTip(
+				"If enabled, a separate result CSV file will be saved\n"
+				"for each individual sample in addition to the merged batch file."
+			)
+		)
+		
 		self.checkbox_save_per_sample.SetValue(False)  # unchecked by default
 
 
@@ -1396,28 +1457,39 @@ class LpdxFrame(wx.Frame):
 		def on_checkbox_toggle(event):
       
 			is_batch_checked = self.checkBox_BatchMode.IsChecked()
-
+			self.notebook_1_pane_2.Freeze()
 			if is_batch_checked:
 				self.batchPanel.Show()
+				self.label_occupational_threshold.Show()
+				self.text_ctrl_ImportDataSection.Clear()
 				self.label_OutputMasterScanSection.SetLabel("Select *.ini settings file")
+				self.text_ctrl_OutputMasterScanSection.Clear()
 				self.text_ctrl_OutputMasterScanSection.SetToolTip(wx.ToolTip(
 				"Specify the path of *.ini settings file"))
 				self.button_Browse_OutputMasterScanSection.SetToolTip(wx.ToolTip(
 							"Opens a dialog box for selection of the Import Settings."))
+				self.choice_SelectSettingSection_batch.Clear()
+				self.listbox_MFQL_batch.Clear()
 				self.disabled_pages.update({"Import Settings", "Run"})
 				print("Import Settings and Run pages disabled.")
 				
 			else:
 				self.batchPanel.Hide()
+				self.label_occupational_threshold.Hide()
+				self.text_ctrl_ImportDataSection.Clear()
 				self.label_OutputMasterScanSection.SetLabel("Specify output MasterScan file")
+				self.text_ctrl_OutputMasterScanSection.Clear()
 				self.text_ctrl_OutputMasterScanSection.SetToolTip(wx.ToolTip(
 				"Specify the path and the name of the MasterScan database for the mass spec data selected above."))
 				self.button_Browse_OutputMasterScanSection.SetToolTip(wx.ToolTip(
 							"Opens a dialog box for selection of the MasterScan database."))
+				self.choice_SelectSettingSection_batch.Clear()
 				self.disabled_pages.clear()
 				print("Import Settings and Run pages enabled.")
 
 			self.notebook_1_pane_2.Layout()
+			self.notebook_1_pane_2.SendSizeEvent()
+			self.notebook_1_pane_2.Thaw()
 
 
 		self.checkBox_BatchMode.Bind(wx.EVT_CHECKBOX, on_checkbox_toggle)
@@ -1431,10 +1503,16 @@ class LpdxFrame(wx.Frame):
 
 		# --- Logo ---
 		try:
-			img = wx.Image(opj('lx/stuff/LipidXplorer-50.png'), wx.BITMAP_TYPE_PNG)
+			logo_path = resource_path("lx", "stuff", "LipidXplorer-50.png")
+			img = wx.Image(logo_path, wx.BITMAP_TYPE_PNG)
+			w = img.GetWidth()
+			h = img.GetHeight()
+			scale_factor = 0.7 # 50% size
+			img = img.Scale(int(w * scale_factor), int(h * scale_factor), wx.IMAGE_QUALITY_HIGH)
 			self.bmp_LipidX_Logo = img.ConvertToBitmap()
 			self.logo_bitmap = wx.StaticBitmap(self.notebook_1_pane_2, -1, self.bmp_LipidX_Logo)
-		except Exception:
+		except Exception as e:
+			print("Logo load failed:", e)
 			self.logo_bitmap = None
 
 		# =========================================================
@@ -1442,12 +1520,16 @@ class LpdxFrame(wx.Frame):
 		# =========================================================
 		main_vbox = wx.BoxSizer(wx.VERTICAL)
 		main_vbox.AddSpacer(50)
-		# === Top Row: Spacer + Batch Mode checkbox aligned right
+
+# === Top Row: Spacer + Batch Mode checkbox aligned right
 		top_row = wx.BoxSizer(wx.HORIZONTAL)
-		top_row.AddSpacer(80)  # left spacer to simulate margin
+		top_row.AddSpacer(80) # left spacer to simulate margin
 		top_row.AddStretchSpacer(1)
-		top_row.Add(self.checkBox_BatchMode, 0, wx.ALIGN_TOP | wx.RIGHT, 10)
+		top_row.Add(self.label_occupational_threshold, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 15)
+		top_row.Add(self.checkBox_BatchMode, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 10)
 		main_vbox.Add(top_row, 0, wx.EXPAND | wx.TOP | wx.LEFT | wx.RIGHT, 5)
+
+
 
 		# === Label: Select folder
 		main_vbox.Add(self.label_ImportDataSection, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
@@ -1483,17 +1565,42 @@ class LpdxFrame(wx.Frame):
 		# MFQL Row: [ TextCtrl ][ Browse ]
 		mfql_row = wx.BoxSizer(wx.HORIZONTAL)
 		mfql_row.Add(self.listbox_MFQL_batch , 1, wx.EXPAND | wx.RIGHT, 5)
-		mfql_row.Add(self.button_Browse_MFQL, 0, wx.ALIGN_CENTER_VERTICAL)
+		#mfql_row.Add(self.button_Browse_MFQL, 0, wx.ALIGN_CENTER_VERTICAL)
+  
+		btn_col = wx.BoxSizer(wx.VERTICAL)
+		btn_col.Add(self.button_Browse_MFQL_batch, 0, wx.EXPAND | wx.BOTTOM, 5)
+		btn_col.Add(self.button_Delete_MFQL_batch, 0, wx.EXPAND)
+		mfql_row.Add(btn_col, 0, wx.ALIGN_TOP)
+
 		batch_vbox.Add(mfql_row, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 15)
+		#set initial/min height
+		self.listbox_MFQL_batch.SetMinSize((-1, 120))
 
 		# Add button and checkbox to the horizontal sizer
-		hbox_run.Add(self.button_RUN_batch, 0, wx.RIGHT, 20)
-		hbox_run.Add(self.checkbox_save_per_sample, 0, wx.ALIGN_CENTER_VERTICAL)
-		# Add horizontal sizer to the main vertical layout, centered
-		batch_vbox.Add(hbox_run, 0, wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, 10)
+		# CPU cores (left side)
+		# Left side controls
+		hbox_run.Add(self.label_cores, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 8)
+		hbox_run.Add(self.spin_cores, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 25)
+
+		hbox_run.AddSpacer(40)  # small push to the right
+
+		# RUN button (center anchor)
+		hbox_run.Add(self.button_RUN_batch, 0)
+
+		# Stretch spacer after RUN
+		hbox_run.AddSpacer(40)  # small push to the right
+
+		# Right side checkbox
+		hbox_run.Add(self.checkbox_save_per_sample, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 20)
+
+		# IMPORTANT: let row expand horizontally
+		batch_vbox.Add(hbox_run, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
+  
 
 		self.batchPanel.SetSizer(batch_vbox)
 		main_vbox.Add(self.batchPanel, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 10)
+
+
 
 		# Push logo to bottom
 		main_vbox.AddStretchSpacer(1)
@@ -1918,7 +2025,8 @@ intensity."""))
   
   
   ################ Ballal ############
-		self.Bind(wx.EVT_BUTTON, self.OnBrowse_MFQL_batch, self.button_Browse_MFQL)
+		self.Bind(wx.EVT_BUTTON, self.OnBrowse_MFQL_batch, self.button_Browse_MFQL_batch)
+		self.Bind(wx.EVT_BUTTON, self.OnDelete_MFQL_batch, self.button_Delete_MFQL_batch)
 		self.Bind(wx.EVT_BUTTON, self.On_button_RUN_batch, self.button_RUN_batch)
   
   
@@ -2126,7 +2234,7 @@ intensity."""))
 
 	def readOptions(self):
 
-		#print("readOptions----------------GUI-------###############################")
+		print("readOptions----------------GUI-------###############################",self.currentConfiguration)
 		project = Project()
 
 		project.options['importDir'] = self.text_ctrl_ImportDataSection.GetValue()
@@ -2136,7 +2244,7 @@ intensity."""))
 		project.options['pisSpectra'] = "False" ########## Ballal
 		project.options['dataType'] = self.combo_ctrl_ImportDataSection.GetValue()
 		project.options['ini'] = self.text_ctrl_LoadIniSection.GetValue()
-		project.options['setting'] = self.choice_SelectSettingSection.GetSelection()
+		project.options['setting'] = self.currentConfiguration       ## self.choice_SelectSettingSection.GetSelection()
 		project.options['selectionWindow'] = self.text_ctrl_SettingsSection_selectionWindow.GetValue()
 		project.options['timerange'] = "(%s,%s)" % (self.text_ctrl_SettingsSection_timerange1.GetValue(), self.text_ctrl_SettingsSection_timerange2.GetValue())
 		project.options['MScalibration'] = self.text_ctrl_SettingsSection_calibration_ms.GetValue()
@@ -2267,15 +2375,18 @@ intensity."""))
 		self.OnMenuProjectLoad(None, pFile = filename)
 
 
-	def OnMenuProjectLoad(self, evt, pFile = ''):
+	def OnMenuProjectLoad(self, evt, pFile=''):
 
 		project = GUIProject()
 
 		# load the project file
 		if pFile == '':
-			dlg = wx.FileDialog(wx.GetApp().frame, "Load the project file",
-					style = wx.DD_DEFAULT_STYLE|wx.FD_OPEN, defaultFile = '')
-
+			dlg = wx.FileDialog(
+				wx.GetApp().frame,
+				"Load the project file",
+				style=wx.DD_DEFAULT_STYLE | wx.FD_OPEN,
+				defaultFile=''
+			)
 			dlg.SetWildcard("*.lxp files|*.lxp")
 
 			if dlg.ShowModal() == wx.ID_OK:
@@ -2287,56 +2398,105 @@ intensity."""))
 
 		# initialize the project options
 		project.load(self.projectFile)
-  
-		#print("options in onMenuProjectLoad----------------GUI-------###############################", type(project.options), project.options)
-		#options = project.getPrintOptions()
+
+		# project options (already parsed/typed)
 		options = project.getOptions().getOrdinary()
 
-		#print("options in onMenuProjectLoad----------------GUI-------###############################", type(options)) #<class 'dict'>
-  
-
 		try:
-      ############## Ballal #############################
-      
 			is_batch_checked = self.checkBox_BatchMode.IsChecked()
 
+			# -----------------------------
+			# BATCH MODE
+			# -----------------------------
 			if is_batch_checked:
 				print("Loading project in BATCH MODE----------------GUI-------###############################")
-    
+
 				self.project_loaded_for_batch = True
-				# open and load ini first
-				if not options['ini'] is None and options['ini'] != '':
+
+				# open and load ini first (populates choice with INI SECTION NAMES)
+				if options.get('ini'):
 					self.text_ctrl_OutputMasterScanSection.SetValue(options['ini'])
 					self.filePath_LoadIni_batch = options['ini']
 					self.OnBrowse_LoadIni_Body(self.filePath_LoadIni_batch)
-					self.choice_SelectSettingSection_batch.SetSelection(int(options['setting'])) # select by number, this should be changed to string TODO
-					
-     
-				self.text_ctrl_ImportDataSection.SetValue(options['importDir'])
-				self.combo_ctrl_ImportDataSection.SetValue(options['dataType'])   
-				
+
+					# "setting" is stored as SECTION NAME from now on.
+					# For legacy projects where setting is numeric, try mapping id->name if available.
+					loaded = options.get('setting', '')
+					s = '' if loaded is None else str(loaded).strip()
+
+					if s.isdigit():
+						# OLD PROJECT: treat as index
+						idx = int(s)
+						if 0 <= idx < self.choice_SelectSettingSection_batch.GetCount():
+							self.choice_SelectSettingSection_batch.SetSelection(idx)
+							self.currentConfiguration = self.choice_SelectSettingSection_batch.GetString(idx)
+							self.collectSettings(self.currentConfiguration)  # important for batch
+						else:
+							print("WARNING: legacy batch setting index out of range:", idx)
+					else:
+						# NEW PROJECT: treat as section name
+						idx = self.choice_SelectSettingSection_batch.FindString(s)
+						if idx != wx.NOT_FOUND:
+							self.choice_SelectSettingSection_batch.SetSelection(idx)
+							self.currentConfiguration = s
+							self.collectSettings(s)
+						else:
+							print("WARNING: batch setting name not found:", s)
+
+
+				# other batch UI fields
+				self.text_ctrl_ImportDataSection.SetValue(options.get('importDir', ''))
+				self.combo_ctrl_ImportDataSection.SetValue(options.get('dataType', ''))
+
+				# MFQL dirs in listbox (from project mfql paths)
 				self.dictMFQLScripts = project.mfql
-				# Extract all unique parent directories
 				unique_dirs = sorted({os.path.dirname(path) for path in self.dictMFQLScripts.values()})
-				self.listbox_MFQL_batch.SetValue("\n".join(unique_dirs))
 
-###################################################
+				self.listbox_MFQL_batch.Clear()
+				self.listbox_MFQL_batch.InsertItems(unique_dirs, 0)
 
+			# -----------------------------
+			# NORMAL MODE
+			# -----------------------------
 			else:
 				self.project_loaded_for_batch = False
-       		# open and load ini first
-				if not options['ini'] is None and options['ini'] != '':
+				print(options)
+				# open and load ini first (populates choice with INI SECTION NAMES)
+				if options.get('ini'):
 					self.text_ctrl_LoadIniSection.SetValue(options['ini'])
 					self.filePath_LoadIni = options['ini']
 					self.OnBrowse_LoadIni_Body(self.filePath_LoadIni)
-					self.choice_SelectSettingSection.SetSelection(int(options['setting'])) # select by number, this should be changed to string TODO
-		
-	
+
+					# "setting" is stored as SECTION NAME from now on.
+					# For legacy projects where setting is numeric, try mapping id->name if available.
+					loaded = options.get('setting', '')
+					s = '' if loaded is None else str(loaded).strip()
+
+					if s.isdigit():
+						# OLD PROJECT: treat as index
+						idx = int(s)
+						if 0 <= idx < self.choice_SelectSettingSection.GetCount():
+							self.choice_SelectSettingSection.SetSelection(idx)
+							self.currentConfiguration = self.choice_SelectSettingSection.GetString(idx)
+							self.fillConfiguration(self.currentConfiguration)
+						else:
+							print("WARNING: legacy setting index out of range:", idx)
+					else:
+						# NEW PROJECT: treat as section name
+						idx = self.choice_SelectSettingSection.FindString(s)
+						if idx != wx.NOT_FOUND:
+							self.choice_SelectSettingSection.SetSelection(idx)
+							self.currentConfiguration = s
+							self.fillConfiguration(s)
+						else:
+							print("WARNING: setting name not found:", s)
+
+
+				# keep the rest of your UI population as-is
 				self.text_ctrl_ImportDataSection.SetValue(options['importDir'])
-				self.text_ctrl_OutputMasterScanSection.SetValue(options['masterScanImport']) # in expectation of a project file(projectoptions['masterScan']
-				self.text_ctrl_MasterScanSection.SetValue(options['masterScanRun']) # in expectation of a project file(projectoptions['masterScan']
-				#self.checkBox_importMSMS.SetValue(not strToBool(options['importMSMS']))
-	
+				self.text_ctrl_OutputMasterScanSection.SetValue(options['masterScanImport'])
+				self.text_ctrl_MasterScanSection.SetValue(options['masterScanRun'])
+
 				self.combo_ctrl_ImportDataSection.SetValue(options['dataType'])
 				self.text_ctrl_SettingsSection_selectionWindow.SetValue(options['selectionWindow'])
 				self.text_ctrl_SettingsSection_timerange1.SetValue(options['timerange'][0])
@@ -2365,10 +2525,17 @@ intensity."""))
 				self.text_ctrl_SettingsSection_occupationThr_msms.SetValue((options['MSMSminOccupation']))
 				self.text_ctrl_SettingsSection_precursorMassShift.SetValue((options['precursorMassShift']))
 				self.text_ctrl_SettingsSection_precursorMassShiftOrbi.SetValue((options['precursorMassShiftOrbi']))
-				self.alignmentSetting.radioBox_ms_alignment.SetSelection(self.alignmentSetting.alignmentMethodsMS_intern.index(options['alignmentMethodMS']))
-				self.alignmentSetting.radioBox_msms_alignment.SetSelection(self.alignmentSetting.alignmentMethodsMSMS_intern.index(options['alignmentMethodMSMS']))
-				self.alignmentSetting.radioBox_scanAveraging.SetSelection(self.alignmentSetting.scanAveragingMethods_intern.index(options['scanAveragingMethod']))
-				# here starts the Set debugging Options from the Debug menu
+				self.alignmentSetting.radioBox_ms_alignment.SetSelection(
+					self.alignmentSetting.alignmentMethodsMS_intern.index(options['alignmentMethodMS'])
+				)
+				self.alignmentSetting.radioBox_msms_alignment.SetSelection(
+					self.alignmentSetting.alignmentMethodsMSMS_intern.index(options['alignmentMethodMSMS'])
+				)
+				self.alignmentSetting.radioBox_scanAveraging.SetSelection(
+					self.alignmentSetting.scanAveragingMethods_intern.index(options['scanAveragingMethod'])
+				)
+
+				# Debug menu options
 				self.debugSetting.checkBox_IsotopicCorrection_MSMS.SetValue(strToBool(options['isotopicCorrection_MSMS']))
 				self.debugSetting.OnCheckIsotopicCorrection_MSMS(None)
 				self.debugSetting.checkBox_removeIsotopes.SetValue(strToBool(options['removeIsotopes']))
@@ -2381,7 +2548,7 @@ intensity."""))
 				self.debugSetting.OnCheckRelativeIntensity(None)
 				self.debugSetting.checkBox_MemoryLog.SetValue(strToBool(options['logMemory']))
 
-				# here starts the output options menu(options['correctIntensities']
+				# Output options
 				self.outputOptionSetting.checkBox_correctIntensities.SetValue(strToBool(options['intensityCorrection']))
 				self.outputOptionSetting.text_ctrl_precursor.SetValue(options['intensityCorrectionPrecursor'])
 				self.outputOptionSetting.text_ctrl_fragment.SetValue(options['intensityCorrectionFragment'])
@@ -2389,12 +2556,16 @@ intensity."""))
 				self.outputOptionSetting.checkBox_sumFattyAcids.SetValue(strToBool(options['sumFattyAcids']))
 				self.outputOptionSetting.checkBox_settingsPrefix.SetValue(strToBool(options['settingsPrefix']))
 
-				# here starts the RUN panel(options['resultFile']
+				# RUN panel
 				self.text_ctrl_OutputSection.SetValue(options['resultFile'])
 				self.text_ctrl_RunOptions_MS.SetValue(options['optionalMStolerance'])
 				self.text_ctrl_RunOptions_MSMS.SetValue(options['optionalMSMStolerance'])
-				self.choice_RunOptions_MS_type.GetString(self.choice_RunOptions_MS_type.SetStringSelection(options['optionalMStoleranceType']))
-				self.choice_RunOptions_MSMS_type.GetString(self.choice_RunOptions_MSMS_type.SetStringSelection(options['optionalMSMStoleranceType']))
+				self.choice_RunOptions_MS_type.GetString(
+					self.choice_RunOptions_MS_type.SetStringSelection(options['optionalMStoleranceType'])
+				)
+				self.choice_RunOptions_MSMS_type.GetString(
+					self.choice_RunOptions_MSMS_type.SetStringSelection(options['optionalMSMStoleranceType'])
+				)
 				self.checkBox_OptionsSection_isocorrect_ms.SetValue(strToBool(options['isotopicCorrectionMS']))
 				self.checkBox_OptionsSection_isocorrect_msms.SetValue(strToBool(options['isotopicCorrectionMSMS']))
 				self.checkBox_OptionsSection_complement_sc.SetValue(strToBool(options['complementMasterScan']))
@@ -2404,22 +2575,26 @@ intensity."""))
 				self.checkBox_OptionsSection_dumpMasterScan.SetValue(strToBool(options['dumpMasterScan']))
 				self.checkBox_generateStatistics.SetValue(strToBool(options['statistics']))
 				self.checkBox_noPermutations.SetValue(strToBool(options['noPermutations']))
-				#project.options['mzXML'] = None # option key used in lpdxImport.py, substituted by 'dataType'
-		except TypeError as AttributeError:
+
+		except (TypeError, AttributeError):
 			pass
 
 		# set local variables
 		self.dictMFQLScripts = project.mfql
 		self.list_box_1.Set(list(self.dictMFQLScripts.keys()))
-		self.filePath_Dump = options['dumpMasterScanFile']
+		self.filePath_Dump = options.get('dumpMasterScanFile')
 
-		# if a setting was given we make it our current config
-		if len(self.listConfigurations) > 0 and \
-				self.choice_SelectSettingSection.GetSelection():
-			self.currentConfiguration = self.listConfigurations[self.choice_SelectSettingSection.GetSelection()]
+		# if a setting was given we make it our current config (NORMAL MODE)
+		if hasattr(self, "listConfigurations") and len(self.listConfigurations) > 0:
+			sel = self.choice_SelectSettingSection.GetSelection()
+			if sel != wx.NOT_FOUND:
+				self.currentConfiguration = self.listConfigurations[sel]
+
 		if self.currentConfiguration != "":
 			self.OnSettingsSaved()
-		pass
+
+		return None
+
 
 	def OnMenuDebugWin(self, evt):
 
@@ -2960,37 +3135,48 @@ intensity."""))
    
    
 	def OnBrowse_MFQL_batch(self, evt):
-     
-     		# open directory with *.dta/*mzXML content
-		dlg = wx.DirDialog(self, "Choose a directory with MFQL files", style=wx.DD_DEFAULT_STYLE|wx.DD_DIR_MUST_EXIST)
+		dlg = wx.DirDialog(
+			self,
+			"Choose a directory with MFQL files",
+			style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST
+		)
 		dlg.SetPath(os.getcwd())
 
+		try:
+			if dlg.ShowModal() != wx.ID_OK:
+				return
 
-		if dlg.ShowModal() == wx.ID_OK:
 			selected_dir = dlg.GetPath()
 
-			# Check if the folder contains at least one .mfql file
+			# Check if folder contains at least one .mfql file
 			has_mfql = any(
-				re.match(r'.*\.mfql$', f)
+				f.lower().endswith(".mfql")
 				for f in os.listdir(selected_dir)
 			)
 
-		if has_mfql:
-			# Get current text from the TextCtrl
-			current_text = self.listbox_MFQL_batch.GetValue()
-			
-			# Check if directory already listed
-			if selected_dir not in current_text.splitlines():
-				self.listbox_MFQL_batch.AppendText(selected_dir + "\n")
-		else:
-			wx.MessageBox(
-				"No .mfql files found in this directory.",
-				"Info",
-				wx.OK | wx.ICON_INFORMATION
-			)
+			if not has_mfql:
+				wx.MessageBox("No .mfql files found in this directory.", "Info",
+							wx.OK | wx.ICON_INFORMATION)
+				return
 
+			# Add if not already present
+			existing = set(self.listbox_MFQL_batch.GetItems())
+			if selected_dir not in existing:
+				self.listbox_MFQL_batch.Append(selected_dir)
 
-		dlg.Destroy()
+		finally:
+			dlg.Destroy()
+
+	def OnDelete_MFQL_batch(self, evt):
+		selections = list(self.listbox_MFQL_batch.GetSelections())  # indices
+		if not selections:
+			wx.MessageBox("Select one or more directories to delete.", "Info",
+						wx.OK | wx.ICON_INFORMATION)
+			return
+
+		# Delete from bottom to top to avoid index shifting
+		for idx in reversed(selections):
+			self.listbox_MFQL_batch.Delete(idx)
 
 
 
@@ -2998,6 +3184,7 @@ intensity."""))
 
 		self.currentConfiguration = evt.GetString()
 		self.collectSettings(self.currentConfiguration)# self.optsImport is filled there
+		print(f"Configuration '{self.currentConfiguration}' selected. Options loaded into self.optsImport: {self.optsImport}")
   
 
 
@@ -3010,7 +3197,7 @@ intensity."""))
 
 		# ---- Load values from imported configuration ----
 		opts = self.optsImport
-
+		print("-------------------------------------------------------------------------",opts)
 		# Defensive: make sure it's a dict
 		if not isinstance(opts, dict):
 			print("self.optsImport is not a dictionary.")
@@ -3025,7 +3212,7 @@ intensity."""))
 		project.options['importDir'] = self.text_ctrl_ImportDataSection.GetValue()
 		project.options['dataType'] = self.combo_ctrl_ImportDataSection.GetValue()
 		project.options['ini'] = self.text_ctrl_OutputMasterScanSection.GetValue()
-		project.options['setting'] = self.choice_SelectSettingSection_batch.GetStringSelection()
+		project.options['setting'] = self.currentConfiguration
   
 		#project.options.setdefault('resultFile', self.text_ctrl_OutputSection.GetValue())
 
@@ -3033,7 +3220,7 @@ intensity."""))
 		# for key in ['alignmentMethodMS', 'alignmentMethodMSMS', 'scanAveragingMethod']:
 		# 	project.options.setdefault(key, None)
 
-		print("Batch project options loaded successfully from self.optsImport.")
+		print("Batch project options loaded successfully from self.optsImport.", project.options)
 		return project
 
 	def options_to_readoptions_shape(self):
@@ -3063,7 +3250,7 @@ intensity."""))
 		}
 
 		# ---- Integers ----
-		int_keys = {'setting','loopNr'}
+		int_keys = {'loopNr'}
 
 		# ---- Fields that should be None if empty ----
 		none_if_empty = {
@@ -3147,24 +3334,37 @@ intensity."""))
 		if self.project_loaded_for_batch:
 			project = Project()
 			project.load(self.projectFile)
-			self.project = project
+			self.project = project  # (options_to_readoptions_shape relies on self.project)
 
-			queries_raw = getattr(self.project, "mfql", {})
-			self.project.options["batch_mode"] = True
-			self.project.options["savePerSample"] = bool(self.checkbox_save_per_sample.IsChecked())
+			print("Initial project options loaded from file:", type(project.options),type(self.project.options))
+			# Apply ini + setting so preset-dependent parameters get populated/updated
 
+			for k, v in self.optsImport.items():
+				self.project.options[k] = v
+
+			# Overlay GUI values (these MUST win)
+			# IMPORTANT: build_batch_options_from_ui should include ini/setting/importDir/dataType/batch_mode/savePerSample
+			self.project.options.update(self.build_batch_options_from_ui())
+
+			# Convert types into the shape expected downstream
 			self.options_to_readoptions_shape()
+
+			# Recompute / validate / format and get final options
 			self.project.testOptions()
 			self.project.formatOptions()
 			options = self.project.getOptions()
+			print("Initial project options loaded from file:????????", type(project.options),type(self.project.options), type(options))
+			# Refresh MFQL scripts from GUI listbox (same as your else branch)
+			self.dictMFQLScripts = {}
+			self.dictMFQLScripts = self.collect_mfql_from_listbox()
 
 			print("Running in batch mode: MasterScan will not be saved.")
 
 			queries_payload = [
 				{"name": k, "path": str(Path(v).resolve())}
-				for k, v in queries_raw.items()
-			]
-
+				for k, v in self.dictMFQLScripts.items()
+			]		
+		
 		else:
 			print("No project loaded for batch processing.")
 			if not self.validate_before_batch():
@@ -3172,21 +3372,14 @@ intensity."""))
 					"Missing information for batch processing.",
 					"Error", wx.OK | wx.ICON_ERROR
 				)
+				self.button_RUN_batch.Enable()
 				return
 
 			project = self.readOptions_batch()
 
 			self.dictMFQLScripts = {}
-			lines = [line.strip() for line in self.listbox_MFQL_batch.GetValue().splitlines() if line.strip()]
-			for dir_path in lines:
-				if not os.path.isdir(dir_path):
-					print(f"Skipping invalid directory: {dir_path}")
-					continue
-				for root, _, files in os.walk(dir_path):
-					for filename in files:
-						if filename.lower().endswith(".mfql"):
-							full_path = os.path.join(root, filename)
-							self.dictMFQLScripts[filename] = full_path
+			self.dictMFQLScripts = self.collect_mfql_from_listbox()
+
 
 			options = project.options
 			options["batch_mode"] = True
@@ -3231,6 +3424,7 @@ intensity."""))
 			also_stdout=False
 		)
 		self.logger.log("Starting batch process...")
+		print("Starting batch process...##",options)
 		#redirect all print() in this process to this logger
 		self.logger.install_as_print()
 		# -----------------------------
@@ -3241,7 +3435,10 @@ intensity."""))
 			"queries": queries_payload,
 			"log_file": log_path
 		}
-
+  
+		#print(f"Batch payload prepared: {payload}")
+		#self.button_RUN_batch.Enable()##remove this line after testing
+  
 		# -----------------------------
 		# Run batch in background thread (NOT subprocess)
 		# -----------------------------
@@ -3249,12 +3446,14 @@ intensity."""))
 			from lx.batch_processor import run_batch
 		# Reinstall print redirection inside this thread
 			self.logger.install_as_print()
-
+			n_cores = int(self.spin_cores.GetValue())
+			print(f"Batch thread started. Using {n_cores} cores for processing.")
 			try:
 				summary = run_batch(
 					payload["options"],
 					payload["queries"],
-					log_file=payload["log_file"]
+					log_file=payload["log_file"],
+    				n_cores=n_cores	
 				)
 
 				wx.CallAfter(self.debug.text_ctrl.AppendText, "\nBatch processing completed.\n")
@@ -3271,9 +3470,6 @@ intensity."""))
 		# Start background thread
 		import threading
 		threading.Thread(target=run_in_thread, daemon=True).start()
-
-
-
 
 
 
@@ -3295,18 +3491,60 @@ intensity."""))
 			wx.MessageBox("No configuration selected.", "Warning")
 			return False
 		
-			# Check MFQL batch entries (multi-line TextCtrl)
-		lines = [line.strip() for line in self.listbox_MFQL_batch.GetValue().splitlines() if line.strip()]
+			# Check MFQL batch entries 
+		lines = [s.strip() for s in self.listbox_MFQL_batch.GetItems() if s.strip()]
 		if not lines:
 			wx.MessageBox("MFQL batch list is empty.", "Warning")
 			return False
 		else:
-			print(f"MFQL batch list has {len(lines)} non-empty line(s): {lines}")
+			print(f"MFQL batch list has {len(lines)} entr(y/ies): {lines}")
+
 
 
 		
 		# All checks passed
 		return True
+
+
+
+	def build_batch_options_from_ui(self):
+		"""
+		Build raw (string/bool/int) options from the current GUI state.
+		These are the values that should win over whatever the project file stored.
+		"""
+		opts = {}
+
+		#print("Building batch options from UI...", self.listConfigurations_batch, self.choice_SelectSettingSection_batch.GetStringSelection(),self.currentConfiguration)
+		opts["importDir"] = self.text_ctrl_ImportDataSection.GetValue()
+		opts["dataType"] = self.combo_ctrl_ImportDataSection.GetValue()
+		opts["ini"] = self.text_ctrl_OutputMasterScanSection.GetValue()
+		opts["setting"] = self.choice_SelectSettingSection_batch.GetStringSelection()
+
+		opts["batch_mode"] = True
+		opts["savePerSample"] = bool(self.checkbox_save_per_sample.IsChecked())
+
+		return opts
+
+	def collect_mfql_from_listbox(self):
+		"""
+		Rebuild self.dictMFQLScripts from directories listed in self.listbox_MFQL_batch.
+		Returns a dict {filename: full_path}.
+		"""
+		mfql = {}
+		lines = [s.strip() for s in self.listbox_MFQL_batch.GetItems() if s.strip()]
+
+		for dir_path in lines:
+			if not os.path.isdir(dir_path):
+				print(f"Skipping invalid directory: {dir_path}")
+				continue
+
+			for root, _, files in os.walk(dir_path):
+				for filename in files:
+					if filename.lower().endswith(".mfql"):
+						full_path = os.path.join(root, filename)
+						mfql[filename] = full_path
+
+		return mfql
 
 
     #############################################################
@@ -3354,12 +3592,20 @@ intensity."""))
 			self.confParse.read(self.text_ctrl_MasterScanSection.GetLineText(0))
 
 			self.listConfigurations_batch = sorted(self.confParse.sections())
-			#print("Batch configurations loaded:", self.listConfigurations_batch)
+			print("Batch configurations loaded:", self.listConfigurations_batch)
 
 			self.currentConfiguration = ''
 
 			self.choice_SelectSettingSection_batch.Clear()
 			self.choice_SelectSettingSection_batch.Append(self.listConfigurations_batch)
+   
+			if self.choice_SelectSettingSection_batch.GetCount() > 0:
+				# if nothing selected yet, select first
+				if self.choice_SelectSettingSection_batch.GetSelection() == wx.NOT_FOUND:
+					self.choice_SelectSettingSection_batch.SetSelection(0)
+
+				self.currentConfiguration = self.choice_SelectSettingSection_batch.GetStringSelection()
+				self.collectSettings(self.currentConfiguration)
 
 				
 		else:
@@ -3372,7 +3618,7 @@ intensity."""))
 			self.listConfigurations = sorted(self.confParse.sections())
 
 			self.currentConfiguration = ''
-
+			print("Configurations loaded:", self.listConfigurations)
 			self.choice_SelectSettingSection.Clear()
 			self.choice_SelectSettingSection.Append(self.listConfigurations)
 			self.clearConfiguration()

@@ -8,7 +8,11 @@ a = Analysis(
     binaries=[],
 
     # include full lx package
-    datas=[('lx/**/*', 'lx')],
+    datas = [
+    ('lx/stuff/*.png', 'lx/stuff'),
+    ('lx/stuff/*.ico', 'lx/stuff'),
+    ]
+
 
     hiddenimports=[
         'lx',

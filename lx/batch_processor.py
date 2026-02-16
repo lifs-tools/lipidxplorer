@@ -312,6 +312,7 @@ def run_batch(options: dict, queries: list, n_cores: int = None, log_file=None):
         return {}
 
     log(f"Found {len(mzml_files)} mzML files for batch processing.")
+    #log(f"mzml_files: {[str(f) for f in mzml_files]}")
 
     # Directory where workers will store per-sample CSVs
     per_sample_dir = import_dir / "per_sample_results"
@@ -327,17 +328,7 @@ def run_batch(options: dict, queries: list, n_cores: int = None, log_file=None):
         for f in mzml_files
     ]
 
-    # -----------------------------------------------------------
-    # Limit number of cores to at most half of CPU count
-    # -----------------------------------------------------------
-    cpu_total = mp.cpu_count()
-    max_workers = max(1, cpu_total // 2)
-    if n_cores is None or n_cores < 1:
-        n_cores = max_workers
-    else:
-        n_cores = min(n_cores, max_workers)
-
-    log(f"Using {n_cores} worker process(es) (CPU count = {cpu_total})")
+    log(f"Using {n_cores} worker process(es)")
 
     sample_csv_paths: List[str] = []
     n_ok = 0
@@ -375,7 +366,7 @@ def run_batch(options: dict, queries: list, n_cores: int = None, log_file=None):
     # Merge per-sample CSVs into one final table
     # -----------------------------------------------------------
     log("Merging per-sample results...")
-    final_df = merge_lipid_results(sample_csv_paths)
+    final_df = merge_lipid_results(sample_csv_paths, mzml_files=mzml_files)
 
     # Output path for the final batch results
     batch_result_path = import_dir / "batch_results.csv"
@@ -419,7 +410,7 @@ def run_batch(options: dict, queries: list, n_cores: int = None, log_file=None):
 # The merge_lipid_results()
 # -------------------------------------------------------------------
 
-def merge_lipid_results(sample_files):
+def merge_lipid_results(sample_files, mzml_files=None):
     """
     Merge multiple per-sample lipidomics result CSVs into a single clean batch table.
 
@@ -452,19 +443,35 @@ def merge_lipid_results(sample_files):
 
     # Detect delimiter for each CSV (comma, semicolon, tab, etc.) ===
     def detect_delimiter(path):
-        with open(path, "r", newline="") as f:
+        with open(path, "rb") as f:
             sample = f.read(4096)
-            sniffer = csv.Sniffer()
-            try:
-                return sniffer.sniff(sample).delimiter
-            except Exception:
-                return ","  # default fallback
+
+        # try decode safely; utf-8-sig handles BOM
+        text = sample.decode("utf-8-sig", errors="replace")
+
+        try:
+            return csv.Sniffer().sniff(text, delimiters=[",", ";", "\t", "|"]).delimiter
+        except Exception:
+            return ","  # default fallback
 
     # Read and prepare each file ===
+    sample_files = list(sample_files)
+    
+    if mzml_files is not None:
+        mzml_stems = [Path(p).stem for p in mzml_files]   # desired order
+        csv_by_stem = {Path(p).stem: p for p in sample_files}
+        # keep only those that exist, in mzML order
+        sample_files = [csv_by_stem[s] for s in mzml_stems if s in csv_by_stem]
+        
     dfs = []
     for p in sample_files:
         delim = detect_delimiter(p)
-        df = pd.read_csv(p, delimiter=delim)
+        try:
+            df = pd.read_csv(p, sep=delim, encoding="utf-8-sig")
+        except Exception as e:
+            print(f"FAILED reading {p} with delim={repr(delim)}")
+            raise
+
 
         if "LipidSpecies" not in df.columns:
             raise ValueError(f"LipidSpecies missing in {p}")
@@ -580,6 +587,24 @@ def merge_lipid_results(sample_files):
     intensity_cols = [c for c in df.columns if intensity_pattern.match(c)]
     for c in intensity_cols:
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0)
+
+    # -----------------------------------------------------------
+    # Apply occupation threshold to Intensity block only
+    # -----------------------------------------------------------
+    occupation_threshold = 0.25  # 25%
+
+    if intensity_block:
+        n_positive = (df[intensity_block] > 0).sum(axis=1)
+        min_required = int(np.ceil(len(intensity_block) * occupation_threshold))
+
+        before = len(df)
+        df = df[n_positive >= min_required].copy()
+        after = len(df)
+
+        print(f"Occupation filter removed {before - after} lipids "
+            f"(threshold={occupation_threshold*100:.0f}%)")
+
+
 
     # Identify IS rows (LipidSpecies starts with "IS")
     is_mask = df["LipidSpecies"].astype(str).str.strip().str.upper().str.startswith("IS")
