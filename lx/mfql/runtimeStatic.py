@@ -1930,7 +1930,25 @@ class TypeTolerance:
 			t = self.getTinDA(fragMass)
 		else:
 			t = self.da
+################### Ballal test ###################
+		# lower = mass - t
+		# upper = mass + t
+		# delta_da = mass - m
+		# delta_ppm = (delta_da / mass) * 1e6 if mass != 0 else 0
 
+		# ok = (lower <= m and m <= upper)
+
+		# print("----- fitInNL CHECK -----")
+		# print(f"Tolerance type     : {self.kind}")
+		# print(f"Fragment peak m/z  : {fragMass:.6f}")
+		# print(f"Tolerance (Da)     : ±{t:.6f}")
+		# print(f"Allowed range      : {lower:.6f} → {upper:.6f}")
+		# print(f"Theoretical NL     : {m:.6f}")
+		# print(f"Delta (Da)         : {delta_da:.6f}")
+		# print(f"Delta (ppm)        : {delta_ppm:.2f}")
+		# print(f"PASS               : {ok}")
+		# print("-------------------------\n")
+####################################################
 		if mass - t <= m and m <= mass + t:
 			return True
 		else:

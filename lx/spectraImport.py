@@ -263,16 +263,17 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 ################### ballal changed it#######################
 	# Precursor mass shift
-	if 'precursorMassShift' in scan.options and scan.options['precursorMassShift']:
-		if float(scan.options['precursorMassShift']) != 0:
+	if (not scan.options.isEmpty('precursorMassShift')) and scan.options['precursorMassShift']:
+		shift = float(scan.options['precursorMassShift'])
+		if shift != 0:
 			print("Applying precursor mass shift")
-			scan.shiftPrecursors(float(scan.options['precursorMassShift']))
+			scan.shiftPrecursors(shift)
 
-	# Precursor mass shift for Orbitrap
-	if 'precursorMassShiftOrbi' in scan.options and scan.options['precursorMassShiftOrbi']:
-		if float(scan.options['precursorMassShiftOrbi']) != 0:
+	if (not scan.options.isEmpty('precursorMassShiftOrbi')) and scan.options['precursorMassShiftOrbi']:
+		shift_orbi = float(scan.options['precursorMassShiftOrbi'])
+		if shift_orbi != 0:
 			print("Applying precursor mass shift for Scanline error on Orbitrap data.")
-			scan.shiftPrecursorsInRawFilterLine(float(scan.options['precursorMassShiftOrbi']))
+			scan.shiftPrecursorsInRawFilterLine(shift_orbi)
 
 
 

@@ -1004,12 +1004,19 @@ class RunOptions:
 
 
 
+### Ballal #####
 
 
+def get_resource_dir():
+    return Path(__file__).resolve().parent
+
+def get_runtime_dir():
+    if getattr(sys, 'frozen', False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
 
 
-
-
+######################
 
 
 class LpdxFrame(wx.Frame):
@@ -1022,43 +1029,50 @@ class LpdxFrame(wx.Frame):
 
 		self.CONST_THREAD_SUCCESSFUL = 0
 		self.CONST_THREAD_USER_ABORT = 1
+  
+############# Ballal #############
 
 		###########################################################
 		### some user settings which are stored in lpdxopts.ini ###
+
+		self.resource_dir = get_resource_dir()
+		self.runtime_dir = get_runtime_dir()
+
+		self.options_file = self.runtime_dir / "lpdxopts.ini"
+		self.default_import_file = self.resource_dir / "lpdxImportSettings_benchmark.ini"
 
 		self.lpdxOptions = staticTypeDict()
 
 		# set the default defaults. Those values are used if no lpdxopts.ini
 		# was present
-		self.lpdxOptions['defaultImportSettings'] = ('lpdxImportSettings_benchmark.ini', type(''))
+		self.lpdxOptions['defaultImportSettings'] = (str(self.default_import_file), type(''))
 
 		self.confParseOpts = configparser.ConfigParser()
-		self.confParseOpts.read("lpdxopts.ini")
+		self.confParseOpts.read(str(self.options_file))
 
-		# options for the alignment
 		self.settingDefaults = "DEFAULTS"
 		if not self.confParseOpts.has_section(self.settingDefaults):
 			self.confParseOpts.add_section(self.settingDefaults)
-			with open("lpdxopts.ini", 'w') as iniFile:
+			with open(str(self.options_file), 'w') as iniFile:
 				self.confParseOpts.write(iniFile)
 
-		# read option from the lpdxopts.ini file if present. If not -
-		# write the option as defined above in self.lpdxOptions
 		for option in list(self.lpdxOptions.keys()):
 			if self.confParseOpts.has_option(self.settingDefaults, option):
 				o = self.confParseOpts.get(self.settingDefaults, option)
-				if not o in ['True', 'False']:
+				if o not in ['True', 'False']:
 					self.lpdxOptions[option] = o
 				else:
-					if o == 'True':
-						self.lpdxOptions[option] = True
-					else:
-						self.lpdxOptions[option] = False
+					self.lpdxOptions[option] = (o == 'True')
 			else:
-				self.confParseOpts.set(self.settingDefaults, option, self.lpdxOptions[option])
+				self.confParseOpts.set(self.settingDefaults, option, str(self.lpdxOptions[option]))
 
-		with open("lpdxopts.ini", 'w') as iniFile:
+		with open(str(self.options_file), 'w') as iniFile:
 			self.confParseOpts.write(iniFile)
+   
+
+		print("options_file:", self.options_file, self.options_file.exists())
+		print("default_import_file:", self.default_import_file, self.default_import_file.exists())
+
 
 		### some user settings which are stored in lpdxopts.ini ###
 		###########################################################
@@ -1905,6 +1919,11 @@ class LpdxFrame(wx.Frame):
 		# options
 		self.label_RunOptions = wx.StaticText(self.notebook_1_pane_3, -1, "Optional settings for this run")
 		self.label_RunOptions_tolerance = wx.StaticText(self.notebook_1_pane_3, -1, "Tolerance	")
+		self.label_RunOptions_tolerance.SetToolTip(
+		wx.ToolTip(
+			"Run-time mass tolerance override used during MFQL identification. "
+			"If left empty, the default tolerances from the import settings are used."
+		))
 		self.label_RunOptions_MS = wx.StaticText(self.notebook_1_pane_3, -1, "MS	")
 		self.text_ctrl_RunOptions_MS = wx.TextCtrl(self.notebook_1_pane_3, -1, "")
 		self.choice_RunOptions_MS_type = wx.Choice(self.notebook_1_pane_3, -1, choices = self.listChoices_types)
@@ -3099,7 +3118,7 @@ intensity."""))
 			dlg.SetWildcard("*.sc files|*.sc")
 
 			if dlg.ShowModal() == wx.ID_OK:
-				self.filePath_MasterScan = relativePath(dlg.GetPath())
+				self.filePath_MasterScan = dlg.GetPath()
 				if not re.match(r'.*\.sc', self.filePath_MasterScan):
 					s = self.filePath_MasterScan.split('.')
 					if len(s) == 1:
@@ -3849,7 +3868,7 @@ intensity."""))
 		dlg.SetWildcard("*.csv|*.csv")
 
 		if dlg.ShowModal() == wx.ID_OK:
-			self.filePath_Output = relativePath(dlg.GetPath())
+			self.filePath_Output = dlg.GetPath()
 
 			if not re.match(r'.*\.csv', self.filePath_Output):
 				s = self.filePath_Output.split('.')
@@ -3874,7 +3893,7 @@ intensity."""))
 		dlg.SetWildcard("*.sc files|*.sc")
 
 		if dlg.ShowModal() == wx.ID_OK:
-			self.filePath_MasterScan = relativePath(dlg.GetPath())
+			self.filePath_MasterScan = dlg.GetPath()
 
 		dlg.Destroy()
 
@@ -3926,7 +3945,7 @@ intensity."""))
 			dlg.SetPath(self.filePath_Dump)
 
 		if dlg.ShowModal() == wx.ID_OK:
-			self.filePath_Dump = relativePath(dlg.GetPath())
+			self.filePath_Dump = dlg.GetPath()
 
 		dlg.Destroy()
 		#self.filePath_Dump = self.filePath_MasterScan + os.sep + self.filePath_MasterScan.split(os.sep)[-1] + '-dump.csv'
@@ -4474,33 +4493,32 @@ intensity."""))
 		return None
 		#self.list_notebook_editor
 
-	def OnClosePanel(self, evt, key = None, secureCheck = True):
+
+####################################### Ballal changed it #############################################
+
+	def OnClosePanel(self, evt, key=None, secureCheck=True):
 
 		if (key or key == 0) and key in self.dict_button_close:
-			id = self.dict_button_close[key].GetId()
-
 			for i in range(self.notebook_1.GetPageCount()):
 				if self.notebook_1.GetPage(i) == self.dict_button_close[key].GetParent():
 
-					savedPage = False
-
-					saveIt = False
-
-					#if self.dict_text_ctrl.IsModified():
 					if self.dict_isChangedAndNotSavedMfqlFile[key] and secureCheck:
-						dlg = wx.MessageDialog(self, "Modified Query '%s' is not saved! Save it?" % key, "Ups...",
-							wx.NO|wx.YES|wx.ICON_HAND)
+						dlg = wx.MessageDialog(
+							self,
+							"Modified Query '%s' is not saved! Save it?" % key,
+							"Ups...",
+							wx.NO | wx.YES | wx.ICON_HAND
+						)
 
 						if dlg.ShowModal() == wx.ID_YES:
-
-							savedPage = True
-							with open(self.dictMFQLScripts[key], 'w') as mfqlFile:
-								self.dict_mfqlFile[key] = mfqlFile
+							with open(self.dictMFQLScripts[key], 'w', encoding='utf-8') as mfqlFile:
 								mfqlFile.write(self.dict_text_ctrl[key].GetText())
+
 							self.dict_isChangedAndNotSavedMfqlFile[key] = False
 							if key in self.dict_button_save:
 								self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
-							dlg.Destroy()
+
+						dlg.Destroy()
 
 					self.notebook_1.RemovePage(i)
 					self.dict_button_close[key].Destroy()
@@ -4516,7 +4534,7 @@ intensity."""))
 					self.dict_notebook_editor[key].Destroy()
 					del self.dict_notebook_editor[key]
 
-					del self.dict_mfqlFile[key]
+					self.dict_mfqlFile.pop(key, None)
 
 					for k in self.dict_notebook_editor:
 						self.dict_notebook_editor[k].Layout()
@@ -4525,29 +4543,27 @@ intensity."""))
 
 		else:
 			for key in list(self.dict_button_close.keys()):
-				savedPage = False
-
 				if evt.GetId() == self.dict_button_close[key].GetId():
-					# find right page
 					for i in range(self.notebook_1.GetPageCount()):
 						if self.notebook_1.GetPage(i) == self.dict_button_close[key].GetParent():
-							#if self.dict_text_ctrl.IsModified():
+
 							if self.dict_isChangedAndNotSavedMfqlFile[key]:
-								dlg = wx.MessageDialog(self, "Modified Query '%s' is not saved! Save it?" % key, "Ups...",
-									wx.NO|wx.YES|wx.ICON_HAND)
+								dlg = wx.MessageDialog(
+									self,
+									"Modified Query '%s' is not saved! Save it?" % key,
+									"Ups...",
+									wx.NO | wx.YES | wx.ICON_HAND
+								)
 
 								if dlg.ShowModal() == wx.ID_YES:
+									with open(self.dictMFQLScripts[key], 'w', encoding='utf-8') as mfqlFile:
+										mfqlFile.write(self.dict_text_ctrl[key].GetText())
 
-									savedPage = True
-									with open(self.dictMFQLScripts[key], 'w') as mfqlFile:
-										self.dict_mfqlFile[key] = mfqlFile
-										self.dict_mfqlFile[key].write(self.dict_text_ctrl[key].GetText())
 									self.dict_isChangedAndNotSavedMfqlFile[key] = False
 									if key in self.dict_button_save:
 										self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
-									dlg.Destroy()
 
-
+								dlg.Destroy()
 
 							self.notebook_1.RemovePage(i)
 							self.dict_button_close[key].Destroy()
@@ -4563,7 +4579,7 @@ intensity."""))
 							self.dict_notebook_editor[key].Destroy()
 							del self.dict_notebook_editor[key]
 
-							del self.dict_mfqlFile[key]
+							self.dict_mfqlFile.pop(key, None)
 
 							for k in self.dict_notebook_editor:
 								self.dict_notebook_editor[k].Layout()
@@ -4572,284 +4588,356 @@ intensity."""))
 
 		return None
 
-	def OnOpenFile(self, evt = None, newFile = None):
 
+	def OnOpenFile(self, evt=None, newFile=None):
 		if playSound:
 			wx.Sound('../pics/OpenFile.wav').Play()
+
 		sortedKeys = list(self.dictMFQLScripts.keys())
 
-		if not newFile:
-			for index in self.list_box_1.GetSelections():
-
-				curScript = [sortedKeys[index]][0]
-
-				# add a page to the notebook
-				if self.dict_notebook_editor == {}:
-					self.dict_notebook_editor = {curScript : wx.Panel(self.notebook_1, -1)}
-				elif curScript not in self.dict_notebook_editor:
-					self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
-				else:
-					return None
-
-				self.notebook_1.AddPage(self.dict_notebook_editor[curScript], curScript)
-
-				# generate textCtrl window
-				#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript], -1, "",
-				#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
-				#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript],
-				#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
-				self.dict_text_ctrl[curScript] = PythonSTC(self.dict_notebook_editor[curScript], -1,
-					style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
-		   				# line numbers in the margin
-
-				# stc bindings
-				self.dict_text_ctrl[curScript].Bind(stc.EVT_STC_CHANGE, self.OnStcChange)
-
-				self.dict_text_ctrl[curScript].SetZoom(2)
-				self.dict_text_ctrl[curScript].SetMarginType(0, stc.STC_MARGIN_NUMBER)
-				self.dict_text_ctrl[curScript].SetMarginWidth(0, 22)
-				self.dict_text_ctrl[curScript].StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
-				self.dict_text_ctrl[curScript].Colourise(0, -1)
-
-				#self.dict_text_ctrl[curScript].SetSize((835,700))
-				#self.dict_text_ctrl[curScript].SetMinSize((800,700))
-				self.dict_text_ctrl[curScript].SetMinSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
-
-				# open MFQL file
-				with open(self.dictMFQLScripts[curScript], 'r') as mfqlFile:
-					self.dict_mfqlFile[curScript] = mfqlFile
-					for line in self.dict_mfqlFile[curScript].readlines():
-						self.dict_text_ctrl[curScript].AppendText(line)
-				self.dict_isChangedAndNotSavedMfqlFile[curScript] = False
-
-				# add the close button
-				self.dict_button_close[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Close")
-				self.dict_button_close[curScript].SetMinSize((140, 34))
-				self.Bind(wx.EVT_BUTTON, self.OnClosePanel, self.dict_button_close[curScript])
-
-				# add the save button
-				self.dict_button_save[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Save")
-				self.dict_button_save[curScript].SetMinSize((140, 34))
-				self.Bind(wx.EVT_BUTTON, self.OnSavePanel, self.dict_button_save[curScript])
-
-				# add the saveAs button
-				self.dict_button_saveAs[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "SaveAs")
-				self.dict_button_saveAs[curScript].SetMinSize((140, 34))
-				self.Bind(wx.EVT_BUTTON, self.OnSaveAsPanel, self.dict_button_saveAs[curScript])
-
-				# add the new button
-				self.dict_button_new[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "New")
-				self.dict_button_new[curScript].SetMinSize((140, 34))
-				self.Bind(wx.EVT_BUTTON, self.OnNewPanel, self.dict_button_new[curScript])
-
-				# put all together with a box sizer
-				#self.dict_flex_sizer[curScript] = wx.FlexGridSizer(2,1,3,3)
-				self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(wx.HORIZONTAL)
-				self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(wx.VERTICAL)
-				self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_new[curScript], 0, wx.ALL|wx.EXPAND, 5)
-				self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_save[curScript], 0, wx.ALL|wx.EXPAND, 5)
-				self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_saveAs[curScript], 0, wx.ALL|wx.EXPAND, 5)
-				self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_close[curScript], 0, wx.ALL|wx.EXPAND, 5)
-				self.dict_box_sizer_horizontal[curScript].Fit(self.dict_notebook_editor[curScript])
-				#self.dict_flex_sizer[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.GROW, 10)
-				#self.dict_flex_sizer[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
-				#	wx.ALIGN_CENTER, 0)
-				self.dict_box_sizer_vertical[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.ADJUST_MINSIZE, 10)
-
-				self.dict_box_sizer_vertical[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
-					wx.ALIGN_CENTER|wx.ADJUST_MINSIZE, 0)
-
-				self.dict_notebook_editor[curScript].SetSizerAndFit(self.dict_box_sizer_vertical[curScript])
-				#self.dict_notebook_editor[curScript].SetSizer(self.dict_flex_sizer[curScript])
-
-				#self.dict_notebook_editor[curScript].Fit()
-				self.dict_notebook_editor[curScript].Layout()
-
-				#self.Layout()
-				#self.SetSize(self.GetSize())
-
-		#	self.SetClientSize(p.GetSize())
-			return None
-
-		elif False:
-
-			for index in self.list_box_1.GetSelections():
-
-				curScript = [sortedKeys[index]][0]
-
-				# add a page to the notebook
-				if self.dict_notebook_editor == {}:
-					self.dict_notebook_editor = {curScript : wx.Panel(self.notebook_1, -1)}
-				elif curScript not in self.dict_notebook_editor:
-					self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
-				else:
-					return None
-
-				self.notebook_1.AddPage(self.dict_notebook_editor[curScript], curScript, True)
-
-				# generate textCtrl window
-				#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript], -1, "",
-				#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
-				#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript],
-				#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
-				self.dict_text_ctrl[curScript] = PythonSTC(self.dict_notebook_editor[curScript], -1,
-					style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
-		   				# line numbers in the margin
-
-				self.dict_text_ctrl[curScript].Bind(stc.EVT_STC_CHANGE, self.OnStcChange)
-				self.dict_text_ctrl[curScript].SetEOLMode(stc.STC_EOL_CR)
-				self.dict_text_ctrl[curScript].SetZoom(2)
-				self.dict_text_ctrl[curScript].SetMarginType(0, stc.STC_MARGIN_NUMBER)
-				self.dict_text_ctrl[curScript].SetMarginWidth(0, 22)
-				self.dict_text_ctrl[curScript].StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
-
-				#self.dict_text_ctrl[curScript].SetSize((835,700))
-				#self.dict_text_ctrl[curScript].SetMinSize((800,700))
-				self.dict_text_ctrl[curScript].SetMinSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
-
-				# open MFQL file
-				with open(self.dictMFQLScripts[curScript], 'r') as mfqlFile:
-					self.dict_mfqlFile[curScript] = mfqlFile
-					for line in self.dict_mfqlFile[curScript].readlines():
-						self.dict_text_ctrl[curScript].AppendText(line)
-				self.dict_isChangedAndNotSavedMfqlFile[curScript] = False
-
-				# add the close button
-				self.dict_button_close[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Close")
-				self.dict_button_close[curScript].SetMinSize((140, 34))
-				self.Bind(wx.EVT_BUTTON, self.OnClosePanel, self.dict_button_close[curScript])
-
-				# add the save button
-				self.dict_button_save[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Save")
-				self.dict_button_save[curScript].SetMinSize((140, 34))
-				self.Bind(wx.EVT_BUTTON, self.OnSavePanel, self.dict_button_save[curScript])
-
-				# add the saveAs button
-				self.dict_button_saveAs[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "SaveAs")
-				self.dict_button_saveAs[curScript].SetMinSize((140, 34))
-				self.Bind(wx.EVT_BUTTON, self.OnSaveAsPanel, self.dict_button_saveAs[curScript])
-
-				# add the new button
-				self.dict_button_new[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "New")
-				self.dict_button_new[curScript].SetMinSize((140, 34))
-				self.Bind(wx.EVT_BUTTON, self.OnNewPanel, self.dict_button_new[curScript])
-
-				# put all together with a box sizer
-				#self.dict_flex_sizer[curScript] = wx.FlexGridSizer(2,1,3,3)
-				self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(wx.HORIZONTAL)
-				self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(wx.VERTICAL)
-				self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_new[curScript], 0, wx.ALL|wx.EXPAND, 5)
-				self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_save[curScript], 0, wx.ALL|wx.EXPAND, 5)
-				self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_saveAs[curScript], 0, wx.ALL|wx.EXPAND, 5)
-				self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_close[curScript], 0, wx.ALL|wx.EXPAND, 5)
-				self.dict_box_sizer_horizontal[curScript].Fit(self.dict_notebook_editor[curScript])
-				#self.dict_flex_sizer[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.GROW, 10)
-				#self.dict_flex_sizer[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
-				#	wx.ALIGN_CENTER, 0)
-				self.dict_box_sizer_vertical[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.ADJUST_MINSIZE, 10)
-
-				self.dict_box_sizer_vertical[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
-					wx.ALIGN_CENTER|wx.ADJUST_MINSIZE, 0)
-
-				self.dict_notebook_editor[curScript].SetSizerAndFit(self.dict_box_sizer_vertical[curScript])
-				#self.dict_notebook_editor[curScript].SetSizer(self.dict_flex_sizer[curScript])
-
-				#self.dict_notebook_editor[curScript].Fit()
-				self.dict_notebook_editor[curScript].Layout()
-
-				#self.Layout()
-				#self.SetSize(self.GetSize())
-
+		if newFile is None:
+			indices = self.list_box_1.GetSelections()
 		else:
+			indices = [newFile]
 
-			curScript = [sortedKeys[newFile]][0]
+		for index in indices:
+			curScript = sortedKeys[index]
 
-			# add a page to the notebook
-			if self.dict_notebook_editor == {}:
-				self.dict_notebook_editor = {curScript : wx.Panel(self.notebook_1, -1)}
-			elif curScript not in self.dict_notebook_editor:
-				self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
-			else:
-				return None
+			if curScript in self.dict_notebook_editor:
+				continue
 
-			# add the page
-			self.notebook_1.AddPage(self.dict_notebook_editor[curScript], curScript, True)
+			panel = wx.Panel(self.notebook_1, -1)
+			self.dict_notebook_editor[curScript] = panel
 
-			### generate the layout ###
-			# generate textCtrl window
-			#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript], -1, "",
-			#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
-			#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript],
-			#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
-			self.dict_text_ctrl[curScript] = PythonSTC(self.dict_notebook_editor[curScript], -1,
-				style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
-		   			# line numbers in the margin
+			textctrl = PythonSTC(
+				panel, -1,
+				style=wx.SIMPLE_BORDER | wx.HSCROLL | wx.ALWAYS_SHOW_SB | wx.TE_MULTILINE | wx.TE_RICH
+			)
+			self.dict_text_ctrl[curScript] = textctrl
 
-			self.dict_text_ctrl[curScript].Bind(stc.EVT_STC_CHANGE, self.OnStcChange)
-			self.dict_text_ctrl[curScript].SetEOLMode(stc.STC_EOL_CR)
-			self.dict_text_ctrl[curScript].SetZoom(2)
-			self.dict_text_ctrl[curScript].SetMarginType(0, stc.STC_MARGIN_NUMBER)
-			self.dict_text_ctrl[curScript].SetMarginWidth(0, 22)
-			self.dict_text_ctrl[curScript].StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
+			textctrl.Bind(stc.EVT_STC_CHANGE, self.OnStcChange)
+			textctrl.SetZoom(2)
+			textctrl.SetMarginType(0, stc.STC_MARGIN_NUMBER)
+			textctrl.SetMarginWidth(0, 22)
+			textctrl.StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
+			textctrl.SetEOLMode(stc.STC_EOL_LF)
 
-			#self.dict_text_ctrl[curScript].SetSize((835,700))
-			#self.dict_text_ctrl[curScript].SetMinSize((800,700))
-			self.dict_text_ctrl[curScript].SetMinSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
+			with open(self.dictMFQLScripts[curScript], "r", encoding="utf-8") as f:
+				textctrl.SetText(f.read())
 
-			# open MFQL file
-			self.dict_mfqlFile[curScript] = open(self.dictMFQLScripts[curScript], 'r')
-			for line in self.dict_mfqlFile[curScript].readlines():
-				self.dict_text_ctrl[curScript].AppendText(line)
-			self.dict_mfqlFile[curScript].close()
 			self.dict_isChangedAndNotSavedMfqlFile[curScript] = False
 
-			# add the close button
-			self.dict_button_close[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Close")
-			self.dict_button_close[curScript].SetMinSize((140, 34))
-			self.Bind(wx.EVT_BUTTON, self.OnClosePanel, self.dict_button_close[curScript])
+			btn_new = wx.Button(panel, -1, "New")
+			btn_save = wx.Button(panel, -1, "Save")
+			btn_save_as = wx.Button(panel, -1, "SaveAs")
+			btn_close = wx.Button(panel, -1, "Close")
 
-			# add the save button
-			self.dict_button_save[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Save")
-			self.dict_button_save[curScript].SetMinSize((140, 34))
-			self.Bind(wx.EVT_BUTTON, self.OnSavePanel, self.dict_button_save[curScript])
+			self.dict_button_new[curScript] = btn_new
+			self.dict_button_save[curScript] = btn_save
+			self.dict_button_saveAs[curScript] = btn_save_as
+			self.dict_button_close[curScript] = btn_close
 
-			# add the saveAs button
-			self.dict_button_saveAs[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "SaveAs")
-			self.dict_button_saveAs[curScript].SetMinSize((140, 34))
-			self.Bind(wx.EVT_BUTTON, self.OnSaveAsPanel, self.dict_button_saveAs[curScript])
+			btn_new.Bind(wx.EVT_BUTTON, self.OnNewPanel)
+			btn_save.Bind(wx.EVT_BUTTON, self.OnSavePanel)
+			btn_save_as.Bind(wx.EVT_BUTTON, self.OnSaveAsPanel)
+			btn_close.Bind(wx.EVT_BUTTON, self.OnClosePanel)
 
-			# add the new button
-			self.dict_button_new[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "New")
-			self.dict_button_new[curScript].SetMinSize((140, 34))
-			self.Bind(wx.EVT_BUTTON, self.OnNewPanel, self.dict_button_new[curScript])
+			hbox = wx.BoxSizer(wx.HORIZONTAL)
+			hbox.Add(btn_new, 0, wx.ALL, 5)
+			hbox.Add(btn_save, 0, wx.ALL, 5)
+			hbox.Add(btn_save_as, 0, wx.ALL, 5)
+			hbox.Add(btn_close, 0, wx.ALL, 5)
 
-			# put all together with a box sizer
-			#self.dict_flex_sizer[curScript] = wx.FlexGridSizer(2,1,3,3)
-			self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(wx.HORIZONTAL)
-			self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(wx.VERTICAL)
-			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_new[curScript], 0, wx.ALL|wx.EXPAND, 5)
-			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_save[curScript], 0, wx.ALL|wx.EXPAND, 5)
-			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_saveAs[curScript], 0, wx.ALL|wx.EXPAND, 5)
-			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_close[curScript], 0, wx.ALL|wx.EXPAND, 5)
-			self.dict_box_sizer_horizontal[curScript].Fit(self.dict_notebook_editor[curScript])
-			#self.dict_flex_sizer[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.GROW, 10)
-			#self.dict_flex_sizer[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
-			#	wx.ALIGN_CENTER, 0)
-			self.dict_box_sizer_vertical[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.ADJUST_MINSIZE, 10)
+			vbox = wx.BoxSizer(wx.VERTICAL)
+			vbox.Add(textctrl, 1, wx.ALL | wx.EXPAND, 10)
+			vbox.Add(hbox, 0, wx.ALIGN_CENTER)
 
-			self.dict_box_sizer_vertical[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
-				wx.ALIGN_CENTER|wx.ADJUST_MINSIZE, 0)
+			panel.SetSizer(vbox)
+			panel.Layout()
 
-			self.dict_notebook_editor[curScript].SetSizerAndFit(self.dict_box_sizer_vertical[curScript])
-			#self.dict_notebook_editor[curScript].SetSizer(self.dict_flex_sizer[curScript])
+			self.notebook_1.AddPage(panel, curScript, select=True)
 
-			#self.dict_notebook_editor[curScript].Fit()
-			self.dict_notebook_editor[curScript].Layout()
+		self.notebook_1.Layout()
+#################################################################################################
 
-			#self.Layout()
-			#self.SetSize(self.GetSize())
-		#	self.SetClientSize(p.GetSize())
-			return None
+	# def OnOpenFile(self, evt = None, newFile = None):
+
+	# 	if playSound:
+	# 		wx.Sound('../pics/OpenFile.wav').Play()
+	# 	sortedKeys = list(self.dictMFQLScripts.keys())
+
+	# 	if not newFile:
+	# 		for index in self.list_box_1.GetSelections():
+
+	# 			curScript = [sortedKeys[index]][0]
+
+	# 			# add a page to the notebook
+	# 			if self.dict_notebook_editor == {}:
+	# 				self.dict_notebook_editor = {curScript : wx.Panel(self.notebook_1, -1)}
+	# 			elif curScript not in self.dict_notebook_editor:
+	# 				self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
+	# 			else:
+	# 				return None
+
+	# 			self.notebook_1.AddPage(self.dict_notebook_editor[curScript], curScript)
+
+	# 			# generate textCtrl window
+	# 			#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript], -1, "",
+	# 			#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
+	# 			#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript],
+	# 			#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
+	# 			self.dict_text_ctrl[curScript] = PythonSTC(self.dict_notebook_editor[curScript], -1,
+	# 				style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
+	# 	   				# line numbers in the margin
+
+	# 			# stc bindings
+	# 			self.dict_text_ctrl[curScript].Bind(stc.EVT_STC_CHANGE, self.OnStcChange)
+
+	# 			self.dict_text_ctrl[curScript].SetZoom(2)
+	# 			self.dict_text_ctrl[curScript].SetMarginType(0, stc.STC_MARGIN_NUMBER)
+	# 			self.dict_text_ctrl[curScript].SetMarginWidth(0, 22)
+	# 			self.dict_text_ctrl[curScript].StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
+	# 			self.dict_text_ctrl[curScript].Colourise(0, -1)
+
+	# 			#self.dict_text_ctrl[curScript].SetSize((835,700))
+	# 			#self.dict_text_ctrl[curScript].SetMinSize((800,700))
+	# 			self.dict_text_ctrl[curScript].SetMinSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
+
+	# 			# open MFQL file
+	# 			with open(self.dictMFQLScripts[curScript], 'r') as mfqlFile:
+	# 				self.dict_mfqlFile[curScript] = mfqlFile
+	# 				for line in self.dict_mfqlFile[curScript].readlines():
+	# 					self.dict_text_ctrl[curScript].AppendText(line)
+	# 			self.dict_isChangedAndNotSavedMfqlFile[curScript] = False
+
+	# 			# add the close button
+	# 			self.dict_button_close[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Close")
+	# 			self.dict_button_close[curScript].SetMinSize((140, 34))
+	# 			self.Bind(wx.EVT_BUTTON, self.OnClosePanel, self.dict_button_close[curScript])
+
+	# 			# add the save button
+	# 			self.dict_button_save[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Save")
+	# 			self.dict_button_save[curScript].SetMinSize((140, 34))
+	# 			self.Bind(wx.EVT_BUTTON, self.OnSavePanel, self.dict_button_save[curScript])
+
+	# 			# add the saveAs button
+	# 			self.dict_button_saveAs[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "SaveAs")
+	# 			self.dict_button_saveAs[curScript].SetMinSize((140, 34))
+	# 			self.Bind(wx.EVT_BUTTON, self.OnSaveAsPanel, self.dict_button_saveAs[curScript])
+
+	# 			# add the new button
+	# 			self.dict_button_new[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "New")
+	# 			self.dict_button_new[curScript].SetMinSize((140, 34))
+	# 			self.Bind(wx.EVT_BUTTON, self.OnNewPanel, self.dict_button_new[curScript])
+
+	# 			# put all together with a box sizer
+	# 			#self.dict_flex_sizer[curScript] = wx.FlexGridSizer(2,1,3,3)
+	# 			self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(wx.HORIZONTAL)
+	# 			self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(wx.VERTICAL)
+	# 			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_new[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_save[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_saveAs[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_close[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 			self.dict_box_sizer_horizontal[curScript].Fit(self.dict_notebook_editor[curScript])
+	# 			#self.dict_flex_sizer[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.GROW, 10)
+	# 			#self.dict_flex_sizer[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
+	# 			#	wx.ALIGN_CENTER, 0)
+	# 			self.dict_box_sizer_vertical[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.ADJUST_MINSIZE, 10)
+
+	# 			self.dict_box_sizer_vertical[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
+	# 				wx.ALIGN_CENTER|wx.ADJUST_MINSIZE, 0)
+
+	# 			self.dict_notebook_editor[curScript].SetSizerAndFit(self.dict_box_sizer_vertical[curScript])
+	# 			#self.dict_notebook_editor[curScript].SetSizer(self.dict_flex_sizer[curScript])
+
+	# 			#self.dict_notebook_editor[curScript].Fit()
+	# 			self.dict_notebook_editor[curScript].Layout()
+
+	# 			#self.Layout()
+	# 			#self.SetSize(self.GetSize())
+
+	# 	#	self.SetClientSize(p.GetSize())
+	# 		return None
+
+	# 	elif False:
+
+	# 		for index in self.list_box_1.GetSelections():
+
+	# 			curScript = [sortedKeys[index]][0]
+
+	# 			# add a page to the notebook
+	# 			if self.dict_notebook_editor == {}:
+	# 				self.dict_notebook_editor = {curScript : wx.Panel(self.notebook_1, -1)}
+	# 			elif curScript not in self.dict_notebook_editor:
+	# 				self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
+	# 			else:
+	# 				return None
+
+	# 			self.notebook_1.AddPage(self.dict_notebook_editor[curScript], curScript, True)
+
+	# 			# generate textCtrl window
+	# 			#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript], -1, "",
+	# 			#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
+	# 			#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript],
+	# 			#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
+	# 			self.dict_text_ctrl[curScript] = PythonSTC(self.dict_notebook_editor[curScript], -1,
+	# 				style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
+	# 	   				# line numbers in the margin
+
+	# 			self.dict_text_ctrl[curScript].Bind(stc.EVT_STC_CHANGE, self.OnStcChange)
+	# 			self.dict_text_ctrl[curScript].SetEOLMode(stc.STC_EOL_CR)
+	# 			self.dict_text_ctrl[curScript].SetZoom(2)
+	# 			self.dict_text_ctrl[curScript].SetMarginType(0, stc.STC_MARGIN_NUMBER)
+	# 			self.dict_text_ctrl[curScript].SetMarginWidth(0, 22)
+	# 			self.dict_text_ctrl[curScript].StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
+
+	# 			#self.dict_text_ctrl[curScript].SetSize((835,700))
+	# 			#self.dict_text_ctrl[curScript].SetMinSize((800,700))
+	# 			self.dict_text_ctrl[curScript].SetMinSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
+
+	# 			# open MFQL file
+	# 			with open(self.dictMFQLScripts[curScript], 'r') as mfqlFile:
+	# 				self.dict_mfqlFile[curScript] = mfqlFile
+	# 				for line in self.dict_mfqlFile[curScript].readlines():
+	# 					self.dict_text_ctrl[curScript].AppendText(line)
+	# 			self.dict_isChangedAndNotSavedMfqlFile[curScript] = False
+
+	# 			# add the close button
+	# 			self.dict_button_close[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Close")
+	# 			self.dict_button_close[curScript].SetMinSize((140, 34))
+	# 			self.Bind(wx.EVT_BUTTON, self.OnClosePanel, self.dict_button_close[curScript])
+
+	# 			# add the save button
+	# 			self.dict_button_save[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Save")
+	# 			self.dict_button_save[curScript].SetMinSize((140, 34))
+	# 			self.Bind(wx.EVT_BUTTON, self.OnSavePanel, self.dict_button_save[curScript])
+
+	# 			# add the saveAs button
+	# 			self.dict_button_saveAs[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "SaveAs")
+	# 			self.dict_button_saveAs[curScript].SetMinSize((140, 34))
+	# 			self.Bind(wx.EVT_BUTTON, self.OnSaveAsPanel, self.dict_button_saveAs[curScript])
+
+	# 			# add the new button
+	# 			self.dict_button_new[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "New")
+	# 			self.dict_button_new[curScript].SetMinSize((140, 34))
+	# 			self.Bind(wx.EVT_BUTTON, self.OnNewPanel, self.dict_button_new[curScript])
+
+	# 			# put all together with a box sizer
+	# 			#self.dict_flex_sizer[curScript] = wx.FlexGridSizer(2,1,3,3)
+	# 			self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(wx.HORIZONTAL)
+	# 			self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(wx.VERTICAL)
+	# 			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_new[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_save[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_saveAs[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 			self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_close[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 			self.dict_box_sizer_horizontal[curScript].Fit(self.dict_notebook_editor[curScript])
+	# 			#self.dict_flex_sizer[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.GROW, 10)
+	# 			#self.dict_flex_sizer[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
+	# 			#	wx.ALIGN_CENTER, 0)
+	# 			self.dict_box_sizer_vertical[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.ADJUST_MINSIZE, 10)
+
+	# 			self.dict_box_sizer_vertical[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
+	# 				wx.ALIGN_CENTER|wx.ADJUST_MINSIZE, 0)
+
+	# 			self.dict_notebook_editor[curScript].SetSizerAndFit(self.dict_box_sizer_vertical[curScript])
+	# 			#self.dict_notebook_editor[curScript].SetSizer(self.dict_flex_sizer[curScript])
+
+	# 			#self.dict_notebook_editor[curScript].Fit()
+	# 			self.dict_notebook_editor[curScript].Layout()
+
+	# 			#self.Layout()
+	# 			#self.SetSize(self.GetSize())
+
+	# 	else:
+
+	# 		curScript = [sortedKeys[newFile]][0]
+
+	# 		# add a page to the notebook
+	# 		if self.dict_notebook_editor == {}:
+	# 			self.dict_notebook_editor = {curScript : wx.Panel(self.notebook_1, -1)}
+	# 		elif curScript not in self.dict_notebook_editor:
+	# 			self.dict_notebook_editor[curScript] = wx.Panel(self.notebook_1, -1)
+	# 		else:
+	# 			return None
+
+	# 		# add the page
+	# 		self.notebook_1.AddPage(self.dict_notebook_editor[curScript], curScript, True)
+
+	# 		### generate the layout ###
+	# 		# generate textCtrl window
+	# 		#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript], -1, "",
+	# 		#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
+	# 		#self.dict_text_ctrl[curScript] = stc.StyledTextCtrl(self.dict_notebook_editor[curScript],
+	# 		#	style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
+	# 		self.dict_text_ctrl[curScript] = PythonSTC(self.dict_notebook_editor[curScript], -1,
+	# 			style = wx.SIMPLE_BORDER|wx.HSCROLL|wx.ALWAYS_SHOW_SB|wx.TE_MULTILINE|wx.TE_RICH)#, size = wx.Point(835, 700))
+	# 	   			# line numbers in the margin
+
+	# 		self.dict_text_ctrl[curScript].Bind(stc.EVT_STC_CHANGE, self.OnStcChange)
+	# 		self.dict_text_ctrl[curScript].SetEOLMode(stc.STC_EOL_CR)
+	# 		self.dict_text_ctrl[curScript].SetZoom(2)
+	# 		self.dict_text_ctrl[curScript].SetMarginType(0, stc.STC_MARGIN_NUMBER)
+	# 		self.dict_text_ctrl[curScript].SetMarginWidth(0, 22)
+	# 		self.dict_text_ctrl[curScript].StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
+
+	# 		#self.dict_text_ctrl[curScript].SetSize((835,700))
+	# 		#self.dict_text_ctrl[curScript].SetMinSize((800,700))
+	# 		self.dict_text_ctrl[curScript].SetMinSize((self.GetSize()[0] - 40, self.GetSize()[1] - 150))
+
+	# 		# open MFQL file
+	# 		self.dict_mfqlFile[curScript] = open(self.dictMFQLScripts[curScript], 'r')
+	# 		for line in self.dict_mfqlFile[curScript].readlines():
+	# 			self.dict_text_ctrl[curScript].AppendText(line)
+	# 		self.dict_mfqlFile[curScript].close()
+	# 		self.dict_isChangedAndNotSavedMfqlFile[curScript] = False
+
+	# 		# add the close button
+	# 		self.dict_button_close[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Close")
+	# 		self.dict_button_close[curScript].SetMinSize((140, 34))
+	# 		self.Bind(wx.EVT_BUTTON, self.OnClosePanel, self.dict_button_close[curScript])
+
+	# 		# add the save button
+	# 		self.dict_button_save[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "Save")
+	# 		self.dict_button_save[curScript].SetMinSize((140, 34))
+	# 		self.Bind(wx.EVT_BUTTON, self.OnSavePanel, self.dict_button_save[curScript])
+
+	# 		# add the saveAs button
+	# 		self.dict_button_saveAs[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "SaveAs")
+	# 		self.dict_button_saveAs[curScript].SetMinSize((140, 34))
+	# 		self.Bind(wx.EVT_BUTTON, self.OnSaveAsPanel, self.dict_button_saveAs[curScript])
+
+	# 		# add the new button
+	# 		self.dict_button_new[curScript] = wx.Button(self.dict_notebook_editor[curScript], -1, "New")
+	# 		self.dict_button_new[curScript].SetMinSize((140, 34))
+	# 		self.Bind(wx.EVT_BUTTON, self.OnNewPanel, self.dict_button_new[curScript])
+
+	# 		# put all together with a box sizer
+	# 		#self.dict_flex_sizer[curScript] = wx.FlexGridSizer(2,1,3,3)
+	# 		self.dict_box_sizer_horizontal[curScript] = wx.BoxSizer(wx.HORIZONTAL)
+	# 		self.dict_box_sizer_vertical[curScript] = wx.BoxSizer(wx.VERTICAL)
+	# 		self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_new[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 		self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_save[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 		self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_saveAs[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 		self.dict_box_sizer_horizontal[curScript].Add(self.dict_button_close[curScript], 0, wx.ALL|wx.EXPAND, 5)
+	# 		self.dict_box_sizer_horizontal[curScript].Fit(self.dict_notebook_editor[curScript])
+	# 		#self.dict_flex_sizer[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.GROW, 10)
+	# 		#self.dict_flex_sizer[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
+	# 		#	wx.ALIGN_CENTER, 0)
+	# 		self.dict_box_sizer_vertical[curScript].Add(self.dict_text_ctrl[curScript], 1, wx.ALL|wx.EXPAND|wx.ADJUST_MINSIZE, 10)
+
+	# 		self.dict_box_sizer_vertical[curScript].Add(self.dict_box_sizer_horizontal[curScript], 0,
+	# 			wx.ALIGN_CENTER|wx.ADJUST_MINSIZE, 0)
+
+	# 		self.dict_notebook_editor[curScript].SetSizerAndFit(self.dict_box_sizer_vertical[curScript])
+	# 		#self.dict_notebook_editor[curScript].SetSizer(self.dict_flex_sizer[curScript])
+
+	# 		#self.dict_notebook_editor[curScript].Fit()
+	# 		self.dict_notebook_editor[curScript].Layout()
+
+	# 		#self.Layout()
+	# 		#self.SetSize(self.GetSize())
+	# 	#	self.SetClientSize(p.GetSize())
+	# 		return None
 
 	def OnNewFile(self, evt):
 

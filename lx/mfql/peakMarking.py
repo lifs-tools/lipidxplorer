@@ -828,12 +828,42 @@ class TypeScan:
 											elif m.elementSequence.polarity == 0:
 												mass = se.precurmass - msmse.mass
 												isNL = True
+									################## ballal test ##################################
+												# print("\n=== NEUTRAL LOSS CANDIDATE ===")
+												# print(f"Query name         : {m.name}")
+												# print(f"Precursor (MS1)    : {se.precurmass:.6f}")
+												# print(f"Observed peak (MS2): {msmse.mass:.6f}")
+
+												# derived_nl = se.precurmass - msmse.mass
+												# theoretical_nl = m.elementSequence.getWeight()
+
+									##################################################################
+         
 											else:
 												raise Scan_Exception("searching a negative " +\
 													"fragment in a positive spectrum makes no sense.")
 
 										newChemsc = calcSFbyMass(mass,
 											m.elementSequence, options['tolerance'])
+          
+          
+										############################## Balla l test ##################################
+										# if newChemsc:
+										# 	print(f"Formula candidates count : {len(newChemsc)}")
+										# 	for i, c in enumerate(newChemsc[:5]):
+										# 		try:
+										# 			exact_mass = c.getWeight()
+										# 			delta_da = derived_nl - exact_mass
+										# 			delta_ppm = (delta_da / derived_nl) * 1e6 if derived_nl != 0 else 0
+										# 			print(f"  Candidate {i+1}: {c}")
+										# 			print(f"    Candidate exact mass : {exact_mass:.6f}")
+										# 			print(f"    Delta (Da)           : {delta_da:.6f}")
+										# 			print(f"    Delta (ppm)          : {delta_ppm:.2f}")
+										# 		except:
+										# 			print(f"  Candidate {i+1}: {c}")
+										# else:
+										# 	print("Formula candidates count : 0  <-- NO MATCH")
+										###############################################################################
 
 										if newChemsc != []:
 											#msmse.listChemsc += newChemsc

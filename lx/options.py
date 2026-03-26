@@ -26,7 +26,7 @@ class optionsDict(DictMixin):
     def __getitem__(self, key):
         if self._isEmpty(self._data[key]):
             for line in traceback.format_stack()[:-1]:
-                print(line.strip(), flush=True)
+                print(line.strip())
             raise LipidXException("The key '%s' is not given" % key)
         return self._data[key]
 
