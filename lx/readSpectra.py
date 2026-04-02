@@ -284,6 +284,8 @@ def add_Sample(
 			thrshld_absolute = float(options['MSthreshold']) / sqrt(len(ms1Scans))
 		else:
 			thrshld_relative = float(options['MSthreshold']) / sqrt(len(ms1Scans))
+		
+		#print("MSthreshold", options['MSthreshold'], "thrshld_relative", thrshld_relative)
 
 		# get the keys for the individual scans
 		keys = [repr(n) for n in range(count)]
@@ -337,6 +339,7 @@ def add_Sample(
 				if out.content['intensity_rel'] >= thrshld_relative:
 					takeIt = True
 
+			#print("Take it?", takeIt, thrshld_relative, out.content['intensity_rel'], out.content['intensity'])
 			if takeIt:
 				numPeaks += 1
 				lpdxSample.listPrecurmass.append(
@@ -350,6 +353,7 @@ def add_Sample(
 						scanCount = count,
 						basePeakIntensity = avgBasePeakIntensity))
 
+		print("DEBUG kept averaged MS1 peaks:", numPeaks, "for", specFile)
 		try:
 			lpdxSample.base_peak_ms1 = max([x.intensity for x in lpdxSample.listPrecurmass])
 		except ValueError:

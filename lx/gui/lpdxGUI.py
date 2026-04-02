@@ -7,6 +7,7 @@ import wx.lib.buttons as buttons
 import wx.lib.fancytext as fancytext
 import wx.grid
 import wx.html
+import wx.adv
 import csv
 import re
 import configparser
@@ -1184,12 +1185,54 @@ class LpdxFrame(wx.Frame):
 # font for the units
 		self.font_units_size = 10
 
+		# create the landing and content panels
+		self.start_panel = wx.Panel(self, -1)
+		self.placeholder_panel = wx.Panel(self, -1)
+
 		# create the notebook panels
 		self.notebook_1 = wx.Notebook(self, -1, style=0)
-		self.notebook_1_pane_3 = wx.Panel(self.notebook_1, -1)
 		self.notebook_1_pane_2 = wx.Panel(self.notebook_1, -1)
+		self.notebook_1_pane_3 = wx.Panel(self.notebook_1, -1)
 		self.notebook_1_pane_4 = wx.Panel(self.notebook_1, -1)
 		self.notebook_1_pane_5 = wx.Panel(self.notebook_1, -1)
+
+		self.button_open_next = wx.Button(self.start_panel, -1, "LipidXplorerNext")
+		self.button_open_legacy = wx.Button(self.start_panel, -1, "LipidXplorer 1.5")
+		self.button_back_from_placeholder = wx.Button(self.placeholder_panel, -1, "Back", size=(48, 20))
+		self.button_back_to_start = wx.Button(self.notebook_1_pane_2, -1, "Back", size=(48, 20))
+
+		try:
+			logo_path = resource_path("lx", "stuff", "LipidXplorer-50.png")
+			img = wx.Image(logo_path, wx.BITMAP_TYPE_PNG)
+			w = img.GetWidth()
+			h = img.GetHeight()
+			scale_factor = 0.7 # 50% size
+			img = img.Scale(int(w * scale_factor), int(h * scale_factor), wx.IMAGE_QUALITY_HIGH)
+			self.bmp_LipidX_Logo = img.ConvertToBitmap()
+			self.start_logo = wx.StaticBitmap(self.start_panel, -1, self.bmp_LipidX_Logo)
+		except Exception as e:
+			print("Logo load failed:", e)
+			self.logo_bitmap = None
+   
+		
+		self.label_placeholder_title = wx.StaticText(self.placeholder_panel, -1, "LipidXplorerNext")
+		self.label_placeholder_message = wx.StaticText(self.placeholder_panel, -1, "For multidimensional data")
+		self.label_placeholder_demo = wx.StaticText(
+			self.placeholder_panel,
+			-1,
+			"LipidXplorerNext content later......"
+		)
+		self.link_placeholder_demo = wx.adv.HyperlinkCtrl(
+			self.placeholder_panel,
+			-1,
+			"Open demo link",
+			"https://lifs-tools.org/wiki/index.php?title=LipidXplorer_Preface"
+		)
+
+
+		self.SetBackgroundColour(wx.Colour(245, 247, 250))
+		self.start_panel.SetBackgroundColour(wx.Colour(245, 247, 250))
+		self.placeholder_panel.SetBackgroundColour(wx.Colour(245, 247, 250))
 
 		#self.notebook_1_pane_2.SetFont(self.font)
 		#self.notebook_1_pane_3.SetFont(self.font)
@@ -1365,7 +1408,7 @@ class LpdxFrame(wx.Frame):
 		self.combo_ctrl_ImportDataSection.SetToolTip(wx.ToolTip(
 		"""Choose the type of the mass spec data:
 		mzML - XML file format
-		mzXML - XML file format
+		dta/csv - text file format
 		%s
 		""" % self.rawToolTip))
 
@@ -1539,7 +1582,7 @@ class LpdxFrame(wx.Frame):
 			img = wx.Image(logo_path, wx.BITMAP_TYPE_PNG)
 			w = img.GetWidth()
 			h = img.GetHeight()
-			scale_factor = 0.7 # 50% size
+			scale_factor = 0.5 
 			img = img.Scale(int(w * scale_factor), int(h * scale_factor), wx.IMAGE_QUALITY_HIGH)
 			self.bmp_LipidX_Logo = img.ConvertToBitmap()
 			self.logo_bitmap = wx.StaticBitmap(self.notebook_1_pane_2, -1, self.bmp_LipidX_Logo)
@@ -1644,18 +1687,27 @@ class LpdxFrame(wx.Frame):
 		if self.logo_bitmap:
 			main_vbox.Add(self.logo_bitmap, 0, wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, 20)
 
+		import_bottom_row = wx.BoxSizer(wx.HORIZONTAL)
+		import_bottom_row.Add(self.button_back_to_start, 0, wx.LEFT | wx.TOP, 0)
+		import_bottom_row.AddStretchSpacer(1)
+		#main_vbox.Add(import_bottom_row, 0, wx.EXPAND | wx.BOTTOM, 0)
 
+		# Set a fixed content width
+		main_vbox.SetMinSize((700, -1))  # <-- pick  width here
 
-				# Set a fixed content width
-		main_vbox.SetMinSize((800, -1))  # <-- pick  width here
+		center_wrap = wx.BoxSizer(wx.HORIZONTAL)
+		center_wrap.AddStretchSpacer(1)
+		center_wrap.Add(main_vbox, 0, wx.EXPAND)
+		center_wrap.AddStretchSpacer(1)
 
-		# Wrap main_vbox in an outer H sizer to center it and prevent horizontal growth
-		outer = wx.BoxSizer(wx.HORIZONTAL)
-		outer.AddStretchSpacer(1)                 # left flexible gutter
-		outer.Add(main_vbox, 0, wx.EXPAND)       # fixed-width content
-		outer.AddStretchSpacer(1)                 # right flexible gutter
+		import_bottom_row = wx.BoxSizer(wx.HORIZONTAL)
+		import_bottom_row.Add(self.button_back_to_start, 0, wx.LEFT | wx.TOP, 8)
+		import_bottom_row.AddStretchSpacer(1)
 
-		# Apply layout to the notebook pane (same parent as your widgets)
+		outer = wx.BoxSizer(wx.VERTICAL)
+		outer.Add(center_wrap, 1, wx.EXPAND)
+		outer.Add(import_bottom_row, 0, wx.EXPAND | wx.BOTTOM, 0)
+
 		self.notebook_1_pane_2.SetSizer(outer)
 		self.notebook_1_pane_2.Layout()
 
@@ -2029,6 +2081,11 @@ intensity."""))
 ############################
 
 	def __bind_events(self):
+
+		self.button_open_next.Bind(wx.EVT_BUTTON, self.on_open_next_view)
+		self.button_open_legacy.Bind(wx.EVT_BUTTON, self.on_open_legacy_view)
+		self.button_back_from_placeholder.Bind(wx.EVT_BUTTON, self.on_back_to_landing)
+		self.button_back_to_start.Bind(wx.EVT_BUTTON, self.on_back_to_landing)
 
 		# for Key events
 		#self.Bind(wx.EVT_KEY_DOWN, self.OnKeyPressed)
@@ -3372,11 +3429,15 @@ intensity."""))
 		# Build payload (options + queries)
 		# -----------------------------
 		if self.project_loaded_for_batch:
+			if not self.validate_before_batch():
+				self.button_RUN_batch.Enable()
+				return
+
 			project = Project()
 			project.load(self.projectFile)
 			self.project = project  # (options_to_readoptions_shape relies on self.project)
 
-			print("Initial project options loaded from file:", type(project.options),type(self.project.options))
+			#print("Initial project options loaded from file:", type(project.options),type(self.project.options))
 			# Apply ini + setting so preset-dependent parameters get populated/updated
 
 			for k, v in self.optsImport.items():
@@ -3393,7 +3454,7 @@ intensity."""))
 			self.project.testOptions()
 			self.project.formatOptions()
 			options = self.project.getOptions()
-			print("Initial project options loaded from file:????????", type(project.options),type(self.project.options), type(options))
+			#print("Initial project options loaded from file:????????", type(project.options),type(self.project.options), type(options))
 			# Refresh MFQL scripts from GUI listbox (same as your else branch)
 			self.dictMFQLScripts = {}
 			self.dictMFQLScripts = self.collect_mfql_from_listbox()
@@ -3517,6 +3578,10 @@ intensity."""))
 
 
 	def validate_before_batch(self):
+
+		if self.combo_ctrl_ImportDataSection.GetValue().strip().lower() == "dta/csv":
+			wx.MessageBox("Batch mode supports mzML only. dta/csv is not allowed.", "Warning")
+			return False
 
 		#Check TextCtrl
 		if not self.text_ctrl_ImportDataSection.GetValue().strip():
@@ -5588,9 +5653,9 @@ intensity."""))
 
 		# begin wxGlade: LpdxFrame.__set_properties
 		if self.lipidxplorer:
-			self.SetTitle("LipidXplorer Version %s" % self.version)
+			self.SetTitle("LipidXplorer %s" % self.version)
 		else:
-			self.SetTitle("LipOXplorer Version %s" % self.version)
+			self.SetTitle("LipOXplorer %s" % self.version)
 
 		self.SetMinSize((720, 660))
 		self.SetSize((1000, 730))
@@ -5699,6 +5764,17 @@ intensity."""))
 		self.notebook_1_pane_4.SetMinSize((835, 800))
 		self.notebook_1_pane_3.SetMinSize((835, 800))
 		self.notebook_1_pane_2.SetMinSize((835, 800))
+		self.button_open_next.SetMinSize((260, 42))
+		self.button_open_legacy.SetMinSize((260, 42))
+		self.button_back_from_placeholder.SetMinSize((48, 20))
+		self.button_back_to_start.SetMinSize((48, 20))
+		self.label_placeholder_title.SetFont(self.header_font)
+		self.label_placeholder_message.SetFont(self.font)
+		self.label_placeholder_demo.SetFont(self.font)
+		self.label_placeholder_demo.SetForegroundColour(wx.Colour(80, 80, 80))
+		self.link_placeholder_demo.SetNormalColour(wx.Colour(0, 102, 204))
+		self.link_placeholder_demo.SetVisitedColour(wx.Colour(85, 26, 139))
+		self.link_placeholder_demo.SetHoverColour(wx.Colour(0, 102, 204))
 		# end wxGlade
 
 	def __do_layout(self):
@@ -6140,14 +6216,87 @@ intensity."""))
 		self.counterNotebookPages += 1
 		self.dictNotebookPages["MSTools"] = self.counterNotebookPages
 
+		start_sizer = wx.BoxSizer(wx.VERTICAL)
+		start_sizer.AddStretchSpacer(1)
+		start_title = wx.StaticText(self.start_panel, -1, "Choose a workspace")
+		start_title.SetFont(self.header_font)
+		start_subtitle = wx.StaticText(self.start_panel, -1, "Open the new empty view or the current LipidXplorer 1.5 interface.")
+		start_button_row = wx.BoxSizer(wx.HORIZONTAL)
+		start_button_row.Add(self.button_open_next, 0, wx.ALL, 8)
+		start_button_row.Add(self.button_open_legacy, 0, wx.ALL, 8)
+		start_sizer.Add(self.start_logo, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 14)
+		start_sizer.Add(start_title, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 8)
+		start_sizer.Add(start_subtitle, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 18)
+		start_sizer.Add(start_button_row, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+		start_sizer.AddStretchSpacer(1)
+		self.start_panel.SetSizer(start_sizer)
+
+		placeholder_sizer = wx.BoxSizer(wx.VERTICAL)
+		placeholder_sizer.AddStretchSpacer(1)
+
+		group_top = wx.BoxSizer(wx.VERTICAL)
+		group_top.Add(self.label_placeholder_title, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 8)
+		group_top.Add(self.label_placeholder_message, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+
+		group_bottom = wx.BoxSizer(wx.VERTICAL)
+		group_bottom.Add(self.label_placeholder_demo, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 8)
+		group_bottom.Add(self.link_placeholder_demo, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+
+		placeholder_sizer.Add(group_top, 0, wx.ALIGN_CENTER_HORIZONTAL)
+		placeholder_sizer.AddSpacer(70)
+		placeholder_sizer.Add(group_bottom, 0, wx.ALIGN_CENTER_HORIZONTAL)
+		placeholder_sizer.AddStretchSpacer(1)
+
+		placeholder_bottom = wx.BoxSizer(wx.HORIZONTAL)
+		placeholder_bottom.Add(self.button_back_from_placeholder, 0, wx.LEFT, 12)
+		placeholder_bottom.AddStretchSpacer(1)
+		placeholder_sizer.Add(placeholder_bottom, 0, wx.EXPAND | wx.BOTTOM, 4)
+
+		self.placeholder_panel.SetSizer(placeholder_sizer)
+
+
+		sizer_2.Add(self.start_panel, 1, wx.EXPAND, 0)
+		sizer_2.Add(self.placeholder_panel, 1, wx.EXPAND, 0)
 		sizer_2.Add(self.notebook_1, 1, wx.EXPAND, 0)
 		self.counterNotebookPages += 1
 		self.dictNotebookPages["Import"] = self.counterNotebookPages
 		self.SetAutoLayout(True)
 		self.SetSizer(sizer_2)
+		self._set_active_view("landing")
 		self.Layout()
 
 		# end wxGlade
+
+
+
+	def _update_chrome_for_view(self, view_name):
+		if view_name == "legacy":
+			if self.GetMenuBar() is None:
+				self.SetMenuBar(self.menubar)
+		else:
+			if self.GetMenuBar() is not None:
+				self.SetMenuBar(None)
+
+	def _set_active_view(self, view_name):
+		show_start = view_name == "landing"
+		show_placeholder = view_name == "next"
+		show_legacy = view_name == "legacy"
+
+		self.start_panel.Show(show_start)
+		self.placeholder_panel.Show(show_placeholder)
+		self.button_back_from_placeholder.Show(show_placeholder)
+		self.notebook_1.Show(show_legacy)
+		self._update_chrome_for_view(view_name)
+		self.Layout()
+
+	def on_open_next_view(self, event):
+		self._set_active_view("next")
+
+	def on_open_legacy_view(self, event):
+		self._set_active_view("legacy")
+
+	def on_back_to_landing(self, event):
+		self._set_active_view("landing")
  
 
 	def writeOutput(self, destination, content):

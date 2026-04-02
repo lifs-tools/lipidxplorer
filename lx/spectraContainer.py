@@ -760,6 +760,26 @@ MStolerance to an arbitrary value"""
 
 						# if the threshold is given as a relative value make absolute value
 						if threshold_type == 'relative':
+          
+          #################### for testing #####################################
+							if sample not in dictBasePeakIntensity:
+								raise KeyError(f"Missing base peak intensity entry for sample {sample!r}")
+							if sample not in dictScans:
+								raise KeyError(f"Missing scan count for sample {sample!r}")
+							if sample not in dictIntensity:
+								raise KeyError(f"Missing intensity for sample {sample!r}")
+
+							base_peak = dictBasePeakIntensity[sample]
+							if base_peak is None:
+								raise ValueError(f"Base peak intensity is None for sample {sample!r}")
+
+							scan_count = dictScans[sample]
+							if scan_count in (None, 0):
+								raise ValueError(f"Invalid scan count for sample {sample!r}: {scan_count!r}")
+			################################################################
+
+
+
 							t[sample] = threshold * dictBasePeakIntensity[sample]
 						else:
 							t[sample] = threshold

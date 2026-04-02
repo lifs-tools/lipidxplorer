@@ -19,6 +19,7 @@ import sys
 import multiprocessing as mp
 from lx.spectraImport import doImport
 from lx.spectraImport import lpdxImportDEF_new
+from lx.spectraImport import getInputFiles
 from lx.exceptions import LipidXException
 from lx.options import Options, optionsDict
 
@@ -40,12 +41,20 @@ LOGGER = None   # Will be set by run_batch()
 # ============================================================
 # Real LipidXplorer implementations (Batch-safe)
 # ============================================================
-def build_master_scan(file_path: str, options: dict):
+def build_master_scan(sample_path: str, sample_entry_name: str, options: dict):
     """
     Create a MasterScan in memory for one sample using LipidXplorer's
     normal import pipeline, but skip directory scanning and saving.
+
+    sample_path:
+        - mzML mode   -> full file path
+        - dta/csv mode -> full sample directory path
+
+    sample_entry_name:
+        The second value returned by getInputFiles(), preserved exactly
+        so doImport() gets the same structure as normal import mode.
     """
-    print(f"[build_master_scan] Building MasterScan for {file_path}", flush=True)
+    print(f"[build_master_scan] Building MasterScan for {sample_path}", flush=True)
 
     listIntermission = lpdxImportDEF_new(
         parent=None,
@@ -53,13 +62,14 @@ def build_master_scan(file_path: str, options: dict):
     )
 
     # Patch the file list so we only import one sample
+    # Keep exactly the same [path, name] shape as normal getInputFiles() output
     listIntermission = (
         listIntermission[0],
         listIntermission[1],
         listIntermission[2],
         listIntermission[3],
         listIntermission[4],
-        [[file_path, os.path.dirname(file_path)]],
+        [[sample_path, sample_entry_name]],
         True,
         False,
     )
@@ -159,9 +169,9 @@ def run_mfql_on_scan(scan, query_path, options):
 
 ##################### for testing #######################
 # def process_sample(args):
-#     file_path, sample_id, options, queries, out_dir = args
+#     sample_path, sample_id, sample_entry_name, options, queries, out_dir = args
 #     print(f"[PID] test build scan {sample_id}", flush=True)
-#     scan = build_master_scan(file_path, options)
+#     scan = build_master_scan(sample_path, sample_entry_name, options)
 #     del scan
 #     return {"sample_id": sample_id, "status": "OK", "path": None}
 
@@ -176,8 +186,11 @@ def process_sample(args: tuple) -> Dict[str, Any]:
     Worker function for one sample.
 
     Args (tuple):
-        file_path: full path to mzML file
-        sample_id: sample name (stem)
+        sample_path: input path for one sample
+                     - mzML mode   -> mzML file path
+                     - dta/csv mode -> sample directory path
+        sample_id: sample name used for output CSV naming
+        sample_entry_name: second value from getInputFiles()
         options:   options dict (will be deep-copied in worker)
         queries:   list of {"name": ..., "path": ...} MFQL queries
         out_dir:   directory where per-sample CSVs are written
@@ -191,7 +204,7 @@ def process_sample(args: tuple) -> Dict[str, Any]:
             - error: error message (if any)
     """
 
-    file_path, sample_id, options, queries, out_dir, log_file = args
+    sample_path, sample_id, sample_entry_name, options, queries, out_dir, log_file = args
 
     # Per-worker deep copy so processes don't share mutable state
     import copy as _copy
@@ -199,14 +212,14 @@ def process_sample(args: tuple) -> Dict[str, Any]:
 
     pid = os.getpid()
     t0 = time.time()
-    print(f"[PID {pid}] START sample='{sample_id}' file='{file_path}' ({len(queries)} queries)", flush=True)
+    print(f"[PID {pid}] START sample='{sample_id}' file='{sample_path}' ({len(queries)} queries)", flush=True)
 
     try:
         # -----------------------------------------------------------
         # Build MasterScan
         # -----------------------------------------------------------
         print(f"[PID {pid}] Building MasterScan for '{sample_id}'", flush=True)
-        scan = build_master_scan(file_path, options)
+        scan = build_master_scan(sample_path, sample_entry_name, options)
         print(f"[PID {pid}] MasterScan READY for '{sample_id}'", flush=True)
 
         # -----------------------------------------------------------
@@ -283,7 +296,7 @@ def process_sample(args: tuple) -> Dict[str, Any]:
 def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_threshold: float = None, log_file=None):
     """
     Batch controller:
-      1) Find mzML files.
+      1) Find input samples using getInputFiles().
       2) Process in parallel using a multiprocessing Pool.
       3) Each worker writes its per-sample CSV to disk and returns only
          small metadata (sample_id, status, path).
@@ -302,17 +315,18 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
         print(" ".join(str(x) for x in a), flush=True)
 
     import_dir = Path(options.get("importDir", "")).resolve()
+    spectra_format = options.get("spectraFormat", "")
 
     # -----------------------------------------------------------
-    # Find all mzML files
+    # Find all samples using normal import discovery logic
     # -----------------------------------------------------------
-    mzml_files = sorted(import_dir.rglob("*.mzML")) ################ need to change for csv too
-    if not mzml_files:
-        log(f"No mzML files found in {import_dir}")
+    listFiles, isTaken, isGroup = getInputFiles(str(import_dir), options)
+
+    if not listFiles:
+        log(f"No input samples found in {import_dir} for format '{spectra_format}'")
         return {}
 
-    log(f"Found {len(mzml_files)} mzML files for batch processing.")
-    #log(f"mzml_files: {[str(f) for f in mzml_files]}")
+    log(f"Found {len(listFiles)} input sample(s) for batch processing (format={spectra_format}).")
 
     # Directory where workers will store per-sample CSVs
     per_sample_dir = import_dir / "per_sample_results"
@@ -323,10 +337,21 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
     # -----------------------------------------------------------
     # Build tasks (one sample per worker call)
     # -----------------------------------------------------------
-    tasks = [
-        (str(f), f.stem, options, queries, str(per_sample_dir), log_file)
-        for f in mzml_files
-    ]
+    tasks = []
+
+    for entry in listFiles:
+        sample_path = str(entry[0])
+        sample_entry_name = entry[1]
+
+        # Keep old mzML naming behavior for output CSVs and merge order
+        if spectra_format == "dta/csv":
+            sample_id = Path(sample_path).name
+        else:
+            sample_id = Path(sample_path).stem
+
+        tasks.append(
+            (sample_path, sample_id, sample_entry_name, options, queries, str(per_sample_dir), log_file)
+        )
 
     log(f"Using {n_cores} worker process(es)")
 
@@ -364,9 +389,21 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
 
     # -----------------------------------------------------------
     # Merge per-sample CSVs into one final table
+    # Keep old merge behavior for mzML ordering compatibility.
+    # For dta/csv, there is no mzML file list, so pass None.
     # -----------------------------------------------------------
     log("Merging per-sample results...")
-    final_df = merge_lipid_results(sample_csv_paths, mzml_files=mzml_files, occurrence_threshold=occurrence_threshold)
+
+    if spectra_format == "dta/csv":
+        merge_reference_files = None
+    else:
+        merge_reference_files = [Path(t[0]) for t in tasks]
+
+    final_df = merge_lipid_results(
+        sample_csv_paths,
+        mzml_files=merge_reference_files,
+        occurrence_threshold=occurrence_threshold
+    )
 
     # Output path for the final batch results
     batch_result_path = import_dir / "batch_results.csv"
@@ -377,16 +414,16 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
     # Build summary
     # -----------------------------------------------------------
     summary = {
-        "processed": len(mzml_files),
+        "processed": len(listFiles),
         "ok": n_ok,
-        "errors": len(mzml_files) - n_ok,
+        "errors": len(listFiles) - n_ok,
         "duration_sec": round(duration, 2),
         "cores_used": n_cores,
         "output_file": str(batch_result_path),
     }
 
     # -----------------------------------------------------------
-    #Cleanup per-sample CSVs if user does NOT want to keep them
+    # Cleanup per-sample CSVs if user does NOT want to keep them
     # -----------------------------------------------------------
     if save_per_sample:
         log(f"Saved {len(sample_csv_paths)} per-sample CSVs in {per_sample_dir}.")
@@ -409,7 +446,7 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
 
 # The merge_lipid_results()
 # -------------------------------------------------------------------
-    
+
 def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None):
     """
     Merge multiple per-sample lipidomics result CSVs into a single clean batch table.
@@ -456,13 +493,13 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
 
     # Read and prepare each file ===
     sample_files = list(sample_files)
-    
+
     if mzml_files is not None:
         mzml_stems = [Path(p).stem for p in mzml_files]   # desired order
         csv_by_stem = {Path(p).stem: p for p in sample_files}
         # keep only those that exist, in mzML order
         sample_files = [csv_by_stem[s] for s in mzml_stems if s in csv_by_stem]
-        
+
     dfs = []
     for p in sample_files:
         delim = detect_delimiter(p)
@@ -471,7 +508,6 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
         except Exception as e:
             print(f"FAILED reading {p} with delim={repr(delim)}")
             raise
-
 
         if "LipidSpecies" not in df.columns:
             raise ValueError(f"LipidSpecies missing in {p}")
@@ -497,11 +533,9 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
         # Use LipidSpecies as index for joining
         df = df.set_index("LipidSpecies")
         dfs.append(df)
-        #print(f"Loaded {p} ({df.shape[0]} rows, {df.shape[1]} cols)")
 
     # Concatenate all datasets ===
     wide = pd.concat(dfs, axis=1, join="outer")
-    #print(f"Concatenated shape: {wide.shape}")
 
     # Coalesce duplicate columns (same metadata repeated across files) ===
     coalesced = pd.DataFrame(index=wide.index)
@@ -513,7 +547,6 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
             # Take first non-null from left (bfill fills from right to left)
             filled = block.bfill(axis=1).infer_objects(copy=False)
             coalesced[col_name] = filled.iloc[:, 0]
-    #print(f"Coalesced to {coalesced.shape[1]} unique columns")
 
     # Drop irrelevant columns if present ===
     coalesced = coalesced.drop(columns=["query_name", "sample_id"], errors="ignore")
@@ -572,8 +605,6 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
     coalesced = coalesced[final_cols]
 
     # Sort rows, group IS, fill intensities, and add blank separators ===
-    #print("Sorting rows, grouping IS, and cleaning intensities...")
-
     df = coalesced.copy()
     if "LipidSpecies" not in df.columns:
         df.index.name = "LipidSpecies"
@@ -591,9 +622,9 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
     # -----------------------------------------------------------
     # Apply occupation threshold to Intensity block only
     # -----------------------------------------------------------
-    occupation_threshold = occurrence_threshold  # 25%
+    occupation_threshold = occurrence_threshold
 
-    if intensity_block:
+    if intensity_block and occupation_threshold is not None:
         n_positive = (df[intensity_block] > 0).sum(axis=1)
         min_required = int(np.ceil(len(intensity_block) * occupation_threshold))
 
@@ -602,9 +633,7 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
         after = len(df)
 
         print(f"Occupation filter removed {before - after} lipids "
-            f"(threshold={occupation_threshold})")
-
-
+              f"(threshold={occupation_threshold})")
 
     # Identify IS rows (LipidSpecies starts with "IS")
     is_mask = df["LipidSpecies"].astype(str).str.strip().str.upper().str.startswith("IS")
@@ -622,9 +651,12 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
             kind="mergesort"
         )
     else:
-        non_is_df = non_is_df.sort_values(["LipidClass", "__orig_pos__"],
-                                          ascending=[True, True], kind="mergesort")
- 
+        non_is_df = non_is_df.sort_values(
+            ["LipidClass", "__orig_pos__"],
+            ascending=[True, True],
+            kind="mergesort"
+        )
+
     # Combine IS block first, then all other sorted classes
     ordered = pd.concat([is_df, non_is_df], ignore_index=True)
     ordered = ordered.drop(columns=["__orig_pos__"], errors="ignore")
@@ -662,4 +694,3 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
 
     # === Return final merged DataFrame ===
     return final_df
-
