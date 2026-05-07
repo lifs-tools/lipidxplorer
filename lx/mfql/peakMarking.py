@@ -515,7 +515,7 @@ class TypeScan:
 
 									# precursor mass found, adding to result list
 									if newChemsc != []:
-										print("evaluate....................MS1-...........newChemsc.........type(se.precurmass)",newChemsc, type(se.precurmass))
+										#print("evaluate....................MS1-...........newChemsc.........type(se.precurmass)",newChemsc, type(se.precurmass))
          
 										se.listPrecurmassSF = unionSF(se.listPrecurmassSF, newChemsc, self.mfqlObj.queryName)
 
@@ -570,9 +570,9 @@ class TypeScan:
 												markIndex = [self.mfqlObj.markIndex],
 												positionMS = positionMS,
 												positionMSMS = None)
-											print("mark.name...........................Name:", mark.name)
-											print("mark.chemsc........................ChemSC:", mark.chemsc)
-											print("mark.mass............................Mass:", mark.mass)
+											#print("mark.name...........................Name:", mark.name)
+											#print("mark.chemsc........................ChemSC:", mark.chemsc)
+											#print("mark.mass............................Mass:", mark.mass)
 
 
 											notIn = True
@@ -586,7 +586,7 @@ class TypeScan:
 												if not m.name in list(scanEntry.dictMarks.keys()):
 													scanEntry.dictMarks[m.name] = []
 												scanEntry.dictMarks[m.name].append(mark)
-												print("scanEntry.dictMarks[m.name].append(mark).........................###########################")
+												#print("scanEntry.dictMarks[m.name].append(mark).........................###########################")
 
 							elif isinstance(m, TypeElementSequence):
 

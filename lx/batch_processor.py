@@ -27,6 +27,8 @@ from lx.mfql.runtimeExecution import TypeMFQL
 from lx.mfql.mfqlParser import startParsing
 from lx.tools import odict
 
+import shutil
+import warnings
 
 # ===========================================================================
 # --- ADDED FOR UNIFIED LOGGING (Workers + Batch Controller)
@@ -399,14 +401,16 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
     else:
         merge_reference_files = [Path(t[0]) for t in tasks]
 
-    final_df = merge_lipid_results(
+    final_df, polarity = merge_lipid_results(
         sample_csv_paths,
         mzml_files=merge_reference_files,
         occurrence_threshold=occurrence_threshold
     )
+    
+    
 
     # Output path for the final batch results
-    batch_result_path = import_dir / "batch_results.csv"
+    batch_result_path = import_dir / f"batch_results_{polarity[0]}.csv"
     final_df.to_csv(batch_result_path, index=False, encoding="utf-8")
     log(f"Saved merged results to {batch_result_path} ({len(final_df)} rows)")
 
@@ -420,6 +424,7 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
         "duration_sec": round(duration, 2),
         "cores_used": n_cores,
         "output_file": str(batch_result_path),
+        "polarity": polarity[0]
     }
 
     # -----------------------------------------------------------
@@ -429,11 +434,7 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
         log(f"Saved {len(sample_csv_paths)} per-sample CSVs in {per_sample_dir}.")
     else:
         log("User does not want to keep per-sample results. Deleting temporary CSVs...")
-        for tmp in sample_csv_paths:
-            try:
-                os.remove(tmp)
-            except Exception:
-                pass
+        shutil.rmtree(per_sample_dir, ignore_errors=True)
 
     gc.collect()
 
@@ -449,147 +450,283 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
 
 def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None):
     """
-    Merge multiple per-sample lipidomics result CSVs into a single clean batch table.
+    Merge multiple per-sample lipidomics result CSV files into one batch table.
 
-    Workflow summary:
-    -----------------
-    1. Detect delimiter for each CSV and load dynamically.
-    2. Deduplicate rows by LipidSpecies within each file.
-    3. Add sample-specific suffixes to intensity columns.
-    4. Concatenate all samples side-by-side on LipidSpecies.
-    5. Coalesce duplicate metadata columns (first non-null).
-    6. Fill numeric intensity columns with 0.
-    7. Reorder columns dynamically by logical groups.
-    8. Sort rows so that:
-         - All LipidSpecies starting with "IS" (internal standards) are together at the top.
-         - Other rows are sorted by LipidClass → Mass (ascending).
-    9. Add one blank (NaN) row between each LipidClass block (including IS).
-    10. Return the final merged DataFrame.
+    Required input columns per CSV
+    ------------------------------
+    Required:
+        - LipidSpecies
+
+    Strongly recommended:
+        - LipidClass
+        - Mass
+        - ScanPolarity
+        - Intensity
+
+    Parameters
+    ----------
+    sample_files : list-like
+        Paths to per-sample lipidomics CSV result files.
+
+    mzml_files : list-like, optional
+        Paths to mzML files. If given, CSV files are ordered according to the
+        mzML file stem names.
+
+    occurrence_threshold : float, optional
+        Fraction of samples in which a lipid must have Intensity > 0.
+        Example:
+            0.5 means lipid must appear in at least 50% of samples.
 
     Returns
     -------
-    pandas.DataFrame
-        The merged and cleaned lipidomics table.
+    final_df : pandas.DataFrame
+        Merged lipidomics result table.
+
+    polarity : numpy.ndarray
+        Unique non-null ScanPolarity values, if available.
     """
 
-    # Silence future downcasting warnings (optional)
+    # Optional pandas setting to avoid future silent downcasting behavior
     try:
         pd.options.future.no_silent_downcasting = True
     except Exception:
         pass
 
-    # Detect delimiter for each CSV (comma, semicolon, tab, etc.) ===
+    # ------------------------------------------------------------
+    # Helper: detect CSV delimiter
+    # ------------------------------------------------------------
     def detect_delimiter(path):
         with open(path, "rb") as f:
             sample = f.read(4096)
 
-        # try decode safely; utf-8-sig handles BOM
         text = sample.decode("utf-8-sig", errors="replace")
 
         try:
-            return csv.Sniffer().sniff(text, delimiters=[",", ";", "\t", "|"]).delimiter
+            return csv.Sniffer().sniff(
+                text,
+                delimiters=[",", ";", "\t", "|"]
+            ).delimiter
         except Exception:
-            return ","  # default fallback
+            warnings.warn(
+                f"Could not detect delimiter for {path}. Falling back to comma.",
+                UserWarning
+            )
+            return ","
 
-    # Read and prepare each file ===
+    # ------------------------------------------------------------
+    # Helper: validate required and recommended columns
+    # ------------------------------------------------------------
+    def validate_columns(df, path):
+        required_cols = ["LipidSpecies"]
+
+        recommended_cols = [
+            "LipidClass",
+            "Mass",
+            "ScanPolarity",
+            "Intensity"
+        ]
+
+        missing_required = [c for c in required_cols if c not in df.columns]
+        missing_recommended = [c for c in recommended_cols if c not in df.columns]
+
+        if missing_required:
+            raise ValueError(
+                f"{path} is missing required columns: {missing_required}. "
+                f"Required minimum column: {required_cols}"
+            )
+
+        if missing_recommended:
+            warnings.warn(
+                f"{path} is missing recommended columns: {missing_recommended}. "
+                "The merge will continue, but sorting, polarity reporting, or "
+                "occurrence filtering may be incomplete.",
+                UserWarning
+            )
+
+    # ------------------------------------------------------------
+    # Prepare file order
+    # ------------------------------------------------------------
     sample_files = list(sample_files)
 
+    if not sample_files:
+        raise ValueError("No sample files were provided.")
+
     if mzml_files is not None:
-        mzml_stems = [Path(p).stem for p in mzml_files]   # desired order
+        mzml_stems = [Path(p).stem for p in mzml_files]
         csv_by_stem = {Path(p).stem: p for p in sample_files}
-        # keep only those that exist, in mzML order
-        sample_files = [csv_by_stem[s] for s in mzml_stems if s in csv_by_stem]
 
+        sample_files = [
+            csv_by_stem[stem]
+            for stem in mzml_stems
+            if stem in csv_by_stem
+        ]
+
+        if not sample_files:
+            raise ValueError(
+                "mzml_files was provided, but none of the mzML stems matched "
+                "the CSV file stems."
+            )
+
+    # ------------------------------------------------------------
+    # Read, validate, deduplicate, and rename sample intensity columns
+    # ------------------------------------------------------------
     dfs = []
-    for p in sample_files:
-        delim = detect_delimiter(p)
+
+    for path in sample_files:
+        delimiter = detect_delimiter(path)
+
         try:
-            df = pd.read_csv(p, sep=delim, encoding="utf-8-sig")
-        except Exception as e:
-            print(f"FAILED reading {p} with delim={repr(delim)}")
-            raise
+            df = pd.read_csv(path, sep=delimiter, encoding="utf-8-sig")
+        except Exception:
+            raise ValueError(
+                f"Failed reading {path} with delimiter {repr(delimiter)}"
+            )
 
-        if "LipidSpecies" not in df.columns:
-            raise ValueError(f"LipidSpecies missing in {p}")
+        validate_columns(df, path)
 
-        # Remove duplicate species (keep first occurrence)
+        # Remove duplicate lipid species inside each file
         df = df.drop_duplicates(subset=["LipidSpecies"], keep="first")
 
-        # Extract sample identifier from filename
-        sample_id = Path(p).stem  # e.g. 250324_VW_Plasmaextrakte_51363_a
+        # Use file stem as sample ID
+        sample_id = Path(path).stem
 
-        # Identify columns containing intensity data
-        sample_cols = [c for c in df.columns if re.match(r"^(Intensity|PrecursorIntensity|Fragment.*Intensity)", c)]
-        meta_cols = [c for c in df.columns if c not in sample_cols and c != "LipidSpecies"]
+        # Identify intensity-like columns
+        sample_cols = [
+            c for c in df.columns
+            if re.match(
+                r"^(Intensity|PrecursorIntensity|Fragment[A-Z]Intensity)",
+                c
+            )
+        ]
 
-        # Keep LipidSpecies, metadata, and intensity columns
+        # Metadata columns are everything else except LipidSpecies
+        meta_cols = [
+            c for c in df.columns
+            if c not in sample_cols and c != "LipidSpecies"
+        ]
+
+        # Keep only relevant columns
         keep_cols = ["LipidSpecies"] + meta_cols + sample_cols
         df = df[keep_cols]
 
-        # Rename intensity columns to include sample ID (avoid name clashes)
-        rename_map = {c: (f"{c}:{sample_id}.mzML" if ":" not in c else c) for c in sample_cols}
+        # Add sample-specific suffix to intensity columns
+        rename_map = {
+            c: f"{c}:{sample_id}.mzML"
+            for c in sample_cols
+            if ":" not in c
+        }
+
         df = df.rename(columns=rename_map)
 
-        # Use LipidSpecies as index for joining
+        # Use LipidSpecies as join key
         df = df.set_index("LipidSpecies")
+
         dfs.append(df)
 
-    # Concatenate all datasets ===
+    # ------------------------------------------------------------
+    # Merge all samples side-by-side
+    # ------------------------------------------------------------
     wide = pd.concat(dfs, axis=1, join="outer")
 
-    # Coalesce duplicate columns (same metadata repeated across files) ===
+    # ------------------------------------------------------------
+    # Coalesce duplicate metadata columns
+    # Example: LipidClass appears once per file; keep first non-null value
+    # ------------------------------------------------------------
     coalesced = pd.DataFrame(index=wide.index)
+
     for col_name in wide.columns.unique():
         block = wide.loc[:, wide.columns == col_name]
+
         if block.shape[1] == 1:
             coalesced[col_name] = block.iloc[:, 0]
         else:
-            # Take first non-null from left (bfill fills from right to left)
             filled = block.bfill(axis=1).infer_objects(copy=False)
             coalesced[col_name] = filled.iloc[:, 0]
 
-    # Drop irrelevant columns if present ===
-    coalesced = coalesced.drop(columns=["query_name", "sample_id"], errors="ignore")
+    # Drop unwanted columns if present
+    coalesced = coalesced.drop(
+        columns=["query_name", "sample_id"],
+        errors="ignore"
+    )
 
-    # Reorder columns by logical metadata → intensity → identifiers ===
+    # ------------------------------------------------------------
+    # Build logical column order
+    # ------------------------------------------------------------
     head_meta = [
-        "LipidClass","Mass","IsobaricClass","ChemicalFormula","DerivatizedForm",
-        "AdductIon","LipidCategory","ScanPolarity"
+        "LipidClass",
+        "Mass",
+        "IsobaricClass",
+        "ChemicalFormula",
+        "DerivatizedForm",
+        "AdductIon",
+        "LipidCategory",
+        "ScanPolarity"
     ]
+
     head_meta = [c for c in head_meta if c in coalesced.columns]
 
-    # Helper to collect sample-specific columns by prefix
     def sample_block(base):
         cols = []
-        for f in sample_files:
-            sid = Path(f).stem
-            col = f"{base}:{sid}.mzML"
+
+        for file_path in sample_files:
+            sample_id = Path(file_path).stem
+            col = f"{base}:{sample_id}.mzML"
+
             if col in coalesced.columns:
                 cols.append(col)
+
         return cols
 
     intensity_block = sample_block("Intensity")
-    mid_meta = [c for c in ["IdentificationLevel","QuantificationIon"] if c in coalesced.columns]
-    identifier_block = [c for c in ["PrecursorIdentifier","FragmentAIdentifier",
-                                    "FragmentBIdentifier","FragmentCIdentifier"] if c in coalesced.columns]
+
+    mid_meta = [
+        c for c in ["IdentificationLevel", "QuantificationIon"]
+        if c in coalesced.columns
+    ]
+
+    identifier_block = [
+        c for c in [
+            "PrecursorIdentifier",
+            "FragmentAIdentifier",
+            "FragmentBIdentifier",
+            "FragmentCIdentifier"
+        ]
+        if c in coalesced.columns
+    ]
+
     precursor_intensity_block = sample_block("PrecursorIntensity")
 
-    # Fragment intensity groups
+    # Fragment intensity columns such as FragmentAIntensity, FragmentBIntensity
     fragment_bases = sorted({
         re.match(r"^(Fragment[A-Z]Intensity)\b", c).group(1)
-        for c in coalesced.columns if re.match(r"^Fragment[A-Z]Intensity\b", c)
+        for c in coalesced.columns
+        if re.match(r"^Fragment[A-Z]Intensity\b", c)
     })
+
     fragment_blocks = []
+
     for base in fragment_bases:
         fragment_blocks.extend(sample_block(base))
 
-    tail_meta = [c for c in [
-        "PrecursorERRppm","FragmentAERRppm","FragmentBERRppm","FragmentCERRppm",
-        "FragmentAMass","FragmentBMass","FragmentCMass",
-        "FragmentAAdductIon","FragmentBAdductIon","FragmentCAdductIon",
-        "FragmentAChemicalFormula","FragmentBChemicalFormula","FragmentCChemicalFormula",
-        "NeutralChemicalFormula"
-    ] if c in coalesced.columns]
+    tail_meta = [
+        c for c in [
+            "PrecursorERRppm",
+            "FragmentAERRppm",
+            "FragmentBERRppm",
+            "FragmentCERRppm",
+            "FragmentAMass",
+            "FragmentBMass",
+            "FragmentCMass",
+            "FragmentAAdductIon",
+            "FragmentBAdductIon",
+            "FragmentCAdductIon",
+            "FragmentAChemicalFormula",
+            "FragmentBChemicalFormula",
+            "FragmentCChemicalFormula",
+            "NeutralChemicalFormula"
+        ]
+        if c in coalesced.columns
+    ]
 
     ordered_blocks = (
         head_meta
@@ -600,97 +737,219 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
         + fragment_blocks
         + tail_meta
     )
-    remaining = [c for c in coalesced.columns if c not in ordered_blocks]
-    final_cols = [c for c in ordered_blocks + remaining if c in coalesced.columns]
+
+    remaining = [
+        c for c in coalesced.columns
+        if c not in ordered_blocks
+    ]
+
+    final_cols = [
+        c for c in ordered_blocks + remaining
+        if c in coalesced.columns
+    ]
+
     coalesced = coalesced[final_cols]
 
-    # Sort rows, group IS, fill intensities, and add blank separators ===
+    # ------------------------------------------------------------
+    # Restore LipidSpecies as a normal column
+    # ------------------------------------------------------------
     df = coalesced.copy()
-    if "LipidSpecies" not in df.columns:
-        df.index.name = "LipidSpecies"
-        df = df.reset_index()
 
-    # Preserve original order for IS block
+    df.index.name = "LipidSpecies"
+    df = df.reset_index()
+
+    # Preserve original order for internal standards
     df["__orig_pos__"] = np.arange(len(df))
 
-    # Convert intensity-like columns to numeric and fill NaN with 0
-    intensity_pattern = re.compile(r"^(Intensity|PrecursorIntensity|Fragment[A-Z]Intensity):")
-    intensity_cols = [c for c in df.columns if intensity_pattern.match(c)]
-    for c in intensity_cols:
-        df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0)
-
-    # -----------------------------------------------------------
-    # Apply occupation threshold to Intensity block only
-    # -----------------------------------------------------------
-    occupation_threshold = occurrence_threshold
-
-    if intensity_block and occupation_threshold is not None:
-        n_positive = (df[intensity_block] > 0).sum(axis=1)
-        min_required = int(np.ceil(len(intensity_block) * occupation_threshold))
-
-        before = len(df)
-        df = df[n_positive >= min_required].copy()
-        after = len(df)
-
-        print(f"Occupation filter removed {before - after} lipids "
-              f"(threshold={occupation_threshold})")
-
-    # Identify IS rows (LipidSpecies starts with "IS")
-    is_mask = df["LipidSpecies"].astype(str).str.strip().str.upper().str.startswith("IS")
-
-    # Split and sort
-    is_df = df[is_mask].copy().sort_values("__orig_pos__", kind="mergesort")
-    non_is_df = df[~is_mask].copy()
-
-    # Sort non-IS rows by LipidClass then Mass (ascending)
-    if "Mass" in non_is_df.columns:
-        non_is_df["Mass"] = pd.to_numeric(non_is_df["Mass"], errors="coerce")
-        non_is_df = non_is_df.sort_values(
-            ["LipidClass", "Mass", "__orig_pos__"],
-            ascending=[True, True, True],
-            kind="mergesort"
-        )
-    else:
-        non_is_df = non_is_df.sort_values(
-            ["LipidClass", "__orig_pos__"],
-            ascending=[True, True],
-            kind="mergesort"
-        )
-
-    # Combine IS block first, then all other sorted classes
-    ordered = pd.concat([is_df, non_is_df], ignore_index=True)
-    ordered = ordered.drop(columns=["__orig_pos__"], errors="ignore")
-
-    # Synthetic grouping column (ensures all IS rows form one group)
-    ordered["__grp__"] = np.where(
-        ordered["LipidSpecies"].astype(str).str.strip().str.upper().str.startswith("IS"),
-        "__IS__",
-        ordered["LipidClass"].astype(str)
+    # ------------------------------------------------------------
+    # Convert intensity columns to numeric and fill missing values with 0
+    # ------------------------------------------------------------
+    intensity_pattern = re.compile(
+        r"^(Intensity|PrecursorIntensity|Fragment[A-Z]Intensity):"
     )
 
-    # Build final DataFrame with one blank row after each group
+    intensity_cols = [
+        c for c in df.columns
+        if intensity_pattern.match(c)
+    ]
+
+    for col in intensity_cols:
+        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+
+    # ------------------------------------------------------------
+    # Apply occurrence filter only to main Intensity columns
+    # ------------------------------------------------------------
+    if occurrence_threshold is not None:
+        if not 0 <= occurrence_threshold <= 1:
+            raise ValueError(
+                "occurrence_threshold must be between 0 and 1."
+            )
+
+        if intensity_block:
+            n_positive = (df[intensity_block] > 0).sum(axis=1)
+            min_required = int(
+                np.ceil(len(intensity_block) * occurrence_threshold)
+            )
+
+            before = len(df)
+            df = df[n_positive >= min_required].copy()
+            after = len(df)
+
+            print(
+                f"Occurrence filter removed {before - after} lipids "
+                f"(threshold={occurrence_threshold}, "
+                f"minimum positive samples={min_required})"
+            )
+        else:
+            warnings.warn(
+                "occurrence_threshold was provided, but no Intensity columns "
+                "were found. Occurrence filtering was skipped.",
+                UserWarning
+            )
+
+    # ------------------------------------------------------------
+    # Identify internal standards
+    # Rows where LipidSpecies starts with IS
+    # ------------------------------------------------------------
+    is_mask = (
+        df["LipidSpecies"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+        .str.startswith("IS")
+    )
+
+    is_df = (
+        df[is_mask]
+        .copy()
+        .sort_values("__orig_pos__", kind="mergesort")
+    )
+
+    non_is_df = df[~is_mask].copy()
+
+    # ------------------------------------------------------------
+    # Sort non-IS lipids
+    # Preferred: LipidClass then Mass
+    # Fallbacks are used if columns are missing
+    # ------------------------------------------------------------
+    sort_cols = []
+    ascending = []
+
+    if "LipidClass" in non_is_df.columns:
+        sort_cols.append("LipidClass")
+        ascending.append(True)
+
+    if "Mass" in non_is_df.columns:
+        non_is_df["Mass"] = pd.to_numeric(
+            non_is_df["Mass"],
+            errors="coerce"
+        )
+        sort_cols.append("Mass")
+        ascending.append(True)
+
+    sort_cols.append("__orig_pos__")
+    ascending.append(True)
+
+    non_is_df = non_is_df.sort_values(
+        sort_cols,
+        ascending=ascending,
+        kind="mergesort"
+    )
+
+    # ------------------------------------------------------------
+    # Combine IS block first, then sorted lipid classes
+    # ------------------------------------------------------------
+    ordered = pd.concat(
+        [is_df, non_is_df],
+        ignore_index=True
+    )
+
+    ordered = ordered.drop(columns=["__orig_pos__"], errors="ignore")
+
+    # ------------------------------------------------------------
+    # Create grouping column for blank-row separation
+    # IS gets its own group at the top
+    # ------------------------------------------------------------
+    if "LipidClass" in ordered.columns:
+        lipid_class_group = ordered["LipidClass"].astype(str)
+    else:
+        lipid_class_group = "Unknown"
+
+    ordered["__grp__"] = np.where(
+        ordered["LipidSpecies"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+        .str.startswith("IS"),
+        "__IS__",
+        lipid_class_group
+    )
+
+    # ------------------------------------------------------------
+    # Add one blank row after each group
+    # ------------------------------------------------------------
     groups_out = []
 
-    # IS block first (if present)
     if (ordered["__grp__"] == "__IS__").any():
         g = ordered[ordered["__grp__"] == "__IS__"]
         groups_out.append(g)
-        groups_out.append(pd.DataFrame([[np.nan] * len(ordered.columns)], columns=ordered.columns))
+        groups_out.append(
+            pd.DataFrame(
+                [[np.nan] * len(ordered.columns)],
+                columns=ordered.columns
+            )
+        )
 
-    # Then each LipidClass alphabetically
-    for cls in sorted(x for x in ordered["__grp__"].unique() if x != "__IS__"):
-        g = ordered[ordered["__grp__"] == cls]
+    class_groups = sorted(
+        x for x in ordered["__grp__"].dropna().unique()
+        if x != "__IS__"
+    )
+
+    for lipid_class in class_groups:
+        g = ordered[ordered["__grp__"] == lipid_class]
         groups_out.append(g)
-        groups_out.append(pd.DataFrame([[np.nan] * len(ordered.columns)], columns=ordered.columns))
+        groups_out.append(
+            pd.DataFrame(
+                [[np.nan] * len(ordered.columns)],
+                columns=ordered.columns
+            )
+        )
 
-    final_df = pd.concat(groups_out, ignore_index=True)
+    if groups_out:
+        final_df = pd.concat(groups_out, ignore_index=True)
+    else:
+        final_df = ordered.copy()
+
     final_df = final_df.drop(columns=["__grp__"], errors="ignore")
 
-    # Ensure LipidSpecies is the first column
+    # ------------------------------------------------------------
+    # Ensure LipidSpecies is first column
+    # ------------------------------------------------------------
     cols = final_df.columns.tolist()
+
     if "LipidSpecies" in cols:
-        cols = ["LipidSpecies"] + [c for c in cols if c != "LipidSpecies"]
+        cols = ["LipidSpecies"] + [
+            c for c in cols
+            if c != "LipidSpecies"
+        ]
         final_df = final_df[cols]
 
-    # === Return final merged DataFrame ===
-    return final_df
+    # ------------------------------------------------------------
+    # Extract polarity safely
+    # ------------------------------------------------------------
+    if "ScanPolarity" in final_df.columns:
+        polarity = final_df["ScanPolarity"].dropna().unique()
+
+        if len(polarity) > 1:
+            warnings.warn(
+                f"Multiple ScanPolarity values found: {polarity}",
+                UserWarning
+            )
+    else:
+        polarity = np.array([])
+        warnings.warn(
+            "ScanPolarity column missing. Returning empty polarity array.",
+            UserWarning
+        )
+
+    return final_df, polarity

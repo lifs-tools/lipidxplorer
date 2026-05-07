@@ -899,40 +899,66 @@ MStolerance to an arbitrary value"""
 		with open(dump_file, 'w') as f:
 
 			strOut = "\n"
-			strOut += "\nMasterScan: ," + self.name
+			strOut += "\nMasterScan,%s\n" % self.options['dumpMasterScanFile']
+			strOut += "data folder,%s\n" % self.importDir
+			strOut += "import configuration file,%s\n" % self.importSettingsFile
+			strOut += "import configuration,%s\n" % self.setting
 			strOut += "\n"
-			strOut += "data folder: , %s\n" % self.importDir
-			strOut += "import configuration file: , %s\n" % self.importSettingsFile
-			strOut += "import configuration: , %s\n" % self.setting
-			strOut += "\n"
-			if self.forcesinglecharge != 0:
-				strOut += "forcesinglecharge: ," + repr(self.forcesinglecharge)
-			strOut += "time range: , (%s, %s)\n" % (repr(self.options['timerange'][0]), repr(self.options['timerange'][1]))
-			strOut += "MS mass range: , (%s, %s)\n" % (repr(self.options['MSmassrange'][0]), repr(self.options['MSmassrange'][1]))
-			if 'MSMSmassrange' in self.options and not (self.options.isEmpty('MSMSmassrange')):
-				strOut += "MS/MS mass range: , (%s, %s)\n" % (repr(self.options['MSMSmassrange'][0]), repr(self.options['MSMSmassrange'][1]))
-			strOut += "MS tolerance: ,+/- %s\n" % (repr(self.options['MStolerance']))
-			if 'MSMSfilter' in self.options and not (self.options.isEmpty('MSMSfilter')):
-				strOut += "MS frequency filter: %s\n" % (repr(self.options['MSMSfilter']))
-			if 'MSMStolerance' in self.options and not (self.options.isEmpty('MSMStolerance')):
-				strOut += "MS/MS tolerance: ,+/- %s\n" % (repr(self.options['MSMStolerance']))
-			strOut += "MS resolution: , %s\n" % (repr(self.options['MSresolution'].tolerance))
-			if 'MSMSresolution' in self.options and not (self.options.isEmpty('MSMSresolution')):
-				strOut += "MS/MS resolution: , %s\n" % (repr(self.options['MSMSresolution'].tolerance))
-			else:
-				strOut += "MS/MS resolution: , 0\n"
-			strOut += "MS resolution gradient: , %s\n" % (repr(self.options['MSresolutionDelta']))
-			if 'MSMSresolutionDelta' in self.options and not (self.options.isEmpty('MSMSresolutionDelta')):
-				strOut += "MS/MS resolution gradient: , %s\n" % (repr(self.options['MSMSresolutionDelta']))
-			strOut += "MS threshold: , %s\n" % (repr(self.options['MSthreshold']))
-			if 'MSMSthreshold' in self.options and not (self.options.isEmpty('MSMSthreshold')):
-				strOut += "MS/MS threshold: , %s\n" % (repr(self.options['MSMSthreshold']))
-			strOut += "MS minimum occupation: ,+/- %s\n" % (repr(self.options['MSminOccupation']))
-			if 'MSMSminOccupation' in self.options and not (self.options.isEmpty('MSMSminOccupation')):
-				strOut += "MS/MS minimum occupation: ,+/- %s\n" % (repr(self.options['MSMSminOccupation']))
-			if 'MSfilter' in self.options and not (self.options.isEmpty('MSfilter')):
-				strOut += "MS/MS frequency filter: %s\n" % (repr(self.options['MSfilter']))
 
+			if self.forcesinglecharge != 0:
+				strOut += "forcesinglecharge,%s\n" % repr(self.forcesinglecharge)
+
+			# --- ranges (need quotes) ---
+			strOut += 'time range,"(%s, %s)"\n' % (
+				repr(self.options['timerange'][0]),
+				repr(self.options['timerange'][1])
+			)
+
+			strOut += 'MS mass range,"(%s, %s)"\n' % (
+				repr(self.options['MSmassrange'][0]),
+				repr(self.options['MSmassrange'][1])
+			)
+
+			if 'MSMSmassrange' in self.options and not self.options.isEmpty('MSMSmassrange'):
+				strOut += 'MS/MS mass range,"(%s, %s)"\n' % (
+					repr(self.options['MSMSmassrange'][0]),
+					repr(self.options['MSMSmassrange'][1])
+				)
+
+			# --- simple values (no quotes needed) ---
+			strOut += "MS tolerance,+/- %s\n" % repr(self.options['MStolerance'])
+
+			if 'MSMStolerance' in self.options and not self.options.isEmpty('MSMStolerance'):
+				strOut += "MS/MS tolerance,+/- %s\n" % repr(self.options['MSMStolerance'])
+
+
+			strOut += "MS resolution,%s\n" % repr(self.options['MSresolution'].tolerance)
+
+			if 'MSMSresolution' in self.options and not self.options.isEmpty('MSMSresolution'):
+				strOut += "MS/MS resolution,%s\n" % repr(self.options['MSMSresolution'].tolerance)
+			else:
+				strOut += "MS/MS resolution,0\n"
+
+			strOut += "MS resolution gradient,%s\n" % repr(self.options['MSresolutionDelta'])
+
+			if 'MSMSresolutionDelta' in self.options and not self.options.isEmpty('MSMSresolutionDelta'):
+				strOut += "MS/MS resolution gradient,%s\n" % repr(self.options['MSMSresolutionDelta'])
+
+			strOut += "MS threshold,%s\n" % repr(self.options['MSthreshold'])
+
+			if 'MSMSthreshold' in self.options and not self.options.isEmpty('MSMSthreshold'):
+				strOut += "MS/MS threshold,%s\n" % repr(self.options['MSMSthreshold'])
+
+			strOut += "MS minimum occupation,%s\n" % repr(abs(self.options['MSminOccupation']))
+
+			if 'MSMSminOccupation' in self.options and not self.options.isEmpty('MSMSminOccupation'):
+				strOut += "MS/MS minimum occupation,%s\n" % repr(abs(self.options['MSMSminOccupation']))
+
+			if 'MSfilter' in self.options and not self.options.isEmpty('MSfilter'):
+				strOut += "MS frequency filter,%s\n" % repr(self.options['MSfilter'])
+    
+			if 'MSMSfilter' in self.options and not self.options.isEmpty('MSMSfilter'):
+				strOut += "MS/MS frequency filter,%s\n" % repr(self.options['MSMSfilter'])
 
 			strOut += "\n\n"
 

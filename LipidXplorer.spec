@@ -19,7 +19,7 @@ a = Analysis(
     binaries=[],
     datas=[
         (str(gui_dir / "lpdxImportSettings_benchmark.ini"), "lx/gui"),
-        (str(gui_dir / "lpdxopts.ini"), "."),
+        (str(gui_dir / "lpdxopts.ini"), "lx/gui"),
         (str(stuff_dir / "*.png"), "lx/stuff"),
         (str(stuff_dir / "*.ico"), "lx/stuff"),
         (str(mfql_dir / "parsetab.py"), "lx/mfql"),
@@ -51,7 +51,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=False,
-    console=True,
+    console=False,
 )
 
 coll = COLLECT(

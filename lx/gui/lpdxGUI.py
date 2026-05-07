@@ -1039,7 +1039,7 @@ class LpdxFrame(wx.Frame):
 		self.resource_dir = get_resource_dir()
 		self.runtime_dir = get_runtime_dir()
 
-		self.options_file = self.runtime_dir / "lpdxopts.ini"
+		self.options_file = self.resource_dir / "lpdxopts.ini"
 		self.default_import_file = self.resource_dir / "lpdxImportSettings_benchmark.ini"
 
 		self.lpdxOptions = staticTypeDict()
@@ -3115,7 +3115,7 @@ intensity."""))
 
 		# open directory with *.dta/*mzXML content
 		dlg = wx.DirDialog(self, "Choose a directory", style=wx.DD_DEFAULT_STYLE|wx.DD_DIR_MUST_EXIST)
-		dlg.SetPath(os.getcwd())
+		#dlg.SetPath(os.getcwd())
 
 		if dlg.ShowModal() == wx.ID_OK:
 			#self.filePath_ImportData = relativePath(dlg.GetPath())
@@ -3237,7 +3237,7 @@ intensity."""))
 			"Choose a directory with MFQL files",
 			style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST
 		)
-		dlg.SetPath(os.getcwd())
+		#dlg.SetPath(os.getcwd())
 
 		try:
 			if dlg.ShowModal() != wx.ID_OK:
@@ -4444,7 +4444,7 @@ intensity."""))
 
 		# open directory with *.dta/*mzXML content
 		dlg = wx.DirDialog(self, "Choose a directory with MFQL files", style=wx.DD_DEFAULT_STYLE|wx.DD_DIR_MUST_EXIST)
-		dlg.SetPath(os.getcwd())
+		#dlg.SetPath(os.getcwd())
 
 		if dlg.ShowModal() == wx.ID_OK:
 			self.filePath_MFQLDir = dlg.GetPath()
@@ -4481,7 +4481,7 @@ intensity."""))
 		# open directory with *.dta/*mzXML content
 		dlg = wx.FileDialog(self, "Specify a filename for the MFQL file", style=wx.DD_DEFAULT_STYLE|wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 		dlg.SetWildcard("*.mfql files|*.mfql")
-		dlg.SetPath(os.getcwd())
+		#dlg.SetPath(os.getcwd())
 
 		if dlg.ShowModal() == wx.ID_OK:
 			p = dlg.GetFilename()
@@ -6220,7 +6220,7 @@ intensity."""))
 		start_sizer.AddStretchSpacer(1)
 		start_title = wx.StaticText(self.start_panel, -1, "Choose a workspace")
 		start_title.SetFont(self.header_font)
-		start_subtitle = wx.StaticText(self.start_panel, -1, "Open the new empty view or the current LipidXplorer 1.5 interface.")
+		start_subtitle = wx.StaticText(self.start_panel, -1, "Open LipidXplorerNext or the current LipidXplorer 1.5 interface.")
 		start_button_row = wx.BoxSizer(wx.HORIZONTAL)
 		start_button_row.Add(self.button_open_next, 0, wx.ALL, 8)
 		start_button_row.Add(self.button_open_legacy, 0, wx.ALL, 8)

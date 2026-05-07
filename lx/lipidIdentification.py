@@ -11,6 +11,7 @@ from lx.exceptions import LipidXException
 from lx.tools import odict
 from lx.spectraTools import *
 from lx.options import Options
+from LipidXplorer import APP_VERSION
 
 def syntaxCheck(
 					queries = None,
@@ -167,6 +168,7 @@ def writeReport(file = "", options = {}, queries = {}):
 	print("Writing HTML report from lipidIdentification.py")
 	strReport = "<html><head></head><body>"
 	strReport += "<br>"
+	strReport += "<b>LipidXplorer version:</b> %s<br><br>" % APP_VERSION
 	strReport += "%s" % genReportHTML(options, queries)
 	strReport += "</body></html>"
 	reportBaseFile = os.path.splitext(file)[0]

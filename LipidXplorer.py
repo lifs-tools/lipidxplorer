@@ -4,6 +4,8 @@ from lx.gui import lpdxGUI
 import wx
 import sys
 
+APP_VERSION = "1.5"
+
 
 def resource_path(*parts):
     # PyInstaller extracts to sys._MEIPASS # for pyinstaller: https://stackoverflow.com/questions/22472124/what-is-sys-meipass-in-python
@@ -17,7 +19,7 @@ class MyApp(wx.App):
             None, -1, "",
             rawimport=False,
             lipidxplorer=True,
-            version="1.5"
+            version=APP_VERSION
         )
 
         icon_path = resource_path("lx", "stuff", "lipidx_ico2.ico")
