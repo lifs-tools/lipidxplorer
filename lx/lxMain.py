@@ -31,7 +31,7 @@ def startImport(options, queries = None, parent = None, worker = None, lipidxplo
 	print("options data type startImport()", type(options)) # <class 'lx.options.optionsDict'>
  
 	if lipidxplorer:
-		if not options['spectraFormat'] in ['dta/csv', 'mzML']:
+		if not options['spectraFormat'] in ['dta/csv', 'mzML', 'csv']:
 			raise LipidXException("The spectra format *.%s is not supported" % options['spectraFormat'])
 
 	#if optimization:

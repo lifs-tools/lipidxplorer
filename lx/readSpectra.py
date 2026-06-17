@@ -2,6 +2,7 @@ import os, re, numpy
 from copy import deepcopy
 from math import sqrt
 from glob import glob
+import csv
 from lx.fileReader.mzAPI import mzFile
 from lx.fileReader.mzxml import PrecursorSort, MzXMLFileReader
 from lx.alignment import specEntry, linearAlignment, mergeSumIntensity, doClusterSample, lpdxClusterMSMS
@@ -76,7 +77,7 @@ def add_Sample(
 	# 	msm2 = options['MSmassrange'][1]
 	msm1 = options['MSmassrange'][0]
 	msm2 = options['MSmassrange'][1]
- 
+
 	if options['MSMSmassrange']:
 		msmsm1 = options['MSMSmassrange'][0]
 		msmsm2 = options['MSMSmassrange'][1]
@@ -447,6 +448,403 @@ def add_Sample(
 	### End total ion count ###
 	return (specName, lpdxSample.base_peak_ms1, nb_ms_scans, nb_ms_peaks, nb_msms_scans, nb_msms_peaks)
 
+
+
+def add_CSVSample(
+		sc=None,
+		csvFile=None,
+		specDir=None,
+		options=None,
+		**kwargs
+	):
+	"""
+	Import new single CSV format.
+
+	Expected columns:
+		Function
+		index
+		m_z
+		m_zNoCal
+		rt
+		Mobility [ms]
+		Polarity
+		QuadMass
+		inten
+
+	Rule:
+		QuadMass == 0  -> MS1 peak
+		QuadMass > 0   -> MS/MS fragment peak, QuadMass is precursor mass
+
+	Mobility/RT are stored permanently in:
+		sc.raw_peak_lookup[specName]
+
+	Return shape matches add_Sample():
+		(specName, base_peak_ms1, nb_ms_scans, nb_ms_peaks,
+		nb_msms_scans, nb_msms_peaks)
+	"""
+
+	import csv as csvlib
+	from collections import defaultdict
+
+	def _to_float(value, default=None):
+		try:
+			if value is None:
+				return default
+			value = str(value).strip()
+			if value == "":
+				return default
+			return float(value)
+		except:
+			return default
+
+	def _to_int(value, default=None):
+		try:
+			if value is None:
+				return default
+			value = str(value).strip()
+			if value == "":
+				return default
+			return int(float(value))
+		except:
+			return default
+
+	def _polarity_to_int(value):
+		if value is None:
+			return None
+
+		value = str(value).strip().lower()
+
+		if value in ["pos", "positive", "+", "1", "esi+", "p"]:
+			return 1
+
+		if value in ["neg", "negative", "-", "-1", "esi-", "n"]:
+			return -1
+
+		return None
+
+	if options is None:
+		options = sc.options
+
+	if csvFile is None or not os.path.isfile(csvFile):
+		raise LipidXException("CSV file does not exist: %s" % csvFile)
+
+	# Match normal importer style: sample name is filename.
+	# If you want no extension in output, change this one line only.
+	specName = os.path.basename(csvFile)
+
+	if specDir is None:
+		specDir = os.path.dirname(csvFile)
+
+	reportout("Importing %s" % specName)
+
+	MSmassrange = kwargs.get("MSmassrange", options.get("MSmassrange", None))
+	MSMSmassrange = kwargs.get("MSMSmassrange", options.get("MSMSmassrange", None))
+	importMSMS = kwargs.get("importMSMS", options.get("importMSMS", True))
+	MSthresholdType = kwargs.get("MSthresholdType", options.get("MSthresholdType", None))
+	MSMSthresholdType = kwargs.get("MSMSthresholdType", options.get("MSMSthresholdType", None))
+
+	global fadi_percentageMSMS
+	fadi_percentageMSMS = options["MSMSfilter"]
+
+	rows = []
+
+	with open(csvFile, "r", newline="") as f:
+		reader = csvlib.DictReader(f)
+
+		required_columns = [
+			"Function",
+			"m_z",
+			"rt",
+			"Mobility [ms]",
+			"Polarity",
+			"QuadMass",
+			"inten"
+		]
+
+		for col in required_columns:
+			if col not in reader.fieldnames:
+				raise LipidXException(
+					"CSV file %s is missing required column: %s" % (csvFile, col)
+				)
+
+		for row in reader:
+			rows.append(row)
+
+	if rows == []:
+		raise LipidXException("CSV file is empty: %s" % csvFile)
+
+	if not hasattr(sc, "raw_peak_lookup"):
+		sc.raw_peak_lookup = {}
+
+	nb_ms_scans = 0
+	nb_ms_peaks = 0
+	nb_msms_scans = 0
+	nb_msms_peaks = 0
+
+	polarity = None
+	for row in rows:
+		polarity = _polarity_to_int(row.get("Polarity"))
+		if polarity is not None:
+			break
+
+	if polarity is None:
+		raise LipidXException("Could not determine polarity from CSV file: %s" % csvFile)
+
+	lpdxSample = Sample(
+		sampleName=specName,
+		sourceDir=specDir,
+		sourceFile=csvFile,
+		polarity=polarity,
+		options=options
+	)
+
+	lpdxSample.raw_peak_lookup = []
+
+	# -----------------------------
+	# Determine MS1 base peak
+	# -----------------------------
+	ms1_intensities = []
+
+	for row in rows:
+		quadmass = _to_float(row.get("QuadMass"), 0.0)
+		intensity = _to_float(row.get("inten"), 0.0)
+
+		if quadmass == 0.0 and intensity is not None:
+			ms1_intensities.append(intensity)
+
+	if ms1_intensities:
+		basePeakIntensity = max(ms1_intensities)
+		nb_ms_scans = 1
+	else:
+		basePeakIntensity = 0.0
+		nb_ms_scans = 0
+
+	# Match old dta/csv Sample.fillTable() behavior:
+	# relative threshold = MSthreshold percent of base peak.
+	if MSthresholdType == "relative":
+		ms_threshold = (float(options["MSthreshold"]) / 100.0) * basePeakIntensity
+	else:
+		ms_threshold = float(options["MSthreshold"])
+
+	# Store MS2 rows by precursor mass.
+	msms_rows = defaultdict(list)
+	msms_meta = {}
+
+	# -----------------------------
+	# Read MS1 and MS2 rows
+	# -----------------------------
+	for row in rows:
+		function_id = _to_int(row.get("Function"), None)
+		index = _to_int(row.get("index"), None)
+
+		mz = _to_float(row.get("m_z"), None)
+		mz_no_cal = _to_float(row.get("m_zNoCal"), None)
+		rt = _to_float(row.get("rt"), None)
+		mobility = _to_float(row.get("Mobility [ms]"), None)
+		pol = _polarity_to_int(row.get("Polarity"))
+		quadmass = _to_float(row.get("QuadMass"), 0.0)
+		intensity = _to_float(row.get("inten"), 0.0)
+
+		if mz is None:
+			continue
+
+		if pol is None:
+			pol = polarity
+
+		if pol != polarity:
+			raise LipidXException(
+				"Mixed polarity inside one CSV file is not supported: %s" % csvFile
+			)
+
+		ms_level = "MS1" if quadmass == 0.0 else "MS2"
+
+		lpdxSample.raw_peak_lookup.append({
+			"sample": specName,
+			"source_file": csvFile,
+			"ms_level": ms_level,
+			"function": function_id,
+			"index": index,
+			"mz": mz,
+			"mz_no_cal": mz_no_cal,
+			"rt": rt,
+			"mobility": mobility,
+			"polarity": pol,
+			"quadmass": quadmass,
+			"intensity": intensity
+		})
+
+		# -----------------------------
+		# MS1
+		# -----------------------------
+		if quadmass == 0.0:
+
+			if MSmassrange:
+				if mz < MSmassrange[0] or mz > MSmassrange[1]:
+					continue
+
+			nb_ms_peaks += 1
+
+			if intensity < ms_threshold:
+				continue
+
+			intensity_relative = 0.0
+			if basePeakIntensity > 0:
+				intensity_relative = intensity / basePeakIntensity
+
+			lpdxSample.listPrecurmass.append(MSMass(
+				precurmass=mz,
+				intensity=intensity,
+				smpl=specName,
+				polarity=pol,
+				charge=None,
+				fileName=csvFile,
+				scanCount=1,
+				basePeakIntensity=basePeakIntensity,
+				intensity_relative=intensity_relative
+			))
+
+		# -----------------------------
+		# MS/MS
+		# -----------------------------
+		else:
+			if not importMSMS:
+				continue
+
+			if MSMSmassrange:
+				if mz < MSMSmassrange[0] or mz > MSMSmassrange[1]:
+					continue
+
+			if intensity <= 0.0:
+				continue
+
+			nb_msms_peaks += 1
+
+			msms_rows[quadmass].append({
+				"mz": mz,
+				"intensity": intensity,
+				"rt": rt,
+				"polarity": pol,
+				"function": function_id
+			})
+
+			if quadmass not in msms_meta:
+				msms_meta[quadmass] = {
+					"rt": rt,
+					"polarity": pol,
+					"function": function_id
+				}
+
+	# -----------------------------
+	# Create MSMS objects manually
+	# Do not use table=..., because MSMS.fillTable()
+	# filters fragments immediately and behaves differently.
+	# -----------------------------
+	if importMSMS:
+		for quadmass in sorted(msms_rows.keys()):
+
+			fragment_rows = msms_rows[quadmass]
+			if fragment_rows == []:
+				continue
+
+			max_frag_intensity = max([x["intensity"] for x in fragment_rows])
+			meta = msms_meta.get(quadmass, {})
+
+			msms = MSMS(
+				quadmass,
+				charge=None,
+				polarity=meta.get("polarity", polarity),
+				fileName=csvFile,
+				scanNumber=None,
+				retentionTime=meta.get("rt", None),
+				peaksCount=len(fragment_rows),
+				totIonCurrent=sum([x["intensity"] for x in fragment_rows]),
+				basePeakMz=None,
+				basePeakIntensity=max_frag_intensity,
+				threshold=options["MSMSthreshold"]
+			)
+
+			for frag in fragment_rows:
+				intensity_relative = 0.0
+				if max_frag_intensity > 0:
+					intensity_relative = frag["intensity"] / max_frag_intensity
+
+				msms.entries.append([
+					frag["mz"],
+					frag["intensity"],
+					intensity_relative,
+					None,
+					None,
+					None,
+					None
+				])
+
+			lpdxSample.listMsms.append(msms)
+
+		nb_msms_scans = len(lpdxSample.listMsms)
+
+		lpdxSample.listMsms.sort()
+
+		if lpdxSample.listMsms != []:
+			lpdxClusterMSMS(lpdxSample, options["MSMSresolution"])
+
+	# If no MS1 exists, use MS2 precursor masses.
+	if lpdxSample.listPrecurmass == []:
+		r = set_PrecurmassFromMSMS(lpdxSample, chg=polarity)
+		if r != 0:
+			raise LipidXException(
+				"Empty file '%s'. No MS or MS/MS spectra present." % specName
+			)
+
+	# Required by mkSurveyLinear/checkOccupation.
+	if lpdxSample.listPrecurmass:
+		lpdxSample.base_peak_ms1 = max([x.intensity for x in lpdxSample.listPrecurmass])
+	else:
+		lpdxSample.base_peak_ms1 = basePeakIntensity
+
+	# Match add_DTASample behavior for CSV-like import:
+	# cluster sample before adding to scan.
+	sc.dictSamples[specName] = deepcopy(
+		doClusterSample(
+			options["MSresolution"],
+			doClusterSample(options["MSresolution"], lpdxSample)
+		)
+	)
+
+	sc.dictSamples[specName].base_peak_ms1 = lpdxSample.base_peak_ms1
+
+	# Temporary copy, useful during import debugging.
+	sc.dictSamples[specName].raw_peak_lookup = lpdxSample.raw_peak_lookup
+
+	# Permanent copy; survives after scan.dictSamples is deleted in doImport().
+	sc.raw_peak_lookup[specName] = lpdxSample.raw_peak_lookup
+
+	sc.listSamples.append(specName)
+
+	numPeaksAfterAvg = len(sc.dictSamples[specName].listPrecurmass)
+
+	reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS scans", nb_ms_scans))
+	reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS peaks", nb_ms_peaks))
+	reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS/MS scans", nb_msms_scans))
+	reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS/MS peaks", nb_msms_peaks))
+	reportout("> {0:.<30s}{1:>11d}".format("Nb. of MS peaks (after avg.)", numPeaksAfterAvg))
+	reportout("")
+
+	del lpdxSample
+
+	return (
+		specName,
+		sc.dictSamples[specName].base_peak_ms1,
+		nb_ms_scans,
+		nb_ms_peaks,
+		nb_msms_scans,
+		nb_msms_peaks
+	)
+	
+	
+	
+	
+	
+	
 
 
 
@@ -1335,10 +1733,10 @@ def add_DTASample(sc, sampleDir, sampleName, MSmassrange = None, MSMSmassrange =
 
 			# if both - .dta and .csv - are given
 			elif dirmsms != "" and csv != "" and dta and importMSMS:
-         ############## test ballal #############
+		############## test ballal #############
 				print("MSfilter in add_DTA ####################################:", sc.options['MSfilter'])
 				print("MSMSfilter in add_DTA ####################################:", sc.options['MSMSfilter'])
-    #############################
+	#############################
 				loadMSMS(lpdxSample, dirmsms, sc.options['MSMSresolution'], sc.options)
 				basePeakIntensity = lpdxSample.fillTable(lpdxSample.openAndRead(csv), sampleName, sampleDir, sc.options['MSthreshold'], thresholdType)
 

@@ -2638,7 +2638,168 @@ class TypeResult:
 											dbgstr += "\n"
 											dbgout(dbgstr)
 
+	######## Ballal added for cyclic execution ############
 
+	def _get_report_mass_value(self, rpt):
+		"""
+		Get precursor mass from one normal MFQL output row.
+		Add your real mass column name here if needed.
+		"""
+		candidates = [
+			"Mass",
+			"mass",
+			"m/z",
+			"mz",
+			"precurmass",
+			"PrecursorMass",
+			"Precursor mass"
+		]
+
+		for key in candidates:
+			if key in rpt:
+				try:
+					return float(rpt[key])
+				except Exception:
+					pass
+
+		return None
+
+
+	def _find_raw_mobility_matches_for_mass(self, mass):
+		"""
+		Return unique raw MS1 peaks matching one reported MFQL mass.
+		"""
+		sc = self.mfqlObj.sc
+
+		if not hasattr(sc, "raw_peak_lookup"):
+			return []
+
+		try:
+			tol_da = sc.options["MSresolution"].getTinDA(mass)
+		except Exception:
+			tol_da = 0.01
+
+		matches = []
+		seen = set()
+
+		for sample_name, raw_peaks in sc.raw_peak_lookup.items():
+			for p in raw_peaks:
+
+				if p.get("ms_level") != "MS1":
+					continue
+
+				raw_mz = p.get("mz")
+				if raw_mz is None:
+					continue
+
+				if abs(float(raw_mz) - mass) > tol_da:
+					continue
+
+				key = (
+					p.get("sample", sample_name),
+					round(float(raw_mz), 6),
+					round(float(p.get("mobility")), 6) if p.get("mobility") is not None else None,
+					round(float(p.get("rt")), 6) if p.get("rt") is not None else None,
+					round(float(p.get("intensity")), 6) if p.get("intensity") is not None else None,
+				)
+
+				if key in seen:
+					continue
+
+				seen.add(key)
+				matches.append(p)
+
+		return matches
+
+
+	def _attach_mobility_to_query_results(self, query):
+		"""
+		Post-process already-created MFQL rows.
+		Does not touch query.listVariables.
+		Duplicates only when unique raw mobility matches differ.
+		"""
+		print("ATTACH MOBILITY CALLED")
+		print("query rows before:", len(query.listReportOut))
+		new_rows = []
+		for i, rpt in enumerate(query.listReportOut[:10]):
+			print("ROW", i, rpt.get("LipidSpecies"), rpt.get("Mass"))
+   
+		for rpt in query.listReportOut:
+
+			mass = self._get_report_mass_value(rpt)
+
+			if mass is None:
+				#rpt["raw_sample"] = ""
+				rpt["raw_mz"] = ""
+				rpt["raw_mobility"] = ""
+				rpt["raw_rt"] = ""
+				#rpt["raw_intensity"] = ""
+				new_rows.append(rpt)
+				continue
+
+			matches = self._find_raw_mobility_matches_for_mass(mass)
+
+			print("MATCHES FOR", rpt.get("LipidSpecies"), mass, "=", len(matches))
+
+			if matches == []:
+				rpt["raw_mz"] = ""
+				rpt["raw_mobility"] = ""
+				rpt["raw_rt"] = ""
+				new_rows.append(rpt)
+				continue
+ 
+			best_match = max(matches, key=lambda p: float(p.get("intensity", 0)))
+
+			new_rpt = copy(rpt)
+
+			new_rpt["raw_mz"] = best_match.get("mz", "")
+			new_rpt["raw_mobility"] = best_match.get("mobility", "")
+			new_rpt["raw_rt"] = best_match.get("rt", "")
+
+			new_rows.append(new_rpt)
+
+		deduped_rows = []
+		seen = set()
+
+		dedupe_columns = [
+			"LipidSpecies",
+			"LipidClass",
+			"Mass",
+			"IsobaricClass",
+			#"raw_sample",
+			"raw_mz",
+			"raw_mobility",
+			"raw_rt",
+			#"raw_intensity",
+		]
+
+		for row in new_rows:
+			key = tuple(str(row.get(col, "")) for col in dedupe_columns)
+
+			if key in seen:
+				continue
+
+			seen.add(key)
+			deduped_rows.append(row)
+
+		query.listReportOut = deduped_rows
+
+		extra_heads = [
+			#"raw_sample",
+			#"raw_mz",
+			"raw_mobility",
+			"raw_rt",
+			#"raw_intensity"
+		]
+
+		query.reportHeads = connectLists(query.reportHeads, extra_heads)
+		self.listHead = connectLists(self.listHead, extra_heads)
+
+
+
+
+ 
+ ##################
 
 	def generateReport(self, options = {}):
 
@@ -2846,7 +3007,14 @@ class TypeResult:
 
 				if boolAdd:
 					query.listReportOut.append(rpt)
+     
+     
+######################## Ballal ###################
 
+			if hasattr(self.mfqlObj.sc, "raw_peak_lookup"):
+				self._attach_mobility_to_query_results(query)
+######################################################################
+ 
 		# if there are results, then there is a self.listHead
 		if self.listHead:
 

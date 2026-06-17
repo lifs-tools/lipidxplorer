@@ -778,8 +778,6 @@ MStolerance to an arbitrary value"""
 								raise ValueError(f"Invalid scan count for sample {sample!r}: {scan_count!r}")
 			################################################################
 
-
-
 							t[sample] = threshold * dictBasePeakIntensity[sample]
 						else:
 							t[sample] = threshold

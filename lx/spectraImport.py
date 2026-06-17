@@ -13,7 +13,7 @@ from lx.mfql.runtimeStatic import TypeTolerance
 from lx.exceptions import LipidXException
 from lx.spectraContainer import MasterScan, SurveyEntry
 from lx.spectraTools import recalibrateMS, recalibrateMSMS, saveSC
-from lx.readSpectra import add_Sample, add_mzXMLSample, add_DTASample
+from lx.readSpectra import add_Sample, add_mzXMLSample, add_DTASample, add_CSVSample
 from lx.alignment import mkSurveyLinear, \
 		 mkMSMSEntriesLinear_new, \
 		 specEntry, linearAlignment
@@ -85,7 +85,7 @@ def getInputFiles(importDir, options):
 
 		# import XML without having groups
 		if not (re.match(r'(^\.\w+).*|.*\.svn.*', root)) and \
-				options['spectraFormat'] in ['mzML', 'mzXML', 'raw', 'rawA']:
+				options['spectraFormat'] in ['mzML', 'mzXML', 'raw', 'rawA', 'csv']:
 
 			if options['spectraFormat'] == 'rawA':
 				ext = 'raw'
@@ -113,6 +113,13 @@ def getInputFiles(importDir, options):
 			for i in dirs:
 				if not re.match(r'(^\.\w+).*|.*\.svn.*', i):
 					listFiles.append([root + os.sep + i, i])
+     
+		elif not (re.match(r'(^\.\w+).*|.*\.svn.*', root)) and options['spectraFormat'] == 'csv':
+			isTaken = True
+			for f in files:
+				if re.match(r'.*\.csv$', f, re.IGNORECASE):
+					listFiles.append([root + os.sep + f, root])
+            
 
 		elif re.match(r'(^\.\w+).*|.*\.svn.*', root):
 			pass
@@ -177,6 +184,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 
 
+
 	# the scan.dictSample variable is filled with
 	# MSmass and MSMS classes taken from mzXML files.
 	# After loading the cleaning algorithm is applied.
@@ -197,6 +205,22 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 					importMSMS = importMSMS,
 					MSthresholdType = scan.options['MSthresholdType'],
 					MSMSthresholdType = scan.options['MSMSthresholdType'])
+    
+			elif options['spectraFormat'] == "csv":
+				ret = add_CSVSample(
+					scan,
+					i[0],
+					i[1],
+					options=scan.options,
+					timerange=scan.options['timerange'],
+					MSmassrange=scan.options['MSmassrange'],
+					MSMSmassrange=scan.options['MSMSmassrange'],
+					scanAveraging=scanAvg,
+					isGroup=isGroup,
+					importMSMS=importMSMS,
+					MSthresholdType=scan.options['MSthresholdType'],
+					MSMSthresholdType=scan.options['MSMSthresholdType']
+				)
 
 			elif options['spectraFormat'] == 'mzML': # the new import routine, :-)
 				ret = add_Sample(scan, i[0], i[1],
@@ -210,6 +234,9 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 					MSthresholdType = scan.options['MSthresholdType'],
 					MSMSthresholdType = scan.options['MSMSthresholdType'],
 					fileformat = "mzML")
+			
+				
+
 
 
 			dictBasePeakIntensity[ret[0]] = ret[1]
@@ -227,6 +254,8 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 		if not len(list(dictBasePeakIntensity.keys())) > 0:
 			raise LipidXException("Something wrong with the calculation of the base peaks")
+
+
 
 	else:
 		raise LipidXException("No valid option given.")
