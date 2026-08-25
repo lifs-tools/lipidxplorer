@@ -1067,6 +1067,18 @@ class LpdxFrame(wx.Frame):
 			else:
 				self.confParseOpts.set(self.settingDefaults, option, str(self.lpdxOptions[option]))
 
+		# 'defaultImportSettings' is a file path persisted in lpdxopts.ini from a
+		# PREVIOUS run. If that path no longer exists -- e.g. the project
+		# directory was moved or renamed since it was last saved -- silently
+		# trusting it leaves the settings dropdown empty with no explanation
+		# (configparser.read() fails silently on a missing file). Fall back to
+		# the freshly-computed, always-correct default in that case.
+		if not Path(str(self.lpdxOptions['defaultImportSettings'])).exists():
+			print("WARNING: persisted defaultImportSettings path not found on disk (%s); "
+				"falling back to computed default (%s)" % (
+					self.lpdxOptions['defaultImportSettings'], self.default_import_file))
+			self.lpdxOptions['defaultImportSettings'] = str(self.default_import_file)
+
 		with open(str(self.options_file), 'w') as iniFile:
 			self.confParseOpts.write(iniFile)
    
@@ -1087,7 +1099,8 @@ class LpdxFrame(wx.Frame):
 		# allow import of raw files?
 		self.rawimport = kwds['rawimport']
 
-		self.supportedFileTypes = ['mzML', 'dta/csv', 'csv']
+		#self.supportedFileTypes = ['mzML', 'dta/csv', 'csv']
+		self.supportedFileTypes = ['mzML', 'dta/csv']
 		self.defaultFileType = 'mzML'
 		self.rawToolTip = ""
 
@@ -1225,7 +1238,7 @@ class LpdxFrame(wx.Frame):
 		self.link_placeholder_demo = wx.adv.HyperlinkCtrl(
 			self.placeholder_panel,
 			-1,
-			"Open demo link",
+			"LipidXplorer Preface",
 			"https://lifs-tools.org/wiki/index.php?title=LipidXplorer_Preface"
 		)
 
@@ -1751,7 +1764,21 @@ class LpdxFrame(wx.Frame):
 		self.filePath_LoadIni = self.text_ctrl_LoadIniSection.GetValue()
 		self.text_ctrl_LoadIniSection.SetValue(self.filePath_LoadIni)
 		self.confParse = configparser.ConfigParser()
-		self.confParse.read(self.text_ctrl_LoadIniSection.GetLineText(0))
+		_iniReadResult = self.confParse.read(self.text_ctrl_LoadIniSection.GetLineText(0))
+
+		# configparser.read() fails SILENTLY (no exception, just an empty
+		# result) if the file doesn't exist or can't be parsed -- warn
+		# explicitly instead of leaving the configuration dropdown empty
+		# with no indication of why
+		if not _iniReadResult:
+			wx.MessageBox(
+				"Could not load the default import settings file:\n\n%s\n\n"
+				"The file was not found, or could not be read. The "
+				"'Select a Configuration' list will be empty until a "
+				"valid *.ini file is selected via Browse." % self.text_ctrl_LoadIniSection.GetLineText(0),
+				"Import Settings Not Loaded",
+				wx.OK | wx.ICON_WARNING,
+			)
 
 		self.button_Browse_LoadIniSection = wx.Button(self.notebook_1_pane_5, -1, "Browse")
 		self.button_Browse_LoadIniSection.SetToolTip(wx.ToolTip(
@@ -4587,6 +4614,20 @@ intensity."""))
 						dlg.Destroy()
 
 					self.notebook_1.RemovePage(i)
+					# Ballal - navigate to Run tab after closing an MFQL editor script,
+					# instead of falling back to wx's default post-removal selection
+					# find the "Run" tab by its actual current page text rather than trusting
+					# self.dictNotebookPages, which is off by one from real tab indices (a
+					# pre-existing setup bug: counterNotebookPages is incremented BEFORE being
+					# stored, so every entry points one tab too far) and was otherwise unused
+					# anywhere else in the codebase
+					_runTabIndex = None
+					for _i in range(self.notebook_1.GetPageCount()):
+						if self.notebook_1.GetPageText(_i) == "Run":
+							_runTabIndex = _i
+							break
+					if _runTabIndex is not None:
+						wx.CallAfter(self.notebook_1.ChangeSelection, _runTabIndex)
 					self.dict_button_close[key].Destroy()
 					del self.dict_button_close[key]
 					self.dict_button_save[key].Destroy()
@@ -4632,6 +4673,20 @@ intensity."""))
 								dlg.Destroy()
 
 							self.notebook_1.RemovePage(i)
+							# navigate to Run tab after closing an MFQL editor script,
+							# instead of falling back to wx's default post-removal selection
+							# find the "Run" tab by its actual current page text rather than trusting
+							# self.dictNotebookPages, which is off by one from real tab indices (a
+							# pre-existing setup bug: counterNotebookPages is incremented BEFORE being
+							# stored, so every entry points one tab too far) and was otherwise unused
+							# anywhere else in the codebase
+							_runTabIndex = None
+							for _i in range(self.notebook_1.GetPageCount()):
+								if self.notebook_1.GetPageText(_i) == "Run":
+									_runTabIndex = _i
+									break
+							if _runTabIndex is not None:
+								wx.CallAfter(self.notebook_1.ChangeSelection, _runTabIndex)
 							self.dict_button_close[key].Destroy()
 							del self.dict_button_close[key]
 							self.dict_button_save[key].Destroy()

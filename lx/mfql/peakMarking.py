@@ -7,6 +7,10 @@ from lx.spectraContainer import MSMSEntry
 
 from functools import total_ordering
 
+from lx.tools import unionSF, dbgout
+from lx.debugger import Debug
+
+
 @total_ordering
 class TypeScan:
 	def __init__(self, mfqlObj, **argv): # , listScans, mfqlObj, **argv):
@@ -787,8 +791,7 @@ class TypeScan:
 						#	and (not m.precursor or (scanEntry.dictMarks.has_key(m.precursor) and\
 						#	scanEntry.dictMarks[m.precursor] != [])):
 
-						elif m.scope == "MS2+" and se.polarity > 0\
-								and se.listPrecurmassSF != []:
+						elif m.scope == "MS2+" and se.polarity > 0:
 
 							if not m.name in list(scanEntry.dictMarks.keys()):
 								scanEntry.dictMarks[m.name] = []
@@ -871,9 +874,10 @@ class TypeScan:
 											# calculate other attributes for TypeMark
 											if not isNL:
 												frElementSequence = newChemsc
-												if se.listPrecurmassSF != []:
+												myPrecurmassSF = [x for x in se.listPrecurmassSF if self.mfqlObj.queryName in getattr(x, 'scriptTag', [])]
+												if myPrecurmassSF != []:
 													hasNL = True
-													for i in se.listPrecurmassSF:
+													for i in myPrecurmassSF:
 														for j in newChemsc:
 															nlElementSequence.append(i - j)
 												else:
@@ -883,9 +887,10 @@ class TypeScan:
 
 											else:
 												nlElementSequence = newChemsc
-												if se.listPrecurmassSF != []:
+												myPrecurmassSF = [x for x in se.listPrecurmassSF if self.mfqlObj.queryName in getattr(x, 'scriptTag', [])]
+												if myPrecurmassSF != []:
 													hasFR = True
-													for i in se.listPrecurmassSF:
+													for i in myPrecurmassSF:
 														for j in newChemsc:
 															frElementSequence.append(i - j)
 												else:
@@ -1178,8 +1183,14 @@ class TypeScan:
 
 												else:
 													if self.mfqlObj.precursor and isinstance(self.mfqlObj.precursor, TypeSFConstraint):
-														newNLChemsc = calcSFbyMass(se.precurmass - mass,
-															self.mfqlObj.precursor.elementSequence.subWoRange(m.elementSequence), options['tolerance'])
+														try:
+															newNLChemsc = calcSFbyMass(se.precurmass - mass,
+																self.mfqlObj.precursor.elementSequence.subWoRange(m.elementSequence), options['tolerance'])
+														except AttributeError:
+															newNLChemsc = []
+															if Debug("subWoRangeFallback"):
+																dbgout(" > subWoRange failed for query '%s' (no precursor candidate available); "
+																	"skipping formula computation for mass %.4f" % (self.mfqlObj.queryName, se.precurmass))
 													else:
 														newNLChemsc = []
 												nlmass = se.precurmass - mass
@@ -1192,8 +1203,14 @@ class TypeScan:
 															newFRChemsc.append(i.chemsc - m.elementSequence)
 												else:
 													if self.mfqlObj.precursor and isinstance(self.mfqlObj.precursor, TypeSFConstraint):
-														newFRChemsc = calcSFbyMass(se.precurmass - mass,
-															self.mfqlObj.precursor.elementSequence.subWoRange(m.elementSequence), options['tolerance'])
+														try:
+															newFRChemsc = calcSFbyMass(se.precurmass - mass,
+																self.mfqlObj.precursor.elementSequence.subWoRange(m.elementSequence), options['tolerance'])
+														except AttributeError:
+															newFRChemsc = []
+															if Debug("subWoRangeFallback"):
+																dbgout(" > subWoRange failed for query '%s' (no precursor candidate available); "
+																	"skipping formula computation for mass %.4f" % (self.mfqlObj.queryName, se.precurmass))
 													else:
 														newFRChemsc = []
 
@@ -1490,8 +1507,14 @@ class TypeScan:
 																newNLChemsc.append(i.chemsc - m.elementSequence)
 													else:
 														if self.mfqlObj.precursor and isinstance(self.mfqlObj.precursor, TypeSFConstraint):
-															newNLChemsc = calcSFbyMass(se.precurmass - mass,
-																self.mfqlObj.precursor.elementSequence.subWoRange(ml.elementSequence), options['tolerance'])
+															try:
+																newNLChemsc = calcSFbyMass(se.precurmass - mass,
+																	self.mfqlObj.precursor.elementSequence.subWoRange(ml.elementSequence), options['tolerance'])
+															except AttributeError:
+																newNLChemsc = []
+																if Debug("subWoRangeFallback"):
+																	dbgout(" > subWoRange failed for query '%s' (no precursor candidate available); "
+																		"skipping formula computation for mass %.4f" % (self.mfqlObj.queryName, se.precurmass))
 														else:
 															newNLChemsc = []
 													nlmass = se.precurmass - mass
@@ -1504,8 +1527,14 @@ class TypeScan:
 																newFRChemsc.append(i.chemsc - m.elementSequence)
 													else:
 														if self.mfqlObj.precursor and isinstance(self.mfqlObj.precursor, TypeSFConstraint):
-															newFRChemsc = calcSFbyMass(se.precurmass - mass,
-																self.mfqlObj.precursor.elementSequence.subWoRange(ml.elementSequence), options['tolerance'])
+															try:
+																newFRChemsc = calcSFbyMass(se.precurmass - mass,
+																	self.mfqlObj.precursor.elementSequence.subWoRange(ml.elementSequence), options['tolerance'])
+															except AttributeError:
+																newFRChemsc = []
+																if Debug("subWoRangeFallback"):
+																	dbgout(" > subWoRange failed for query '%s' (no precursor candidate available); "
+																		"skipping formula computation for mass %.4f" % (self.mfqlObj.queryName, se.precurmass))
 														else:
 															newFRChemsc = []
 
@@ -1848,8 +1877,7 @@ class TypeScan:
 						#	and (not m.precursor or (scanEntry.dictMarks.has_key(m.precursor) and\
 						#	scanEntry.dictMarks[m.precursor] != [])):
 
-						elif m.scope == "MS2-" and se.polarity < 0\
-								and se.listPrecurmassSF != []:
+						elif m.scope == "MS2-" and se.polarity < 0:
 
 							if not m.name in list(scanEntry.dictMarks.keys()):
 								scanEntry.dictMarks[m.name] = []
@@ -1903,9 +1931,10 @@ class TypeScan:
 											# calculate other attributes for TypeMark
 											if not isNL:
 												frElementSequence = newChemsc
-												if se.listPrecurmassSF != []:
+												myPrecurmassSF = [x for x in se.listPrecurmassSF if self.mfqlObj.queryName in getattr(x, 'scriptTag', [])]
+												if myPrecurmassSF != []:
 													hasNL = True
-													for i in se.listPrecurmassSF:
+													for i in myPrecurmassSF:
 														for j in newChemsc:
 															nlElementSequence.append(i - j)
 												else:
@@ -1915,9 +1944,10 @@ class TypeScan:
 
 											else:
 												nlElementSequence = newChemsc
-												if se.listPrecurmassSF != []:
+												myPrecurmassSF = [x for x in se.listPrecurmassSF if self.mfqlObj.queryName in getattr(x, 'scriptTag', [])]
+												if myPrecurmassSF != []:
 													hasFR = True
-													for i in se.listPrecurmassSF:
+													for i in myPrecurmassSF:
 														for j in newChemsc:
 															frElementSequence.append(i - j)
 												else:
@@ -2208,8 +2238,14 @@ class TypeScan:
 
 												else:
 													if self.mfqlObj.precursor and isinstance(self.mfqlObj.precursor, TypeSFConstraint):
-														newNLChemsc = calcSFbyMass(se.precurmass - mass,
-															self.mfqlObj.precursor.elementSequence.subWoRange(m.elementSequence), options['tolerance'])
+														try:
+															newNLChemsc = calcSFbyMass(se.precurmass - mass,
+																self.mfqlObj.precursor.elementSequence.subWoRange(m.elementSequence), options['tolerance'])
+														except AttributeError:
+															newNLChemsc = []
+															if Debug("subWoRangeFallback"):
+																dbgout(" > subWoRange failed for query '%s' (no precursor candidate available); "
+																	"skipping formula computation for mass %.4f" % (self.mfqlObj.queryName, se.precurmass))
 													else:
 														newNLChemsc = []
 												nlmass = se.precurmass - mass
@@ -2225,8 +2261,14 @@ class TypeScan:
 															newFRChemsc.append(i.chemsc - m.elementSequence)
 												else:
 													if self.mfqlObj.precursor and isinstance(self.mfqlObj.precursor, TypeSFConstraint):
-														newFRChemsc = calcSFbyMass(se.precurmass - mass,
-															self.mfqlObj.precursor.elementSequence.subWoRange(m.elementSequence), options['tolerance'])
+														try:
+															newFRChemsc = calcSFbyMass(se.precurmass - mass,
+																self.mfqlObj.precursor.elementSequence.subWoRange(m.elementSequence), options['tolerance'])
+														except AttributeError:
+															newFRChemsc = []
+															if Debug("subWoRangeFallback"):
+																dbgout(" > subWoRange failed for query '%s' (no precursor candidate available); "
+																	"skipping formula computation for mass %.4f" % (self.mfqlObj.queryName, se.precurmass))
 													else:
 														newFRChemsc = []
 
@@ -2447,8 +2489,14 @@ class TypeScan:
 																newNLChemsc.append(i.chemsc - ml.elementSequence)
 													else:
 														if self.mfqlObj.precursor and isinstance(self.mfqlObj.precursor, TypeSFConstraint):
-															newNLChemsc = calcSFbyMass(se.precurmass - mass,
-																self.mfqlObj.precursor.elementSequence.subWoRange(ml.elementSequence), options['tolerance'])
+															try:
+																newNLChemsc = calcSFbyMass(se.precurmass - mass,
+																	self.mfqlObj.precursor.elementSequence.subWoRange(ml.elementSequence), options['tolerance'])
+															except AttributeError:
+																newNLChemsc = []
+																if Debug("subWoRangeFallback"):
+																	dbgout(" > subWoRange failed for query '%s' (no precursor candidate available); "
+																		"skipping formula computation for mass %.4f" % (self.mfqlObj.queryName, se.precurmass))
 														else:
 															newNLChemsc = []
 													nlmass = se.precurmass - mass
@@ -2461,8 +2509,14 @@ class TypeScan:
 																newFRChemsc.append(i.chemsc - ml.elementSequence)
 													else:
 														if self.mfqlObj.precursor and isinstance(self.mfqlObj.precursor, TypeSFConstraint):
-															newFRChemsc = calcSFbyMass(se.precurmass - mass,
-																self.mfqlObj.precursor.elementSequence.subWoRange(ml.elementSequence), options['tolerance'])
+															try:
+																newFRChemsc = calcSFbyMass(se.precurmass - mass,
+																	self.mfqlObj.precursor.elementSequence.subWoRange(ml.elementSequence), options['tolerance'])
+															except AttributeError:
+																newFRChemsc = []
+																if Debug("subWoRangeFallback"):
+																	dbgout(" > subWoRange failed for query '%s' (no precursor candidate available); "
+																		"skipping formula computation for mass %.4f" % (self.mfqlObj.queryName, se.precurmass))
 														else:
 															newFRChemsc = []
 

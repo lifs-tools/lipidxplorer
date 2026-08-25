@@ -11,6 +11,31 @@ from copy import copy, deepcopy
 import numpy as np
 from functools import reduce
 
+def _isoQueryNamesOf(entry, namespaceConnector):
+	"""Return a semicolon-separated list of the (unique) query names that
+	produced marks on the given entry, used to identify who an isotope
+	'contributor' entry actually belongs to in provenance tags. NOTE: must
+	not use a comma here -- see _isoContributorTag for why."""
+	names = set()
+	try:
+		for mk in entry.listMark:
+			names.add(mk.name.split(namespaceConnector)[0])
+	except AttributeError:
+		pass
+	return ";".join(sorted(names)) if names else "?"
+
+def _isoContributorTag(level, contributorMass, contributorEntry, namespaceConnector, observedDelta, expectedDelta, charge):
+	"""Build a provenance tag describing what contributed to an isotopic
+	correction: isotope level (M+n), the contributing entry's mass and
+	owning quer(y/ies), the actual observed mass difference between this
+	entry and the contributor, and the theoretically expected mass
+	difference at the charge state that was used to accept the match."""
+	tag = "M+%s from %.4f (%s)" % (
+		level, contributorMass, _isoQueryNamesOf(contributorEntry, namespaceConnector))
+	tag += " [Observed delta: %.5f; Expected delta(charge-%s): %.5f]" % (
+		observedDelta, charge, expectedDelta)
+	return tag
+
 ## CarthesianProduct
 # Takes an array of arrays and generates the carthesian product of the given
 # arrays. E.g. a = [[0], [1,2,3], [4,5]] -> [[0,1,4], [0,1,5], [0,2,4],
@@ -1282,7 +1307,7 @@ class TypeResult:
 						for M1f in M1found:
 
 							# mark it as isotop
-							M1f.isIsotope
+							M1f.isIsotope = True
 
 							# save old intensity for dump
 							if M1f.dictBeforeIsocoIntensity == {}:
@@ -1298,16 +1323,18 @@ class TypeResult:
 									if Debug("isotopicCorrection"):
 										dbgout(" > I1 %.4f corrected to: %.6f (-%.6f)" % (M1f.precurmass, M1f.dictIntensity[k], difference))
 
+							_delta = M1f.precurmass - actualKey.listPrecurmassSF[0].getWeight()
+							M1f.isotopeContributor.append(_isoContributorTag(1, actualKey.precurmass, actualKey, self.mfqlObj.namespaceConnector, _delta, 1 * cID, charge))
+
 					if M2found != [] and doCorrectionM2:
 						for M2f in M2found:
 
 							# mark it as isotop
-							M2f.isIsotope
+							M2f.isIsotope = True
 
 							# save old intensity for dump
 							if M2f.dictBeforeIsocoIntensity == {}:
 								M2f.dictBeforeIsocoIntensity = deepcopy(M2f.dictIntensity)
-
 
 							# correct the found fragment intensity
 							for k in listKeys:
@@ -1319,11 +1346,14 @@ class TypeResult:
 									if Debug("isotopicCorrection"):
 										dbgout(" > I2 %.4f corrected to: %.6f (-%.6f)" % (M2f.precurmass, M2f.dictIntensity[k], difference))
 
+							_delta = M2f.precurmass - actualKey.listPrecurmassSF[0].getWeight()
+							M2f.isotopeContributor.append(_isoContributorTag(2, actualKey.precurmass, actualKey, self.mfqlObj.namespaceConnector, _delta, 2 * cID, charge))
+
 					if M3found != [] and doCorrectionM3:
 						for M3f in M3found:
 
 							# mark it as isotop
-							M3f.isIsotope
+							M3f.isIsotope = True
 
 							# save old intensity for dump
 							if M3f.dictBeforeIsocoIntensity == {}:
@@ -1339,11 +1369,14 @@ class TypeResult:
 									if Debug("isotopicCorrection"):
 										dbgout(" > I3 %.4f corrected to: %.6f (-%.6f)" % (M3f.precurmass, M3f.dictIntensity[k], difference))
 
+							_delta = M3f.precurmass - actualKey.listPrecurmassSF[0].getWeight()
+							M3f.isotopeContributor.append(_isoContributorTag(3, actualKey.precurmass, actualKey, self.mfqlObj.namespaceConnector, _delta, 3 * cID, charge))
+
 					if M4found != [] and doCorrectionM4:
 						for M4f in M4found:
 
 							# mark it as isotop
-							M4f.isIsotope
+							M4f.isIsotope = True
 
 							# save old intensity for dump
 							if M4f.dictBeforeIsocoIntensity == {}:
@@ -1358,6 +1391,9 @@ class TypeResult:
 
 									if Debug("isotopicCorrection"):
 										dbgout(" > I4 %.4f corrected to: %.6f (-%.6f)" % (M4f.precurmass, M4f.dictIntensity[k], difference))
+
+							_delta = M4f.precurmass - actualKey.listPrecurmassSF[0].getWeight()
+							M4f.isotopeContributor.append(_isoContributorTag(4, actualKey.precurmass, actualKey, self.mfqlObj.namespaceConnector, _delta, 4 * cID, charge))
 
 					##################################
 					#### correct monoisotopic peak ###
@@ -1391,6 +1427,15 @@ class TypeResult:
 
 				listSE[entry].dictIntensity[sample] = listSE[entry].dictIntensity[sample] / listSE[entry].monoisotopicRatio
 
+			# mark it (once per entry, not once per sample) so this is visible
+			# in the dump -- previously this correction applied silently to
+			# every matched entry with no marker at all, independent of
+			# whether that entry was also flagged by type II correction
+			if not listSE[entry].monoisotopicCorrected:
+				listSE[entry].monoisotopicCorrected = True
+				listSE[entry].isotopeContributor.append(
+					"Type I: divided by monoisotopicRatio=%.5f" % listSE[entry].monoisotopicRatio)
+
 			for msmsEntry in listSE[entry].listMSMS:
 				if msmsEntry.listMark != [] and not msmsEntry.monoisotopicCorrected:
 					msmsEntry.monoisotopicCorrected = True
@@ -1402,6 +1447,9 @@ class TypeResult:
 					for sample in list(listSE[entry].dictIntensity.keys()):
 						msmsEntry.dictIntensity[sample] = msmsEntry.dictIntensity[sample] / listSE[entry].monoisotopicRatio
 						pass
+
+					msmsEntry.isotopeContributor.append(
+						"Type I: divided by monoisotopicRatio=%.5f" % listSE[entry].monoisotopicRatio)
 
 
 	def deIsotopingMSMS_complement(self, artPIS = None, scan = None):
@@ -1722,7 +1770,16 @@ class TypeResult:
 
 			if listSE[entry].listMark != []:
 
-				cID = isotopicDistance / 1.0#listSE[entry].charge
+				# NOTE: previously hardcoded to charge 1 regardless of the actual
+				# precursor's charge state (isotopicDistance / 1.0), meaning any
+				# multiply-charged precursor (e.g. CHG=-2) was searched for isotope
+				# neighbors at the wrong mass spacing (1.0033 Da instead of the
+				# correct 1.0033/charge). Now mirrors the charge-aware approach
+				# already used correctly in isotopicCorrectionMS().
+				if listSE[entry].charge:
+					cID = isotopicDistance / float(abs(listSE[entry].charge))
+				else:
+					cID = isotopicDistance
 
 				monoisotopic = 1.0
 				actualKey = listSE[entry]
@@ -1964,6 +2021,9 @@ class TypeResult:
 									### Interscan correction ###
 									############################
 
+									# mark it as isotope
+									M1.msmse.isIsotope = True
+
 									# store original intensity for dump
 									if M1.msmse.dictBeforeIsocoIntensity == {}:
 										M1.msmse.dictBeforeIsocoIntensity = deepcopy(M1.msmse.dictIntensity)
@@ -1978,6 +2038,10 @@ class TypeResult:
 										if not Debug("isotopicCorrection"):
 											if M1.msmse.dictIntensity[k] < 0.0:
 												M1.msmse.dictIntensity[k] = -1
+
+									_delta = M1found[0].precurmass - actualKey.precurmass
+									M1.msmse.isotopeContributor.append(_isoContributorTag(
+										1, M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 1 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 									if '1' in M1.msmse.isCorrectedIsotopic:
 										M1.msmse.isCorrectedIsotopic['1'] += M1.listNames
@@ -2015,8 +2079,8 @@ class TypeResult:
 
 								if delta <= 4 * cID:
 
-									if 1.0033 <= isotopicPeak - monoisotopicPeak + res / 2 and\
-										1.0033 >= isotopicPeak - monoisotopicPeak - res / 2:
+									if cID <= isotopicPeak - monoisotopicPeak + res / 2 and\
+										cID >= isotopicPeak - monoisotopicPeak - res / 2:
 										MSMS1found.append(listMSMS[index + next])
 
 								next += 1
@@ -2034,6 +2098,9 @@ class TypeResult:
 
 									if not isIn:
 
+										# mark it as isotope
+										M1f.isIsotope = True
+
 										# store original intensity for dump
 										if M1f.dictBeforeIsocoIntensity == {}:
 											M1f.dictBeforeIsocoIntensity = deepcopy(M1f.dictIntensity)
@@ -2046,6 +2113,10 @@ class TypeResult:
 											if not Debug("isotopicCorrection"):
 												if M1f.dictIntensity[k] < 0.0:
 													M1f.dictIntensity[k] = -1
+
+										_delta = M1f.mass - M.mass
+										M1f.isotopeContributor.append(_isoContributorTag(
+											'1i', M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 1 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 										if '1i' in M1f.isCorrectedIsotopic:
 											M1f.isCorrectedIsotopic['1i'] += M1f.listNames
@@ -2075,6 +2146,9 @@ class TypeResult:
 
 								if not isIn:
 
+									# mark it as isotope
+									M2.msmse.isIsotope = True
+
 									# store original intensity for dump
 									if M2.msmse.dictBeforeIsocoIntensity == {}:
 										M2.msmse.dictBeforeIsocoIntensity = deepcopy(M2.msmse.dictIntensity)
@@ -2087,6 +2161,10 @@ class TypeResult:
 										if not Debug("isotopicCorrection"):
 											if M2.msmse.dictIntensity[k] < 0.0:
 												M2.msmse.dictIntensity[k] = -1
+
+									_delta = M2found[0].precurmass - actualKey.precurmass
+									M2.msmse.isotopeContributor.append(_isoContributorTag(
+										2, M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 2 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 									if '2' in M2.msmse.isCorrectedIsotopic:
 										M2.msmse.isCorrectedIsotopic['2'] += M2.listNames
@@ -2126,12 +2204,12 @@ class TypeResult:
 
 								if delta <= 4 * cID:
 
-									if 2.0066 <= isotopicPeak - monoisotopicPeak + res and\
-										2.0066 >= isotopicPeak - monoisotopicPeak - res:
+									if 2 * cID <= isotopicPeak - monoisotopicPeak + res and\
+										2 * cID >= isotopicPeak - monoisotopicPeak - res:
 										MSMS2found.append(listMSMS[index + next])
 
-									if 1.0033 <= isotopicPeak - monoisotopicPeak + res and\
-										1.0033 >= isotopicPeak - monoisotopicPeak - res:
+									if cID <= isotopicPeak - monoisotopicPeak + res and\
+										cID >= isotopicPeak - monoisotopicPeak - res:
 										MSMS1found.append(listMSMS[index + next])
 
 								next += 1
@@ -2149,6 +2227,9 @@ class TypeResult:
 
 									if not isIn:
 
+										# mark it as isotope
+										M1f.isIsotope = True
+
 										# store original intensity for dump
 										if M1f.dictBeforeIsocoIntensity == {}:
 											M1f.dictBeforeIsocoIntensity = deepcopy(M1f.dictIntensity)
@@ -2161,6 +2242,10 @@ class TypeResult:
 											if not Debug("isotopicCorrection"):
 												if M1f.dictIntensity[k] < 0.0:
 													M1f.dictIntensity[k] = -1
+
+										_delta = M1f.mass - M.mass
+										M1f.isotopeContributor.append(_isoContributorTag(
+											'1i', M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 1 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 										if '1i' in M1f.isCorrectedIsotopic:
 											M1f.isCorrectedIsotopic['1i'] += M1f.listNames
@@ -2185,6 +2270,9 @@ class TypeResult:
 
 									if not isIn:
 
+										# mark it as isotope
+										M2f.isIsotope = True
+
 										# store original intensity for dump
 										if M2f.dictBeforeIsocoIntensity == {}:
 											M2f.dictBeforeIsocoIntensity = deepcopy(M2f.dictIntensity)
@@ -2197,6 +2285,10 @@ class TypeResult:
 											if not Debug("isotopicCorrection"):
 												if M2f.dictIntensity[k] < 0.0:
 													M2f.dictIntensity[k] = -1
+
+										_delta = M2f.mass - M.mass
+										M2f.isotopeContributor.append(_isoContributorTag(
+											'2i', M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 2 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 										if '2i' in M2f.isCorrectedIsotopic:
 											M2f.isCorrectedIsotopic['2i'] += M2f.listNames
@@ -2227,6 +2319,9 @@ class TypeResult:
 
 								if not isIn:
 
+									# mark it as isotope
+									M3.msmse.isIsotope = True
+
 									# store original intensity for dump
 									if M3.msmse.dictBeforeIsocoIntensity == {}:
 										M3.msmse.dictBeforeIsocoIntensity = deepcopy(M3.msmse.dictIntensity)
@@ -2239,6 +2334,10 @@ class TypeResult:
 										if not Debug("isotopicCorrection"):
 											if M3.msmse.dictIntensity[k] < 0.0:
 												M3.msmse.dictIntensity[k] = -1
+
+									_delta = M3found[0].precurmass - actualKey.precurmass
+									M3.msmse.isotopeContributor.append(_isoContributorTag(
+										3, M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 3 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 									if '3' in M3.msmse.isCorrectedIsotopic:
 										M3.msmse.isCorrectedIsotopic['3'] += M3.listNames
@@ -2277,18 +2376,18 @@ class TypeResult:
 								monoisotopicPeak = M.mass
 								isotopicPeak = listMSMS[index + next].mass
 
-								if isotopicPeak - monoisotopicPeak - res < 4 * 1.0033:
+								if isotopicPeak - monoisotopicPeak - res < 4 * cID:
 
-									if 3.0099 <= isotopicPeak - monoisotopicPeak + res and\
-										3.0099 >= isotopicPeak - monoisotopicPeak - res:
+									if 3 * cID <= isotopicPeak - monoisotopicPeak + res and\
+										3 * cID >= isotopicPeak - monoisotopicPeak - res:
 										MSMS3found.append(listMSMS[index + next])
 
-									if 2.0066 <= isotopicPeak - monoisotopicPeak + res and\
-										2.0066 >= isotopicPeak - monoisotopicPeak - res:
+									if 2 * cID <= isotopicPeak - monoisotopicPeak + res and\
+										2 * cID >= isotopicPeak - monoisotopicPeak - res:
 										MSMS2found.append(listMSMS[index + next])
 
-									if 1.0033 <= isotopicPeak - monoisotopicPeak + res and\
-										1.0033 >= isotopicPeak - monoisotopicPeak - res:
+									if cID <= isotopicPeak - monoisotopicPeak + res and\
+										cID >= isotopicPeak - monoisotopicPeak - res:
 										MSMS1found.append(listMSMS[index + next])
 
 								next += 1
@@ -2306,6 +2405,9 @@ class TypeResult:
 
 									if not isIn:
 
+										# mark it as isotope
+										M1f.isIsotope = True
+
 										# store original intensity for dump
 										if M1f.dictBeforeIsocoIntensity == {}:
 											M1f.dictBeforeIsocoIntensity = deepcopy(M1f.dictIntensity)
@@ -2318,6 +2420,10 @@ class TypeResult:
 											if not Debug("isotopicCorrection"):
 												if M1f.dictIntensity[k] < 0.0:
 													M1f.dictIntensity[k] = -1
+
+										_delta = M1f.mass - M.mass
+										M1f.isotopeContributor.append(_isoContributorTag(
+											'1i', M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 1 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 										if '1i' in M1f.isCorrectedIsotopic:
 											M1f.isCorrectedIsotopic['1i'] += M1f.listNames
@@ -2342,6 +2448,9 @@ class TypeResult:
 
 									if not isIn:
 
+										# mark it as isotope
+										M2f.isIsotope = True
+
 										# store original intensity for dump
 										if M2f.dictBeforeIsocoIntensity == {}:
 											M2f.dictBeforeIsocoIntensity = deepcopy(M2f.dictIntensity)
@@ -2354,6 +2463,10 @@ class TypeResult:
 											if not Debug("isotopicCorrection"):
 												if M2f.dictIntensity[k] < 0.0:
 													M2f.dictIntensity[k] = -1
+
+										_delta = M2f.mass - M.mass
+										M2f.isotopeContributor.append(_isoContributorTag(
+											'2i', M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 2 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 										if '2i' in M2f.isCorrectedIsotopic:
 											M2f.isCorrectedIsotopic['2i'] += M2f.listNames
@@ -2379,6 +2492,9 @@ class TypeResult:
 
 									if not isIn:
 
+										# mark it as isotope
+										M3f.isIsotope = True
+
 										# store original intensity for dump
 										if M3f.dictBeforeIsocoIntensity == {}:
 											M3f.dictBeforeIsocoIntensity = deepcopy(M3f.dictIntensity)
@@ -2391,6 +2507,10 @@ class TypeResult:
 											if not Debug("isotopicCorrection"):
 												if M3f.dictIntensity[k] < 0.0:
 													M3f.dictIntensity[k] = -1
+
+										_delta = M3f.mass - M.mass
+										M3f.isotopeContributor.append(_isoContributorTag(
+											'3i', M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 3 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 										if '3i' in M3f.isCorrectedIsotopic:
 											M3f.isCorrectedIsotopic['3i'] += M3f.listNames
@@ -2421,6 +2541,9 @@ class TypeResult:
 
 								if not isIn:
 
+									# mark it as isotope
+									M4.msmse.isIsotope = True
+
 									# store original intensity for dump
 									if M4.msmse.dictBeforeIsocoIntensity == {}:
 										M4.msmse.dictBeforeIsocoIntensity = deepcopy(M4.msmse.dictIntensity)
@@ -2433,6 +2556,10 @@ class TypeResult:
 										if not Debug("isotopicCorrection"):
 											if M4.msmse.dictIntensity[k] < 0.0:
 												M4.msmse.dictIntensity[k] = -1
+
+									_delta = M4found[0].precurmass - actualKey.precurmass
+									M4.msmse.isotopeContributor.append(_isoContributorTag(
+										4, M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 4 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 									if '4' in M4.msmse.isCorrectedIsotopic:
 										M4.msmse.isCorrectedIsotopic['4'] += M4.listNames
@@ -2470,22 +2597,22 @@ class TypeResult:
 								monoisotopicPeak = M.mass
 								isotopicPeak = listMSMS[index + next].mass
 
-								if isotopicPeak - monoisotopicPeak - res < 5 * 1.0033:
+								if isotopicPeak - monoisotopicPeak - res < 5 * cID:
 
-									if 4.0122 <= isotopicPeak - monoisotopicPeak + res and\
-										4.0122 >= isotopicPeak - monoisotopicPeak - res:
+									if 4 * cID <= isotopicPeak - monoisotopicPeak + res and\
+										4 * cID >= isotopicPeak - monoisotopicPeak - res:
 										MSMS4found.append(listMSMS[index + next])
 
-									if 3.0099 <= isotopicPeak - monoisotopicPeak + res and\
-										3.0099 >= isotopicPeak - monoisotopicPeak - res:
+									if 3 * cID <= isotopicPeak - monoisotopicPeak + res and\
+										3 * cID >= isotopicPeak - monoisotopicPeak - res:
 										MSMS3found.append(listMSMS[index + next])
 
-									if 2.0066 <= isotopicPeak - monoisotopicPeak + res and\
-										2.0066 >= isotopicPeak - monoisotopicPeak - res:
+									if 2 * cID <= isotopicPeak - monoisotopicPeak + res and\
+										2 * cID >= isotopicPeak - monoisotopicPeak - res:
 										MSMS2found.append(listMSMS[index + next])
 
-									if 1.0033 <= isotopicPeak - monoisotopicPeak + res and\
-										1.0033 >= isotopicPeak - monoisotopicPeak - res:
+									if cID <= isotopicPeak - monoisotopicPeak + res and\
+										cID >= isotopicPeak - monoisotopicPeak - res:
 										MSMS1found.append(listMSMS[index + next])
 
 								next += 1
@@ -2503,6 +2630,9 @@ class TypeResult:
 
 									if not isIn:
 
+										# mark it as isotope
+										M1f.isIsotope = True
+
 										# store original intensity for dump
 										if M1f.dictBeforeIsocoIntensity == {}:
 											M1f.dictBeforeIsocoIntensity = deepcopy(M1f.dictIntensity)
@@ -2515,6 +2645,10 @@ class TypeResult:
 											if not Debug("isotopicCorrection"):
 												if M1f.dictIntensity[k] < 0.0:
 													M1f.dictIntensity[k] = -1
+
+										_delta = M1f.mass - M.mass
+										M1f.isotopeContributor.append(_isoContributorTag(
+											'1i', M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 1 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 										if '1i' in M1f.isCorrectedIsotopic:
 											M1f.isCorrectedIsotopic['1i'] += M1f.listNames
@@ -2540,6 +2674,9 @@ class TypeResult:
 
 									if not isIn:
 
+										# mark it as isotope
+										M2f.isIsotope = True
+
 										# store original intensity for dump
 										if M2f.dictBeforeIsocoIntensity == {}:
 											M2f.dictBeforeIsocoIntensity = deepcopy(M2f.dictIntensity)
@@ -2552,6 +2689,10 @@ class TypeResult:
 											if not Debug("isotopicCorrection"):
 												if M2f.dictIntensity[k] < 0.0:
 													M2f.dictIntensity[k] = -1
+
+										_delta = M2f.mass - M.mass
+										M2f.isotopeContributor.append(_isoContributorTag(
+											'2i', M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 2 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 										if '2i' in M2f.isCorrectedIsotopic:
 											M2f.isCorrectedIsotopic['2i'] += M2f.listNames
@@ -2577,6 +2718,9 @@ class TypeResult:
 
 									if not isIn:
 
+										# mark it as isotope
+										M3f.isIsotope = True
+
 										# store original intensity for dump
 										if M3f.dictBeforeIsocoIntensity == {}:
 											M3f.dictBeforeIsocoIntensity = deepcopy(M3f.dictIntensity)
@@ -2589,6 +2733,10 @@ class TypeResult:
 											if not Debug("isotopicCorrection"):
 												if M3f.dictIntensity[k] < 0.0:
 													M3f.dictIntensity[k] = -1
+
+										_delta = M3f.mass - M.mass
+										M3f.isotopeContributor.append(_isoContributorTag(
+											'3i', M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 3 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 										if '3i' in M3f.isCorrectedIsotopic:
 											M3f.isCorrectedIsotopic['3i'] += M3f.listNames
@@ -2613,6 +2761,9 @@ class TypeResult:
 
 									if not isIn:
 
+										# mark it as isotope
+										M4f.isIsotope = True
+
 										# store original intensity for dump
 										if M4f.dictBeforeIsocoIntensity == {}:
 											M4f.dictBeforeIsocoIntensity = deepcopy(M4f.dictIntensity)
@@ -2625,6 +2776,10 @@ class TypeResult:
 											if not Debug("isotopicCorrection"):
 												if M4f.dictIntensity[k] < 0.0:
 													M4f.dictIntensity[k] = -1
+
+										_delta = M4f.mass - M.mass
+										M4f.isotopeContributor.append(_isoContributorTag(
+											'4i', M.msmse.mass, M.msmse, self.mfqlObj.namespaceConnector, _delta, 4 * cID, (abs(listSE[entry].charge) if listSE[entry].charge else 1)))
 
 										if '4i' in M4f.isCorrectedIsotopic:
 											M4f.isCorrectedIsotopic['4i'] += M4f.listNames

@@ -813,7 +813,15 @@ def unionSF(seq1, seq2, newTag):
 			x.scriptTag = [newTag]
 			res.append(x)
 		else:
-			x.scriptTag.append(newTag)
+			# Ballal - x is a NEW object (from the current query) that compares
+			# equal (by composition) to an object ALREADY present in res
+			# (contributed by an earlier query). Tagging x here is a
+			# no-op: x is discarded, never appended to res. Tag the
+			# object that is actually kept instead, or the current
+			# query's ownership of this candidate is silently lost.
+			existing = res[res.index(x)]
+			if newTag not in existing.scriptTag:
+				existing.scriptTag.append(newTag)
 	return res
 
 def log(str):

@@ -1,7 +1,9 @@
-06/05/2006 LipidXplorer 1.5
+06/05/2026 LipidXplorer 1.5
 
 - Code base migrated from python 2.7 to 3.12
+
 - New feature: Batch mode: Use multiprocessing to process samples separately and finally proved unified result
+
 Must have columns for batch mode:
 LipidSpecies
 LipidClass
@@ -12,12 +14,98 @@ Mass
 Intensity
 PrecursorIntensity
 FragmentXIntensity (X:A,B,C..)
-
-
-
 /
 
+- Isotopic correction — two independent mechanisms
 
+LipidXplorer applies two separate corrections when isotopic correction is
+enabled, both controlled by the same setting, but solving different
+problems. **They are now both visible in the dump for the first time.**
+
+### Type II correction — cross-molecule isotope contamination
+
+**Problem it solves:** two *different* molecules can happen to land close
+enough in mass that one's natural isotope peak (its own ¹³C-containing
+population) overlaps with the other's monoisotopic peak. When this
+happens, some of what's measured "as" the second molecule is really
+contamination from the first.
+
+**How it works:** searches for a neighboring entry at the theoretically
+expected isotope spacing for the relevant charge state (`1.0033/charge`,
+`2 × 1.0033/charge`, etc., within a tolerance window). If found, estimates
+and subtracts the contaminating contribution.
+
+**Where it's checked:** at the precursor level (MS1) and at the fragment
+level, both between different precursors' fragments (interscan) and
+within a single precursor's own MS2 spectrum (intrascan).
+
+**Marked with:** `*` in the dump's isotope-flag column.
+
+### Type I correction — a molecule's own isotope envelope
+
+**Problem it solves:** even a perfectly pure, isolated compound isn't
+measured as one single peak. Natural isotope abundance means only a
+fraction of its molecular population appears at the monoisotopic (M0)
+mass — the rest genuinely exist at M+1, M+2, etc. Measuring only M0
+under-represents the compound's true total abundance, more so for larger
+molecules (more carbons → more of the population statistically carries at
+least one heavy isotope).
+
+**How it works:** divides the measured M0 intensity by the theoretical
+fraction of the total isotope envelope that M0 represents (computed from
+the molecule's own elemental formula). This scales the reported intensity
+up to estimate the true total abundance.
+
+**Applies to:** essentially every matched entry, regardless of whether a
+Type II neighbor was ever found — it depends only on the molecule's own
+formula, not on any other nearby peak.
+
+**Marked with:** `+` in the dump's isotope-flag column (newly added — this
+correction previously ran silently with no visual indication it had
+touched an entry).
+
+### Combined flag
+
+| Flag | Meaning |
+|---|---|
+| `' '` (blank) | Neither correction applied |
+| `*` | Type II only |
+| `+` | Type I only |
+| `#` | Both applied to the same entry |
+
+### Correction provenance (new)
+
+Each corrected entry now carries a description of what caused the
+correction, appended after the mark list in the dump:
+```
+M+1 from 715.5112 (CardiolipinIsotope) [Observed delta: 0.50265; Expected delta(charge-2): 0.50165]
+```
+This shows the isotope level, the contributing entry's mass and owning
+query, the observed mass gap to that contributor, and the theoretically
+expected gap at the charge state used to accept the match. Type I
+correction similarly logs the `monoisotopicRatio` used.
+
+---
+
+## 3. What was fixed in this release
+
+- **Order-dependent marking and correction** — the same query set could
+  previously produce different marks and different corrected intensities
+  depending on execution order. Fixed; results are now deterministic
+  regardless of query order.
+- **Isotope correction was not charge-aware at the MS2 level.** Precursor
+  (MS1) correction always correctly accounted for charge state; MS2
+  correction was hardcoded to assume charge 1, meaning doubly- (or more)
+  charged species were checked at the wrong mass spacing and could miss
+  real isotope relationships. Fixed for both the cross-precursor and
+  within-spectrum MS2 correction paths.
+- **The isotope flag was not reliably being set**, meaning corrected
+  intensities could appear in the dump with no indication a correction had
+  been applied. Fixed for both correction types.
+- **Type I correction had no visibility at all** — it silently applied to
+  nearly every matched entry with zero marking, which could make dump
+  intensities look inconsistent with the output report for reasons that
+  weren't traceable. Fixed (see flag table above).
 
 
 

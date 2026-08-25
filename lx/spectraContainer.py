@@ -88,6 +88,9 @@ class MSMSEntry:
 		self.isIsotope = False
 		self.isCorrectedIsotopic = {}
 		self.isTakenBySuchthat = False
+		self.isotopeContributor = [] # provenance: describes which entry/entries this
+			# entry's intensity was corrected against (mass, query, isotope level,
+			# per-sample subtracted amount)
 		self.dictScanCount = dictScanCount
 		self.monoisotopicRatio = 1.0
 		self.monoisotopicCorrected = False
@@ -162,8 +165,15 @@ class MSMSEntry:
 
 	def reprCSV(self):
 		str = (" , >, %.4f, " % self.mass).rjust(9)
-		if self.isIsotope:
+		# combined isotope-correction marker:
+		#  ' ' = no correction, '*' = type II only (neighbor-subtraction),
+		#  '+' = type I only (monoisotopic ratio normalization), '#' = both
+		if self.isIsotope and self.monoisotopicCorrected:
+			isotope = '#'
+		elif self.isIsotope:
 			isotope = '*'
+		elif self.monoisotopicCorrected:
+			isotope = '+'
 		else:
 			isotope = ' '
 		str += "%s, " % isotope
@@ -202,6 +212,11 @@ class MSMSEntry:
 				str += " " + repr(i) + ":" + repr(i.chemsc) + ","
 			else:
 				str += " " + repr(i) + ","
+
+		str += ","
+		if self.isotopeContributor:
+			str += " " + " | ".join(self.isotopeContributor)
+
 		return str
 
 	def __cmp__(self, otherself):
@@ -1061,8 +1076,12 @@ class SurveyEntry:
 		self.listMark = [] # contains marks of the precursor mass
 		self.dictScans = dictScans # needed for the intensity threshold (thrshl / sqrt(nb. of scans))
 		self.isIsotope = False # isotopic marker for output if it was isotopic corrected
+		self.isotopeContributor = [] # provenance: describes which entry/entries this
+			# entry's intensity was corrected against (mass, query, isotope level,
+			# per-sample subtracted amount)
 		self.isTakenBySuchthat = False # SUCHTHAT marker
 		self.monoisotopicRatio = 1.0 # for type I isotopic correction
+		self.monoisotopicCorrected = False # marker for type I isotopic correction (correctMonoisotopicPeaks())
 		self.listScanEntries = [] # used for storing the peakEntry structure in peak marking
 		self.listVariables = [] # used when queries are parsed - the internal variable data structure
 
@@ -1160,8 +1179,12 @@ class SurveyEntry:
 
 		if not tab:
 
-			if self.isIsotope:
+			if self.isIsotope and self.monoisotopicCorrected:
+				strIsotope = '#'
+			elif self.isIsotope:
 				strIsotope = '*'
+			elif self.monoisotopicCorrected:
+				strIsotope = '+'
 			else:
 				strIsotope = ' '
 
@@ -1255,6 +1278,10 @@ class SurveyEntry:
 				else:
 					str += "%s," % i
 
+			str += ","
+			if self.isotopeContributor:
+				str += " " + " | ".join(self.isotopeContributor)
+
 			if len(listSF) > 1:
 				for sf in listSF[1:]:
 					str += ("\n%s, , ,%s," % (("%d" % self.polarity)[0], "(%s; %.4f)" % (sf[0], sf[1]))).rjust(9)
@@ -1327,8 +1354,12 @@ class SurveyEntry:
 		listSF.sort(key=lambda x: x[1])# Ballal
 
 
-		if self.isIsotope:
+		if self.isIsotope and self.monoisotopicCorrected:
+			strIsotope = '#'
+		elif self.isIsotope:
 			strIsotope = '*'
+		elif self.monoisotopicCorrected:
+			strIsotope = '+'
 		else:
 			strIsotope = ' '
 
