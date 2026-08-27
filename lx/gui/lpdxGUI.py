@@ -1229,17 +1229,20 @@ class LpdxFrame(wx.Frame):
    
 		
 		self.label_placeholder_title = wx.StaticText(self.placeholder_panel, -1, "LipidXplorerNext")
-		self.label_placeholder_message = wx.StaticText(self.placeholder_panel, -1, "For multidimensional data")
+		self.label_placeholder_message = wx.StaticText(self.placeholder_panel,-1,
+		"LipidXplorerNext modernizes LipidXplorer with a new data architecture and design.\n"
+		"Its central goal is to integrate and utilize multidimensional data — \n"
+		"retention time, m/z and CCS/ion mobility — to better identify and quantify lipids.", style=wx.ALIGN_CENTER)
+  
 		self.label_placeholder_demo = wx.StaticText(
 			self.placeholder_panel,
 			-1,
-			"LipidXplorerNext content later......"
-		)
+			"")
 		self.link_placeholder_demo = wx.adv.HyperlinkCtrl(
 			self.placeholder_panel,
 			-1,
-			"LipidXplorer Preface",
-			"https://lifs-tools.org/wiki/index.php?title=LipidXplorer_Preface"
+			"LipidXplorerNext Wiki",
+			"https://lifs-tools.org/wiki/index.php?title=LipidXplorerNext"
 		)
 
 
@@ -1442,7 +1445,7 @@ class LpdxFrame(wx.Frame):
 		self.label_occupational_threshold = wx.StaticText(
 			self.notebook_1_pane_2,
 			-1,
-			"Occupational Threshold (Result):"
+			"Occurrence Threshold:"
 		)
 
 		# Editable numeric control (0.00 – 1.00)
