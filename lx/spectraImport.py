@@ -24,6 +24,15 @@ from lx.debugger import Debug
 #from guppy import hpy
 
 
+def groups_file_path(import_dir):
+	"""Return the path of the optional groups.txt inside an import directory.
+
+	Kept as a named helper so the join can be unit tested: the caller is
+	several hundred lines long and needs a fully populated options object.
+	"""
+	return os.path.join(import_dir, "groups.txt")
+
+
 def lpdxImportDEF_new(parent, options=None):
 	'''This version of importDEF does not process the options, since
 	it assumes that they are already processed by lx.options.py'''
@@ -45,8 +54,8 @@ def lpdxImportDEF_new(parent, options=None):
 
 
 	# load occupation threshold settings
-	if os.path.exists("%s\\groups.txt" % scan.importDir):
-		with open("%s\\groups.txt" % scan.importDir) as f:
+	if os.path.exists(groups_file_path(scan.importDir)):
+		with open(groups_file_path(scan.importDir)) as f:
 			s = f.readlines()
 			if not s == []:
 				for i in s:
