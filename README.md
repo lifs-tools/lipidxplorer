@@ -147,6 +147,35 @@ runtime or without a timestamp. `spctl -a -vvv -t exec dist/LipidXplorer.app`
 reports `rejected / source=Unnotarized Developer ID` for an app that is signed
 but not yet notarized — that is expected after `--sign-only`.
 
+**4. Continuous delivery.** `.github/workflows/build.yml` signs and notarizes
+the two macOS jobs when these repository secrets are present. Without them the
+build still publishes a plain unsigned archive and logs a warning, so forks and
+dry runs keep working.
+
+| Secret | Contents |
+| --- | --- |
+| `MACOS_CERT_P12_BASE64` | `base64 -i certificate.p12` |
+| `MACOS_CERT_PASSWORD` | password used when exporting the `.p12` |
+| `ASC_KEY_P8_BASE64` | `base64 -i AuthKey_XXXX.p8` |
+| `ASC_KEY_ID` | key ID of the App Store Connect API key |
+| `ASC_ISSUER_ID` | issuer ID of the App Store Connect API key |
+
+The App Store Connect API key (App Store Connect > *Users and Access >
+Integrations > Keys*, role *Developer*) is preferred over an Apple ID password
+in CI because it is scoped and does not expire when the password changes.
+Export the `.p12` from Keychain Access with both the certificate **and** its
+private key — losing the private key means burning another certificate slot.
+
+Notarization round-trips through Apple and takes minutes, so CI signs only on
+`v*` tags, or on a manual run of the workflow with **Sign and notarize the
+macOS builds** ticked. Every other commit publishes the unsigned `.tar.gz`.
+Use the manual run to prove the signing path works *before* you need it for a
+release — otherwise its first execution is the one that matters.
+
+Signed runs publish `.zip` and `.dmg` per architecture instead of the unsigned
+`.tar.gz`; both are stapled, and the app is stapled before the disk image is
+built so the ticket survives a drag out of the DMG.
+
 ## Versioning
 
 We use [Semantic Versioning](http://semver.org/) for versioning of the software.
