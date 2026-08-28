@@ -4,7 +4,7 @@ from lx.gui import lpdxGUI
 import wx
 import sys
 
-APP_VERSION = "1.5"
+from lx.__version__ import __version__ as APP_VERSION
 
 
 def resource_path(*parts):
@@ -39,5 +39,13 @@ def main():
 
 if __name__ == "__main__":
     from multiprocessing import freeze_support
+
     freeze_support()  # <-- REQUIRED FOR PYINSTALLER WORKERS
+
+    # Answered before any wx.App exists, so CI can check a frozen bundle
+    # starts on a runner with no display.
+    if "--version" in sys.argv[1:]:
+        print(f"LipidXplorer {APP_VERSION}")
+        sys.exit(0)
+
     main()
