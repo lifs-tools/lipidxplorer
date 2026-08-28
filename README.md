@@ -67,11 +67,85 @@ platforms are produced by the GitHub Actions workflow in
 
 ### macOS
 
-macOS builds are neither signed nor notarized. On first launch, Gatekeeper
-will refuse to open the app. Right-click it in Finder and choose **Open**,
-then confirm — this is only needed once. (On Linux, PyInstaller does not
-embed an application icon in the binary — it prints a warning and skips
-that step, so the Linux binary has no embedded icon.)
+CI artifacts are signed ad-hoc by PyInstaller, which is not enough for
+distribution: macOS quarantines anything downloaded through a browser, and
+Gatekeeper rejects an app that carries no Developer ID and no notarization
+ticket. Approving it under *System Settings > Privacy & Security* is not
+reliable either — the bundle contains ~180 nested binaries, and the approval
+does not consistently cover all of them, so the app dies while loading
+libraries and no window ever appears.
+
+To run an unsigned CI build locally, strip the quarantine flag:
+
+```bash
+find /path/to/LipidXplorer.app -exec xattr -d com.apple.quarantine {} \; 2>/dev/null
+open /path/to/LipidXplorer.app
+```
+
+Note that `xattr -dr com.apple.quarantine` — the advice usually given — does
+**not** work on macOS 26, which dropped the `-r` flag from `xattr`.
+
+Releases should be signed and notarized instead; see below.
+
+(On Linux, PyInstaller does not embed an application icon in the binary — it
+prints a warning and skips that step, so the Linux binary has no embedded icon.)
+
+### Signing and notarizing the macOS build (maintainers)
+
+The whole flow is automated by `macos/sign-and-notarize.sh`; what follows is
+the one-time setup it needs. It mirrors the LipidSpace script of the same name,
+with the differences noted at the top of the file.
+
+**1. Developer ID Application certificate.** In Xcode, go to *Settings >
+Accounts*, select the team, *Manage Certificates… > + > Developer ID
+Application*. Only the Account Holder may create these, and the number of them
+is limited. Verify and note the team ID:
+
+```bash
+security find-identity -v -p codesigning
+# 1) 864A249C...  "Developer ID Application: Nils Hoffmann (73367934A4)"
+```
+
+**2. Notarization credentials.** For local releases, create an app-specific
+password at <https://appleid.apple.com> (*Sign-In and Security > App-Specific
+Passwords*) and store it in the keychain once:
+
+```bash
+xcrun notarytool store-credentials "lipidxplorer-notary" \
+  --apple-id "you@example.org" --team-id "73367934A4" --password "xxxx-xxxx-xxxx-xxxx"
+```
+
+**3. Build and release.**
+
+```bash
+uv sync
+NOTARY_PROFILE=lipidxplorer-notary macos/sign-and-notarize.sh --build
+```
+
+This rebuilds the bundle, verifies nothing outside it is still linked, signs
+every binary inside-out with the hardened runtime and a secure timestamp,
+notarizes and staples the app, and writes
+`dist/LipidXplorer-<version>-macos-<arch>.zip` and `.dmg`. The app is stapled
+before the disk image is built, so the ticket travels with it when a user drags
+it out of the DMG. Useful options: `--sign-only` (skip notarization),
+`--no-dmg`, `--identity`, `--dist-name`, `--entitlements`; see
+`macos/sign-and-notarize.sh --help`.
+
+Run it once per architecture — a bundle built on Apple Silicon is arm64-only.
+
+**Entitlements are not optional here.** `macos/entitlements.plist` grants three
+things the hardened runtime otherwise blocks: `allow-jit` and
+`allow-unsigned-executable-memory`, because numba compiles `@njit` functions at
+runtime through llvmlite; and `disable-library-validation`, because CPython
+`dlopen()`s ~180 extension modules from inside the bundle. Signing without them
+produces an app that passes verification and then aborts the first time an MFQL
+query reaches `lx/mfql/calcsf_cached.py`.
+
+**Troubleshooting.** If notarization is rejected, the script prints the full
+Apple log; the usual causes are a nested binary signed without the hardened
+runtime or without a timestamp. `spctl -a -vvv -t exec dist/LipidXplorer.app`
+reports `rejected / source=Unnotarized Developer ID` for an app that is signed
+but not yet notarized — that is expected after `--sign-only`.
 
 ## Versioning
 
