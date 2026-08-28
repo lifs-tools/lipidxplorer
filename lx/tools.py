@@ -509,9 +509,31 @@ def delchars(str, chars):
 	return str.translate(identity, chars)
 
 
-if sys.platform == "linux" or sys.platform == "linux2":
+def _init_x11_threads():
+    """Call XInitThreads() so wxWidgets can safely start GUI threads.
+
+    Returns True if the call succeeded, False otherwise. Never raises: a
+    missing X11 library must not stop lx.tools from importing.
+
+    'libX11.so.6' is tried first because the unversioned 'libX11.so' is a
+    symlink shipped only by the X11 development package, which end-user
+    machines running a frozen build do not have installed.
+    """
+    if not sys.platform.startswith("linux"):
+        return False
+
     import ctypes
-    ctypes.CDLL('libX11.so').XInitThreads()
+
+    for soname in ("libX11.so.6", "libX11.so"):
+        try:
+            ctypes.CDLL(soname).XInitThreads()
+            return True
+        except (OSError, AttributeError):
+            continue
+    return False
+
+
+_init_x11_threads()
 
 
 #!/usr/bin/env python
