@@ -1,0 +1,142 @@
+name: Build
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # wxPython needs GTK3 at import time even for headless tests.
+      - name: Install GTK3 runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-3-0 libglib2.0-0 libsm6 libxxf86vm1 libnotify4 \
+            libsdl2-2.0-0 libwebkit2gtk-4.1-0 xvfb
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen --group dev
+
+      - name: Run tests
+        run: xvfb-run -a uv run pytest -q
+
+  build:
+    name: ${{ matrix.label }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: windows-x86_64
+            artifact_path: dist/LipidXplorer
+            binary: dist/LipidXplorer/LipidXplorer.exe
+          - os: ubuntu-24.04
+            label: linux-x86_64
+            artifact_path: dist/LipidXplorer
+            binary: dist/LipidXplorer/LipidXplorer
+          - os: macos-latest
+            label: macos-arm64
+            artifact_path: dist/LipidXplorer.app
+            binary: dist/LipidXplorer.app/Contents/MacOS/LipidXplorer
+          - os: macos-13
+            label: macos-x86_64
+            artifact_path: dist/LipidXplorer.app
+            binary: dist/LipidXplorer.app/Contents/MacOS/LipidXplorer
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GTK3 runtime libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-3-0 libglib2.0-0 libsm6 libxxf86vm1 libnotify4 \
+            libsdl2-2.0-0 libwebkit2gtk-4.1-0 xvfb
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen --group dev
+
+      - name: Read version
+        id: version
+        shell: bash
+        run: echo "value=$(uv run python -c 'from lx.__version__ import __version__; print(__version__)')" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: uv run pyinstaller --noconfirm LipidXplorer.spec
+
+      # A windowed build has no stdout on Windows, so exit code is the only
+      # portable signal. On Linux and macOS the shell waits for the process
+      # and stdout is real, so check both.
+      - name: Smoke test the artifact (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: xvfb-run -a "${{ matrix.binary }}" --version | grep -F "${{ steps.version.outputs.value }}"
+
+      - name: Smoke test the artifact (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          "${{ matrix.binary }}" --version | grep -F "${{ steps.version.outputs.value }}"
+
+      # PyInstaller builds this with console=False, so the executable is
+      # GUI-subsystem. cmd and bash launch it detached and return 0
+      # immediately - the test would pass even if the app crashed on start.
+      # Start-Process -Wait -PassThru actually waits and yields the real code.
+      - name: Smoke test the artifact (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath "${{ matrix.binary }}" -ArgumentList "--version" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "exited with $($p.ExitCode)" }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LipidXplorer-${{ steps.version.outputs.value }}-${{ matrix.label }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
+
+  release:
+    name: Attach to release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create archives
+        run: |
+          mkdir -p release
+          cd artifacts
+          for dir in */; do
+            name="${dir%/}"
+            case "$name" in
+              *windows*) (cd "$name" && zip -qr "../../release/${name}.zip" .) ;;
+              *)         tar -czf "../release/${name}.tar.gz" -C "$name" . ;;
+            esac
+          done
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
