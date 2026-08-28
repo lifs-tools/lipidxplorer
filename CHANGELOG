@@ -15,8 +15,12 @@
   was never found, because its path was built with a hardcoded backslash. The
   setting silently had no effect on those platforms.
 
-- Fixed: opening a SCIEX .wiff file raised ImportError, caused by a doubled
-  module path left behind by the Python 3 migration.
+- Fixed: `lx.fileReader.mzAPI.mzWiff` was imported through a doubled module
+  path (`lx.fileReader.lx.fileReader.mzAPI.mzWiff`) left behind by the
+  Python 3 migration; that path is now corrected. Opening a SCIEX .wiff
+  file still fails, however: `mzWiff` itself imports `wiffbridge`, a module
+  that is not part of this repository, so .wiff reading remains
+  unavailable.
 
 - Removed roughly 17 MB of unused libraries from the distributed bundle
   (the tkinter stack, Pythonwin, setuptools).
