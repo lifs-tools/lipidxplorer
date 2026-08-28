@@ -26,6 +26,19 @@ def _source_files():
     )
 
 
+def test_source_files_collector_found_a_sensible_number():
+    # A parametrized test over an empty list reports "skipped", not "failed",
+    # and pytest exits 0 either way. If a refactor of _source_files() ever
+    # made it return nothing, test_source_file_parses_under_python3 below
+    # would silently stop testing anything while still looking green. This
+    # guard pins a floor well under today's real count so that regression
+    # is caught as a failure instead.
+    files = _source_files()
+    assert len(files) > 15, (
+        f"expected substantially more than 15 source files, found {len(files)}"
+    )
+
+
 @pytest.mark.parametrize(
     "path",
     _source_files(),

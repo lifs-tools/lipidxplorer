@@ -358,7 +358,7 @@ class mzFile(object):
 			self.__class__ = lx.fileReader.mzAPI.mzURL.mzFile
 			lx.fileReader.mzAPI.mzURL.mzFile.__init__(self, data_file, **kwargs)
 		elif data_file.lower().endswith('.wiff'):
-			import lx.fileReader.lx.fileReader.mzAPI.mzWiff
+			import lx.fileReader.mzAPI.mzWiff
 			self.__class__ = lx.fileReader.mzAPI.mzWiff.mzFile
 			lx.fileReader.mzAPI.mzWiff.mzFile.__init__(self, data_file, **kwargs)
 		elif data_file.lower().endswith('.raw'):
