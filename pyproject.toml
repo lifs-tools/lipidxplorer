@@ -8,6 +8,7 @@ license = { text = "GPL-2.0-only" }
 authors = [
     { name = "Ronny Herzog" },
     { name = "Ballal Md. Hossen" },
+    { name = "Lukas Müller" },
     { name = "Jacobo Miranda Ackermann" },
     { name = "Fadi Al Machot" },
     { name = "Nils Hoffmann" },
