@@ -42,6 +42,13 @@ if __name__ == "__main__":
 
     freeze_support()  # <-- REQUIRED FOR PYINSTALLER WORKERS
 
+    import multiprocessing
+
+    # batch_processor assumes spawn (see lx/gui/lpdxGUI.py:3448). Linux would
+    # otherwise default to fork and give batch mode different semantics.
+    if multiprocessing.get_start_method(allow_none=True) is None:
+        multiprocessing.set_start_method("spawn")
+
     # Answered before any wx.App exists, so CI can check a frozen bundle
     # starts on a runner with no display.
     if "--version" in sys.argv[1:]:
