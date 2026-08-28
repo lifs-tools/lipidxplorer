@@ -14,6 +14,17 @@ mfql_dir = project_dir / "lx" / "mfql"
 IS_WINDOWS = sys.platform == "win32"
 IS_MACOS = sys.platform == "darwin"
 
+# lx/__version__.py is the single source of truth for the version (see its
+# docstring: "update the value here and nowhere else"). Read it by exec'ing
+# just that one file rather than `import lx.__version__`, which would pull
+# in the rest of the lx package -- and therefore wx -- at build time.
+version_globals = {}
+exec(
+    (project_dir / "lx" / "__version__.py").read_text(encoding="utf-8"),
+    version_globals,
+)
+app_version = version_globals["__version__"]
+
 hidden_lx = collect_submodules("lx")
 
 # Confirmed unused by inspecting the shipped 1.5.0 bundle. The tkinter stack
@@ -100,7 +111,7 @@ if IS_MACOS:
         info_plist={
             "NSHighResolutionCapable": True,
             "LSMinimumSystemVersion": "11.0",
-            "CFBundleShortVersionString": "1.5.0",
-            "CFBundleVersion": "1.5.0",
+            "CFBundleShortVersionString": app_version,
+            "CFBundleVersion": app_version,
         },
     )
