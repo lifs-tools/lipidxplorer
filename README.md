@@ -8,21 +8,21 @@ quantification based on the identified MS1 or MS2 level fragments.
 
 ## Downloading LipidXplorer
 
-The latest (binary) release version of LipidXplorer is available from the [LIFS Portal](https://lifs.isas.de/lipidxplorer.html). 
-You can obtain the source code for LipidXplorer from our [GitLab server](https://gitlab.isas.de/lifs/lipidxplorer) and release version archives from [here](https://gitlab.isas.de/lifs/lipidxplorer/-/releases).
+The latest (binary) release version of LipidXplorer is available from the [LIFS Portal](https://lifs-tools.org/lipidxplorer.html). 
+You can obtain the source code for LipidXplorer from our [GitLab server](https://github.com/lifs-tools//lipidxplorer) and release version archives from [here](https://github.com/lifs-tools//lipidxplorer/-/releases).
 
 ## Running LipidXplorer on Windows
 
-For Windows, we provide a single executable for LipidXplorer for download from the [LIFS Portal](https://lifs.isas.de/lipidxplorer.html).
+For Windows, we provide a single executable for LipidXplorer for download from the [LIFS Portal](https://lifs-tools.org/lipidxplorer.html).
 Please download the zip-archive to a location of your choice and extract (unzip) the contents. 
 Change to the unzipped LipidXplorer archive directory and simply double-click on `LipidXplorer.exe` to start it.
 
 ## Installation and Tutorials
 
-Please see more detailed installation instructions on our [Wiki](https://lifs.isas.de/wiki/index.php/LipidXplorer_Installation).
+Please see more detailed installation instructions on our [Wiki](https://lifs-tools.org/wiki/index.php/LipidXplorer_Installation).
 These also cover the case of working with the source code.
 
-[The Wiki](https://lifs.isas.de/wiki/index.php) also offers an overview of the concepts behind LipidXplorer, as well as tutorial and reference materials.
+[The Wiki](https://lifs-tools.org/wiki/index.php) also offers an overview of the concepts behind LipidXplorer, as well as tutorial and reference materials.
 
 ## Working with the LipidXplorer Source Code
 
@@ -58,13 +58,14 @@ or
 
 We use [Semantic Versioning](http://semver.org/) for versioning of the software.
  
-To browse available versions and releases, please see the [tags on this repository](https://gitlab.isas.de/lifs/lipidxplorer/tags). 
+To browse available versions and releases, please see the [tags on this repository](https://github.com/lifs-tools//lipidxplorer/tags). 
 
 ## Authors
 
 * **Ronny Herzog** - *Initial work*
 * **Ballal Md. Hossen** - *Current Developer*
 * **Jacobo Miranda Ackermann** - *Former Developer*
+* **Lukas Müller** - *Contributor*
 * **Fadi Al Machot** - *Contributor*
 * **Nils Hoffmann** - *Contributor*
 
@@ -74,7 +75,7 @@ This project is licensed under the GNU GPL License, version 2 - see the [COPYRIG
 
 ## Help and Support
 
-Please check our [Wiki](https://lifs.isas.de/wiki/index.php) on details on how to contact us to receive help and report errors.
+Please check our [Wiki](https://lifs-tools.org/wiki/index.php) on details on how to contact us to receive help and report errors.
 
 ## Citing the Software
 Herzog R, Schwudke D, Shevchenko A: ***LipidXplorer: Software for Quantitative Shotgun Lipidomics Compatible with Multiple Mass Spectrometry Platforms***. **Current Protocols in Bioinformatics 2013 Oct 15** [PUBMED](https://www.ncbi.nlm.nih.gov/pubmed/26270171)
