@@ -26,33 +26,52 @@ These also cover the case of working with the source code.
 
 ## Working with the LipidXplorer Source Code
 
-We recommend [PyCharm](https://www.jetbrains.com/pycharm/) for development of the LipidXplorer codebase and [Anaconda 3](https://www.anaconda.com/distribution/) to manage a stable, versioned Python environment.
-Any other Python IDE will also work just as well.
-Please see the `wx-py2.7-anaconda.yml` file in the project's source root folder for reference of an exported Anaconda environment. You can import it in your local Anaconda installation, call 
- 
-    conda env create -f wx-py2.7-anaconda.yml 
+LipidXplorer uses [uv](https://docs.astral.sh/uv/) to manage its Python
+environment. Install uv, then from the project root:
 
-## Creating a Windows Executable
+    uv sync
 
-We use `pyinstaller` (part of the Anaconda environment) to create a Python executable of LipidXplorer that can be easily run on Windows.
-To create the exe in the `LipidXplorer-1.2.8` folder, please run the following command:
+This creates a `.venv` with the exact dependency versions recorded in
+`uv.lock`, using the Python version pinned in `.python-version` (3.12).
 
-    pyinstaller --distpath="LipidXplorer-1.2.8" LipidXplorer.spec
+Run the application with:
 
-This will also create a zip archive of the `distpath` folder in the root directory of the project: `LipidXplorer-1.2.8.zip`.
+    uv run python LipidXplorer.py
 
-## Creating a Linux Executable
+Run the tests with:
 
-The same instructions for creation of a standalone executable also apply under Linux. Please make sure, that you have a proper Anaconda environment
-installed and activated. Then run the following command:
+    uv run pytest
 
-     pyinstaller --onefile --add-data "lx\stuff\*;lx\stuff\" LipidXplorer.py
+On Linux, wxPython is installed from the wxPython project's own package
+index, because no Linux wheel for it is published on PyPI. This is
+configured in `pyproject.toml` and requires no manual steps, but it does
+pin the Linux build to Ubuntu 24.04's GTK3 ABI. You will also need the GTK3
+runtime libraries:
 
-or
+    sudo apt-get install libgtk-3-0 libglib2.0-0 libsm6 libxxf86vm1 \
+                         libnotify4 libsdl2-2.0-0 libwebkit2gtk-4.1-0
 
-     pyinstaller pyinstaller.spec
+## Building a Standalone Executable
 
+The same command works on all three platforms:
 
+    uv run pyinstaller --noconfirm LipidXplorer.spec
+
+Output is `dist/LipidXplorer/` on Windows and Linux, and
+`dist/LipidXplorer.app` on macOS.
+
+PyInstaller cannot cross-compile: a Windows executable must be built on
+Windows, a macOS app on macOS, and so on. Released binaries for all three
+platforms are produced by the GitHub Actions workflow in
+`.github/workflows/build.yml`.
+
+### macOS
+
+macOS builds are neither signed nor notarized. On first launch, Gatekeeper
+will refuse to open the app. Right-click it in Finder and choose **Open**,
+then confirm — this is only needed once. (On Linux, PyInstaller does not
+embed an application icon in the binary — it prints a warning and skips
+that step, so the Linux binary has no embedded icon.)
 
 ## Versioning
 
