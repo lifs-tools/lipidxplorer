@@ -41,19 +41,15 @@ jobs:
         include:
           - os: windows-latest
             label: windows-x86_64
-            artifact_path: dist/LipidXplorer
             binary: dist/LipidXplorer/LipidXplorer.exe
           - os: ubuntu-24.04
             label: linux-x86_64
-            artifact_path: dist/LipidXplorer
             binary: dist/LipidXplorer/LipidXplorer
           - os: macos-latest
             label: macos-arm64
-            artifact_path: dist/LipidXplorer.app
             binary: dist/LipidXplorer.app/Contents/MacOS/LipidXplorer
           - os: macos-13
             label: macos-x86_64
-            artifact_path: dist/LipidXplorer.app
             binary: dist/LipidXplorer.app/Contents/MacOS/LipidXplorer
 
     steps:
@@ -106,11 +102,36 @@ jobs:
           $p = Start-Process -FilePath "${{ matrix.binary }}" -ArgumentList "--version" -Wait -PassThru
           if ($p.ExitCode -ne 0) { throw "exited with $($p.ExitCode)" }
 
+      # Package on the runner, not via upload-artifact. Uploading a bare
+      # directory makes upload-artifact trim the top-level folder name, which
+      # would strip the ".app" wrapper macOS needs; tar also preserves the
+      # symlinks and exec bits inside Contents/Frameworks that zip discards.
+      - name: Package artifact (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          Compress-Archive -Path dist/LipidXplorer -DestinationPath "release/LipidXplorer-${{ steps.version.outputs.value }}-${{ matrix.label }}.zip"
+
+      - name: Package artifact (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          mkdir -p release
+          tar -czf "release/LipidXplorer-${{ steps.version.outputs.value }}-${{ matrix.label }}.tar.gz" -C dist LipidXplorer.app
+
+      - name: Package artifact (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p release
+          tar -czf "release/LipidXplorer-${{ steps.version.outputs.value }}-${{ matrix.label }}.tar.gz" -C dist LipidXplorer
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: LipidXplorer-${{ steps.version.outputs.value }}-${{ matrix.label }}
-          path: ${{ matrix.artifact_path }}
+          path: release/*
           if-no-files-found: error
 
   release:
@@ -125,18 +146,6 @@ jobs:
         with:
           path: artifacts
 
-      - name: Create archives
-        run: |
-          mkdir -p release
-          cd artifacts
-          for dir in */; do
-            name="${dir%/}"
-            case "$name" in
-              *windows*) (cd "$name" && zip -qr "../../release/${name}.zip" .) ;;
-              *)         tar -czf "../release/${name}.tar.gz" -C "$name" . ;;
-            esac
-          done
-
       - uses: softprops/action-gh-release@v2
         with:
-          files: release/*
+          files: artifacts/**/*
