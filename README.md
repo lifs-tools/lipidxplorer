@@ -77,4 +77,5 @@ This project is licensed under the GNU GPL License, version 2 - see the [COPYRIG
 Please check our [Wiki](https://lifs.isas.de/wiki/index.php) on details on how to contact us to receive help and report errors.
 
 ## Citing the Software
-Herzog R, Schwudke D, Shevchenko A: ***LipidXplorer: Software for Quantitative Shotgun Lipidomics Compatible with Multiple Mass Spectrometry Platforms***. **Current Protocols in Bioinformatics 2013 Oct 15** [PUBMED](https://www.ncbi.nlm.nih.gov/pubmed/26270171)
+Herzog R, Schwudke D, Shevchenko A: ***LipidXplorer: Software for Quantitative Shotgun Lipidomics Compatible with Multiple Mass Spectrometry Platforms***. **Current Protocols in Bioinformatics**, 16 February 2018, 43: 14.12.1-14.12.30. [PUBMED](https://www.ncbi.nlm.nih.gov/pubmed/26270171) [DOI](https://doi.org/10.1002/0471250953.bi1412s43)
+Herzog R, Schwudke D, Schuhmann K, Sampaio JL, Bornstein SR, Schroeder M, Shevchenko A: ***A novel informatics concept for high-throughput shotgun lipidomics based on the molecular fragmentation query language***. **Genome Biol.**, 19 January 2011, 12(1):R8. [PUBMED](https://pubmed.ncbi.nlm.nih.gov/21247462/) [DOI](https://doi.org/10.1186/gb-2011-12-1-r8)
