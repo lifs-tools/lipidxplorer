@@ -63,7 +63,8 @@ To browse available versions and releases, please see the [tags on this reposito
 ## Authors
 
 * **Ronny Herzog** - *Initial work*
-* **Jacobo Miranda Ackermann** - *Current Developer*
+* **Ballal Md. Hossen** - *Current Developer*
+* **Jacobo Miranda Ackermann** - *Former Developer*
 * **Fadi Al Machot** - *Contributor*
 * **Nils Hoffmann** - *Contributor*
 
