@@ -28,29 +28,29 @@ These also cover the case of working with the source code.
 
 We recommend [PyCharm](https://www.jetbrains.com/pycharm/) for development of the LipidXplorer codebase and [Anaconda 3](https://www.anaconda.com/distribution/) to manage a stable, versioned Python environment.
 Any other Python IDE will also work just as well.
-Please see the `wx-py2.7-anaconda.yml` file in the project's source root folder for reference of an exported Anaconda environment. You can import it in your local Anaconda installation, call 
+Please see the `environment_windows.yml` file in the project's source root folder for reference of an exported Anaconda environment. You can import it in your local Anaconda installation, call 
  
-    conda env create -f wx-py2.7-anaconda.yml 
+    conda env create -f environment_windows.yml
 
 ## Creating a Windows Executable
 
 We use `pyinstaller` (part of the Anaconda environment) to create a Python executable of LipidXplorer that can be easily run on Windows.
-To create the exe in the `LipidXplorer-1.2.8` folder, please run the following command:
+To create the exe in the `LipidXplorer` folder, please run the following command:
 
-    pyinstaller --distpath="LipidXplorer-1.2.8" LipidXplorer.spec
+    pyinstaller --clean LipidXplorer.spec
 
-This will also create a zip archive of the `distpath` folder in the root directory of the project: `LipidXplorer-1.2.8.zip`.
+This will also create a zip archive of the `dist` folder in the root directory of the project: `LipidXplorer`.
 
 ## Creating a Linux Executable
 
-The same instructions for creation of a standalone executable also apply under Linux. Please make sure, that you have a proper Anaconda environment
+The same instructions for creation of a standalone executable also apply under Linux. Please make sure, that you have a proper Anaconda environment (environment_ubuntu.yml)
 installed and activated. Then run the following command:
 
      pyinstaller --onefile --add-data "lx\stuff\*;lx\stuff\" LipidXplorer.py
 
 or
 
-     pyinstaller pyinstaller.spec
+     pyinstaller LipidXplorer.spec
 
 
 
