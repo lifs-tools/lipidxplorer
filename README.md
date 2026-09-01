@@ -28,29 +28,29 @@ These also cover the case of working with the source code.
 
 We recommend [PyCharm](https://www.jetbrains.com/pycharm/) for development of the LipidXplorer codebase and [Anaconda 3](https://www.anaconda.com/distribution/) to manage a stable, versioned Python environment.
 Any other Python IDE will also work just as well.
-Please see the `wx-py2.7-anaconda.yml` file in the project's source root folder for reference of an exported Anaconda environment. You can import it in your local Anaconda installation, call 
+Please see the `environment_windows.yml` file in the project's source root folder for reference of an exported Anaconda environment. You can import it in your local Anaconda installation, call 
  
-    conda env create -f wx-py2.7-anaconda.yml 
+    conda env create -f environment_windows.yml
 
 ## Creating a Windows Executable
 
 We use `pyinstaller` (part of the Anaconda environment) to create a Python executable of LipidXplorer that can be easily run on Windows.
-To create the exe in the `LipidXplorer-1.2.8` folder, please run the following command:
+To create the exe in the `LipidXplorer` folder, please run the following command:
 
-    pyinstaller --distpath="LipidXplorer-1.2.8" LipidXplorer.spec
+    pyinstaller --clean LipidXplorer.spec
 
-This will also create a zip archive of the `distpath` folder in the root directory of the project: `LipidXplorer-1.2.8.zip`.
+This will also create a zip archive of the `dist` folder in the root directory of the project: `LipidXplorer`.
 
 ## Creating a Linux Executable
 
-The same instructions for creation of a standalone executable also apply under Linux. Please make sure, that you have a proper Anaconda environment
+The same instructions for creation of a standalone executable also apply under Linux. Please make sure, that you have a proper Anaconda environment (environment_ubuntu.yml)
 installed and activated. Then run the following command:
 
      pyinstaller --onefile --add-data "lx\stuff\*;lx\stuff\" LipidXplorer.py
 
 or
 
-     pyinstaller pyinstaller.spec
+     pyinstaller LipidXplorer.spec
 
 
 
@@ -78,4 +78,6 @@ This project is licensed under the GNU GPL License, version 2 - see the [COPYRIG
 Please check our [Wiki](https://lifs-tools.org/wiki/index.php) on details on how to contact us to receive help and report errors.
 
 ## Citing the Software
-Herzog R, Schwudke D, Shevchenko A: ***LipidXplorer: Software for Quantitative Shotgun Lipidomics Compatible with Multiple Mass Spectrometry Platforms***. **Current Protocols in Bioinformatics 2013 Oct 15** [PUBMED](https://www.ncbi.nlm.nih.gov/pubmed/26270171)
+Herzog R, Schwudke D, Shevchenko A: ***LipidXplorer: Software for Quantitative Shotgun Lipidomics Compatible with Multiple Mass Spectrometry Platforms***. **Current Protocols in Bioinformatics**, 16 February 2018, 43:14.12.1-14.12.30. [PUBMED](https://www.ncbi.nlm.nih.gov/pubmed/26270171) [DOI](https://doi.org/10.1002/0471250953.bi1412s43)
+Herzog R, Schuhmann K, Schwudke D, Sampaio JL, Bornstein SR, Schroeder M, et al.: ***LipidXplorer: A Software for Consensual Cross-Platform Lipidomics***. **PLoS ONE**, 17 January 2012, 7(1):e29851. [PUBMED](https://pubmed.ncbi.nlm.nih.gov/22272252/) [DOI](https://doi.org/10.1371/journal.pone.0029851)
+Herzog R, Schwudke D, Schuhmann K, Sampaio JL, Bornstein SR, Schroeder M, Shevchenko A: ***A novel informatics concept for high-throughput shotgun lipidomics based on the molecular fragmentation query language***. **Genome Biol.**, 19 January 2011, 12(1):R8. [PUBMED](https://pubmed.ncbi.nlm.nih.gov/21247462/) [DOI](https://doi.org/10.1186/gb-2011-12-1-r8)
