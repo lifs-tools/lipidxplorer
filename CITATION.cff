@@ -1,0 +1,145 @@
+cff-version: 1.2.0
+message: >-
+  If you use LipidXplorer, please cite the preferred-citation below. The
+  additional references under `references` describe later versions of the
+  software and may be cited alongside it.
+title: LipidXplorer
+abstract: >-
+  LipidXplorer supports bottom-up and top-down shotgun lipidomics experiments
+  performed on all types of tandem mass spectrometers. Lipid identification does
+  not rely on a database resource of reference or simulated mass spectra, but
+  uses user-defined molecular fragment queries. It supports accurate,
+  isotope-corrected quantification based on the identified MS1 or MS2 level
+  fragments.
+type: software
+version: 1.5.0
+license: GPL-2.0-only
+repository-code: "https://github.com/lifs-tools/lipidxplorer"
+url: "https://lifs-tools.org/lipidxplorer.html"
+doi: 10.5281/zenodo.3483976
+keywords:
+  - lipidomics
+  - shotgun lipidomics
+  - mass spectrometry
+  - molecular fragmentation query language
+  - lipid identification
+  - lipid quantification
+authors:
+  - family-names: Herzog
+    given-names: Ronny
+  - family-names: Hossen
+    given-names: "Ballal Md."
+  - family-names: "Miranda Ackerman"
+    given-names: Jacobo
+    orcid: "https://orcid.org/0009-0005-0673-021X"
+  - family-names: Müller
+    given-names: Lukas
+    orcid: "https://orcid.org/0009-0000-0738-1844"
+  - family-names: "Al Machot"
+    given-names: Fadi
+    orcid: "https://orcid.org/0000-0002-1239-9261"
+  - family-names: Hoffmann
+    given-names: Nils
+    orcid: "https://orcid.org/0000-0002-6540-6875"
+
+preferred-citation:
+  type: article
+  title: >-
+    A novel informatics concept for high-throughput shotgun lipidomics based on
+    the molecular fragmentation query language
+  authors:
+    - family-names: Herzog
+      given-names: Ronny
+    - family-names: Schwudke
+      given-names: Dominik
+      orcid: "https://orcid.org/0000-0002-1379-9451"
+    - family-names: Schuhmann
+      given-names: Kai
+    - family-names: Sampaio
+      given-names: "Julio L."
+      orcid: "https://orcid.org/0000-0002-2881-7827"
+    - family-names: Bornstein
+      given-names: "Stefan R."
+    - family-names: Schroeder
+      given-names: Michael
+    - family-names: Shevchenko
+      given-names: Andrej
+      orcid: "https://orcid.org/0000-0002-5079-1109"
+  journal: "Genome Biology"
+  volume: 12
+  issue: 1
+  start: R8
+  year: 2011
+  month: 1
+  date-published: "2011-01-19"
+  doi: 10.1186/gb-2011-12-1-r8
+  pmcid: PMC3091306
+  url: "https://doi.org/10.1186/gb-2011-12-1-r8"
+  identifiers:
+    - type: other
+      value: "PMID:21247462"
+      description: PubMed ID
+
+references:
+  - type: article
+    title: "LipidXplorer: A Software for Consensual Cross-Platform Lipidomics"
+    authors:
+      - family-names: Herzog
+        given-names: Ronny
+      - family-names: Schuhmann
+        given-names: Kai
+      - family-names: Schwudke
+        given-names: Dominik
+        orcid: "https://orcid.org/0000-0002-1379-9451"
+      - family-names: Sampaio
+        given-names: "Julio L."
+        orcid: "https://orcid.org/0000-0002-2881-7827"
+      - family-names: Bornstein
+        given-names: "Stefan R."
+      - family-names: Schroeder
+        given-names: Michael
+      - family-names: Shevchenko
+        given-names: Andrej
+        orcid: "https://orcid.org/0000-0002-5079-1109"
+    journal: "PLoS ONE"
+    volume: 7
+    issue: 1
+    start: e29851
+    year: 2012
+    month: 1
+    date-published: "2012-01-17"
+    doi: 10.1371/journal.pone.0029851
+    pmcid: PMC3260173
+    url: "https://doi.org/10.1371/journal.pone.0029851"
+    identifiers:
+      - type: other
+        value: "PMID:22272252"
+        description: PubMed ID
+
+  - type: article
+    title: >-
+      LipidXplorer: Software for Quantitative Shotgun Lipidomics Compatible with
+      Multiple Mass Spectrometry Platforms
+    authors:
+      - family-names: Herzog
+        given-names: Ronny
+      - family-names: Schwudke
+        given-names: Dominik
+        orcid: "https://orcid.org/0000-0002-1379-9451"
+      - family-names: Shevchenko
+        given-names: Andrej
+        orcid: "https://orcid.org/0000-0002-5079-1109"
+    journal: "Current Protocols in Bioinformatics"
+    volume: 43
+    issue: 1
+    start: 14.12.1
+    end: 14.12.30
+    year: 2013
+    month: 10
+    date-published: "2013-10-15"
+    doi: 10.1002/0471250953.bi1412s43
+    url: "https://doi.org/10.1002/0471250953.bi1412s43"
+    identifiers:
+      - type: other
+        value: "PMID:26270171"
+        description: PubMed ID
