@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Entitlements for the hardened runtime.
+
+  Unlike a Qt/C++ application, this bundle is a Python interpreter that loads
+  extension modules at runtime and JIT-compiles machine code, so the hardened
+  runtime has to be relaxed in three specific ways. Each is the narrowest
+  entitlement that covers its cause; none of them is optional for this app.
+-->
+<plist version="1.0">
+<dict>
+    <!-- numba compiles @njit functions to machine code at runtime through
+         llvmlite (Contents/Frameworks/llvmlite/binding/libllvmlite.dylib).
+         Without this, the first call into lx/mfql/calcsf_cached.py aborts. -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+
+    <!-- llvmlite's MCJIT maps memory writable-then-executable rather than
+         using the MAP_JIT path that allow-jit alone permits. -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+
+    <!-- CPython dlopen()s ~180 extension modules and dylibs from inside the
+         bundle. They are all signed by this script with the same identity, but
+         library validation still rejects some of PyInstaller's relocated
+         libraries, so it has to be off. -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+</dict>
+</plist>

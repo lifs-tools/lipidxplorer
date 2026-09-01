@@ -4,7 +4,7 @@ from lx.gui import lpdxGUI
 import wx
 import sys
 
-APP_VERSION = "1.5"
+from lx.__version__ import __version__ as APP_VERSION
 
 
 def resource_path(*parts):
@@ -39,5 +39,20 @@ def main():
 
 if __name__ == "__main__":
     from multiprocessing import freeze_support
+
     freeze_support()  # <-- REQUIRED FOR PYINSTALLER WORKERS
+
+    import multiprocessing
+
+    # batch_processor assumes spawn (see lx/gui/lpdxGUI.py:3448). Linux would
+    # otherwise default to fork and give batch mode different semantics.
+    if multiprocessing.get_start_method(allow_none=True) is None:
+        multiprocessing.set_start_method("spawn")
+
+    # Answered before any wx.App exists, so CI can check a frozen bundle
+    # starts on a runner with no display.
+    if "--version" in sys.argv[1:]:
+        print(f"LipidXplorer {APP_VERSION}")
+        sys.exit(0)
+
     main()

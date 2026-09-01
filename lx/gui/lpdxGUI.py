@@ -79,6 +79,13 @@ def resource_path(*parts):
 #import lpdxSCC
 import platform
 pf = platform.system()
+# Bound unconditionally: none of the platform checks below currently enable
+# sound, so this was always going to end up False for every recognized
+# platform anyway. Previously it was only set inside the LINUX/CYGWIN_NT/
+# WINDOWS branches, so platform.system() == 'Darwin' (macOS) fell through
+# with playSound never bound at all, raising NameError at every one of the
+# 9 call sites the first time a button handler read it.
+playSound = False
 if re.match('.*LINUX.*', pf, re.IGNORECASE):
 	playSound = False
 if re.match('.*CYGWIN_NT.*', pf, re.IGNORECASE):

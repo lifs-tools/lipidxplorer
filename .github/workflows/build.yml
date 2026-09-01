@@ -1,0 +1,233 @@
+name: Build
+
+# Push is limited to the long-lived branches and tags on purpose. Listing
+# every branch here as well as `pull_request` made each commit on an open PR
+# build the whole four-platform matrix twice, for no extra signal.
+on:
+  push:
+    branches: [master, ballal_code]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      sign_macos:
+        description: "Sign and notarize the macOS builds (needs the signing secrets)"
+        type: boolean
+        default: false
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # wxPython needs GTK3 at import time even for headless tests.
+      - name: Install GTK3 runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-3-0 libglib2.0-0 libsm6 libxxf86vm1 libnotify4 \
+            libsdl2-2.0-0 libwebkit2gtk-4.1-0 xvfb
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --locked --group dev
+
+      - name: Run tests
+        run: xvfb-run -a uv run pytest -q
+
+  build:
+    name: ${{ matrix.label }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: windows-x86_64
+            binary: dist/LipidXplorer/LipidXplorer.exe
+          - os: ubuntu-24.04
+            label: linux-x86_64
+            binary: dist/LipidXplorer/LipidXplorer
+          - os: macos-latest
+            label: macos-arm64
+            binary: dist/LipidXplorer.app/Contents/MacOS/LipidXplorer
+          # macos-13 was retired by GitHub - jobs targeting it sit queued
+          # forever without ever being assigned a runner. macos-15-intel is
+          # chosen over macos-26-intel deliberately: macOS 26 is the last
+          # release to support Intel at all and runs on only a subset of Intel
+          # Macs, so building against 15 keeps the artifact usable on the older
+          # hardware that actually still needs an x86_64 build.
+          - os: macos-15-intel
+            label: macos-x86_64
+            binary: dist/LipidXplorer.app/Contents/MacOS/LipidXplorer
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GTK3 runtime libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-3-0 libglib2.0-0 libsm6 libxxf86vm1 libnotify4 \
+            libsdl2-2.0-0 libwebkit2gtk-4.1-0 xvfb
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --locked --group dev
+
+      - name: Read version
+        id: version
+        shell: bash
+        run: echo "value=$(uv run python -c 'from lx.__version__ import __version__; print(__version__)')" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: uv run pyinstaller --noconfirm LipidXplorer.spec
+
+      # A windowed build has no stdout on Windows, so exit code is the only
+      # portable signal. On Linux and macOS the shell waits for the process
+      # and stdout is real, so check both.
+      - name: Smoke test the artifact (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: xvfb-run -a "${{ matrix.binary }}" --version | grep -F "${{ steps.version.outputs.value }}"
+
+      - name: Smoke test the artifact (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          "${{ matrix.binary }}" --version | grep -F "${{ steps.version.outputs.value }}"
+
+      # PyInstaller builds this with console=False, so the executable is
+      # GUI-subsystem. cmd and bash launch it detached and return 0
+      # immediately - the test would pass even if the app crashed on start.
+      # Start-Process -Wait -PassThru actually waits and yields the real code.
+      - name: Smoke test the artifact (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath "${{ matrix.binary }}" -ArgumentList "--version" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "exited with $($p.ExitCode)" }
+
+      # ------------------------------------------------------- macOS signing --
+      # Notarization costs several minutes and round-trips through Apple, so it
+      # runs on tags and on an explicit manual request, not on every commit.
+      # Without the secrets - on a fork, say - the build still publishes a
+      # plain unsigned archive and says so in the log.
+      - name: Decide whether to sign the macOS build
+        id: signing
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          CERT: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          ASC_KEY: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          WANTED: ${{ startsWith(github.ref, 'refs/tags/v') || github.event.inputs.sign_macos == 'true' }}
+        run: |
+          if [ "$WANTED" != "true" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Not a tag and not manually requested - publishing an unsigned build."
+          elif [ -z "$CERT" ] || [ -z "$ASC_KEY" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Signing was requested but MACOS_CERT_P12_BASE64 and/or ASC_KEY_P8_BASE64 are not set - publishing an unsigned, un-notarized build"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Import Developer ID certificate
+        if: steps.signing.outputs.enabled == 'true'
+        env:
+          MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          echo "$MACOS_CERT_P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$MACOS_CERT_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+          security list-keychain -d user -s "$KEYCHAIN" login.keychain-db
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security find-identity -v -p codesigning
+
+      # Produces release/<name>.zip and release/<name>.dmg, both stapled.
+      - name: Sign, notarize and package (macOS)
+        if: steps.signing.outputs.enabled == 'true'
+        shell: bash
+        env:
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          export ASC_KEY_PATH="$RUNNER_TEMP/AuthKey.p8"
+          trap 'rm -f "$ASC_KEY_PATH"' EXIT
+          echo "$ASC_KEY_P8_BASE64" | base64 --decode > "$ASC_KEY_PATH"
+          macos/sign-and-notarize.sh \
+            --dist-dir release \
+            --dist-name "LipidXplorer-${{ steps.version.outputs.value }}-${{ matrix.label }}"
+
+      - name: Remove the signing keychain
+        if: always() && steps.signing.outputs.enabled == 'true'
+        run: security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
+
+      # ----------------------------------------------------------- packaging --
+      # Package on the runner, not via upload-artifact. Uploading a bare
+      # directory makes upload-artifact trim the top-level folder name, which
+      # would strip the ".app" wrapper macOS needs; tar also preserves the
+      # symlinks and exec bits inside Contents/Frameworks that zip discards.
+      - name: Package artifact (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          Compress-Archive -Path dist/LipidXplorer -DestinationPath "release/LipidXplorer-${{ steps.version.outputs.value }}-${{ matrix.label }}.zip"
+
+      # Skipped when the signing step already wrote a stapled .zip and .dmg.
+      - name: Package artifact (macOS, unsigned)
+        if: runner.os == 'macOS' && steps.signing.outputs.enabled != 'true'
+        shell: bash
+        run: |
+          mkdir -p release
+          tar -czf "release/LipidXplorer-${{ steps.version.outputs.value }}-${{ matrix.label }}.tar.gz" -C dist LipidXplorer.app
+
+      - name: Package artifact (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p release
+          tar -czf "release/LipidXplorer-${{ steps.version.outputs.value }}-${{ matrix.label }}.tar.gz" -C dist LipidXplorer
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LipidXplorer-${{ steps.version.outputs.value }}-${{ matrix.label }}
+          path: release/*
+          if-no-files-found: error
+
+  release:
+    name: Attach to release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      # No re-archiving step: each build job already uploaded a finished
+      # archive, so these arrive intact and just get attached.
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*

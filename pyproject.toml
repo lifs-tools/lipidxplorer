@@ -1,14 +1,65 @@
-[tool.poetry]
+[project]
 name = "lipidxplorer"
-version = "1.2.9"
-description = ""
-authors = ["Your Name <you@example.com>"]
+dynamic = ["version"]
+description = "Software for quantitative shotgun lipidomics compatible with multiple mass spectrometry platforms"
 readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "GPL-2.0-only" }
+authors = [
+    { name = "Ronny Herzog" },
+    { name = "Ballal Md. Hossen" },
+    { name = "Lukas Müller" },
+    { name = "Jacobo Miranda Ackermann" },
+    { name = "Fadi Al Machot" },
+    { name = "Nils Hoffmann" },
+]
+dependencies = [
+    "wxpython==4.2.2",
+    "numpy>=2.2,<2.3",
+    "pandas>=2.2,<3",
+    "matplotlib>=3.8,<4",
+    "lxml>=5,<7",
+    "ply>=3.11",
+    "numba>=0.60",
+    "comtypes; sys_platform == 'win32'",
+]
 
-[tool.poetry.dependencies]
-python = "2.7.18"
+[project.optional-dependencies]
+debug = ["guppy3"]
 
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.10",
+    "pytest>=8",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "lx/__version__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["lx"]
+
+# wxPython publishes no Linux wheels on PyPI - only macOS and Windows wheels
+# plus an sdist, which would trigger a 30-60 minute source build. Prebuilt
+# Linux GTK3 wheels come from the project's own extras index instead. The
+# index is "explicit", so it is used only for the package mapped to it below;
+# macOS and Windows continue to resolve wxPython from PyPI.
+#
+# format = "flat" is required: the URL serves an Apache directory listing of
+# .whl files, not a PEP 503 simple index (requesting the wxpython/ subpath
+# returns 404). Drop it and uv lock fails with "there is no version of
+# wxpython{sys_platform == 'linux'}==4.2.2".
+#
+# The ubuntu-24.04 pin is why CI must run on ubuntu-24.04, not ubuntu-latest.
+[[tool.uv.index]]
+name = "wxpython-linux"
+url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04"
+format = "flat"
+explicit = true
+
+[tool.uv.sources]
+wxpython = [{ index = "wxpython-linux", marker = "sys_platform == 'linux'" }]

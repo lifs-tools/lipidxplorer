@@ -26,33 +26,170 @@ These also cover the case of working with the source code.
 
 ## Working with the LipidXplorer Source Code
 
-We recommend [PyCharm](https://www.jetbrains.com/pycharm/) for development of the LipidXplorer codebase and [Anaconda 3](https://www.anaconda.com/distribution/) to manage a stable, versioned Python environment.
-Any other Python IDE will also work just as well.
-Please see the `environment_windows.yml` file in the project's source root folder for reference of an exported Anaconda environment. You can import it in your local Anaconda installation, call 
- 
-    conda env create -f environment_windows.yml
+LipidXplorer uses [uv](https://docs.astral.sh/uv/) to manage its Python
+environment. Install uv, then from the project root:
 
-## Creating a Windows Executable
+    uv sync
 
-We use `pyinstaller` (part of the Anaconda environment) to create a Python executable of LipidXplorer that can be easily run on Windows.
-To create the exe in the `LipidXplorer` folder, please run the following command:
+This creates a `.venv` with the exact dependency versions recorded in
+`uv.lock`, using the Python version pinned in `.python-version` (3.12).
 
-    pyinstaller --clean LipidXplorer.spec
+Run the application with:
 
-This will also create a zip archive of the `dist` folder in the root directory of the project: `LipidXplorer`.
+    uv run python LipidXplorer.py
 
-## Creating a Linux Executable
+Run the tests with:
 
-The same instructions for creation of a standalone executable also apply under Linux. Please make sure, that you have a proper Anaconda environment (environment_ubuntu.yml)
-installed and activated. Then run the following command:
+    uv run pytest
 
-     pyinstaller --onefile --add-data "lx\stuff\*;lx\stuff\" LipidXplorer.py
+On Linux, wxPython is installed from the wxPython project's own package
+index, because no Linux wheel for it is published on PyPI. This is
+configured in `pyproject.toml` and requires no manual steps, but it does
+pin the Linux build to Ubuntu 24.04's GTK3 ABI. You will also need the GTK3
+runtime libraries:
 
-or
+    sudo apt-get install libgtk-3-0 libglib2.0-0 libsm6 libxxf86vm1 \
+                         libnotify4 libsdl2-2.0-0 libwebkit2gtk-4.1-0
 
-     pyinstaller LipidXplorer.spec
+### Alternative: conda environments
 
+`uv` is the supported way to build and to reproduce a release, because
+`uv.lock` is what CI resolves against. For people who would rather stay in
+conda, two exported environments are kept in the project root and track the
+same Python 3.12 / wxPython 4.2.2 combination:
 
+    conda env create -f environment_windows.yml     # Windows
+    conda env create -f environment_ubuntu.yml      # Linux
+    conda activate lx15
+
+There is no macOS environment file; use `uv` there. These files are exports,
+not a lock file — they are refreshed by hand, so if they drift from
+`uv.lock`, `uv.lock` is the authority.
+
+## Building a Standalone Executable
+
+The same command works on all three platforms:
+
+    uv run pyinstaller --noconfirm LipidXplorer.spec
+
+Output is `dist/LipidXplorer/` on Windows and Linux, and
+`dist/LipidXplorer.app` on macOS.
+
+PyInstaller cannot cross-compile: a Windows executable must be built on
+Windows, a macOS app on macOS, and so on. Released binaries for all three
+platforms are produced by the GitHub Actions workflow in
+`.github/workflows/build.yml`.
+
+### macOS
+
+CI artifacts are signed ad-hoc by PyInstaller, which is not enough for
+distribution: macOS quarantines anything downloaded through a browser, and
+Gatekeeper rejects an app that carries no Developer ID and no notarization
+ticket. Approving it under *System Settings > Privacy & Security* is not
+reliable either — the bundle contains ~180 nested binaries, and the approval
+does not consistently cover all of them, so the app dies while loading
+libraries and no window ever appears.
+
+To run an unsigned CI build locally, strip the quarantine flag:
+
+```bash
+find /path/to/LipidXplorer.app -exec xattr -d com.apple.quarantine {} \; 2>/dev/null
+open /path/to/LipidXplorer.app
+```
+
+Note that `xattr -dr com.apple.quarantine` — the advice usually given — does
+**not** work on macOS 26, which dropped the `-r` flag from `xattr`.
+
+Releases should be signed and notarized instead; see below.
+
+(On Linux, PyInstaller does not embed an application icon in the binary — it
+prints a warning and skips that step, so the Linux binary has no embedded icon.)
+
+### Signing and notarizing the macOS build (maintainers)
+
+The whole flow is automated by `macos/sign-and-notarize.sh`; what follows is
+the one-time setup it needs. It mirrors the LipidSpace script of the same name,
+with the differences noted at the top of the file.
+
+**1. Developer ID Application certificate.** In Xcode, go to *Settings >
+Accounts*, select the team, *Manage Certificates… > + > Developer ID
+Application*. Only the Account Holder may create these, and the number of them
+is limited. Verify and note the team ID:
+
+```bash
+security find-identity -v -p codesigning
+# 1) 864A249C...  "Developer ID Application: Nils Hoffmann (73367934A4)"
+```
+
+**2. Notarization credentials.** For local releases, create an app-specific
+password at <https://appleid.apple.com> (*Sign-In and Security > App-Specific
+Passwords*) and store it in the keychain once:
+
+```bash
+xcrun notarytool store-credentials "lipidxplorer-notary" \
+  --apple-id "you@example.org" --team-id "73367934A4" --password "xxxx-xxxx-xxxx-xxxx"
+```
+
+**3. Build and release.**
+
+```bash
+uv sync
+NOTARY_PROFILE=lipidxplorer-notary macos/sign-and-notarize.sh --build
+```
+
+This rebuilds the bundle, verifies nothing outside it is still linked, signs
+every binary inside-out with the hardened runtime and a secure timestamp,
+notarizes and staples the app, and writes
+`dist/LipidXplorer-<version>-macos-<arch>.zip` and `.dmg`. The app is stapled
+before the disk image is built, so the ticket travels with it when a user drags
+it out of the DMG. Useful options: `--sign-only` (skip notarization),
+`--no-dmg`, `--identity`, `--dist-name`, `--entitlements`; see
+`macos/sign-and-notarize.sh --help`.
+
+Run it once per architecture — a bundle built on Apple Silicon is arm64-only.
+
+**Entitlements are not optional here.** `macos/entitlements.plist` grants three
+things the hardened runtime otherwise blocks: `allow-jit` and
+`allow-unsigned-executable-memory`, because numba compiles `@njit` functions at
+runtime through llvmlite; and `disable-library-validation`, because CPython
+`dlopen()`s ~180 extension modules from inside the bundle. Signing without them
+produces an app that passes verification and then aborts the first time an MFQL
+query reaches `lx/mfql/calcsf_cached.py`.
+
+**Troubleshooting.** If notarization is rejected, the script prints the full
+Apple log; the usual causes are a nested binary signed without the hardened
+runtime or without a timestamp. `spctl -a -vvv -t exec dist/LipidXplorer.app`
+reports `rejected / source=Unnotarized Developer ID` for an app that is signed
+but not yet notarized — that is expected after `--sign-only`.
+
+**4. Continuous delivery.** `.github/workflows/build.yml` signs and notarizes
+the two macOS jobs when these repository secrets are present. Without them the
+build still publishes a plain unsigned archive and logs a warning, so forks and
+dry runs keep working.
+
+| Secret | Contents |
+| --- | --- |
+| `MACOS_CERT_P12_BASE64` | `base64 -i certificate.p12` |
+| `MACOS_CERT_PASSWORD` | password used when exporting the `.p12` |
+| `ASC_KEY_P8_BASE64` | `base64 -i AuthKey_XXXX.p8` |
+| `ASC_KEY_ID` | key ID of the App Store Connect API key |
+| `ASC_ISSUER_ID` | issuer ID of the App Store Connect API key |
+
+The App Store Connect API key (App Store Connect > *Users and Access >
+Integrations > Keys*, role *Developer*) is preferred over an Apple ID password
+in CI because it is scoped and does not expire when the password changes.
+Export the `.p12` from Keychain Access with both the certificate **and** its
+private key — losing the private key means burning another certificate slot.
+
+Notarization round-trips through Apple and takes minutes, so CI signs only on
+`v*` tags, or on a manual run of the workflow with **Sign and notarize the
+macOS builds** ticked. Every other commit publishes the unsigned `.tar.gz`.
+Use the manual run to prove the signing path works *before* you need it for a
+release — otherwise its first execution is the one that matters.
+
+Signed runs publish `.zip` and `.dmg` per architecture instead of the unsigned
+`.tar.gz`; both are stapled, and the app is stapled before the disk image is
+built so the ticket survives a drag out of the DMG.
 
 ## Versioning
 

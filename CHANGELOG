@@ -1,3 +1,33 @@
+28/08/2026 LipidXplorer 1.5.0 - build system
+
+- Dependency management moved from Conda to uv. environment_ubuntu.yml and
+  environment_windows.yml are replaced by pyproject.toml and a committed
+  uv.lock. Python 3.12 is pinned in .python-version.
+
+- Builds for Windows, Linux, and macOS (Apple Silicon and Intel) are produced
+  by GitHub Actions from a single PyInstaller spec file. macOS now gets a
+  proper .app bundle.
+
+- Fixed: on Linux the application crashed at startup on machines without the
+  X11 development package installed.
+
+- Fixed: on Linux and macOS the optional groups.txt occupation-threshold file
+  was never found, because its path was built with a hardcoded backslash. The
+  setting silently had no effect on those platforms.
+
+- Fixed: `lx.fileReader.mzAPI.mzWiff` was imported through a doubled module
+  path (`lx.fileReader.lx.fileReader.mzAPI.mzWiff`) left behind by the
+  Python 3 migration; that path is now corrected. Opening a SCIEX .wiff
+  file still fails, however: `mzWiff` itself imports `wiffbridge`, a module
+  that is not part of this repository, so .wiff reading remains
+  unavailable.
+
+- Removed roughly 17 MB of unused libraries from the distributed bundle
+  (the tkinter stack, Pythonwin, setuptools).
+
+- Ported lpdxLXMerge.py to Python 3. Removed lx/mfql/syntaxParser.py, which
+  was unreachable and could not be parsed by Python 3.
+
 06/05/2026 LipidXplorer 1.5
 
 - Code base migrated from python 2.7 to 3.12

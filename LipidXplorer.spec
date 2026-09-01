@@ -1,17 +1,52 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
+import sys
 from pathlib import Path
-from PyInstaller.utils.hooks import collect_submodules
 
-block_cipher = None
+from PyInstaller.utils.hooks import collect_submodules
 
 project_dir = Path(os.getcwd())
 gui_dir = project_dir / "lx" / "gui"
 stuff_dir = project_dir / "lx" / "stuff"
 mfql_dir = project_dir / "lx" / "mfql"
 
+IS_WINDOWS = sys.platform == "win32"
+IS_MACOS = sys.platform == "darwin"
+
+# lx/__version__.py is the single source of truth for the version (see its
+# docstring: "update the value here and nowhere else"). Read it by exec'ing
+# just that one file rather than `import lx.__version__`, which would pull
+# in the rest of the lx package -- and therefore wx -- at build time.
+version_globals = {}
+exec(
+    (project_dir / "lx" / "__version__.py").read_text(encoding="utf-8"),
+    version_globals,
+)
+app_version = version_globals["__version__"]
+
 hidden_lx = collect_submodules("lx")
+
+# Confirmed unused by inspecting the shipped 1.5.0 bundle. The tkinter stack
+# alone is ~10 MB and Pythonwin another 6.4 MB, none of it imported anywhere
+# in this project.
+excludes = [
+    "tkinter",
+    "_tkinter",
+    "Tkinter",
+    "Pythonwin",
+    "setuptools",
+    "pkg_resources",
+    "wheel",
+    "pytest",
+    "IPython",
+]
+if not IS_WINDOWS:
+    excludes += ["comtypes", "win32com", "pythoncom", "pywintypes"]
+
+# lipidx_ico2.ico maxes out at 47x48 px. lipidx_tb.ico is a true 256x256 and
+# is what the packaged executable should carry.
+icon_file = str(stuff_dir / ("lipidx.icns" if IS_MACOS else "lipidx_tb.ico"))
 
 a = Analysis(
     ["LipidXplorer.py"],
@@ -32,14 +67,14 @@ a = Analysis(
         "lx.mfql.runtimeExecution",
         "lx.mfql.mfqlParser",
         "lx.mfql.parsetab",
-    ] + hidden_lx,
+    ]
+    + hidden_lx,
     hookspath=[],
     runtime_hooks=[],
-    excludes=[],
-    cipher=block_cipher,
+    excludes=excludes,
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data)
 
 exe = EXE(
     pyz,
@@ -52,6 +87,7 @@ exe = EXE(
     strip=False,
     upx=False,
     console=False,
+    icon=icon_file,
 )
 
 coll = COLLECT(
@@ -63,3 +99,19 @@ coll = COLLECT(
     upx=False,
     name="LipidXplorer",
 )
+
+if IS_MACOS:
+    # Without BUNDLE, macOS gets a bare Unix executable: no menu bar, no Dock
+    # identity, and wx cannot behave like a native application.
+    app = BUNDLE(
+        coll,
+        name="LipidXplorer.app",
+        icon=icon_file,
+        bundle_identifier="de.isas.lifs.lipidxplorer",
+        info_plist={
+            "NSHighResolutionCapable": True,
+            "LSMinimumSystemVersion": "11.0",
+            "CFBundleShortVersionString": app_version,
+            "CFBundleVersion": app_version,
+        },
+    )
