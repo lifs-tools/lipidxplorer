@@ -1,12 +1,15 @@
 28/08/2026 LipidXplorer 1.5.0 - build system
 
-- Dependency management moved from Conda to uv. environment_ubuntu.yml and
-  environment_windows.yml are replaced by pyproject.toml and a committed
-  uv.lock. Python 3.12 is pinned in .python-version.
+- Dependency management moved from Conda to uv: pyproject.toml plus a
+  committed uv.lock, with Python 3.12 pinned in .python-version.
+  environment_ubuntu.yml and environment_windows.yml are kept as a supported
+  alternative for conda users, but uv.lock is authoritative.
 
-- Builds for Windows, Linux, and macOS (Apple Silicon and Intel) are produced
-  by GitHub Actions from a single PyInstaller spec file. macOS now gets a
-  proper .app bundle.
+- Builds for Windows, Linux, and macOS (Apple Silicon) are produced by GitHub
+  Actions from a single PyInstaller spec file. macOS now gets a proper .app
+  bundle. There is no Intel macOS build: numba and llvmlite no longer publish
+  macOS x86_64 wheels, so that platform cannot be built without compiling LLVM
+  from source.
 
 - Fixed: on Linux the application crashed at startup on machines without the
   X11 development package installed.

@@ -56,15 +56,12 @@ jobs:
           - os: macos-latest
             label: macos-arm64
             binary: dist/LipidXplorer.app/Contents/MacOS/LipidXplorer
-          # macos-13 was retired by GitHub - jobs targeting it sit queued
-          # forever without ever being assigned a runner. macos-15-intel is
-          # chosen over macos-26-intel deliberately: macOS 26 is the last
-          # release to support Intel at all and runs on only a subset of Intel
-          # Macs, so building against 15 keeps the artifact usable on the older
-          # hardware that actually still needs an x86_64 build.
-          - os: macos-15-intel
-            label: macos-x86_64
-            binary: dist/LipidXplorer.app/Contents/MacOS/LipidXplorer
+          # No Intel macOS job. numba stopped publishing macOS x86_64 wheels at
+          # 0.63.0 (llvmlite at 0.46.0), so an x86_64 runner has no wheel to
+          # install and falls back to compiling LLVM from source, which fails.
+          # Pinning numba below the cutoff was the alternative and was rejected:
+          # it would hold Intel builds five minor versions behind every other
+          # platform to serve users we have no evidence exist.
 
     steps:
       - uses: actions/checkout@v4
