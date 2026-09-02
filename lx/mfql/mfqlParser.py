@@ -628,7 +628,7 @@ def p_identification_normal_old(p):
 		print("generating combinatorics ...", end=' ')
 		for se in mfqlObj.sc.listSurveyEntry:
 			mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-		print("%.2f sec." % time.perf_counter())
+		print("%.2f sec." % _elapsed())
 
 	if len(p) == 8:
 
@@ -671,13 +671,13 @@ def p_identification_normal_new(p):
 		print("generating combinatorics ...", end=' ')
 		for se in mfqlObj.sc.listSurveyEntry:
 			mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-		print("%.2f sec." % time.perf_counter())
+		print("%.2f sec." % _elapsed())
 
 	if mfqlObj.parsePart == 'identification':
 		print("generating combinatorics ...", end=' ')
 		for se in mfqlObj.sc.listSurveyEntry:
 			mfqlObj.genVariables_new(se, mfqlObj.dictEmptyVariables)
-		print("%.2f sec." % time.perf_counter())
+		print("%.2f sec." % _elapsed())
 
 	if len(p) == 6:
 
@@ -842,7 +842,7 @@ def p_evalMarks(p):
 	if mfqlObj.parsePart == 'identification':
 		print("IDENTIFY the masses of interest ...", end=' ')
 		mfqlObj.scan.evaluate()
-		print("%.2f sec." % time.perf_counter())
+		print("%.2f sec." % _elapsed())
 	pass
 
 def p_suchthat_single(p):
@@ -974,7 +974,7 @@ def p_bterm(p):
 								#result.append(tmpRes)
 
 		p[0] = report
-		print("%.2f sec. for %d comparisons" % (time.perf_counter(), count))
+		print("%.2f sec. for %d comparisons" % (_elapsed(), count))
 
 def p_booleanterm_logic(p):
 	'''booleanterm : booleanterm AND booleanterm
@@ -1214,10 +1214,30 @@ def p_error(p):
 parser = yacc.yacc(debug = 0, optimize = 0)
 #bparser = yacc.yacc(method = 'LALR')
 
+# Seconds since the current startParsing() call began, for the
+# "... %.2f sec." progress lines below.
+#
+# This was time.clock() under Python 2, which on Windows counted from its own
+# first call -- so calling it bare at the top of startParsing() acted as a
+# reset and every later call returned an elapsed time. time.perf_counter()
+# has a fixed, arbitrary epoch instead (typically boot), so the bare call did
+# nothing and every line printed the raw counter: on a machine up for a week,
+# "IDENTIFY the masses of interest ... 657120.63 sec.".
+_parse_start = None
+
+
+def _elapsed():
+	"""Seconds since startParsing() began; 0.0 if it has not been called."""
+	if _parse_start is None:
+		return 0.0
+	return time.perf_counter() - _parse_start
+
+
 def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrectionMSMS,
 		complementSC, parent, progressCount, generateStatistics, mode = ""):
 
-	time.perf_counter()
+	global _parse_start
+	_parse_start = time.perf_counter()
 
 	global mfqlObj
 	global gprogressCount
@@ -1271,7 +1291,7 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		#		parent.debug.progressDialog.Destroy()
 		#		return parent.CONST_THREAD_USER_ABORT
 
-		print("%.2f sec." % time.perf_counter())
+		print("%.2f sec." % _elapsed())
 	else:
 		print("type II isotopic correction for MS is switched off")
 
@@ -1280,12 +1300,12 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	# note the change first
 	print("generating result MasterScan ...", end=' ')
 	mfqlObj.result.generateResultSC()
-	print("%.2f sec." % time.perf_counter())
+	print("%.2f sec." % _elapsed())
 
 	if isotopicCorrectionMSMS:
 		print("type II isotopic correction in MS/MS ...", end=' ')
 		mfqlObj.result.isotopicCorrectionMSMS()
-		print("%.2f sec." % time.perf_counter())
+		print("%.2f sec." % _elapsed())
 	else:
 		print("type II isotopic correction for MS/MS is switched off")
 
@@ -1293,19 +1313,19 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 		print("type I isotopic correction in MS and MS/MS ...", end=' ')
 		if isotopicCorrectionMS or isotopicCorrectionMSMS:
 			mfqlObj.result.correctMonoisotopicPeaks()
-		print("%.2f sec." % time.perf_counter())
+		print("%.2f sec." % _elapsed())
 
 	if Debug("removeIsotopes"):# and (isotopicCorrectionMS or isotopicCorrectionMSMS):
 		mfqlObj.result.removeIsotopicCorrected()
 
 	print("generate query result MasterScans ...", end=' ')
 	mfqlObj.result.generateQueryResultSC()
-	print("%.2f sec." % time.perf_counter())
+	print("%.2f sec." % _elapsed())
 
 	# check for isobaric species
 	print("checking if there are isobaric species ...", end=' ')
 	mfqlObj.result.checkIsobaricSpeciesBeforeSUCHTHAT()
-	print("%.2f sec." % time.perf_counter())
+	print("%.2f sec." % _elapsed())
 
 	### do the REPORT ###
  
@@ -1331,14 +1351,14 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 
 		print("generate complement MasterScan ...")
 		mfqlObj.result.generateComplementSC()
-		print("%.2f sec." % time.perf_counter())
+		print("%.2f sec." % _elapsed())
 
 	if options['noPermutations']:
 		mfqlObj.result.removePermutations()
 
 	print("checking if there are still isobaric species ...", end=' ')
 	mfqlObj.result.checkIsobaricSpeciesAfterSUCHTHAT()
-	print("%.2f sec." % time.perf_counter())
+	print("%.2f sec." % _elapsed())
 
 	
 	# if options['batch_mode']:
@@ -1347,13 +1367,13 @@ def startParsing(dictData, mfqlObjIn, ms, isotopicCorrectionMS, isotopicCorrecti
 	# else:
 	print("generate report ...", end=' ')
 	mfqlObj.result.generateReport(options)
-	print("%.2f sec." % time.perf_counter())
+	print("%.2f sec." % _elapsed())
 
 
 	if generateStatistics and mfqlObj.result.mfqlOutput:
 		print("generate statistics ...", end=' ')
 		mfqlObj.result.generateStatistics(options)
-		print("%.2f sec." % time.perf_counter())
+		print("%.2f sec." % _elapsed())
 
 ## test Ballal
 	# print("2nd mfqlobj print.........................")
