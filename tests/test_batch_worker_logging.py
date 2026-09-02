@@ -11,7 +11,10 @@ These tests exercise the sink directly; they need no spectra and no display.
 """
 
 import builtins
+import pathlib
+import subprocess
 import sys
+import textwrap
 
 import pytest
 
@@ -122,3 +125,103 @@ def test_restore_print_puts_the_original_back(tmp_path, restore_streams):
 
     logger.restore_print()
     assert builtins.print is original
+
+
+def test_streams_capture_warnings(tmp_path):
+    """warnings.warn bypasses print(), so stream capture has to catch it.
+
+    A mis-detected CSV delimiter is reported this way during the merge.
+    Without stream capture it goes to the null sink a windowed build gives a
+    GUI process, and the merged table is silently parsed the wrong way.
+
+    This runs in a subprocess on purpose: pytest swaps out
+    warnings._showwarnmsg_impl for its own recorder, so a warning raised
+    inside the test process never reaches sys.stderr and the capture could
+    not be observed at all.
+    """
+    log = tmp_path / "batch_log.txt"
+    script = textwrap.dedent(
+        f"""
+        import warnings
+        from lx.logger import TeeLogger
+
+        logger = TeeLogger(file_path={str(log)!r})
+        logger.install_as_streams()
+        warnings.warn("Could not detect delimiter. Falling back to comma.",
+                      UserWarning)
+        logger.restore_streams()
+        """
+    )
+
+    subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=str(pathlib.Path(__file__).resolve().parents[1]),
+        check=True,
+    )
+
+    assert "Could not detect delimiter" in log.read_text(encoding="utf-8")
+
+
+def test_streams_capture_tracebacks(tmp_path, restore_streams):
+    """traceback.print_exc() writes to sys.stderr, not through print()."""
+    import traceback
+
+    from lx.logger import TeeLogger
+
+    log = tmp_path / "batch_log.txt"
+    logger = TeeLogger(file_path=str(log))
+    logger.install_as_streams()
+    try:
+        raise RuntimeError("merge blew up")
+    except RuntimeError:
+        traceback.print_exc()
+    finally:
+        logger.restore_streams()
+
+    body = log.read_text(encoding="utf-8")
+    assert "Traceback (most recent call last)" in body
+    assert "RuntimeError: merge blew up" in body
+
+
+def test_restore_streams_puts_the_originals_back(tmp_path, restore_streams):
+    from lx.logger import TeeLogger
+
+    before = (sys.stdout, sys.stderr)
+    logger = TeeLogger(file_path=str(tmp_path / "batch_log.txt"))
+
+    logger.install_as_streams()
+    assert (sys.stdout, sys.stderr) != before
+
+    logger.restore_streams()
+    assert (sys.stdout, sys.stderr) == before
+
+
+def test_multi_line_traceback_is_not_stamped_mid_line(tmp_path, restore_streams):
+    """Each stamped line must be a whole line, not a stream fragment."""
+    from lx.logger import TeeLogger
+
+    log = tmp_path / "batch_log.txt"
+    logger = TeeLogger(file_path=str(log))
+    logger.install_as_streams()
+    try:
+        sys.stderr.write("Traceback (most recent call last):\n")
+        sys.stderr.write('  File "x.py", ')      # fragment, no newline yet
+        sys.stderr.write("line 1, in <module>\n")
+    finally:
+        logger.restore_streams()
+
+    lines = log.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    assert lines[1].endswith('File "x.py", line 1, in <module>')
+
+
+def test_restore_streams_flushes_a_partial_line(tmp_path, restore_streams):
+    from lx.logger import TeeLogger
+
+    log = tmp_path / "batch_log.txt"
+    logger = TeeLogger(file_path=str(log))
+    logger.install_as_streams()
+    sys.stdout.write("no trailing newline")
+    logger.restore_streams()
+
+    assert "no trailing newline" in log.read_text(encoding="utf-8")

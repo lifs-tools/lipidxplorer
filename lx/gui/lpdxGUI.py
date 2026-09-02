@@ -3497,16 +3497,17 @@ intensity."""))
 		self._on_batch_log_tick()
 
 	def _finish_batch_logging(self):
-		"""Wind the run down: drain the log, then hand print() back.
+		"""Wind the run down: hand back print() and the streams, then drain.
 
-		Order matters. The last lines the batch wrote are still only in the
-		file, so they have to be pumped into the window before print() stops
-		going through the logger.
+		Order matters. restore_streams() flushes a trailing partial line into
+		the log, so it has to happen before the final drain -- otherwise that
+		last line sits in the file and never reaches the window.
 		"""
-		self._stop_batch_log_tail()
 		logger = getattr(self, "logger", None)
 		if logger is not None:
+			logger.restore_streams()
 			logger.restore_print()
+		self._stop_batch_log_tail()
 
 	def On_button_RUN_batch(self, evt):
 		"""
@@ -3643,6 +3644,9 @@ intensity."""))
 		print("Starting batch process...##",options)
 		#redirect all print() in this process to this logger
 		self.logger.install_as_print()
+		# ...and sys.stdout/sys.stderr with it, so warnings raised during the
+		# merge (a mis-detected CSV delimiter, say) are not lost.
+		self.logger.install_as_streams()
 		self._start_batch_log_tail()
 		# -----------------------------
 		# Payload passed to thread (not subprocess)

@@ -1,6 +1,37 @@
 import time
 import builtins
 import re
+import sys
+
+
+class _LineBuffer:
+    """Collect fragmentary stream writes and emit them one whole line at a time.
+
+    traceback.print_exc() and warnings.warn() reach sys.stderr as several
+    write() calls per line. Logging each call separately would stamp a
+    timestamp into the middle of a sentence, so hold on to a partial line
+    until its newline arrives.
+    """
+
+    def __init__(self, emit):
+        self._emit = emit
+        self._buffer = ""
+
+    def write(self, data):
+        if not data:
+            return
+        self._buffer += data
+        while "\n" in self._buffer:
+            line, self._buffer = self._buffer.split("\n", 1)
+            if line.strip():
+                self._emit(line)
+
+    def flush(self):
+        if self._buffer:
+            line, self._buffer = self._buffer, ""
+            if line.strip():
+                self._emit(line)
+
 
 class TeeLogger:
     def __init__(self, gui_writer=None, file_path=None, also_stdout=False):
@@ -10,6 +41,11 @@ class TeeLogger:
 
         # Save original print
         self._original_print = builtins.print
+
+        # Set by install_as_streams(); see restore_streams().
+        self._saved_stdout = None
+        self._saved_stderr = None
+        self._stream = None
 
         # Ensure log file exists
         if file_path:
@@ -82,3 +118,32 @@ class TeeLogger:
         away into that run's log instead of reaching the user.
         """
         builtins.print = self._original_print
+
+    def install_as_streams(self):
+        """Route sys.stdout and sys.stderr here as well as print().
+
+        install_as_print() only rebinds builtins.print, but warnings.warn()
+        and traceback.print_exc() write straight to sys.stderr. In a windowed
+        PyInstaller build that is a null sink, so those messages vanish --
+        including "Could not detect delimiter ... falling back to comma",
+        which silently changes how a result file is parsed.
+        """
+        if self._saved_stdout is None:
+            self._saved_stdout = sys.stdout
+            self._saved_stderr = sys.stderr
+
+        self._stream = _LineBuffer(self.log)
+        sys.stdout = self._stream
+        sys.stderr = self._stream
+
+    def restore_streams(self):
+        """Undo install_as_streams(), flushing any partial line first."""
+        if self._stream is not None:
+            self._stream.flush()
+            self._stream = None
+
+        if self._saved_stdout is not None:
+            sys.stdout = self._saved_stdout
+            sys.stderr = self._saved_stderr
+            self._saved_stdout = None
+            self._saved_stderr = None

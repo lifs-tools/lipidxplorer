@@ -5,7 +5,7 @@ import time
 import traceback
 from pathlib import Path
 
-from typing import Dict, List, Any
+from typing import Any, Dict, List, Optional
 import pandas as pd
 import gc  # For manual memory cleanup
 import copy
@@ -374,7 +374,13 @@ def process_sample(args: tuple) -> Dict[str, Any]:
 # ============================================================
 # Controller: manages pool + collects + merges
 # ============================================================
-def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_threshold: float = None, log_file=None):
+def run_batch(
+    options: dict,
+    queries: list,
+    n_cores: Optional[int] = None,
+    occurrence_threshold: Optional[float] = None,
+    log_file: Optional[str] = None,
+):
     """
     Batch controller:
       1) Find input samples using getInputFiles().
