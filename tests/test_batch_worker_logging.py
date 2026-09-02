@@ -319,3 +319,57 @@ def test_teelogger_without_context_is_unchanged(tmp_path):
     TeeLogger(file_path=str(log)).log("no context")
 
     assert log.read_text(encoding="utf-8").rstrip().endswith("] no context")
+
+
+def test_close_flushes_a_partial_line_and_releases_the_handle(tmp_path):
+    log = tmp_path / "batch_log.txt"
+    sink = _WorkerLog(str(log))
+
+    sink.write("no trailing newline")
+    sink.close()
+
+    assert sink._handle is None
+    assert "no trailing newline" in log.read_text(encoding="utf-8")
+
+
+def test_writing_after_close_reopens_and_appends(tmp_path):
+    """A pool worker is reused across samples; the sink must survive that."""
+    log = tmp_path / "batch_log.txt"
+    sink = _WorkerLog(str(log))
+
+    sink.write("first sample\n")
+    sink.close()
+    sink.write("second sample\n")
+    sink.close()
+
+    lines = log.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    assert lines[0].endswith("first sample")
+    assert lines[1].endswith("second sample")
+
+
+def test_the_handle_is_opened_once_not_per_line(tmp_path, monkeypatch):
+    """Reopening per line cost ~20% of a run's wall clock (much more on
+    Windows, where a scanner runs on every open of a contended file)."""
+    log = tmp_path / "batch_log.txt"
+    real_open = open
+    opens = []
+
+    def counting_open(*args, **kwargs):
+        opens.append(args[0])
+        return real_open(*args, **kwargs)
+
+    monkeypatch.setattr("builtins.open", counting_open)
+    sink = _WorkerLog(str(log))
+    for i in range(50):
+        sink.write(f"line {i}\n")
+    sink.close()
+
+    assert len(opens) == 1, f"expected one open for 50 lines, got {len(opens)}"
+
+
+def test_a_vanished_log_directory_does_not_kill_the_worker(tmp_path):
+    sink = _WorkerLog(str(tmp_path / "gone" / "batch_log.txt"))
+
+    sink.write("this cannot be written anywhere\n")  # must not raise
+    sink.close()

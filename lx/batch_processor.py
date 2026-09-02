@@ -46,16 +46,38 @@ class _WorkerLog:
     assembled from several stdout fragments is timestamped once, in the same
     format TeeLogger uses, rather than once per fragment.
 
-    The file is opened and closed per line. That is slower than holding a
-    handle open, but progress lines are infrequent and it keeps writes from
-    several worker processes from interleaving mid-line: on both POSIX and
-    Windows an O_APPEND write this small lands atomically.
+    The handle is opened once and held. It used to be opened and closed per
+    line, on the assumption that progress lines were infrequent -- wrong,
+    because sys.stdout and sys.stderr are redirected here too, so this
+    carries everything doImport, readSpectra and the MFQL interpreter print:
+    around 750 lines per sample. Reopening a file that every worker is
+    appending to is cheap on APFS (~70us) but expensive on Windows, where an
+    on-access virus scanner runs on each open; a 14-sample run took 441s
+    instead of 227s. Now it is one open per worker instead of ~10000.
+
+    Each line is written and flushed in one call, so it still lands whole:
+    on both POSIX and Windows an O_APPEND write this small is atomic, which
+    is what keeps several workers from interleaving mid-line.
     """
 
     def __init__(self, log_file, context=""):
         self._log_file = log_file
         self._context = context
         self._buffer = ""
+        self._handle = None
+
+    def _open(self):
+        """Return the shared log handle, opening it on first use.
+
+        Returns None if the log cannot be opened at all -- a worker has to
+        finish its sample either way.
+        """
+        if self._handle is None:
+            try:
+                self._handle = open(self._log_file, "a", encoding="utf-8")
+            except Exception:
+                return None
+        return self._handle
 
     def write(self, data):
         if not data:
@@ -68,19 +90,33 @@ class _WorkerLog:
     def _emit(self, line):
         if not line.strip():
             return
+        handle = self._open()
+        if handle is None:
+            return
         stamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
         prefix = f"{stamp} {self._context}" if self._context else stamp
         try:
-            with open(self._log_file, "a", encoding="utf-8") as handle:
-                handle.write(f"{prefix} {line}\n")
+            handle.write(f"{prefix} {line}\n")
+            handle.flush()
         except Exception:
             # A worker must finish its sample even if the log has gone away.
-            pass
+            # Drop the handle so a later line can try to reopen it.
+            self._handle = None
 
     def flush(self):
         if self._buffer:
             line, self._buffer = self._buffer, ""
             self._emit(line)
+
+    def close(self):
+        """Flush and release the handle; a later write reopens it."""
+        self.flush()
+        if self._handle is not None:
+            try:
+                self._handle.close()
+            except Exception:
+                pass
+            self._handle = None
 
 
 def _worker_context(sample_id):
@@ -376,7 +412,7 @@ def process_sample(args: tuple) -> Dict[str, Any]:
 
         print(f"DONE sample='{sample_id}'", flush=True)
         if sink:
-            sink.flush()
+            sink.close()
         return {
             "sample_id": sample_id,
             "status": "OK",
@@ -387,7 +423,7 @@ def process_sample(args: tuple) -> Dict[str, Any]:
         print(f"FATAL ERROR in sample '{sample_id}': {e}", flush=True)
         traceback.print_exc()
         if sink:
-            sink.flush()
+            sink.close()
         return {
             "sample_id": sample_id,
             "status": "ERROR",
