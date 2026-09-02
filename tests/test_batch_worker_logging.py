@@ -279,3 +279,43 @@ def test_worker_context_falls_back_to_the_raw_name(monkeypatch):
 
     monkeypatch.setattr(mp, "current_process", lambda: _Proc())
     assert batch_processor._worker_context("s1") == "[MainProcess s1]"
+
+
+def test_teelogger_context_matches_the_worker_format(tmp_path):
+    """The controller's lines are labelled the same way the workers' are."""
+    from lx.logger import TeeLogger
+
+    log = tmp_path / "batch_log.txt"
+    logger = TeeLogger(file_path=str(log), context="[MAIN]")
+
+    logger.log("Found 12 input sample(s)")
+
+    line = log.read_text(encoding="utf-8").rstrip()
+    assert line.endswith("[MAIN] Found 12 input sample(s)")
+
+
+def test_teelogger_context_applies_to_captured_streams(tmp_path, restore_streams):
+    """Warnings raised during the merge are labelled too, not just log() calls."""
+    from lx.logger import TeeLogger
+
+    log = tmp_path / "batch_log.txt"
+    logger = TeeLogger(file_path=str(log), context="[MAIN]")
+    logger.install_as_streams()
+    try:
+        sys.stderr.write("something from deep in the merge\n")
+    finally:
+        logger.restore_streams()
+
+    assert log.read_text(encoding="utf-8").rstrip().endswith(
+        "[MAIN] something from deep in the merge"
+    )
+
+
+def test_teelogger_without_context_is_unchanged(tmp_path):
+    """Other callers of TeeLogger must not gain a stray separator."""
+    from lx.logger import TeeLogger
+
+    log = tmp_path / "plain.txt"
+    TeeLogger(file_path=str(log)).log("no context")
+
+    assert log.read_text(encoding="utf-8").rstrip().endswith("] no context")

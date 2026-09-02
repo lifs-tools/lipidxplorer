@@ -3638,7 +3638,10 @@ intensity."""))
 		self.logger = TeeLogger(
 			gui_writer=None,
 			file_path=log_path,
-			also_stdout=False
+			also_stdout=False,
+			# Matches the "[W3 <sample>]" the workers stamp on their lines, so
+			# every line in the log says which process it came from.
+			context="[MAIN]"
 		)
 		self.logger.log("Starting batch process...")
 		print("Starting batch process...##",options)

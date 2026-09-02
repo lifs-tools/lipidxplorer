@@ -34,10 +34,15 @@ class _LineBuffer:
 
 
 class TeeLogger:
-    def __init__(self, gui_writer=None, file_path=None, also_stdout=False):
+    def __init__(self, gui_writer=None, file_path=None, also_stdout=False,
+                 context=""):
         self.gui_writer = gui_writer
         self.file_path = file_path
         self.also_stdout = also_stdout
+        # Stamped onto every line, so controller output is as attributable as
+        # the workers' -- including lines from code that has no idea a batch
+        # is running (see _WorkerLog in lx.batch_processor).
+        self.context = context
 
         # Save original print
         self._original_print = builtins.print
@@ -54,7 +59,8 @@ class TeeLogger:
 
     def log(self, text):
         timestamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
-        line = f"{timestamp} {text}"
+        prefix = f"{timestamp} {self.context}" if self.context else timestamp
+        line = f"{prefix} {text}"
 
         # GUI output
         if self.gui_writer:

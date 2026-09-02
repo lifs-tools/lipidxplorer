@@ -496,13 +496,13 @@ def run_batch(
             if status == "OK" and path:
                 sample_csv_paths.append(path)
                 n_ok += 1
-                log(f"[MAIN] ({n_done}/{n_total}) OK sample='{sid}' path='{path}'")
+                log(f"({n_done}/{n_total}) OK sample='{sid}' path='{path}'")
             elif status == "OK":
                 n_empty += 1
-                log(f"[MAIN] ({n_done}/{n_total}) no hits for sample='{sid}'")
+                log(f"({n_done}/{n_total}) no hits for sample='{sid}'")
             else:
                 n_err += 1
-                log(f"[MAIN] ({n_done}/{n_total}) FAILED sample='{sid}':\n"
+                log(f"({n_done}/{n_total}) FAILED sample='{sid}':\n"
                     f"{r.get('error') or 'no error detail returned'}")
 
     duration = time.time() - start
@@ -636,6 +636,15 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
             sample = f.read(4096)
 
         text = sample.decode("utf-8-sig", errors="replace")
+
+        # A fixed-size read almost always stops mid-line, and the short line
+        # that leaves behind has a different field count from the rest, which
+        # is exactly what Sniffer's consistency check rejects. Rows here run
+        # to several hundred characters, so this failed for *every* file and
+        # warned on each one. Feed the sniffer whole lines only.
+        lines = text.splitlines(keepends=True)
+        if len(lines) > 1 and not lines[-1].endswith("\n"):
+            text = "".join(lines[:-1])
 
         try:
             # csv.Sniffer wants the candidates as one string of characters.
