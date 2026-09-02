@@ -225,3 +225,57 @@ def test_restore_streams_flushes_a_partial_line(tmp_path, restore_streams):
     logger.restore_streams()
 
     assert "no trailing newline" in log.read_text(encoding="utf-8")
+
+
+def test_context_is_stamped_on_every_line(tmp_path):
+    """Deep code (doImport, the MFQL interpreter) knows nothing about batches.
+
+    It just calls print(), so the context has to be applied by the sink for
+    those lines to be attributable at all.
+    """
+    log = tmp_path / "batch_log.txt"
+    sink = _WorkerLog(str(log), context="[W3 sampleA]")
+
+    sink.write("Building MasterScan\n")
+    sink.write("some line from deep in readSpectra\n")
+
+    lines = log.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    assert all("[W3 sampleA]" in line for line in lines)
+    assert lines[1].endswith("[W3 sampleA] some line from deep in readSpectra")
+
+
+def test_context_is_optional(tmp_path):
+    """Without a context the line keeps its plain timestamp, with no gap."""
+    log = tmp_path / "batch_log.txt"
+    sink = _WorkerLog(str(log))
+
+    sink.write("no context here\n")
+
+    line = log.read_text(encoding="utf-8").rstrip()
+    assert line.endswith("] no context here")
+
+
+def test_worker_context_shortens_the_pool_worker_name(monkeypatch):
+    import multiprocessing as mp
+
+    from lx import batch_processor
+
+    class _Proc:
+        name = "SpawnPoolWorker-7"
+
+    monkeypatch.setattr(mp, "current_process", lambda: _Proc())
+    assert batch_processor._worker_context("240506_QC_a") == "[W7 240506_QC_a]"
+
+
+def test_worker_context_falls_back_to_the_raw_name(monkeypatch):
+    """Outside a pool the process is 'MainProcess', which has no number."""
+    import multiprocessing as mp
+
+    from lx import batch_processor
+
+    class _Proc:
+        name = "MainProcess"
+
+    monkeypatch.setattr(mp, "current_process", lambda: _Proc())
+    assert batch_processor._worker_context("s1") == "[MainProcess s1]"
