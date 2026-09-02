@@ -88,9 +88,10 @@ def test_a_vanished_log_does_not_kill_the_worker(tmp_path):
 
 
 def test_install_redirects_print_and_stderr(tmp_path, restore_streams):
+    """Redirection is verbose-only; see test_quiet_by_default_... below."""
     log = tmp_path / "batch_log.txt"
 
-    sink = _install_worker_logging(str(log))
+    sink = _install_worker_logging(str(log), verbose=True)
     assert sink is not None
 
     print("progress from the worker")
@@ -373,3 +374,35 @@ def test_a_vanished_log_directory_does_not_kill_the_worker(tmp_path):
 
     sink.write("this cannot be written anywhere\n")  # must not raise
     sink.close()
+
+
+def test_quiet_by_default_leaves_print_and_streams_alone(tmp_path, restore_streams):
+    """The library chatter is ~750 lines/sample against ~35 of our own.
+
+    Capturing it cost a 14-sample Windows run 441s against 227s, so it is
+    opt-in; the worker's own progress still reaches the log either way.
+    """
+    log = tmp_path / "batch_log.txt"
+    before = (builtins.print, sys.stdout, sys.stderr)
+
+    sink = _install_worker_logging(str(log), context="[W1 s]")
+
+    assert sink is not None, "the worker still needs a sink for its own lines"
+    assert (builtins.print, sys.stdout, sys.stderr) == before
+
+    sink.write("START pid=1\n")
+    sink.close()
+    assert "START pid=1" in log.read_text(encoding="utf-8")
+
+
+def test_verbose_captures_print_and_streams(tmp_path, restore_streams):
+    log = tmp_path / "batch_log.txt"
+
+    sink = _install_worker_logging(str(log), context="[W1 s]", verbose=True)
+    print("chatter from the MFQL interpreter")
+    sys.stderr.write("and from stderr\n")
+    sink.close()
+
+    body = log.read_text(encoding="utf-8")
+    assert "chatter from the MFQL interpreter" in body
+    assert "and from stderr" in body

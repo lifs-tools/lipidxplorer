@@ -47,13 +47,13 @@ class _WorkerLog:
     format TeeLogger uses, rather than once per fragment.
 
     The handle is opened once and held. It used to be opened and closed per
-    line, on the assumption that progress lines were infrequent -- wrong,
-    because sys.stdout and sys.stderr are redirected here too, so this
-    carries everything doImport, readSpectra and the MFQL interpreter print:
-    around 750 lines per sample. Reopening a file that every worker is
-    appending to is cheap on APFS (~70us) but expensive on Windows, where an
-    on-access virus scanner runs on each open; a 14-sample run took 441s
-    instead of 227s. Now it is one open per worker instead of ~10000.
+    line, which was affordable only as long as the log stayed small -- and
+    in verbose mode it does not, since sys.stdout and sys.stderr are routed
+    here as well and it then carries everything doImport, readSpectra and
+    the MFQL interpreter print (~750 lines per sample). Reopening a file
+    every worker is appending to is cheap on APFS (~70us) but expensive on
+    Windows, where an on-access virus scanner runs on each open; a
+    14-sample run took 441s instead of 227s.
 
     Each line is written and flushed in one call, so it still lands whole:
     on both POSIX and Windows an O_APPEND write this small is atomic, which
@@ -133,35 +133,44 @@ def _worker_context(sample_id):
     return f"[{worker} {sample_id}]"
 
 
-def _install_worker_logging(log_file, context=""):
-    """Route this worker process's output into the shared batch log.
+def _install_worker_logging(log_file, context="", verbose=False):
+    """Give this worker process a sink that appends to the shared batch log.
 
     Workers are started with the 'spawn' method, so they get a fresh
     interpreter: they do not inherit the TeeLogger that the GUI installs over
     builtins.print, and in a windowed PyInstaller bundle their stdout and
-    stderr go to a null sink. Without this, every progress line and every
-    traceback raised inside a worker is discarded, and the GUI shows nothing
-    between "Using N worker process(es)" and the first completed sample.
+    stderr go to a null sink. Without a sink here, every progress line and
+    every traceback raised inside a worker is discarded, and the GUI shows
+    nothing between "Using N worker process(es)" and the first completed
+    sample.
 
-    `context` is prepended to every line the worker emits, so output from the
-    deeper code path -- doImport, readSpectra, the MFQL interpreter -- is
-    attributable even though none of it knows a batch is running. Several
-    workers interleave in one log, so without it those lines are anonymous.
+    `context` is prepended to every line, so lines from several workers
+    interleaved in one log stay attributable.
 
-    Returns the sink so the caller can flush it, or None when no log file was
-    configured (running head-less from a script, say).
+    `verbose` additionally redirects builtins.print, sys.stdout and
+    sys.stderr into the sink, which catches output from the deeper code path
+    -- doImport, readSpectra, the MFQL interpreter -- none of which knows a
+    batch is running. Measured at ~750 lines per sample against ~35 for the
+    worker's own progress, and capturing it cost a 14-sample Windows run
+    441s against 227s, so it is off unless asked for.
+
+    Returns the sink, or None when no log file was configured (running
+    head-less from a script, say).
     """
     if not log_file:
         return None
 
     sink = _WorkerLog(log_file, context=context)
-    sys.stdout = sink
-    sys.stderr = sink
 
-    def worker_print(*args, **kwargs):
-        sink.write(" ".join(str(a) for a in args) + "\n")
+    if verbose:
+        sys.stdout = sink
+        sys.stderr = sink
 
-    builtins.print = worker_print
+        def worker_print(*args, **kwargs):
+            sink.write(" ".join(str(a) for a in args) + "\n")
+
+        builtins.print = worker_print
+
     return sink
 
 
@@ -334,12 +343,24 @@ def process_sample(args: tuple) -> Dict[str, Any]:
 
     sample_path, sample_id, sample_entry_name, options, queries, out_dir, log_file = args
 
-    # Must come first: everything below reports through print(), which is
+    # Must come first: everything below reports through log(), which is
     # otherwise discarded in a spawned worker (see _install_worker_logging).
-    # The context makes every line -- including those from doImport and the
-    # MFQL interpreter, which know nothing about batches -- attributable to
-    # this worker and this sample.
-    sink = _install_worker_logging(log_file, _worker_context(sample_id))
+    # The context makes every line attributable to this worker and sample.
+    # verboseWorkerLog additionally captures the library chatter from
+    # doImport and the MFQL interpreter; it is off by default because that
+    # is ~750 lines per sample against the six this function writes.
+    sink = _install_worker_logging(
+        log_file,
+        _worker_context(sample_id),
+        verbose=bool(options.get("verboseWorkerLog", False)),
+    )
+
+    def log(message):
+        """This worker's own progress -- always logged, verbose or not."""
+        if sink:
+            sink.write(str(message) + "\n")
+        else:
+            print(message, flush=True)
 
     # Per-worker deep copy so processes don't share mutable state
     import copy as _copy
@@ -350,15 +371,15 @@ def process_sample(args: tuple) -> Dict[str, Any]:
     # The pid is recorded once here rather than on every line: the context
     # prefix already identifies the worker, and this is enough to tie it to
     # a process in `ps` when someone needs that.
-    print(f"START pid={pid} file='{sample_path}' ({len(queries)} queries)", flush=True)
+    log(f"START pid={pid} file='{sample_path}' ({len(queries)} queries)")
 
     try:
         # -----------------------------------------------------------
         # Build MasterScan
         # -----------------------------------------------------------
-        print(f"Building MasterScan for '{sample_id}'", flush=True)
+        log(f"Building MasterScan for '{sample_id}'")
         scan = build_master_scan(sample_path, sample_entry_name, options)
-        print(f"MasterScan READY for '{sample_id}'", flush=True)
+        log(f"MasterScan READY for '{sample_id}'")
 
         # -----------------------------------------------------------
         # Run all MFQL queries on this scan
@@ -366,16 +387,16 @@ def process_sample(args: tuple) -> Dict[str, Any]:
         all_hits = []
         for i, q in enumerate(queries, 1):
             q_name, q_path = q["name"], q["path"]
-            print(f"({i}/{len(queries)}) Running MFQL '{q_name}' on '{sample_id}'", flush=True)
+            log(f"({i}/{len(queries)}) Running MFQL '{q_name}' on '{sample_id}'")
             try:
                 hits = run_mfql_on_scan(scan, q_path, options)
             except Exception as e_q:
-                print(f"ERROR in MFQL '{q_name}' on '{sample_id}': {e_q}", flush=True)
-                traceback.print_exc()
+                log(f"ERROR in MFQL '{q_name}' on '{sample_id}': {e_q}")
+                log(traceback.format_exc())
                 continue
 
             if hits is None or hits.empty:
-                print(f"No hits for MFQL '{q_name}' on '{sample_id}'", flush=True)
+                log(f"No hits for MFQL '{q_name}' on '{sample_id}'")
                 continue
 
             hits["sample_id"] = sample_id
@@ -388,20 +409,20 @@ def process_sample(args: tuple) -> Dict[str, Any]:
             df = pd.DataFrame()
 
         duration = time.time() - t0
-        print(f"FINISHED MFQL for '{sample_id}' in {duration:.2f}s ({len(df)} rows)", flush=True)
+        log(f"FINISHED MFQL for '{sample_id}' in {duration:.2f}s ({len(df)} rows)")
 
         # -----------------------------------------------------------
         # Write per-sample CSV (only if there are hits)
         # -----------------------------------------------------------
         if df.empty:
             out_path = None
-            print(f"No hits for '{sample_id}', no CSV written.", flush=True)
+            log(f"No hits for '{sample_id}', no CSV written.")
         else:
             out_dir_path = Path(out_dir)
             out_dir_path.mkdir(parents=True, exist_ok=True)
             out_path = out_dir_path / f"{sample_id}.csv"
             df.to_csv(out_path, index=False)
-            print(f"Wrote per-sample CSV '{out_path}'", flush=True)
+            log(f"Wrote per-sample CSV '{out_path}'")
 
         # Cleanup big objects
         try:
@@ -410,7 +431,7 @@ def process_sample(args: tuple) -> Dict[str, Any]:
             pass
         gc.collect()
 
-        print(f"DONE sample='{sample_id}'", flush=True)
+        log(f"DONE sample='{sample_id}'")
         if sink:
             sink.close()
         return {
@@ -420,8 +441,8 @@ def process_sample(args: tuple) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        print(f"FATAL ERROR in sample '{sample_id}': {e}", flush=True)
-        traceback.print_exc()
+        log(f"FATAL ERROR in sample '{sample_id}': {e}")
+        log(traceback.format_exc())
         if sink:
             sink.close()
         return {
