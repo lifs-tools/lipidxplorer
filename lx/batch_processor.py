@@ -5,7 +5,7 @@ import time
 import traceback
 from pathlib import Path
 
-from typing import Dict, List, Any
+from typing import Any, Dict, List, Optional
 import pandas as pd
 import gc  # For manual memory cleanup
 import copy
@@ -37,6 +37,96 @@ from lx.logger import TeeLogger
 import builtins
 LOGGER = None   # Will be set by run_batch()
 # ===========================================================================
+
+
+class _WorkerLog:
+    """Line-buffered sink that appends a worker's output to the batch log.
+
+    Partial writes are buffered until a newline arrives so that a line
+    assembled from several stdout fragments is timestamped once, in the same
+    format TeeLogger uses, rather than once per fragment.
+
+    The file is opened and closed per line. That is slower than holding a
+    handle open, but progress lines are infrequent and it keeps writes from
+    several worker processes from interleaving mid-line: on both POSIX and
+    Windows an O_APPEND write this small lands atomically.
+    """
+
+    def __init__(self, log_file, context=""):
+        self._log_file = log_file
+        self._context = context
+        self._buffer = ""
+
+    def write(self, data):
+        if not data:
+            return
+        self._buffer += data
+        while "\n" in self._buffer:
+            line, self._buffer = self._buffer.split("\n", 1)
+            self._emit(line)
+
+    def _emit(self, line):
+        if not line.strip():
+            return
+        stamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
+        prefix = f"{stamp} {self._context}" if self._context else stamp
+        try:
+            with open(self._log_file, "a", encoding="utf-8") as handle:
+                handle.write(f"{prefix} {line}\n")
+        except Exception:
+            # A worker must finish its sample even if the log has gone away.
+            pass
+
+    def flush(self):
+        if self._buffer:
+            line, self._buffer = self._buffer, ""
+            self._emit(line)
+
+
+def _worker_context(sample_id):
+    """Build the diagnostic context stamped onto this worker's log lines.
+
+    Pool workers are reused across samples, so the label names both the
+    worker -- stable for the life of the process -- and the sample it is
+    working on right now. multiprocessing already names its pool children
+    'SpawnPoolWorker-3'; shorten that to 'W3' to keep the prefix narrow.
+    """
+    name = mp.current_process().name
+    match = re.search(r"(\d+)$", name)
+    worker = f"W{match.group(1)}" if match else name
+    return f"[{worker} {sample_id}]"
+
+
+def _install_worker_logging(log_file, context=""):
+    """Route this worker process's output into the shared batch log.
+
+    Workers are started with the 'spawn' method, so they get a fresh
+    interpreter: they do not inherit the TeeLogger that the GUI installs over
+    builtins.print, and in a windowed PyInstaller bundle their stdout and
+    stderr go to a null sink. Without this, every progress line and every
+    traceback raised inside a worker is discarded, and the GUI shows nothing
+    between "Using N worker process(es)" and the first completed sample.
+
+    `context` is prepended to every line the worker emits, so output from the
+    deeper code path -- doImport, readSpectra, the MFQL interpreter -- is
+    attributable even though none of it knows a batch is running. Several
+    workers interleave in one log, so without it those lines are anonymous.
+
+    Returns the sink so the caller can flush it, or None when no log file was
+    configured (running head-less from a script, say).
+    """
+    if not log_file:
+        return None
+
+    sink = _WorkerLog(log_file, context=context)
+    sys.stdout = sink
+    sys.stderr = sink
+
+    def worker_print(*args, **kwargs):
+        sink.write(" ".join(str(a) for a in args) + "\n")
+
+    builtins.print = worker_print
+    return sink
 
 
 
@@ -196,7 +286,7 @@ def process_sample(args: tuple) -> Dict[str, Any]:
         options:   options dict (will be deep-copied in worker)
         queries:   list of {"name": ..., "path": ...} MFQL queries
         out_dir:   directory where per-sample CSVs are written
-        log_file:  (kept for compatibility, not used here)
+        log_file:  shared batch log this worker appends its progress to
 
     Returns:
         dict with fields:
@@ -208,21 +298,31 @@ def process_sample(args: tuple) -> Dict[str, Any]:
 
     sample_path, sample_id, sample_entry_name, options, queries, out_dir, log_file = args
 
+    # Must come first: everything below reports through print(), which is
+    # otherwise discarded in a spawned worker (see _install_worker_logging).
+    # The context makes every line -- including those from doImport and the
+    # MFQL interpreter, which know nothing about batches -- attributable to
+    # this worker and this sample.
+    sink = _install_worker_logging(log_file, _worker_context(sample_id))
+
     # Per-worker deep copy so processes don't share mutable state
     import copy as _copy
     options = _copy.deepcopy(options)
 
     pid = os.getpid()
     t0 = time.time()
-    print(f"[PID {pid}] START sample='{sample_id}' file='{sample_path}' ({len(queries)} queries)", flush=True)
+    # The pid is recorded once here rather than on every line: the context
+    # prefix already identifies the worker, and this is enough to tie it to
+    # a process in `ps` when someone needs that.
+    print(f"START pid={pid} file='{sample_path}' ({len(queries)} queries)", flush=True)
 
     try:
         # -----------------------------------------------------------
         # Build MasterScan
         # -----------------------------------------------------------
-        print(f"[PID {pid}] Building MasterScan for '{sample_id}'", flush=True)
+        print(f"Building MasterScan for '{sample_id}'", flush=True)
         scan = build_master_scan(sample_path, sample_entry_name, options)
-        print(f"[PID {pid}] MasterScan READY for '{sample_id}'", flush=True)
+        print(f"MasterScan READY for '{sample_id}'", flush=True)
 
         # -----------------------------------------------------------
         # Run all MFQL queries on this scan
@@ -230,16 +330,16 @@ def process_sample(args: tuple) -> Dict[str, Any]:
         all_hits = []
         for i, q in enumerate(queries, 1):
             q_name, q_path = q["name"], q["path"]
-            print(f"[PID {pid}] ({i}/{len(queries)}) Running MFQL '{q_name}' on '{sample_id}'", flush=True)
+            print(f"({i}/{len(queries)}) Running MFQL '{q_name}' on '{sample_id}'", flush=True)
             try:
                 hits = run_mfql_on_scan(scan, q_path, options)
             except Exception as e_q:
-                print(f"[PID {pid}] ERROR in MFQL '{q_name}' on '{sample_id}': {e_q}", flush=True)
+                print(f"ERROR in MFQL '{q_name}' on '{sample_id}': {e_q}", flush=True)
                 traceback.print_exc()
                 continue
 
             if hits is None or hits.empty:
-                print(f"[PID {pid}] No hits for MFQL '{q_name}' on '{sample_id}'", flush=True)
+                print(f"No hits for MFQL '{q_name}' on '{sample_id}'", flush=True)
                 continue
 
             hits["sample_id"] = sample_id
@@ -252,20 +352,20 @@ def process_sample(args: tuple) -> Dict[str, Any]:
             df = pd.DataFrame()
 
         duration = time.time() - t0
-        print(f"[PID {pid}] FINISHED MFQL for '{sample_id}' in {duration:.2f}s ({len(df)} rows)", flush=True)
+        print(f"FINISHED MFQL for '{sample_id}' in {duration:.2f}s ({len(df)} rows)", flush=True)
 
         # -----------------------------------------------------------
         # Write per-sample CSV (only if there are hits)
         # -----------------------------------------------------------
         if df.empty:
             out_path = None
-            print(f"[PID {pid}] No hits for '{sample_id}', no CSV written.", flush=True)
+            print(f"No hits for '{sample_id}', no CSV written.", flush=True)
         else:
             out_dir_path = Path(out_dir)
             out_dir_path.mkdir(parents=True, exist_ok=True)
             out_path = out_dir_path / f"{sample_id}.csv"
             df.to_csv(out_path, index=False)
-            print(f"[PID {pid}] Wrote per-sample CSV '{out_path}'", flush=True)
+            print(f"Wrote per-sample CSV '{out_path}'", flush=True)
 
         # Cleanup big objects
         try:
@@ -274,7 +374,9 @@ def process_sample(args: tuple) -> Dict[str, Any]:
             pass
         gc.collect()
 
-        print(f"[PID {pid}] DONE sample='{sample_id}'", flush=True)
+        print(f"DONE sample='{sample_id}'", flush=True)
+        if sink:
+            sink.flush()
         return {
             "sample_id": sample_id,
             "status": "OK",
@@ -282,20 +384,30 @@ def process_sample(args: tuple) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        print(f"[PID {pid}] FATAL ERROR in sample '{sample_id}': {e}", flush=True)
+        print(f"FATAL ERROR in sample '{sample_id}': {e}", flush=True)
         traceback.print_exc()
+        if sink:
+            sink.flush()
         return {
             "sample_id": sample_id,
             "status": "ERROR",
             "path": None,
-            "error": str(e)
+            # Carried back to the controller so the GUI can show why this
+            # sample failed instead of a bare "ERROR".
+            "error": traceback.format_exc()
         }
 
 
 # ============================================================
 # Controller: manages pool + collects + merges
 # ============================================================
-def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_threshold: float = None, log_file=None):
+def run_batch(
+    options: dict,
+    queries: list,
+    n_cores: Optional[int] = None,
+    occurrence_threshold: Optional[float] = None,
+    log_file: Optional[str] = None,
+):
     """
     Batch controller:
       1) Find input samples using getInputFiles().
@@ -358,7 +470,10 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
     log(f"Using {n_cores} worker process(es)")
 
     sample_csv_paths: List[str] = []
+    n_total = len(tasks)
+    n_done = 0
     n_ok = 0
+    n_empty = 0
     n_err = 0
 
     start = time.time()
@@ -373,20 +488,33 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
             status = r.get("status")
             path = r.get("path")
             sid = r.get("sample_id")
+            n_done += 1
 
+            # "no hits" and "the worker raised" used to be reported by the same
+            # line, which made a broken sample indistinguishable from an empty
+            # one. Keep them apart, and print the error when there is one.
             if status == "OK" and path:
                 sample_csv_paths.append(path)
                 n_ok += 1
-                log(f"[MAIN] OK sample='{sid}' path='{path}' (total OK={n_ok})")
+                log(f"({n_done}/{n_total}) OK sample='{sid}' path='{path}'")
+            elif status == "OK":
+                n_empty += 1
+                log(f"({n_done}/{n_total}) no hits for sample='{sid}'")
             else:
                 n_err += 1
-                log(f"[MAIN] ERROR/EMPTY sample='{sid}' status='{status}' (total ERR/EMPTY={n_err})")
+                log(f"({n_done}/{n_total}) FAILED sample='{sid}':\n"
+                    f"{r.get('error') or 'no error detail returned'}")
 
     duration = time.time() - start
-    log(f"All samples processed in {duration:.2f}s")
+    log(f"All samples processed in {duration:.2f}s "
+        f"({n_ok} with hits, {n_empty} without hits, {n_err} failed)")
 
     if not sample_csv_paths:
         log("No valid per-sample results found.")
+        # Nothing was written, so the directory created above is empty. Leaving
+        # it behind contradicts the unticked "Save per sample result" box.
+        if not save_per_sample:
+            shutil.rmtree(per_sample_dir, ignore_errors=True)
         return {}
 
     # -----------------------------------------------------------
@@ -421,6 +549,10 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
         "processed": len(listFiles),
         "ok": n_ok,
         "errors": len(listFiles) - n_ok,
+        # "errors" above lumps empty samples in with failed ones and is kept
+        # for callers that already read it; these two report what happened.
+        "no_hits": n_empty,
+        "failed": n_err,
         "duration_sec": round(duration, 2),
         "cores_used": n_cores,
         "output_file": str(batch_result_path),
@@ -435,6 +567,10 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
     else:
         log("User does not want to keep per-sample results. Deleting temporary CSVs...")
         shutil.rmtree(per_sample_dir, ignore_errors=True)
+        # The per-sample paths logged above pointed into that directory, so say
+        # so rather than leaving a log full of files that no longer exist.
+        log(f"Removed {per_sample_dir}; the per-sample CSV paths logged above "
+            f"no longer exist. Merged results are in {batch_result_path}.")
 
     gc.collect()
 
@@ -501,10 +637,23 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
 
         text = sample.decode("utf-8-sig", errors="replace")
 
+        # A fixed-size read almost always stops mid-line, and the short line
+        # that leaves behind has a different field count from the rest, which
+        # is exactly what Sniffer's consistency check rejects. Rows here run
+        # to several hundred characters, so this failed for *every* file and
+        # warned on each one. Feed the sniffer whole lines only.
+        lines = text.splitlines(keepends=True)
+        if len(lines) > 1 and not lines[-1].endswith("\n"):
+            text = "".join(lines[:-1])
+
         try:
+            # csv.Sniffer wants the candidates as one string of characters.
+            # The list this used to pass happens to work -- the parameter is
+            # only ever used in `char in delimiters` tests -- but it violates
+            # the documented signature and type checkers flag it.
             return csv.Sniffer().sniff(
                 text,
-                delimiters=[",", ";", "\t", "|"]
+                delimiters=",;\t|"
             ).delimiter
         except Exception:
             warnings.warn(

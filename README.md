@@ -105,6 +105,44 @@ Releases should be signed and notarized instead; see below.
 (On Linux, PyInstaller does not embed an application icon in the binary — it
 prints a warning and skips that step, so the Linux binary has no embedded icon.)
 
+### Intel Macs
+
+Released macOS binaries are Apple Silicon (arm64) only. Due to dependency
+issues with libraries that are no longer updated to support Intel Macs
+(x86_64), and that therefore pose significant maintainability and security
+risks, we have decided not to build for that architecture.
+
+Concretely: numba stopped publishing macOS x86_64 wheels at 0.63.0, and
+llvmlite at 0.46.0. On an Intel machine there is no wheel to install, so the
+build falls back to compiling LLVM from source and fails. This affects running
+from source as well as building, since `uv sync` installs what `uv.lock` pins.
+
+#### Building for Intel yourself (unsupported)
+
+If you still want an Intel binary, you can build one by holding numba below
+that cutoff. **We give no guarantees about this path.** CI never exercises it,
+we do not test the resulting binary, and it stops working the moment numba
+0.62 falls out of step with the rest of the stack — a newer numpy, a newer
+Python, or a security fix that never lands on that branch. You are on your own
+for support.
+
+You need an actual Intel Mac: PyInstaller does not cross-compile, so an arm64
+machine cannot produce an x86_64 bundle. From a clean checkout:
+
+    uv add 'numba<0.63'
+    uv sync
+    uv run pyinstaller --noconfirm LipidXplorer.spec
+
+`uv add` rewrites `pyproject.toml` and `uv.lock` with the pin. llvmlite does
+not need pinning separately — numba 0.62's own requirement (`llvmlite<0.46`)
+pulls it back to 0.45.1, the last release with x86_64 wheels.
+
+The result is `dist/LipidXplorer.app`, x86_64 only and unsigned; see the
+quarantine note above for how to launch it. Afterwards, discard the local pin
+so it does not reach a commit:
+
+    git checkout pyproject.toml uv.lock
+
 ### Signing and notarizing the macOS build (maintainers)
 
 The whole flow is automated by `macos/sign-and-notarize.sh`; what follows is
@@ -146,7 +184,8 @@ it out of the DMG. Useful options: `--sign-only` (skip notarization),
 `--no-dmg`, `--identity`, `--dist-name`, `--entitlements`; see
 `macos/sign-and-notarize.sh --help`.
 
-Run it once per architecture — a bundle built on Apple Silicon is arm64-only.
+A bundle built on Apple Silicon is arm64-only, which is all releases ship —
+see *Intel Macs* below.
 
 **Entitlements are not optional here.** `macos/entitlements.plist` grants three
 things the hardened runtime otherwise blocks: `allow-jit` and
@@ -163,7 +202,7 @@ reports `rejected / source=Unnotarized Developer ID` for an app that is signed
 but not yet notarized — that is expected after `--sign-only`.
 
 **4. Continuous delivery.** `.github/workflows/build.yml` signs and notarizes
-the two macOS jobs when these repository secrets are present. Without them the
+the macOS job when these repository secrets are present. Without them the
 build still publishes a plain unsigned archive and logs a warning, so forks and
 dry runs keep working.
 
@@ -187,8 +226,7 @@ macOS builds** ticked. Every other commit publishes the unsigned `.tar.gz`.
 Use the manual run to prove the signing path works *before* you need it for a
 release — otherwise its first execution is the one that matters.
 
-Signed runs publish `.zip` and `.dmg` per architecture instead of the unsigned
-`.tar.gz`; both are stapled, and the app is stapled before the disk image is
+Signed runs publish `.zip` and `.dmg` instead of the unsigned `.tar.gz`; both are stapled, and the app is stapled before the disk image is
 built so the ticket survives a drag out of the DMG.
 
 ## Versioning

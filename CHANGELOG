@@ -1,26 +1,62 @@
+02/09/2026 LipidXplorer 1.5.0 - batch mode logging
+
+- Fixed: batch mode looked like it did nothing on macOS and Linux and was
+  reported as Windows-only, but it had been running correctly all along --
+  spawned workers do not inherit the GUI's print() redirection, so in a
+  packaged build their output was discarded. Workers now write their
+  progress and their tracebacks to the shared batch log.
+
+- Every batch log line now names the process that wrote it: "[MAIN]" for the
+  controller, "[W3 <sample>]" for a worker and the sample it is on. The label
+  is applied where the log is written, so output from the import and MFQL
+  code is attributable too.
+
+- Fixed: a sample whose worker crashed and a sample with no hits were
+  reported by the same line, and the worker's error was never printed. The
+  two are now distinct, failures carry the traceback, and progress is shown
+  as (n/total).
+
+- Fixed: the debug window was written to from the batch thread, which wxMSW
+  tolerates but wxOSX and wxGTK do not. It is now filled by a timer on the
+  main thread that tails the log file.
+
+- Fixed: warnings raised while merging per-sample results were discarded,
+  because only print() was redirected to the log and warnings go to stderr.
+
+- Fixed: delimiter detection for per-sample result files failed on every
+  file, because the 4096-byte sample it reads stops mid-line on rows this
+  wide. The silent fallback to comma was correct only by luck, and a
+  tab-limited run would have collapsed every merged row into one column.
+
+- Fixed: print() stayed redirected into a finished run's log file for the
+  rest of the session.
+
+- Fixed: with "Save per sample result" unticked, the log listed per-sample
+  CSV paths without noting they were then deleted, and an empty
+  per_sample_results directory was left behind when no sample produced hits.
+
 28/08/2026 LipidXplorer 1.5.0 - build system
 
-- Dependency management moved from Conda to uv. environment_ubuntu.yml and
-  environment_windows.yml are replaced by pyproject.toml and a committed
-  uv.lock. Python 3.12 is pinned in .python-version.
+- Dependency management moved from Conda to uv: pyproject.toml plus a
+  committed uv.lock, with Python 3.12 pinned in .python-version.
+  environment_ubuntu.yml and environment_windows.yml remain a supported
+  alternative for conda users, but uv.lock is authoritative.
 
-- Builds for Windows, Linux, and macOS (Apple Silicon and Intel) are produced
-  by GitHub Actions from a single PyInstaller spec file. macOS now gets a
-  proper .app bundle.
+- Windows, Linux, and macOS (Apple Silicon) builds are produced by GitHub
+  Actions from a single PyInstaller spec file, and macOS now gets a proper
+  .app bundle. There is no Intel macOS build: numba and llvmlite no longer
+  publish macOS x86_64 wheels.
 
 - Fixed: on Linux the application crashed at startup on machines without the
   X11 development package installed.
 
 - Fixed: on Linux and macOS the optional groups.txt occupation-threshold file
-  was never found, because its path was built with a hardcoded backslash. The
-  setting silently had no effect on those platforms.
+  was never found, because its path was built with a hardcoded backslash, so
+  the setting silently had no effect.
 
-- Fixed: `lx.fileReader.mzAPI.mzWiff` was imported through a doubled module
-  path (`lx.fileReader.lx.fileReader.mzAPI.mzWiff`) left behind by the
-  Python 3 migration; that path is now corrected. Opening a SCIEX .wiff
-  file still fails, however: `mzWiff` itself imports `wiffbridge`, a module
-  that is not part of this repository, so .wiff reading remains
-  unavailable.
+- Fixed: a doubled module path left by the Python 3 migration when importing
+  `lx.fileReader.mzAPI.mzWiff`. Opening a SCIEX .wiff file still fails, since
+  `mzWiff` imports `wiffbridge`, which is not part of this repository.
 
 - Removed roughly 17 MB of unused libraries from the distributed bundle
   (the tkinter stack, Pythonwin, setuptools).
