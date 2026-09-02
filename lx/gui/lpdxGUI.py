@@ -1547,6 +1547,18 @@ class LpdxFrame(wx.Frame):
 		
 		self.checkbox_save_per_sample.SetValue(False)  # unchecked by default
 
+		# Checkbox: "Verbose worker log"
+		self.checkbox_verbose_log = wx.CheckBox(self.batchPanel, -1, "Verbose worker log")
+		self.checkbox_verbose_log.SetToolTip(
+			wx.ToolTip(
+				"If enabled, batch_log.txt also records everything the import\n"
+				"and MFQL code prints, not just each worker's progress and\n"
+				"errors. Useful for diagnosis, but it is roughly 100x more\n"
+				"output and noticeably slows a run down."
+			)
+		)
+		self.checkbox_verbose_log.SetValue(False)  # unchecked by default
+
 
 
 
@@ -1694,6 +1706,7 @@ class LpdxFrame(wx.Frame):
 
 		# Right side checkbox
 		hbox_run.Add(self.checkbox_save_per_sample, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 20)
+		hbox_run.Add(self.checkbox_verbose_log, 0, wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 20)
 
 		# IMPORTANT: let row expand horizontally
 		batch_vbox.Add(hbox_run, 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 10)
@@ -3590,6 +3603,7 @@ intensity."""))
 			options["masterScanImport"] = self.text_ctrl_ImportDataSection.GetValue()
 			options["resultFile"] = self.text_ctrl_ImportDataSection.GetValue()
 			options["savePerSample"] = bool(self.checkbox_save_per_sample.IsChecked())
+			options["verboseWorkerLog"] = bool(self.checkbox_verbose_log.IsChecked())
 
 			project.testOptions()
 			project.formatOptions()
@@ -3759,6 +3773,7 @@ intensity."""))
 
 		opts["batch_mode"] = True
 		opts["savePerSample"] = bool(self.checkbox_save_per_sample.IsChecked())
+		opts["verboseWorkerLog"] = bool(self.checkbox_verbose_log.IsChecked())
 
 		return opts
 
