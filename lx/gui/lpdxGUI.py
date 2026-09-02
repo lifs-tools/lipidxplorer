@@ -3446,6 +3446,68 @@ intensity."""))
         
         
         
+	def _start_batch_log_tail(self):
+		"""Begin pumping the batch log file into the debug window.
+
+		Batch output arrives from two places the GUI cannot be written to
+		from: the background batch thread, and the spawned worker processes.
+		Both append to the log file instead, and this timer -- which fires on
+		the main thread -- is the only thing that touches the text control.
+		"""
+		if getattr(self, "_batch_log_timer", None) is None:
+			self._batch_log_timer = wx.Timer(self)
+			self.Bind(wx.EVT_TIMER, self._on_batch_log_tick, self._batch_log_timer)
+		self._batch_log_timer.Start(300)
+
+	def _on_batch_log_tick(self, evt=None):
+		"""Append everything written to the batch log since the last tick."""
+		path = getattr(self, "_batch_log_path", None)
+		if not path:
+			return
+
+		try:
+			with open(path, "r", encoding="utf-8", errors="replace") as handle:
+				handle.seek(self._batch_log_pos)
+				chunk = handle.read()
+				self._batch_log_pos = handle.tell()
+		except OSError:
+			# The log may not exist yet on the first tick.
+			return
+
+		if not chunk:
+			return
+
+		try:
+			self.debug.text_ctrl.AppendText(chunk)
+			# Follow the tail, as a console would.
+			self.debug.text_ctrl.GotoPos(self.debug.text_ctrl.GetLength())
+		except (AttributeError, RuntimeError):
+			# The debug window was closed while the batch was still running.
+			# Stop the timer here rather than via _stop_batch_log_tail, which
+			# would tick again and land straight back in this handler.
+			timer = getattr(self, "_batch_log_timer", None)
+			if timer is not None and timer.IsRunning():
+				timer.Stop()
+
+	def _stop_batch_log_tail(self):
+		"""Drain the log one last time, then stop the timer."""
+		timer = getattr(self, "_batch_log_timer", None)
+		if timer is not None and timer.IsRunning():
+			timer.Stop()
+		self._on_batch_log_tick()
+
+	def _finish_batch_logging(self):
+		"""Wind the run down: drain the log, then hand print() back.
+
+		Order matters. The last lines the batch wrote are still only in the
+		file, so they have to be pumped into the window before print() stops
+		going through the logger.
+		"""
+		self._stop_batch_log_tail()
+		logger = getattr(self, "logger", None)
+		if logger is not None:
+			logger.restore_print()
+
 	def On_button_RUN_batch(self, evt):
 		"""
 		Launch batch processing in a background thread.
@@ -3557,8 +3619,23 @@ intensity."""))
 		# Unified logger (GUI + file)
 		# -----------------------------
 		log_path = os.path.join(import_dir, "batch_log.txt")
+
+		# The log file is the single source of text for the debug window: this
+		# process writes to it through TeeLogger, the spawned workers append to
+		# it themselves, and a timer on the main thread pumps whatever is new
+		# into the control. That is why gui_writer is None here -- writing to
+		# the control from TeeLogger as well would double every line, and would
+		# do it from the batch thread, which is not allowed to touch wx.
+		# Remember where the file ends before anything is written so a second
+		# run does not replay the first one (TeeLogger appends).
+		try:
+			self._batch_log_pos = os.path.getsize(log_path)
+		except OSError:
+			self._batch_log_pos = 0
+		self._batch_log_path = log_path
+
 		self.logger = TeeLogger(
-			gui_writer=self.debug,
+			gui_writer=None,
 			file_path=log_path,
 			also_stdout=False
 		)
@@ -3566,6 +3643,7 @@ intensity."""))
 		print("Starting batch process...##",options)
 		#redirect all print() in this process to this logger
 		self.logger.install_as_print()
+		self._start_batch_log_tail()
 		# -----------------------------
 		# Payload passed to thread (not subprocess)
 		# -----------------------------
@@ -3590,7 +3668,9 @@ intensity."""))
 
 			print(f"Batch thread started. Using {n_cores} cores for processing.")
 			try:
-				summary = run_batch(
+				# run_batch logs its own summary line through print(), which
+				# now reaches the window via the log file.
+				run_batch(
 					payload["options"],
 					payload["queries"],
 					log_file=payload["log_file"],
@@ -3598,12 +3678,16 @@ intensity."""))
     				n_cores=n_cores	
 				)
 
-				wx.CallAfter(self.debug.text_ctrl.AppendText, "\nBatch processing completed.\n")
-				wx.CallAfter(self.button_RUN_batch.Enable)
-				wx.CallAfter(setattr, self, "isRunning", False)
+				print("Batch processing completed.")
 
-			except Exception as e:
-				wx.CallAfter(self.debug.text_ctrl.AppendText, f"\nBatch failed: {e}\n")
+			except Exception:
+				# A bare str(e) hid where the batch actually broke; the log file
+				# is the only record once the run is over, so put the traceback
+				# in it rather than a one-line summary.
+				print("Batch failed:\n" + traceback.format_exc())
+
+			finally:
+				wx.CallAfter(self._finish_batch_logging)
 				wx.CallAfter(self.button_RUN_batch.Enable)
 				wx.CallAfter(setattr, self, "isRunning", False)
 

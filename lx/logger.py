@@ -73,3 +73,12 @@ class TeeLogger:
             self.log(text)
 
         builtins.print = print_override
+
+    def restore_print(self):
+        """Undo install_as_print().
+
+        Without this, builtins.print stays bound to a finished run's logger
+        for the rest of the session, so anything printed afterwards is filed
+        away into that run's log instead of reaching the user.
+        """
+        builtins.print = self._original_print

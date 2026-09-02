@@ -39,6 +39,75 @@ LOGGER = None   # Will be set by run_batch()
 # ===========================================================================
 
 
+class _WorkerLog:
+    """Line-buffered sink that appends a worker's output to the batch log.
+
+    Partial writes are buffered until a newline arrives so that a line
+    assembled from several stdout fragments is timestamped once, in the same
+    format TeeLogger uses, rather than once per fragment.
+
+    The file is opened and closed per line. That is slower than holding a
+    handle open, but progress lines are infrequent and it keeps writes from
+    several worker processes from interleaving mid-line: on both POSIX and
+    Windows an O_APPEND write this small lands atomically.
+    """
+
+    def __init__(self, log_file):
+        self._log_file = log_file
+        self._buffer = ""
+
+    def write(self, data):
+        if not data:
+            return
+        self._buffer += data
+        while "\n" in self._buffer:
+            line, self._buffer = self._buffer.split("\n", 1)
+            self._emit(line)
+
+    def _emit(self, line):
+        if not line.strip():
+            return
+        stamp = time.strftime("[%Y-%m-%d %H:%M:%S]")
+        try:
+            with open(self._log_file, "a", encoding="utf-8") as handle:
+                handle.write(f"{stamp} {line}\n")
+        except Exception:
+            # A worker must finish its sample even if the log has gone away.
+            pass
+
+    def flush(self):
+        if self._buffer:
+            line, self._buffer = self._buffer, ""
+            self._emit(line)
+
+
+def _install_worker_logging(log_file):
+    """Route this worker process's output into the shared batch log.
+
+    Workers are started with the 'spawn' method, so they get a fresh
+    interpreter: they do not inherit the TeeLogger that the GUI installs over
+    builtins.print, and in a windowed PyInstaller bundle their stdout and
+    stderr go to a null sink. Without this, every progress line and every
+    traceback raised inside a worker is discarded, and the GUI shows nothing
+    between "Using N worker process(es)" and the first completed sample.
+
+    Returns the sink so the caller can flush it, or None when no log file was
+    configured (running head-less from a script, say).
+    """
+    if not log_file:
+        return None
+
+    sink = _WorkerLog(log_file)
+    sys.stdout = sink
+    sys.stderr = sink
+
+    def worker_print(*args, **kwargs):
+        sink.write(" ".join(str(a) for a in args) + "\n")
+
+    builtins.print = worker_print
+    return sink
+
+
 
 # ============================================================
 # Real LipidXplorer implementations (Batch-safe)
@@ -196,7 +265,7 @@ def process_sample(args: tuple) -> Dict[str, Any]:
         options:   options dict (will be deep-copied in worker)
         queries:   list of {"name": ..., "path": ...} MFQL queries
         out_dir:   directory where per-sample CSVs are written
-        log_file:  (kept for compatibility, not used here)
+        log_file:  shared batch log this worker appends its progress to
 
     Returns:
         dict with fields:
@@ -207,6 +276,10 @@ def process_sample(args: tuple) -> Dict[str, Any]:
     """
 
     sample_path, sample_id, sample_entry_name, options, queries, out_dir, log_file = args
+
+    # Must come first: everything below reports through print(), which is
+    # otherwise discarded in a spawned worker (see _install_worker_logging).
+    sink = _install_worker_logging(log_file)
 
     # Per-worker deep copy so processes don't share mutable state
     import copy as _copy
@@ -275,6 +348,8 @@ def process_sample(args: tuple) -> Dict[str, Any]:
         gc.collect()
 
         print(f"[PID {pid}] DONE sample='{sample_id}'", flush=True)
+        if sink:
+            sink.flush()
         return {
             "sample_id": sample_id,
             "status": "OK",
@@ -284,11 +359,15 @@ def process_sample(args: tuple) -> Dict[str, Any]:
     except Exception as e:
         print(f"[PID {pid}] FATAL ERROR in sample '{sample_id}': {e}", flush=True)
         traceback.print_exc()
+        if sink:
+            sink.flush()
         return {
             "sample_id": sample_id,
             "status": "ERROR",
             "path": None,
-            "error": str(e)
+            # Carried back to the controller so the GUI can show why this
+            # sample failed instead of a bare "ERROR".
+            "error": traceback.format_exc()
         }
 
 
@@ -358,7 +437,10 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
     log(f"Using {n_cores} worker process(es)")
 
     sample_csv_paths: List[str] = []
+    n_total = len(tasks)
+    n_done = 0
     n_ok = 0
+    n_empty = 0
     n_err = 0
 
     start = time.time()
@@ -373,20 +455,33 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
             status = r.get("status")
             path = r.get("path")
             sid = r.get("sample_id")
+            n_done += 1
 
+            # "no hits" and "the worker raised" used to be reported by the same
+            # line, which made a broken sample indistinguishable from an empty
+            # one. Keep them apart, and print the error when there is one.
             if status == "OK" and path:
                 sample_csv_paths.append(path)
                 n_ok += 1
-                log(f"[MAIN] OK sample='{sid}' path='{path}' (total OK={n_ok})")
+                log(f"[MAIN] ({n_done}/{n_total}) OK sample='{sid}' path='{path}'")
+            elif status == "OK":
+                n_empty += 1
+                log(f"[MAIN] ({n_done}/{n_total}) no hits for sample='{sid}'")
             else:
                 n_err += 1
-                log(f"[MAIN] ERROR/EMPTY sample='{sid}' status='{status}' (total ERR/EMPTY={n_err})")
+                log(f"[MAIN] ({n_done}/{n_total}) FAILED sample='{sid}':\n"
+                    f"{r.get('error') or 'no error detail returned'}")
 
     duration = time.time() - start
-    log(f"All samples processed in {duration:.2f}s")
+    log(f"All samples processed in {duration:.2f}s "
+        f"({n_ok} with hits, {n_empty} without hits, {n_err} failed)")
 
     if not sample_csv_paths:
         log("No valid per-sample results found.")
+        # Nothing was written, so the directory created above is empty. Leaving
+        # it behind contradicts the unticked "Save per sample result" box.
+        if not save_per_sample:
+            shutil.rmtree(per_sample_dir, ignore_errors=True)
         return {}
 
     # -----------------------------------------------------------
@@ -421,6 +516,10 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
         "processed": len(listFiles),
         "ok": n_ok,
         "errors": len(listFiles) - n_ok,
+        # "errors" above lumps empty samples in with failed ones and is kept
+        # for callers that already read it; these two report what happened.
+        "no_hits": n_empty,
+        "failed": n_err,
         "duration_sec": round(duration, 2),
         "cores_used": n_cores,
         "output_file": str(batch_result_path),
@@ -435,6 +534,10 @@ def run_batch(options: dict, queries: list, n_cores: int = None, occurrence_thre
     else:
         log("User does not want to keep per-sample results. Deleting temporary CSVs...")
         shutil.rmtree(per_sample_dir, ignore_errors=True)
+        # The per-sample paths logged above pointed into that directory, so say
+        # so rather than leaving a log full of files that no longer exist.
+        log(f"Removed {per_sample_dir}; the per-sample CSV paths logged above "
+            f"no longer exist. Merged results are in {batch_result_path}.")
 
     gc.collect()
 
