@@ -63,12 +63,18 @@ def test_flush_emits_a_trailing_partial_line(tmp_path):
 
 
 def test_blank_lines_are_not_timestamped(tmp_path):
+    """Stamping every fragment would fill the log with bare timestamps."""
     log = tmp_path / "batch_log.txt"
     sink = _WorkerLog(str(log))
 
     sink.write("\n   \n\n")
 
-    assert log.read_text(encoding="utf-8") == "" if log.exists() else True
+    # Nothing was worth writing, so the file is never even created.
+    assert not log.exists()
+
+    # ...and the blank input is not replayed once there is something to write.
+    sink.write("a real line\n")
+    assert log.read_text(encoding="utf-8").count("\n") == 1
 
 
 def test_a_vanished_log_does_not_kill_the_worker(tmp_path):

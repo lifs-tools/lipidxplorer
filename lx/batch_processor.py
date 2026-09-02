@@ -605,9 +605,13 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
         text = sample.decode("utf-8-sig", errors="replace")
 
         try:
+            # csv.Sniffer wants the candidates as one string of characters.
+            # The list this used to pass happens to work -- the parameter is
+            # only ever used in `char in delimiters` tests -- but it violates
+            # the documented signature and type checkers flag it.
             return csv.Sniffer().sniff(
                 text,
-                delimiters=[",", ";", "\t", "|"]
+                delimiters=",;\t|"
             ).delimiter
         except Exception:
             warnings.warn(
