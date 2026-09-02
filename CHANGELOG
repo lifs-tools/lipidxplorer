@@ -1,3 +1,50 @@
+02/09/2026 LipidXplorer 1.5.0 - batch mode logging
+
+- Fixed: batch mode appeared to do nothing on macOS and Linux and was
+  reported as working only on Windows. It was in fact running correctly on
+  all three platforms; none of its progress was visible. Worker processes
+  are started with the 'spawn' method, so they do not inherit the logger the
+  GUI installs over print(), and in a packaged build their output goes to a
+  null sink. The debug window therefore stayed empty between "Using N worker
+  process(es)" and the first finished sample -- more than a minute per
+  sample, which reads as a hang. Workers now write their progress and their
+  tracebacks to the shared batch log.
+
+- Every line in the batch log now names the process that wrote it: "[MAIN]"
+  for the controller, "[W3 <sample>]" for a worker together with the sample
+  it is working on. The label is applied where the log is written rather
+  than at each call site, so output from the import and MFQL code -- none of
+  which knows a batch is running -- is attributable too. A worker keeps its
+  number as the pool moves it on to the next sample.
+
+- Fixed: a sample whose worker crashed and a sample that simply had no hits
+  were reported by the same line, and the error captured from the worker was
+  never printed. The two are now distinct, failures carry the traceback, and
+  progress is reported as (n/total).
+
+- Fixed: the debug window was written to directly from the batch thread.
+  wxWidgets allows GUI access only from the main thread; wxMSW tolerates the
+  violation, wxOSX and wxGTK do not. The window is now filled by a timer on
+  the main thread that tails the log file.
+
+- Fixed: warnings raised while merging per-sample results were discarded,
+  because only print() was redirected to the log and warnings are written to
+  stderr.
+
+- Fixed: delimiter detection for per-sample result files failed for every
+  file. Detection reads the first 4096 bytes, which stops mid-line on rows
+  as wide as these, and the truncated last line made csv.Sniffer reject the
+  sample. It fell back to comma silently. That happened to be correct, since
+  the files are written comma-separated, but a tab-limited run would have
+  collapsed every merged row into a single column.
+
+- Fixed: print() stayed redirected into a finished run's log file for the
+  rest of the session, so later output was filed away instead of shown.
+
+- Fixed: with "Save per sample result" unticked, the log listed per-sample
+  CSV paths without recording that they were then deleted, and an empty
+  per_sample_results directory was left behind when no sample produced hits.
+
 28/08/2026 LipidXplorer 1.5.0 - build system
 
 - Dependency management moved from Conda to uv: pyproject.toml plus a
