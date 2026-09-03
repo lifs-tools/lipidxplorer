@@ -88,9 +88,10 @@ def test_a_vanished_log_does_not_kill_the_worker(tmp_path):
 
 
 def test_install_redirects_print_and_stderr(tmp_path, restore_streams):
+    """Redirection is verbose-only; see test_quiet_by_default_... below."""
     log = tmp_path / "batch_log.txt"
 
-    sink = _install_worker_logging(str(log))
+    sink = _install_worker_logging(str(log), verbose=True)
     assert sink is not None
 
     print("progress from the worker")
@@ -319,3 +320,89 @@ def test_teelogger_without_context_is_unchanged(tmp_path):
     TeeLogger(file_path=str(log)).log("no context")
 
     assert log.read_text(encoding="utf-8").rstrip().endswith("] no context")
+
+
+def test_close_flushes_a_partial_line_and_releases_the_handle(tmp_path):
+    log = tmp_path / "batch_log.txt"
+    sink = _WorkerLog(str(log))
+
+    sink.write("no trailing newline")
+    sink.close()
+
+    assert sink._handle is None
+    assert "no trailing newline" in log.read_text(encoding="utf-8")
+
+
+def test_writing_after_close_reopens_and_appends(tmp_path):
+    """A pool worker is reused across samples; the sink must survive that."""
+    log = tmp_path / "batch_log.txt"
+    sink = _WorkerLog(str(log))
+
+    sink.write("first sample\n")
+    sink.close()
+    sink.write("second sample\n")
+    sink.close()
+
+    lines = log.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 2
+    assert lines[0].endswith("first sample")
+    assert lines[1].endswith("second sample")
+
+
+def test_the_handle_is_opened_once_not_per_line(tmp_path, monkeypatch):
+    """Reopening per line cost ~20% of a run's wall clock (much more on
+    Windows, where a scanner runs on every open of a contended file)."""
+    log = tmp_path / "batch_log.txt"
+    real_open = open
+    opens = []
+
+    def counting_open(*args, **kwargs):
+        opens.append(args[0])
+        return real_open(*args, **kwargs)
+
+    monkeypatch.setattr("builtins.open", counting_open)
+    sink = _WorkerLog(str(log))
+    for i in range(50):
+        sink.write(f"line {i}\n")
+    sink.close()
+
+    assert len(opens) == 1, f"expected one open for 50 lines, got {len(opens)}"
+
+
+def test_a_vanished_log_directory_does_not_kill_the_worker(tmp_path):
+    sink = _WorkerLog(str(tmp_path / "gone" / "batch_log.txt"))
+
+    sink.write("this cannot be written anywhere\n")  # must not raise
+    sink.close()
+
+
+def test_quiet_by_default_leaves_print_and_streams_alone(tmp_path, restore_streams):
+    """The library chatter is ~750 lines/sample against ~35 of our own.
+
+    Capturing it cost a 14-sample Windows run 441s against 227s, so it is
+    opt-in; the worker's own progress still reaches the log either way.
+    """
+    log = tmp_path / "batch_log.txt"
+    before = (builtins.print, sys.stdout, sys.stderr)
+
+    sink = _install_worker_logging(str(log), context="[W1 s]")
+
+    assert sink is not None, "the worker still needs a sink for its own lines"
+    assert (builtins.print, sys.stdout, sys.stderr) == before
+
+    sink.write("START pid=1\n")
+    sink.close()
+    assert "START pid=1" in log.read_text(encoding="utf-8")
+
+
+def test_verbose_captures_print_and_streams(tmp_path, restore_streams):
+    log = tmp_path / "batch_log.txt"
+
+    sink = _install_worker_logging(str(log), context="[W1 s]", verbose=True)
+    print("chatter from the MFQL interpreter")
+    sys.stderr.write("and from stderr\n")
+    sink.close()
+
+    body = log.read_text(encoding="utf-8")
+    assert "chatter from the MFQL interpreter" in body
+    assert "and from stderr" in body
