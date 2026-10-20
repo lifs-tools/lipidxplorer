@@ -13,7 +13,7 @@ from lx.mfql.runtimeStatic import TypeTolerance
 from lx.exceptions import LipidXException
 from lx.spectraContainer import MasterScan, SurveyEntry
 from lx.spectraTools import recalibrateMS, recalibrateMSMS, saveSC
-from lx.readSpectra import add_Sample, add_mzXMLSample, add_DTASample, add_CSVSample
+from lx.readSpectra import add_Sample, add_DTASample, add_CSVSample
 from lx.alignment import mkSurveyLinear, \
 		 mkMSMSEntriesLinear_new, \
 		 specEntry, linearAlignment

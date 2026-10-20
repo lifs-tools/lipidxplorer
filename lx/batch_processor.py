@@ -233,17 +233,67 @@ def build_master_scan(sample_path: str, sample_entry_name: str, options: dict):
 
 
 
-def run_mfql_on_scan(scan, query_path, options):
+# "QUERYNAME = <name>;" at the start of a line of an MFQL file (lines starting
+# with '#' are comments and cannot match). Used to tell which MFQL file a
+# result row came from (see run_mfql_on_scan). The name pattern is the one
+# the MFQL lexer accepts for an ID (t_ID in mfqlParser.py).
+_QUERYNAME_RE = re.compile(r"^[ \t]*QUERYNAME\s*=\s*([A-Za-z$][A-Za-z$0-9]*)",
+                           re.IGNORECASE | re.MULTILINE)
+
+
+def run_mfql_on_scan(scan, queries, options):
     """
-    Run one MFQL file against a MasterScan.
+    Run ALL MFQL queries against one MasterScan in a single startParsing()
+    call -- the same way normal mode (lxMain.startMFQL) runs them.
+
+    Why one call and not one call per query
+    ---------------------------------------
+    startParsing() first identifies the lipids of every query it is given,
+    then applies the isotopic corrections ONCE to the MasterScan, then writes
+    the reports. Calling it once per query on the same MasterScan (as batch
+    mode used to) repeats the isotopic corrections for every query, and each
+    query sees the intensities already modified by the queries before it.
+    The result then depended on how many queries ran and in which order.
+    One call per sample removes that and matches normal mode's MFQL
+    semantics. (Batch and normal mode still differ in one way by design:
+    batch mode builds one MasterScan per sample, normal mode one MasterScan
+    with all samples aligned together.)
+
+    Args:
+        scan:    the MasterScan of one sample
+        queries: list of {"name": <MFQL file name>, "path": <full path>},
+                 already in the fixed order set by run_batch()
+        options: options dict
+
+    Returns:
+        DataFrame with all result rows of all queries, plus two columns:
+          - query_name: the QUERYNAME declared inside the MFQL
+          - mfql_file:  the MFQL file name the row came from; the merge uses
+                        it to keep sub-classes of one LipidClass (e.g. PC and
+                        PC O-) in separate blocks.
+
+    A syntax or runtime error in any MFQL raises and fails the whole sample
+    (as in normal mode). There is deliberately no per-query fallback: it
+    would silently bring back the order-dependent results described above.
     """
 
-    q_name = Path(query_path).name
-    with open(query_path, "r", encoding="utf-8") as f:
-        q_text = f.read()
-
+    # Read all MFQL texts. The odict keeps the order of `queries`, so the
+    # queries are parsed and identified in that fixed order. The key is the
+    # file name; startParsing() uses it as mfqlObj.filename in its error
+    # messages, so an error names the offending file.
     mfqlFiles = odict()
-    mfqlFiles[q_name] = q_text
+    queryname_to_file = {}
+    for q in queries:
+        with open(q["path"], "r", encoding="utf-8") as f:
+            q_text = f.read()
+        mfqlFiles[q["name"]] = q_text
+
+        # MFQL allows exactly one query per file, so QUERYNAME -> file name
+        # is a 1:1 map. It is needed because the result object is keyed by
+        # QUERYNAME, not by file name.
+        m = _QUERYNAME_RE.search(q_text)
+        if m:
+            queryname_to_file[m.group(1)] = q["name"]
 
     mfqlObj = TypeMFQL(masterScan=scan)
     mfqlObj.options = options
@@ -290,6 +340,9 @@ def run_mfql_on_scan(scan, query_path, options):
             df_block = pd.read_csv(buf, sep=mfqlObj.outputSeperator)
 
         df_block["query_name"] = qres.name
+        # Map the QUERYNAME back to its MFQL file; fall back to the
+        # QUERYNAME itself if the file could not be identified.
+        df_block["mfql_file"] = queryname_to_file.get(qres.name, qres.name)
         dfs.append(df_block)
 
     df = pd.concat(dfs, ignore_index=True) if dfs else pd.DataFrame()
@@ -384,31 +437,30 @@ def process_sample(args: tuple) -> Dict[str, Any]:
         log(f"MasterScan READY for '{sample_id}'")
 
         # -----------------------------------------------------------
-        # Run all MFQL queries on this scan
+        # Run all MFQL queries on this scan -- in ONE startParsing() call,
+        # as normal mode does (see run_mfql_on_scan for why).
+        # An error in any MFQL propagates to the outer except below and
+        # fails this sample with the full traceback; the message names the
+        # MFQL file. It is not caught per query on purpose.
         # -----------------------------------------------------------
-        all_hits = []
-        for i, q in enumerate(queries, 1):
-            q_name, q_path = q["name"], q["path"]
-            log(f"({i}/{len(queries)}) Running MFQL '{q_name}' on '{sample_id}'")
-            try:
-                hits = run_mfql_on_scan(scan, q_path, options)
-            except Exception as e_q:
-                log(f"ERROR in MFQL '{q_name}' on '{sample_id}': {e_q}")
-                log(traceback.format_exc())
-                continue
+        log(f"Running {len(queries)} MFQL(s) on '{sample_id}': "
+            + ", ".join(q["name"] for q in queries))
+        df = run_mfql_on_scan(scan, queries, options)
 
-            if hits is None or hits.empty:
-                log(f"No hits for MFQL '{q_name}' on '{sample_id}'")
-                continue
-
-            hits["sample_id"] = sample_id
-            hits["query_name"] = q_name
-            all_hits.append(hits)
-
-        if all_hits:
-            df = pd.concat(all_hits, ignore_index=True)
-        else:
+        if df is None or df.empty:
             df = pd.DataFrame()
+        else:
+            df["sample_id"] = sample_id
+            # One line per MFQL with its row count, so the log still shows
+            # which queries produced hits.
+            counts = df["mfql_file"].value_counts()
+            for q in queries:
+                n_rows = int(counts.get(q["name"], 0))
+                if n_rows:
+                    log(f"MFQL '{q['name']}': {n_rows} row(s)")
+                else:
+                    log(f"No hits for MFQL '{q['name']}' on '{sample_id}'")
+        all_hits = None  # kept so the cleanup below stays unchanged
 
         duration = time.time() - t0
         log(f"FINISHED MFQL for '{sample_id}' in {duration:.2f}s ({len(df)} rows)")
@@ -458,6 +510,76 @@ def process_sample(args: tuple) -> Dict[str, Any]:
 
 
 # ============================================================
+# Deterministic ordering of samples and MFQL queries
+# ============================================================
+#
+# Why this exists
+# ---------------
+# Both input lists used to arrive in whatever order the filesystem returned:
+#   - samples come from getInputFiles(), which uses os.walk() unsorted;
+#   - MFQL queries come from the GUI / lxrun.py, which also use os.walk().
+# NTFS returns directory entries alphabetically, ext4 and APFS do not, so
+# the same data and the same MFQL folder were processed in a different
+# order on Windows, Linux and macOS. That order is not cosmetic:
+#   - merge_lipid_results() takes Mass, PrecursorERRppm, FragmentAERRppm and
+#     the other non-intensity columns from the FIRST sample (in sample
+#     order) that contains the lipid;
+#   - every MFQL query of one sample runs against the same MasterScan
+#     object, and the queries mutate it (marks, isotope corrections), and the
+#     per-sample de-duplication in the merge keeps the FIRST row of a
+#     species, i.e. the one from the query that ran first.
+# Sorting both lists here, in the one place every batch run goes through,
+# makes the result independent of OS and filesystem.
+#
+# The rule is plain alphabetical order by file name (Python string order,
+# i.e. by code point). It is identical on every OS as long as the file
+# names are identical, which is all that is needed. Note that it is
+# case-sensitive, so it can differ slightly from what Windows Explorer
+# shows; that is fine -- it only has to be the same everywhere.
+
+# A sample whose file name contains this word (in any capitalisation) is
+# treated as a blank and moved behind all other samples. Blanks carry little
+# or no signal, so they should never be the "first sample" the merge takes
+# Mass and the error columns from. If the word is not in the file name,
+# a blank cannot be recognised and is sorted like any other sample.
+_BLANK_MARKER = "blank"
+
+
+def _is_blank_sample(file_name: str) -> bool:
+    """Return True if the sample file name marks it as a blank.
+
+    The check is case-insensitive ('Blank', 'BLANK', 'blank' all match) and
+    looks for the word anywhere in the name, e.g. '240506_Blank_49932_a'.
+    """
+    return _BLANK_MARKER in file_name.casefold()
+
+
+def _sample_sort_key(sample_path: str):
+    """Sort key for one sample path (an mzML file, or a sample directory
+    in dta/csv mode).
+
+    Order of the tuple elements, most significant first:
+      1. blanks last  -- False sorts before True;
+      2. the file/directory name, alphabetically;
+      3. the remaining path components as a tie-break, for the rare case of
+         two samples with the same name in different sub-folders. Path.parts
+         is used instead of the path string so that '\\' on Windows and '/'
+         elsewhere cannot change the order.
+    """
+    p = Path(sample_path)
+    return (_is_blank_sample(p.name), p.name, p.parts)
+
+
+def _query_sort_key(query: Dict[str, str]):
+    """Sort key for one MFQL query entry {"name": ..., "path": ...}.
+
+    Sorted alphabetically by the query (file) name; the path components
+    break ties, should two entries ever share a name.
+    """
+    return (query["name"], Path(query["path"]).parts)
+
+
+# ============================================================
 # Controller: manages pool + collects + merges
 # ============================================================
 def run_batch(
@@ -480,6 +602,10 @@ def run_batch(
       7) Save final batch_results.csv.
       8) Optionally keep or delete per-sample CSVs depending on
          options["savePerSample"].
+
+    Samples and MFQL queries are processed in a fixed alphabetical order
+    (blanks last), independent of the OS -- see _sample_sort_key() and
+    _query_sort_key().
     """
 
     # Simple log helper. If the GUI installs a TeeLogger as print(),
@@ -491,6 +617,14 @@ def run_batch(
     spectra_format = options.get("spectraFormat", "")
 
     # -----------------------------------------------------------
+    # Fix the MFQL query order (alphabetical by name).
+    # The callers build this list from os.walk(), whose order depends on the
+    # filesystem; every worker runs the queries in exactly this list order.
+    # sorted() returns a new list, so the caller's list is not modified.
+    # -----------------------------------------------------------
+    queries = sorted(queries, key=_query_sort_key)
+
+    # -----------------------------------------------------------
     # Find all samples using normal import discovery logic
     # -----------------------------------------------------------
     listFiles, isTaken, isGroup = getInputFiles(str(import_dir), options)
@@ -499,7 +633,18 @@ def run_batch(
         log(f"No input samples found in {import_dir} for format '{spectra_format}'")
         return {}
 
+    # Fix the sample order (alphabetical by name, blanks last).
+    # getInputFiles() returns the os.walk() order, which differs between
+    # NTFS, ext4 and APFS. The task list, and with it the column order and
+    # the "first sample" used by merge_lipid_results(), follow this order.
+    listFiles = sorted(listFiles, key=lambda entry: _sample_sort_key(str(entry[0])))
+
     log(f"Found {len(listFiles)} input sample(s) for batch processing (format={spectra_format}).")
+
+    # Record the resolved orders once, so any run can be checked from its
+    # log alone against a run on another machine.
+    log("Sample order: " + ", ".join(Path(str(e[0])).name for e in listFiles))
+    log("MFQL order: " + ", ".join(q["name"] for q in queries))
 
     # Directory where workers will store per-sample CSVs
     per_sample_dir = import_dir / "per_sample_results"
@@ -577,6 +722,16 @@ def run_batch(
         return {}
 
     # -----------------------------------------------------------
+    # imap_unordered() returns results in completion order, which depends on
+    # timing. Put the per-sample CSVs back into task (= sorted sample) order
+    # so the merge never sees a timing-dependent order. For mzML the merge
+    # reorders by mzml_files anyway; for dta/csv (mzml_files=None) this is
+    # the only thing that fixes the order.
+    # -----------------------------------------------------------
+    task_index = {t[1]: i for i, t in enumerate(tasks)}  # sample_id -> position
+    sample_csv_paths.sort(key=lambda p: task_index.get(Path(p).stem, len(task_index)))
+
+    # -----------------------------------------------------------
     # Merge per-sample CSVs into one final table
     # Keep old merge behavior for mzML ordering compatibility.
     # For dta/csv, there is no mzML file list, so pass None.
@@ -593,8 +748,8 @@ def run_batch(
         mzml_files=merge_reference_files,
         occurrence_threshold=occurrence_threshold
     )
-    
-    
+
+
 
     # Output path for the final batch results
     batch_result_path = import_dir / f"batch_results_{polarity[0]}.csv"
@@ -1037,14 +1192,28 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
 
     # ------------------------------------------------------------
     # Sort non-IS lipids
-    # Preferred: LipidClass then Mass
+    # Preferred: LipidClass, then the MFQL file, then Mass
     # Fallbacks are used if columns are missing
+    #
+    # The MFQL file is the sub-class key: PC and PC O- (and any other
+    # sub-classes) report the same LipidClass but come from different MFQL
+    # files. Sorting by LipidClass and Mass alone interleaved their rows;
+    # with the MFQL file in between, each sub-class forms its own block.
+    # Within one LipidClass the blocks follow the MFQL file names
+    # alphabetically.
     # ------------------------------------------------------------
     sort_cols = []
     ascending = []
 
     if "LipidClass" in non_is_df.columns:
         sort_cols.append("LipidClass")
+        ascending.append(True)
+
+    if "mfql_file" in non_is_df.columns:
+        # Rows without a file (per-sample CSVs from an older version) sort
+        # together as one sub-class instead of breaking the sort.
+        non_is_df["mfql_file"] = non_is_df["mfql_file"].fillna("").astype(str)
+        sort_cols.append("mfql_file")
         ascending.append(True)
 
     if "Mass" in non_is_df.columns:
@@ -1081,7 +1250,17 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
     if "LipidClass" in ordered.columns:
         lipid_class_group = ordered["LipidClass"].astype(str)
     else:
-        lipid_class_group = "Unknown"
+        lipid_class_group = pd.Series("Unknown", index=ordered.index)
+
+    # One block per LipidClass AND MFQL file, so sub-classes of one class
+    # (PC / PC O-) get their own block. "\x00" cannot occur in a class or
+    # file name, so the combined key cannot collide.
+    if "mfql_file" in ordered.columns:
+        lipid_class_group = (
+            lipid_class_group
+            + "\x00"
+            + ordered["mfql_file"].fillna("").astype(str)
+        )
 
     ordered["__grp__"] = np.where(
         ordered["LipidSpecies"]
@@ -1108,10 +1287,13 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
             )
         )
 
-    class_groups = sorted(
-        x for x in ordered["__grp__"].dropna().unique()
+    # Blocks in the order the rows were sorted above (LipidClass, MFQL file),
+    # i.e. order of first appearance -- not re-sorted as strings, so the
+    # block order always matches the row sort.
+    class_groups = [
+        x for x in pd.unique(ordered["__grp__"].dropna())
         if x != "__IS__"
-    )
+    ]
 
     for lipid_class in class_groups:
         g = ordered[ordered["__grp__"] == lipid_class]
@@ -1128,7 +1310,10 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
     else:
         final_df = ordered.copy()
 
-    final_df = final_df.drop(columns=["__grp__"], errors="ignore")
+    # mfql_file was only needed to sort and block the rows; it is not part of
+    # the result table (query_name and sample_id are dropped earlier for the
+    # same reason).
+    final_df = final_df.drop(columns=["__grp__", "mfql_file"], errors="ignore")
 
     # ------------------------------------------------------------
     # Ensure LipidSpecies is first column

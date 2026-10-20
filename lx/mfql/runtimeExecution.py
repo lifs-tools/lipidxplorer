@@ -3761,11 +3761,21 @@ class TypeResult:
 
 			if self.dictQuery[query].listVariables:
 				# Note that the Precursor is identified by the scope attribute as "MS1+" and "MS2+" (MSMS) respectively.
+    
+				#print("DEBUG: self.dictQuery[query].listVariables length before sorting by absolute errppm:", len(self.dictQuery[query].listVariables))
 
-				# MS1 only
-				if all(v.scope == "MS1+" for v in list(self.dictQuery[query].listVariables[0].values())):
-					for i in self.dictQuery[query].listVariables:
+				# MS1 only # old code
+				# if all(v.scope == "MS1+" for v in list(self.dictQuery[query].listVariables[0].values())):
+				# 	for i in self.dictQuery[query].listVariables:
+				# 		listVar.append(sorted(list(i.items()), key=lambda x: x[1].mass))
+      
+    			#########################  Ballal updated it ###############################
+				if all(v.scope in ("MS1+", "MS1-") for v in list(self.dictQuery[query].listVariables[0].values())):
+					for i in sorted(self.dictQuery[query].listVariables,
+									key=lambda d: abs(next(v for v in list(d.values())
+															if v.scope in ["MS1+", "MS1-"]).errppm)):
 						listVar.append(sorted(list(i.items()), key=lambda x: x[1].mass))
+      			#######################################
 
 				# with MS2
 				else:
@@ -3778,7 +3788,14 @@ class TypeResult:
 
 				listVar_noPermutations = [listVar[0]]
 				for i in listVar:
-
+					################# ballal test############
+					# precursor_entry = next(v for k, v in i if v.scope in ["MS1+", "MS1-"])
+					# is_seed = (i is listVar[0])
+					# print("DEBUG: Checking candidate:", precursor_entry.chemsc,
+					# 	"errppm=", precursor_entry.errppm,
+					# 	"mass=", precursor_entry.mass)
+    
+    				############################################
 					# check every entry
 					isIn = False
 					for j in listVar_noPermutations:
@@ -3803,12 +3820,92 @@ class TypeResult:
 					# DEBUG explanation: therefore, this is never met
 					if not isIn:
 						listVar_noPermutations.append(i)
-
+      
+      ######################### ballal test #############
+					# if not isIn:
+					# 	print("DEBUG: kept ->", precursor_entry.chemsc, precursor_entry.errppm)
+					# else:
+					# 	tag = "already-seeded, not re-added" if is_seed else "dropped (duplicate chemsc)"
+					# 	print(f"DEBUG: {tag} ->", precursor_entry.chemsc, precursor_entry.errppm)
+    
+#########################################################
 				# FIX
 				# sort by mass after permutations are removed for more convenient output
 				listVar_noPermutations = sorted(listVar_noPermutations, key=lambda x: x[-1][1].mass)
 				# /FIX
 
+
+				# Ballal: catch cases where the candidate actually being reported (lowest mass)
+				# differs from the candidate with the lowest absolute precursor errppm
+# ------------------------------------------------------------------
+				# Diagnostic: ambiguous precursor annotation (print only).
+				#
+				# Why this was rewritten: the previous check compared the FIRST
+				# entry of the whole query (lowest mass) with the entry of lowest
+				# |errppm| over the WHOLE query. Those are normally two different
+				# lipid species on two different peaks (e.g. 706.537 vs 838.632),
+				# and every entry in listVar_noPermutations is reported anyway, so
+				# nothing was "reported instead of" anything. It was a false alarm.
+				#
+				# What is checked now: entries are grouped by the precursor PEAK
+				# they were matched on (the MS1 mark's mass, which peakMarking sets
+				# to se.precurmass, i.e. the observed peak). Inside one peak the
+				# interesting case is when MORE THAN ONE precursor sum composition
+				# (chemsc) is kept for that same peak: then the same signal is
+				# reported as several species. We print them with their errppm and
+				# point out the one with the lowest |errppm|.
+				#
+				# Several entries with the SAME precursor chemsc but different
+				# fragments (e.g. different fatty-acid combinations) are distinct
+				# molecular species and are NOT flagged.
+				#
+				# This block only prints. It does not change listVar_noPermutations
+				# and therefore does not change the output.
+				# ------------------------------------------------------------------
+				if len(listVar_noPermutations) > 1:
+
+					def _precursor_mark(candidate):
+						# candidate is a list of (variableName, TypeMark) pairs;
+						# return the MS1 (precursor) mark, or None if there is none
+						for _name, _mark in candidate:
+							if _mark.scope in ("MS1+", "MS1-"):
+								return _mark
+						return None
+
+					def _abs_errppm(mark):
+						# errppm is None for precursors marked by an sc-constraint
+						# without a sum composition; sort those last
+						return abs(mark.errppm) if mark.errppm is not None else float("inf")
+
+					# peak mass (rounded, to be safe against float noise) ->
+					# {repr(chemsc): precursor mark}; dict keeps first-seen order
+					peaks = {}
+					for candidate in listVar_noPermutations:
+						pmark = _precursor_mark(candidate)
+						if pmark is None or pmark.mass is None:
+							continue
+						peak_key = round(float(pmark.mass), 6)
+						by_chemsc = peaks.setdefault(peak_key, {})
+						by_chemsc.setdefault(repr(pmark.chemsc), pmark)
+
+					for peak_key, by_chemsc in peaks.items():
+						if len(by_chemsc) < 2:
+							continue  # one sum composition for this peak: not ambiguous
+						best = min(by_chemsc.values(), key=_abs_errppm)
+						lines = [
+							"[AMBIGUOUS] query=%s peak=%.6f: %d precursor sum compositions "
+							"for the same peak (all are reported):"
+							% (query, peak_key, len(by_chemsc))
+						]
+						for chemsc_repr, pmark in sorted(by_chemsc.items(), key=lambda kv: _abs_errppm(kv[1])):
+							lines.append(
+								"  %s errppm=%s%s"
+								% (chemsc_repr, pmark.errppm,
+									"  <- lowest |errppm|" if pmark is best else "")
+							)
+						print("\n".join(lines))
+      ########################################################################################
+      
 				self.dictQuery[query].listVariables = []
 
 				# Append the sorted elements to self.dictQuery[query].listVariables

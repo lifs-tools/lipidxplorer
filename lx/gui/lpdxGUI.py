@@ -3522,6 +3522,61 @@ intensity."""))
 			logger.restore_print()
 		self._stop_batch_log_tail()
 
+	def _show_batch_done_dialog(self, summary, error_text, log_file):
+		"""Show a modal dialog when a batch run has ended -- the batch
+		counterpart of normal mode's "Task completed." dialog.
+
+		Must run on the GUI thread; the batch thread calls it through
+		wx.CallAfter.
+
+		summary:    the dict returned by run_batch(), or None if it raised.
+		            An empty dict means run_batch() stopped early (no input
+		            samples, or no sample produced any hits).
+		error_text: the traceback if run_batch() raised, else None.
+		log_file:   the batch log, named in the dialog for details.
+		"""
+		if error_text:
+			# The batch itself failed: show the last line of the traceback
+			# (the exception message); the full traceback is in the log.
+			last_line = error_text.strip().splitlines()[-1]
+			message = "Batch processing failed.\n\n%s\n\nSee the log for details:\n%s" % (
+				last_line, log_file)
+			title, icon = "Batch failed", wx.ICON_ERROR
+
+		elif not summary:
+			message = ("Batch processing finished, but no result table was written:\n"
+				"no input samples were found, or no sample produced hits.\n\n"
+				"See the log for details:\n%s" % log_file)
+			title, icon = "Batch finished", wx.ICON_WARNING
+
+		else:
+			n_failed = summary.get("failed", 0)
+			message = (
+				"Batch processing completed.\n\n"
+				"Samples processed:   %d\n"
+				"  with hits:         %d\n"
+				"  without hits:      %d\n"
+				"  failed:            %d\n"
+				"Duration:            %.1f s\n\n"
+				"Result file:\n%s" % (
+					summary.get("processed", 0),
+					summary.get("ok", 0),
+					summary.get("no_hits", 0),
+					n_failed,
+					summary.get("duration_sec", 0.0),
+					summary.get("output_file", "")))
+			if n_failed:
+				# Completed, but some samples are missing from the result.
+				message += "\n\n%d sample(s) failed -- see the log:\n%s" % (n_failed, log_file)
+				title, icon = "Batch completed with errors", wx.ICON_WARNING
+			else:
+				# Same title and icon as normal mode's completion dialog.
+				title, icon = "Ready", wx.ICON_INFORMATION
+
+		dlg = wx.MessageDialog(self, message, title, wx.OK | icon)
+		dlg.ShowModal()
+		dlg.Destroy()
+
 	def On_button_RUN_batch(self, evt):
 		"""
 		Launch batch processing in a background thread.
@@ -3688,15 +3743,19 @@ intensity."""))
 			occupation_threshold = float(self.spin_occupational_threshold.GetValue())
 
 			print(f"Batch thread started. Using {n_cores} cores for processing.")
+
+			# Outcome of the run, handed to the completion dialog below.
+			summary = None
+			error_text = None
 			try:
 				# run_batch logs its own summary line through print(), which
 				# now reaches the window via the log file.
-				run_batch(
+				summary = run_batch(
 					payload["options"],
 					payload["queries"],
 					log_file=payload["log_file"],
 					occurrence_threshold=occupation_threshold,
-    				n_cores=n_cores	
+    				n_cores=n_cores
 				)
 
 				print("Batch processing completed.")
@@ -3705,12 +3764,19 @@ intensity."""))
 				# A bare str(e) hid where the batch actually broke; the log file
 				# is the only record once the run is over, so put the traceback
 				# in it rather than a one-line summary.
-				print("Batch failed:\n" + traceback.format_exc())
+				error_text = traceback.format_exc()
+				print("Batch failed:\n" + error_text)
 
 			finally:
 				wx.CallAfter(self._finish_batch_logging)
 				wx.CallAfter(self.button_RUN_batch.Enable)
 				wx.CallAfter(setattr, self, "isRunning", False)
+				# Tell the user the batch is over, as normal mode does with its
+				# "Task completed." dialog. wx.CallAfter queues the calls in
+				# order, so the dialog opens after the log window has been
+				# drained and shows the final state.
+				wx.CallAfter(self._show_batch_done_dialog, summary,
+							error_text, payload["log_file"])
 
 
 
@@ -6470,19 +6536,22 @@ intensity."""))
 	def on_back_to_landing(self, event):
 		self._set_active_view("landing")
  
+######### Ballal #########
 
-	def writeOutput(self, destination, content):
-
+	def writeWithRetry(self, writeFunc, errorMsg="The result cannot be saved. It is probably open by another program. Try again?"):
+		"""
+		Calls writeFunc() (a no-arg callable that performs the actual write/dump)
+		inside a retry loop. On IOError, asks the user whether to retry.
+		Returns True on success, False if the user gave up.
+		"""
 		tryAgain = True
 		while tryAgain:
 			try:
-				f = open(destination, 'w')
-				f.write(content)
-				f.close()
+				writeFunc()
 				return True
 			except IOError:
-				dlgError = wx.MessageDialog(self, "The result cannot be saved. It is probably open by another program. Try again?",
-					"File writing error", wx.YES_NO|wx.ICON_QUESTION)
+				dlgError = wx.MessageDialog(self, errorMsg,
+					"File writing error", wx.YES_NO | wx.ICON_QUESTION)
 				answer = dlgError.ShowModal()
 				if answer == wx.ID_NO:
 					tryAgain = False
@@ -6491,6 +6560,17 @@ intensity."""))
 		return False
 
 
+	def writeOutput(self, destination, content):
+		def doWrite():
+			f = open(destination, 'w')
+			f.write(content)
+			f.close()
+		return self.writeWithRetry(
+			doWrite,
+			"The result cannot be saved. It is probably open by another program. Try again?"
+		)
+
+#######################
     
 # end of class LpdxFrame
 
