@@ -4,9 +4,8 @@
 - For MS1-only MFQL queries, the reported precursor is now the one with the lowest absolute `errppm`. Previously it was the one with the lowest signed `errppm` value.
 - Results are now consistent across operating systems.
 - A clear warning is shown when saving the MasterScan from RUN if the MasterScan file is currently open.
-
-## New features
 - The MFQL editor now shows syntax warnings.
+## New features
 - On Windows, `.mfql` files are associated with LipidXplorer. Double-clicking one, or using "Open with", opens it in the LipidXplorer MFQL editor.
 
 
