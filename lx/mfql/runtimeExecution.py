@@ -36,6 +36,19 @@ def _isoContributorTag(level, contributorMass, contributorEntry, namespaceConnec
 		observedDelta, charge, expectedDelta)
 	return tag
 
+def _precursorAbsErrppm(variables):
+	"""Sort key for one result candidate ({variable name: TypeMark}): the
+	absolute errppm of its precursor (MS1) mark, so the best match sorts first.
+
+	errppm is None when the precursor was marked by an sc-constraint without a
+	sum composition. Such candidates sort last instead of raising TypeError."""
+	for mark in variables.values():
+		if mark.scope in ("MS1+", "MS1-"):
+			if mark.errppm is not None:
+				return abs(mark.errppm)
+			break
+	return float("inf")
+
 ## CarthesianProduct
 # Takes an array of arrays and generates the carthesian product of the given
 # arrays. E.g. a = [[0], [1,2,3], [4,5]] -> [[0,1,4], [0,1,5], [0,2,4],
@@ -3761,26 +3774,12 @@ class TypeResult:
 
 			if self.dictQuery[query].listVariables:
 				# Note that the Precursor is identified by the scope attribute as "MS1+" and "MS2+" (MSMS) respectively.
-    
-				#print("DEBUG: self.dictQuery[query].listVariables length before sorting by absolute errppm:", len(self.dictQuery[query].listVariables))
 
-				# MS1 only # old code
-				# if all(v.scope == "MS1+" for v in list(self.dictQuery[query].listVariables[0].values())):
-				# 	for i in self.dictQuery[query].listVariables:
-				# 		listVar.append(sorted(list(i.items()), key=lambda x: x[1].mass))
-      
-    			#########################  Ballal updated it ###############################
-				if all(v.scope in ("MS1+", "MS1-") for v in list(self.dictQuery[query].listVariables[0].values())):
-					for i in sorted(self.dictQuery[query].listVariables,
-									key=lambda d: abs(next(v for v in list(d.values())
-															if v.scope in ["MS1+", "MS1-"]).errppm)):
-						listVar.append(sorted(list(i.items()), key=lambda x: x[1].mass))
-      			#######################################
-
-				# with MS2
-				else:
-					for i in sorted(self.dictQuery[query].listVariables, key=lambda d: abs(next(v for v in list(d.values()) if v.scope in ["MS1+", "MS1-"]).errppm)):
-						listVar.append(sorted(list(i.items()), key=lambda x: x[1].mass))
+				# Sort the candidates by the absolute errppm of their precursor, best
+				# first, so the de-duplication below keeps the best-matching one.
+				# MS1-only queries and queries with MS2 are sorted the same way.
+				for i in sorted(self.dictQuery[query].listVariables, key=_precursorAbsErrppm):
+					listVar.append(sorted(list(i.items()), key=lambda x: x[1].mass))
 				# /FIX
 
 			# if there are no variables, we don't need to do anything
