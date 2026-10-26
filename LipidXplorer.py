@@ -5,6 +5,7 @@ import wx
 import sys
 
 from lx.__version__ import __version__ as APP_VERSION
+from lx.winOpenWith import register_open_with
 
 
 def resource_path(*parts):
@@ -13,7 +14,28 @@ def resource_path(*parts):
     return str(Path(base, *parts))
 
 
+def mfql_paths_from_argv(args):
+    """Return absolute paths of the .mfql arguments, in order, without duplicates.
+
+    Windows passes the double-clicked file as "%1". Existence is not checked
+    here: a missing file is reported by the frame in a dialog instead of
+    being dropped silently. Other arguments are ignored.
+    """
+    paths = []
+    for arg in args:
+        if arg.lower().endswith(".mfql"):
+            path = os.path.abspath(arg)
+            if path not in paths:
+                paths.append(path)
+    return paths
+
+
 class MyApp(wx.App):
+    def __init__(self, *args, mfql_files=(), **kwargs):
+        # Set before wx.App.__init__, which calls OnInit.
+        self.mfql_files = list(mfql_files)
+        super().__init__(*args, **kwargs)
+
     def OnInit(self):
         self.frame = lpdxGUI.LpdxFrame(
             None, -1, "",
@@ -28,11 +50,19 @@ class MyApp(wx.App):
         self.frame.Show(True)
         self.frame.Center()
         self.SetTopWindow(self.frame)
+
+        # Opened once the event loop runs, so the frame is fully laid out.
+        for path in self.mfql_files:
+            wx.CallAfter(self.frame.OpenMFQLFromPath, path)
+
+        # Windows, packaged exe only: list LipidXplorer under
+        # right-click > Open with for .mfql files (current user, no admin).
+        wx.CallAfter(register_open_with)
         return True
 
 
 def main():
-    app = MyApp(0)
+    app = MyApp(0, mfql_files=mfql_paths_from_argv(sys.argv[1:]))
     app.MainLoop()
     wx.Exit()
 

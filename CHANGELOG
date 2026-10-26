@@ -1,3 +1,18 @@
+# LipidXplorer 1.5.1 (2026-10-26)
+
+## Bug fixes
+- For MS1-only MFQL queries, the reported precursor is now the one with the lowest absolute `errppm`. Previously it was the one with the lowest signed `errppm` value.
+- Results are now consistent across operating systems.
+- A clear warning is shown when saving the MasterScan from RUN if the MasterScan file is currently open.
+
+## New features
+- The MFQL editor now shows syntax warnings.
+- On Windows, `.mfql` files are associated with LipidXplorer. Double-clicking one, or using "Open with", opens it in the LipidXplorer MFQL editor.
+
+
+
+
+
 02/09/2026 LipidXplorer 1.5.0 - batch mode logging
 
 - Fixed: batch mode looked like it did nothing on macOS and Linux and was

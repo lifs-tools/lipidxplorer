@@ -842,7 +842,7 @@ def p_evalMarks(p):
 	if mfqlObj.parsePart == 'identification':
 		print("IDENTIFY the masses of interest ...", end=' ')
 		mfqlObj.scan.evaluate()
-		print("%.2f sec." % _elapsed())
+		#print("%.2f sec." % _elapsed())
 	pass
 
 def p_suchthat_single(p):

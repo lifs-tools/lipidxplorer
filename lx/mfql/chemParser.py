@@ -36,15 +36,15 @@ class Tokenizer:
 			tvalue = int(tvalue)
 		elif tvalue == " ":
 			ttype = SP
-		elif re.compile("\s?db\([-+]?\d{1,3}(\.\d{1,4})?,[+-]?\d{1,3}(\.\d{1,4})?\)").match(tvalue):
+		elif re.compile(r"\s?db\([-+]?\d{1,3}(\.\d{1,4})?,[+-]?\d{1,3}(\.\d{1,4})?\)").match(tvalue):
 			ttype = DB
-		elif re.compile("\s?chg\([+-]?\d\)").match(tvalue):
+		elif re.compile(r"\s?chg\([+-]?\d\)").match(tvalue):
 			ttype = CHARGE
-		elif re.compile("\[\d{1,6}\]").match(tvalue):
+		elif re.compile(r"\[\d{1,6}\]").match(tvalue):
 			ttype = NUMPAREN
-		elif re.compile("\[\d{1,6}\.\.\d{1,6}\]").match(tvalue):
+		elif re.compile(r"\[\d{1,6}\.\.\d{1,6}\]").match(tvalue):
 			ttype = RANGE
-		elif re.compile("\[\d{1,6}(,\d{1,6})*\]").match(tvalue):
+		elif re.compile(r"\[\d{1,6}(,\d{1,6})*\]").match(tvalue):
 			ttype = ENUM
 		else:
 			ttype = NAME
@@ -80,7 +80,7 @@ def parse_sequence():
 			t.gettoken()
 		# followed by optional count
 		if ttype == RANGE:
-			r = re.compile("\[(\d{1,6})\.\.(\d{1,6})\]").match(tvalue)
+			r = re.compile(r"\[(\d{1,6})\.\.(\d{1,6})\]").match(tvalue)
 			if not thisguy:
 				raise SyntaxErrorException("No space is allowed between an element and its count or range", None, None, None)
 			thisguy.__class__ = RangeElement
@@ -91,7 +91,7 @@ def parse_sequence():
 		if ttype == ENUM:
 			l = []
 			#r = re.compile("\[(\d+,\s*)+(\d+)\]").match(tvalue)
-			r = re.compile("\[(\d{1,6})((,\d{1,6})*)\]").match(tvalue)
+			r = re.compile(r"\[(\d{1,6})((,\d{1,6})*)\]").match(tvalue)
 			l.append(int(r.groups()[0]))
 			for i in r.group(2).split(','):
 				if i != '':
@@ -114,7 +114,7 @@ def parse_sequence():
 				thisguy.set_count(tvalue)
 			t.gettoken()
 		if ttype == NUMPAREN:
-			r = re.compile("\[(\d{1,6})\]").match(tvalue)
+			r = re.compile(r"\[(\d{1,6})\]").match(tvalue)
 			v = int(r.groups()[0])
 			if v == 0:
 				# set zeroFlag if NUM read is zero, so we need not to append the element
@@ -143,19 +143,19 @@ def parse_sequence():
 
 			# to prevent the algorithm adding more elements
 			zeroFlag = True
-			match = re.compile("\s?db\(([-+]?\d{1,3}\.\d{1,4}),([+-]?\d{1,3})\)")
+			match = re.compile(r"\s?db\(([-+]?\d{1,3}\.\d{1,4}),([+-]?\d{1,3})\)")
 			if match.match(tvalue):
 				r = match.match(tvalue)
 				seq.set_db(float(r.group(1)), int(r.group(2)))
-			match = re.compile("\s?db\(([-+]?\d{1,3}),([+-]?\d{1,3})\)")
+			match = re.compile(r"\s?db\(([-+]?\d{1,3}),([+-]?\d{1,3})\)")
 			if match.match(tvalue):
 				r = match.match(tvalue)
 				seq.set_db(int(r.group(1)), int(r.group(2)))
-			match = re.compile("\s?db\(([-+]?\d{1,3}\.\d{1,4}),([+-]?\d{1,3}\.\d{1,4})\)")
+			match = re.compile(r"\s?db\(([-+]?\d{1,3}\.\d{1,4}),([+-]?\d{1,3}\.\d{1,4})\)")
 			if match.match(tvalue):
 				r = match.match(tvalue)
 				seq.set_db(float(r.group(1)), float(r.group(2)))
-			match = re.compile("\s?db\(([-+]?\d{1,3}),([+-]?\d{1,3}\.\d{1,4})\)")
+			match = re.compile(r"\s?db\(([-+]?\d{1,3}),([+-]?\d{1,3}\.\d{1,4})\)")
 			if match.match(tvalue):
 				r = match.match(tvalue)
 				seq.set_db(int(r.group(1)), float(r.group(2)))
@@ -163,7 +163,7 @@ def parse_sequence():
 		if ttype == CHARGE:
 			# to prevent the algorithm adding more elements
 			zeroFlag = True
-			r = re.compile("chg\(([+-]?\d)\)").match(tvalue)
+			r = re.compile(r"chg\(([+-]?\d)\)").match(tvalue)
 			seq.set_charge(int(r.group(1)))
 			t.gettoken()
 	if len(seq) == 0:

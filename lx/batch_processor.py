@@ -29,6 +29,18 @@ from lx.tools import odict
 
 import shutil
 import warnings
+import logging
+import json
+
+# numba logs the full intermediate code of every function it compiles
+# (calcsf_cached.calcsf: "label 0: args = arg(0, name=args) ...
+# $6unpack_sequence ...") as logging.DEBUG messages, from
+# numba.core.interpreter and numba.core.transforms. They reach the batch log
+# whenever the root logger is at DEBUG level in a worker. Capping numba's own
+# logger at WARNING drops exactly these messages; numba warnings and errors
+# still get through. This module is imported by every spawned worker before
+# it runs a sample, so the cap applies there too.
+logging.getLogger("numba").setLevel(logging.WARNING)
 
 # ===========================================================================
 # --- ADDED FOR UNIFIED LOGGING (Workers + Batch Controller)
@@ -168,12 +180,54 @@ def _install_worker_logging(log_file, context="", verbose=False):
         sys.stdout = sink
         sys.stderr = sink
 
-        def worker_print(*args, **kwargs):
-            sink.write(" ".join(str(a) for a in args) + "\n")
+        original_print = builtins.print
+
+        def worker_print(*args, sep=" ", end="\n", file=None, flush=False):
+            # print(..., file=<something else>) must still go to that file.
+            # The old version wrote every print() into the log and ignored
+            # file=, so text code meant for a file or a StringIO -- e.g.
+            # numba's dump_to_string(), which prints the IR line by line
+            # ("label 0:", "args = arg(0, name=args) ...") into a StringIO --
+            # landed in the batch log instead.
+            if file is not None and file is not sink and file is not sys.stdout \
+                    and file is not sys.stderr:
+                original_print(*args, sep=sep, end=end, file=file, flush=flush)
+                return
+            sep = " " if sep is None else sep
+            end = "\n" if end is None else end
+            sink.write(sep.join(str(a) for a in args) + end)
 
         builtins.print = worker_print
 
     return sink
+
+
+def _debug_settings_line():
+    """One log line with the settings that make numba print its IR.
+
+    Written once per sample in verbose mode, after the MFQL run, so a log
+    that shows numba IR ("label 0: args = arg(0, name=args) ...") also shows
+    why: a numba debug setting (env var, .numba_config.yaml) prints it with
+    an "IR DUMP" header; a root logger at DEBUG prints it without one.
+    """
+    def level(name):
+        lg = logging.getLogger(name)
+        return "%s(effective %s, handlers %d)" % (
+            logging.getLevelName(lg.level),
+            logging.getLevelName(lg.getEffectiveLevel()),
+            len(lg.handlers))
+
+    parts = ["root logger " + level(""), "numba logger " + level("numba")]
+    env = {k: v for k, v in os.environ.items() if k.upper().startswith("NUMBA_")}
+    parts.append("NUMBA_* env %s" % (env or "none"))
+    cfg = sys.modules.get("numba.core.config")
+    if cfg is not None:
+        flags = {k: getattr(cfg, k, None) for k in
+                 ("DEBUG", "DUMP_IR", "DUMP_SSA", "DEBUG_FRONTEND")}
+        parts.append("numba config %s" % flags)
+    if os.path.exists(".numba_config.yaml"):
+        parts.append(".numba_config.yaml in %s" % os.getcwd())
+    return "Debug settings: " + "; ".join(parts)
 
 
 
@@ -241,7 +295,113 @@ _QUERYNAME_RE = re.compile(r"^[ \t]*QUERYNAME\s*=\s*([A-Za-z$][A-Za-z$0-9]*)",
                            re.IGNORECASE | re.MULTILINE)
 
 
-def run_mfql_on_scan(scan, queries, options):
+def _layout_path(csv_path):
+    """<sample>.csv -> <sample>.layout.json (written next to the CSV)."""
+    p = Path(csv_path)
+    return p.with_name(p.stem + ".layout.json")
+
+
+def _report_value(value):
+    """One REPORT value as text, the way generateReport() writes it ("%s").
+
+    None (e.g. an intensity of a variable that was not found) becomes NaN,
+    i.e. an empty cell, instead of the text "None".
+    """
+    if value is None:
+        return np.nan
+    return "%s" % (value,)
+
+
+def _query_result_to_frame(qres, header):
+    """The result rows of one query as a DataFrame.
+
+    Built from the row dicts (qres.listReportOut: {REPORT column: value}),
+    NOT by parsing qres.strOutput.
+
+    Why not strOutput
+    -----------------
+    When several queries run in one startParsing() call, generateReport()
+    writes every query's rows against ONE shared column list (result.listHead,
+    the union of all queries' REPORT columns, in the order the queries first
+    used them). It leaves out the separator after the last column of the
+    query's own REPORT. If that column is not also the last of the query's
+    columns in the shared list - i.e. the query orders its REPORT columns
+    differently from a query before it, e.g. FragmentAERRppm after the
+    intensities instead of before - the row ends with an extra separator and
+    has one field too many. pandas.read_csv(names=header) then turns the first
+    field (LipidSpecies) into the row index, every column moves one to the
+    left, LipidSpecies holds the LipidClass ("DG"), and the merge collapses
+    the whole class into one row. A query run alone is never affected,
+    because then the shared list is its own column order.
+
+    Columns are taken in the order of `header` and only if the query
+    reported them, so a query no longer gets "None" columns of other queries.
+    Columns a row has but `header` does not list are left out, exactly as
+    generateReport() leaves them out of strOutput.
+    """
+    rows = getattr(qres, "listReportOut", None) or []
+    if not rows:
+        return pd.DataFrame()
+
+    if header:
+        present = set()
+        for rpt in rows:
+            present.update(rpt.keys())
+        columns = [c for c in header if c in present]
+    else:
+        columns = []
+        for rpt in rows:
+            columns.extend(c for c in rpt.keys() if c not in columns)
+
+    data = [{c: _report_value(rpt[c]) for c in columns if c in rpt} for rpt in rows]
+    # Kept as text, exactly as generateReport() formats it (e.g. "780.70",
+    # not 780.7), so the merged file shows the same values as normal mode.
+    return pd.DataFrame(data, columns=columns)
+
+
+def _query_layout(scan, result, header):
+    """Column layout of one sample's result, for the normal-mode writer.
+
+    Normal mode writes one header: the REPORT columns of all queries, joined
+    in query order (generateReport() -> result.listHead), where a sample
+    column such as "Intensity:<sample>" is repeated for every sample in place.
+    A batch sample knows only its own sample, so this records each query's
+    columns with the sample columns reduced to their base name; the merge
+    expands them again for all samples.
+
+    Returns
+        {"samples":       [sample names of this MasterScan],
+         "query_order":   [QUERYNAME, ...] in run order (= MFQL order),
+         "query_columns": {QUERYNAME: [[column, is_sample_column], ...]}}
+
+    Only columns that are in `header` are listed, as only those are written.
+    A query without rows has an empty column list.
+    """
+    samples = [str(s) for s in getattr(scan, "listSamples", [])]
+    in_header = set(header)
+    query_order, query_columns = [], {}
+    for qres in result.dictQuery.values():
+        query_order.append(qres.name)
+        cols, seen = [], set()
+        for rpt in getattr(qres, "listReportOut", None) or []:
+            for key in rpt.keys():
+                if key not in in_header:
+                    continue
+                base, is_sample = key, False
+                for smp in samples:
+                    suffix = ":" + smp
+                    if key.endswith(suffix) and len(key) > len(suffix):
+                        base, is_sample = key[:-len(suffix)], True
+                        break
+                if (base, is_sample) not in seen:
+                    seen.add((base, is_sample))
+                    cols.append([base, is_sample])
+        query_columns[qres.name] = cols
+    return {"samples": samples, "query_order": query_order,
+            "query_columns": query_columns}
+
+
+def run_mfql_on_scan(scan, queries, options, layout=None):
     """
     Run ALL MFQL queries against one MasterScan in a single startParsing()
     call -- the same way normal mode (lxMain.startMFQL) runs them.
@@ -271,6 +431,11 @@ def run_mfql_on_scan(scan, queries, options):
           - mfql_file:  the MFQL file name the row came from; the merge uses
                         it to keep sub-classes of one LipidClass (e.g. PC and
                         PC O-) in separate blocks.
+
+    layout: optional dict. If given, it is filled with what the merge needs
+        to write the batch result in the normal-mode layout (see
+        _query_layout()): the sample names of this MasterScan, the queries
+        in run order and each query's REPORT columns in REPORT order.
 
     A syntax or runtime error in any MFQL raises and fails the whole sample
     (as in normal mode). There is deliberately no per-query fallback: it
@@ -325,19 +490,16 @@ def run_mfql_on_scan(scan, queries, options):
         del mfqlObj
         return pd.DataFrame()
 
-    header = list(result.listHead) if hasattr(result, "listHead") else None
+    header = list(result.listHead) if getattr(result, "listHead", None) else []
+
+    if layout is not None:
+        layout.update(_query_layout(scan, result, header))
 
     dfs = []
     for qres in result.dictQuery.values():
-        text = qres.strOutput.strip()
-        if not text:
+        df_block = _query_result_to_frame(qres, header)
+        if df_block.empty:
             continue
-
-        buf = io.StringIO(text)
-        if header:
-            df_block = pd.read_csv(buf, sep=mfqlObj.outputSeperator, names=header, header=None)
-        else:
-            df_block = pd.read_csv(buf, sep=mfqlObj.outputSeperator)
 
         df_block["query_name"] = qres.name
         # Map the QUERYNAME back to its MFQL file; fall back to the
@@ -445,7 +607,12 @@ def process_sample(args: tuple) -> Dict[str, Any]:
         # -----------------------------------------------------------
         log(f"Running {len(queries)} MFQL(s) on '{sample_id}': "
             + ", ".join(q["name"] for q in queries))
-        df = run_mfql_on_scan(scan, queries, options)
+        layout = {}
+        df = run_mfql_on_scan(scan, queries, options, layout=layout)
+        if options.get("verboseWorkerLog", False):
+            # After the run, when every setting the MFQL code makes is in
+            # effect (see _debug_settings_line).
+            log(_debug_settings_line())
 
         if df is None or df.empty:
             df = pd.DataFrame()
@@ -476,6 +643,9 @@ def process_sample(args: tuple) -> Dict[str, Any]:
             out_dir_path.mkdir(parents=True, exist_ok=True)
             out_path = out_dir_path / f"{sample_id}.csv"
             df.to_csv(out_path, index=False)
+            # Column layout for the normal-mode merge (see _query_layout).
+            with open(_layout_path(out_path), "w", encoding="utf-8") as f:
+                json.dump(layout, f)
             log(f"Wrote per-sample CSV '{out_path}'")
 
         # Cleanup big objects
@@ -580,6 +750,52 @@ def _query_sort_key(query: Dict[str, str]):
 
 
 # ============================================================
+# Ion mode of a batch (for the per-sample folder and the log name)
+# ============================================================
+#
+# Positive and negative runs on the same import folder used to share
+# "per_sample_results" and "batch_log.txt", so the second run overwrote the
+# first one's per-sample CSVs (same sample names) and log. The ion mode is
+# read from the selected MFQLs ("IN MS1+" / "IN MS2-" ...) before the run, so
+# the folder and the log can be named from the start. batch_results_*.csv
+# keeps its name from the ScanPolarity column, as before.
+
+# "IN MS1+" / "in ms2 -" in an MFQL; comments ("# ...") are removed first
+_MFQL_SCOPE_RE = re.compile(r"\bIN\s+MS[12]\s*([+-])", re.IGNORECASE)
+_MFQL_COMMENT_RE = re.compile(r"#[^\r\n]*")
+
+
+def batch_ion_mode(queries) -> str:
+    """Ion mode of a batch, read from its MFQL files.
+
+    queries: list of {"name": ..., "path": ...} as passed to run_batch().
+
+    Returns "positive", "negative", "mixed" (both + and - scopes among the
+    selected MFQLs) or "" when no scope could be read (unreadable files, no
+    "IN MS1+/-" at all). "" keeps the old names without a suffix.
+    """
+    signs = set()
+    for q in queries:
+        try:
+            text = Path(q["path"]).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        signs.update(_MFQL_SCOPE_RE.findall(_MFQL_COMMENT_RE.sub("", text)))
+    if signs == {"+"}:
+        return "positive"
+    if signs == {"-"}:
+        return "negative"
+    if signs:
+        return "mixed"
+    return ""
+
+
+def ion_mode_suffix(ion_mode: str) -> str:
+    """'_positive' / '_negative' / '_mixed', or '' if the mode is unknown."""
+    return "_" + ion_mode if ion_mode else ""
+
+
+# ============================================================
 # Controller: manages pool + collects + merges
 # ============================================================
 def run_batch(
@@ -646,8 +862,18 @@ def run_batch(
     log("Sample order: " + ", ".join(Path(str(e[0])).name for e in listFiles))
     log("MFQL order: " + ", ".join(q["name"] for q in queries))
 
+    # Ion mode from the MFQLs: per_sample_results_positive / _negative /
+    # _mixed, so a positive and a negative run never write into the same
+    # folder. A folder of the same mode from an earlier run is replaced, so
+    # no CSV of that run can end up next to (or in the merge of) this one.
+    ion_mode = batch_ion_mode(queries)
+    log(f"Ion mode (from the MFQLs): {ion_mode or 'unknown'}")
+
     # Directory where workers will store per-sample CSVs
-    per_sample_dir = import_dir / "per_sample_results"
+    per_sample_dir = import_dir / f"per_sample_results{ion_mode_suffix(ion_mode)}"
+    if per_sample_dir.exists():
+        log(f"Replacing per-sample results of an earlier run in {per_sample_dir}")
+        shutil.rmtree(per_sample_dir, ignore_errors=True)
     per_sample_dir.mkdir(parents=True, exist_ok=True)
 
     save_per_sample = bool(options.get("savePerSample", False))
@@ -743,18 +969,42 @@ def run_batch(
     else:
         merge_reference_files = [Path(t[0]) for t in tasks]
 
-    final_df, polarity = merge_lipid_results(
-        sample_csv_paths,
-        mzml_files=merge_reference_files,
-        occurrence_threshold=occurrence_threshold
-    )
+    try:
+        merged, polarity = merge_lipid_results(
+            sample_csv_paths,
+            mzml_files=merge_reference_files,
+            occurrence_threshold=occurrence_threshold
+        )
+    finally:
+        # The <sample>.layout.json files are only for the merge; remove them
+        # so the per-sample folder holds just the CSVs (also if the merge
+        # failed).
+        for csv_path in sample_csv_paths:
+            try:
+                _layout_path(csv_path).unlink()
+            except OSError:
+                pass
 
 
 
-    # Output path for the final batch results
-    batch_result_path = import_dir / f"batch_results_{polarity[0]}.csv"
-    final_df.to_csv(batch_result_path, index=False, encoding="utf-8")
-    log(f"Saved merged results to {batch_result_path} ({len(final_df)} rows)")
+    # Output path for the final batch results. The name comes from the
+    # ScanPolarity column, as before, with two fixes:
+    #   - no MFQL reports ScanPolarity: polarity is empty and polarity[0]
+    #     raised IndexError -> fall back to the ion mode from the MFQLs;
+    #   - both positive and negative rows: polarity[0] was whichever came
+    #     first, so a mixed run overwrote batch_results_positive.csv (or
+    #     _negative) -> "mixed".
+    if len(polarity) > 1:
+        polarity_name = "mixed"
+    elif len(polarity) == 1:
+        polarity_name = str(polarity[0])
+    else:
+        polarity_name = ion_mode or "unknown"
+    batch_result_path = import_dir / f"batch_results_{polarity_name}.csv"
+    # Same layout and separator as the normal-mode output file.
+    output_sep = "\t" if options.get("tabLimited") else ","
+    merged.write(batch_result_path, sep=output_sep)
+    log(f"Saved merged results to {batch_result_path} ({merged.n_rows} rows)")
 
     # -----------------------------------------------------------
     # Build summary
@@ -770,7 +1020,9 @@ def run_batch(
         "duration_sec": round(duration, 2),
         "cores_used": n_cores,
         "output_file": str(batch_result_path),
-        "polarity": polarity[0]
+        "polarity": polarity_name,
+        "ion_mode": ion_mode,
+        "per_sample_dir": str(per_sample_dir) if save_per_sample else None,
     }
 
     # -----------------------------------------------------------
@@ -797,369 +1049,310 @@ def run_batch(
 
 # The merge_lipid_results()
 # -------------------------------------------------------------------
+#
+# Output layout: the same as normal mode (lxMain.startMFQL)
+# ---------------------------------------------------------
+#   - one header line: the REPORT columns of all queries, joined in MFQL
+#     order exactly as generateReport() joins them (result.listHead); a
+#     sample column such as "Intensity:<sample>" is repeated for every sample
+#     at the place where the query reports it;
+#   - then one block per query, in MFQL order: an empty line, a line
+#     "###<sep><QUERYNAME>", the rows, an empty line; a query without rows
+#     still gets its "###" line, as in normal mode;
+#   - a cell the row's query does not report is "None", as in normal mode.
+# Two batch-only additions are kept:
+#   - the blocks of queries that found internal standards (LipidSpecies
+#     starting with "IS") come first, and inside a block the internal
+#     standards come first; every query still appears exactly once (see
+#     the block rules in merge_lipid_results);
+#   - the occurrence filter.
+# What cannot be the same as normal mode are the values: batch mode builds
+# one MasterScan per sample instead of one aligned MasterScan, so which
+# species are found, their intensities and their Mass can differ.
+
+# Internal standards: LipidSpecies starting with this prefix.
+IS_PREFIX = "IS"
+
+# Columns run_mfql_on_scan()/process_sample() add for the merge; they are not
+# REPORT columns and are not written.
+_BOOKKEEPING_COLUMNS = ("query_name", "mfql_file", "sample_id")
+
+# Old per-sample CSVs (without a layout file) may have bare intensity columns
+# that belong to their only sample.
+_BARE_SAMPLE_COLUMN_RE = re.compile(r"^(Intensity|PrecursorIntensity|Fragment[A-Z]Intensity)$")
+
+
+class MergedResult:
+    """The merged batch result in the normal-mode layout.
+
+    header: list of column names
+    blocks: list of (title, rows); each row is a list of strings, one per
+            header column
+    """
+
+    def __init__(self, header, blocks):
+        self.header = header
+        self.blocks = blocks
+
+    @property
+    def n_rows(self):
+        return sum(len(rows) for _, rows in self.blocks)
+
+    def to_text(self, sep=","):
+        """The file content, line by line as lxMain.startMFQL writes it."""
+        out = [sep.join(self.header) + "\n"]
+        for title, rows in self.blocks:
+            out.append("\n###%s%s\n" % (sep, title))
+            for row in rows:
+                out.append(sep.join(row) + "\n")
+            out.append("\n")
+        return "".join(out)
+
+    def write(self, path, sep=","):
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(self.to_text(sep))
+
+
+def _detect_delimiter(path):
+    with open(path, "rb") as f:
+        sample = f.read(4096)
+
+    text = sample.decode("utf-8-sig", errors="replace")
+
+    # A fixed-size read almost always stops mid-line, and the short line
+    # that leaves behind has a different field count from the rest, which
+    # is exactly what Sniffer's consistency check rejects. Feed the sniffer
+    # whole lines only.
+    lines = text.splitlines(keepends=True)
+    if len(lines) > 1 and not lines[-1].endswith("\n"):
+        text = "".join(lines[:-1])
+
+    try:
+        return csv.Sniffer().sniff(text, delimiters=",;\t|").delimiter
+    except Exception:
+        warnings.warn(
+            f"Could not detect delimiter for {path}. Falling back to comma.",
+            UserWarning
+        )
+        return ","
+
+
+def _guess_samples(df, path):
+    """Sample names of an old per-sample CSV that has no layout file."""
+    stem = Path(path).stem
+    for candidate in (f"{stem}.mzML", stem):
+        if any(c.endswith(":" + candidate) for c in df.columns):
+            return [candidate]
+    suffixes = [c.rsplit(":", 1)[1] for c in df.columns if ":" in c]
+    if suffixes:
+        return [max(set(suffixes), key=suffixes.count)]
+    return [f"{stem}.mzML"]
+
+
+def _split_sample_column(column, samples):
+    """'Intensity:<sample>' -> ('Intensity', '<sample>'), else None."""
+    for smp in samples:
+        suffix = ":" + smp
+        if column.endswith(suffix) and len(column) > len(suffix):
+            return column[:-len(suffix)], smp
+    if _BARE_SAMPLE_COLUMN_RE.match(column) and samples:
+        return column, samples[0]
+    return None
+
+
+def _join_columns(lists):
+    """Join column lists in order, like lx.tools.connectLists (no mutation)."""
+    out, seen = [], set()
+    for cols in lists:
+        for c in cols:
+            if c not in seen:
+                seen.add(c)
+                out.append(c)
+    return out
+
+
+def _to_float(text):
+    try:
+        return float(text)
+    except (TypeError, ValueError):
+        return None
+
 
 def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None):
     """
-    Merge multiple per-sample lipidomics result CSV files into one batch table.
+    Merge the per-sample result CSVs into one batch result in the layout of
+    the normal-mode output (see the comment block above).
 
-    Required input columns per CSV
-    ------------------------------
-    Required:
-        - LipidSpecies
+    A row is one species of one query: the key is (QUERYNAME, LipidSpecies).
+    So the same species found by two queries appears in both blocks, as in
+    normal mode. Within one sample a key is kept once (first row).
 
-    Strongly recommended:
-        - LipidClass
-        - Mass
-        - ScanPolarity
-        - Intensity
+    Values that are not per sample (Mass, errors, formulas, ...) come from
+    the first sample, in sample order, that has the row; per-sample columns
+    (Intensity:<sample>, ...) come from each sample, 0 where the sample did
+    not find the species.
 
     Parameters
     ----------
-    sample_files : list-like
-        Paths to per-sample lipidomics CSV result files.
-
-    mzml_files : list-like, optional
-        Paths to mzML files. If given, CSV files are ordered according to the
-        mzML file stem names.
-
-    occurrence_threshold : float, optional
-        Fraction of samples in which a lipid must have Intensity > 0.
-        Example:
-            0.5 means lipid must appear in at least 50% of samples.
+    sample_files : paths of the per-sample CSVs (each may have a
+        <sample>.layout.json next to it, written by process_sample).
+    mzml_files : optional; if given, the CSVs are put into the order of these
+        file names.
+    occurrence_threshold : optional fraction 0..1. A row whose query reports
+        an "Intensity" column is kept only if Intensity > 0 in at least
+        ceil(n_samples * threshold) samples. Rows of queries without an
+        "Intensity" column are not filtered.
 
     Returns
     -------
-    final_df : pandas.DataFrame
-        Merged lipidomics result table.
-
-    polarity : numpy.ndarray
-        Unique non-null ScanPolarity values, if available.
+    (MergedResult, polarity) ; polarity = unique non-empty ScanPolarity values
     """
 
-    # Optional pandas setting to avoid future silent downcasting behavior
-    try:
-        pd.options.future.no_silent_downcasting = True
-    except Exception:
-        pass
-
-    # ------------------------------------------------------------
-    # Helper: detect CSV delimiter
-    # ------------------------------------------------------------
-    def detect_delimiter(path):
-        with open(path, "rb") as f:
-            sample = f.read(4096)
-
-        text = sample.decode("utf-8-sig", errors="replace")
-
-        # A fixed-size read almost always stops mid-line, and the short line
-        # that leaves behind has a different field count from the rest, which
-        # is exactly what Sniffer's consistency check rejects. Rows here run
-        # to several hundred characters, so this failed for *every* file and
-        # warned on each one. Feed the sniffer whole lines only.
-        lines = text.splitlines(keepends=True)
-        if len(lines) > 1 and not lines[-1].endswith("\n"):
-            text = "".join(lines[:-1])
-
-        try:
-            # csv.Sniffer wants the candidates as one string of characters.
-            # The list this used to pass happens to work -- the parameter is
-            # only ever used in `char in delimiters` tests -- but it violates
-            # the documented signature and type checkers flag it.
-            return csv.Sniffer().sniff(
-                text,
-                delimiters=",;\t|"
-            ).delimiter
-        except Exception:
-            warnings.warn(
-                f"Could not detect delimiter for {path}. Falling back to comma.",
-                UserWarning
-            )
-            return ","
-
-    # ------------------------------------------------------------
-    # Helper: validate required and recommended columns
-    # ------------------------------------------------------------
-    def validate_columns(df, path):
-        required_cols = ["LipidSpecies"]
-
-        recommended_cols = [
-            "LipidClass",
-            "Mass",
-            "ScanPolarity",
-            "Intensity"
-        ]
-
-        missing_required = [c for c in required_cols if c not in df.columns]
-        missing_recommended = [c for c in recommended_cols if c not in df.columns]
-
-        if missing_required:
-            raise ValueError(
-                f"{path} is missing required columns: {missing_required}. "
-                f"Required minimum column: {required_cols}"
-            )
-
-        if missing_recommended:
-            warnings.warn(
-                f"{path} is missing recommended columns: {missing_recommended}. "
-                "The merge will continue, but sorting, polarity reporting, or "
-                "occurrence filtering may be incomplete.",
-                UserWarning
-            )
-
-    # ------------------------------------------------------------
-    # Prepare file order
-    # ------------------------------------------------------------
     sample_files = list(sample_files)
-
     if not sample_files:
         raise ValueError("No sample files were provided.")
 
     if mzml_files is not None:
-        mzml_stems = [Path(p).stem for p in mzml_files]
         csv_by_stem = {Path(p).stem: p for p in sample_files}
-
-        sample_files = [
-            csv_by_stem[stem]
-            for stem in mzml_stems
-            if stem in csv_by_stem
-        ]
-
+        sample_files = [csv_by_stem[Path(p).stem] for p in mzml_files
+                        if Path(p).stem in csv_by_stem]
         if not sample_files:
             raise ValueError(
                 "mzml_files was provided, but none of the mzML stems matched "
                 "the CSV file stems."
             )
 
-    # ------------------------------------------------------------
-    # Read, validate, deduplicate, and rename sample intensity columns
-    # ------------------------------------------------------------
-    dfs = []
+    records = {}             # (query, species) -> record (insertion-ordered)
+    query_order = []         # QUERYNAMEs in MFQL order
+    query_columns = {}       # QUERYNAME -> [(column or base, is_sample), ...]
+    all_samples = []         # sample names in sample order
 
     for path in sample_files:
-        delimiter = detect_delimiter(path)
-
+        delimiter = _detect_delimiter(path)
         try:
-            df = pd.read_csv(path, sep=delimiter, encoding="utf-8-sig")
+            # Everything as text, so values are written back exactly as the
+            # sample wrote them; "" is an empty cell.
+            df = pd.read_csv(path, sep=delimiter, encoding="utf-8-sig",
+                             dtype=str, keep_default_na=False)
         except Exception:
-            raise ValueError(
-                f"Failed reading {path} with delimiter {repr(delimiter)}"
-            )
+            raise ValueError(f"Failed reading {path} with delimiter {repr(delimiter)}")
 
-        validate_columns(df, path)
+        if "LipidSpecies" not in df.columns:
+            raise ValueError(f"{path} is missing the required column LipidSpecies.")
 
-        # Remove duplicate lipid species inside each file
-        df = df.drop_duplicates(subset=["LipidSpecies"], keep="first")
+        if "query_name" not in df.columns:
+            # Older per-sample CSV: name the block after the MFQL file or
+            # the lipid class instead.
+            if "mfql_file" in df.columns:
+                df["query_name"] = df["mfql_file"]
+            elif "LipidClass" in df.columns:
+                df["query_name"] = df["LipidClass"]
+            else:
+                df["query_name"] = "Unknown"
 
-        # Use file stem as sample ID
-        sample_id = Path(path).stem
+        layout = None
+        layout_file = _layout_path(path)
+        if layout_file.exists():
+            try:
+                with open(layout_file, encoding="utf-8") as f:
+                    layout = json.load(f)
+            except Exception:
+                warnings.warn(f"Could not read {layout_file}; using the CSV columns.", UserWarning)
 
-        # Identify intensity-like columns
-        sample_cols = [
-            c for c in df.columns
-            if re.match(
-                r"^(Intensity|PrecursorIntensity|Fragment[A-Z]Intensity)",
-                c
-            )
-        ]
+        samples = list(layout["samples"]) if layout and layout.get("samples") else _guess_samples(df, path)
+        for smp in samples:
+            if smp not in all_samples:
+                all_samples.append(smp)
 
-        # Metadata columns are everything else except LipidSpecies
-        meta_cols = [
-            c for c in df.columns
-            if c not in sample_cols and c != "LipidSpecies"
-        ]
+        column_kind = {}     # CSV column -> (base, sample) or None
+        for c in df.columns:
+            column_kind[c] = _split_sample_column(c, samples)
 
-        # Keep only relevant columns
-        keep_cols = ["LipidSpecies"] + meta_cols + sample_cols
-        df = df[keep_cols]
+        # Query order and each query's columns: from the layout file (exact
+        # REPORT order); otherwise from the CSV column order, taking the
+        # columns the query's rows fill.
+        if layout:
+            for q in layout.get("query_order", []):
+                if q not in query_order:
+                    query_order.append(q)
+            for q, cols in layout.get("query_columns", {}).items():
+                if cols and q not in query_columns:
+                    query_columns[q] = [(c[0], bool(c[1])) for c in cols]
+        for q in pd.unique(df["query_name"]):
+            if q not in query_order:
+                query_order.append(q)
+            if q not in query_columns:
+                rows_q = df[df["query_name"] == q]
+                cols = []
+                for c in df.columns:
+                    if c in _BOOKKEEPING_COLUMNS or not (rows_q[c] != "").any():
+                        continue
+                    kind = column_kind[c]
+                    entry = (kind[0], True) if kind else (c, False)
+                    if entry not in cols:
+                        cols.append(entry)
+                query_columns[q] = cols
 
-        # Add sample-specific suffix to intensity columns
-        rename_map = {
-            c: f"{c}:{sample_id}.mzML"
-            for c in sample_cols
-            if ":" not in c
-        }
+        df = df.drop_duplicates(subset=["query_name", "LipidSpecies"], keep="first")
 
-        df = df.rename(columns=rename_map)
-
-        # Use LipidSpecies as join key
-        df = df.set_index("LipidSpecies")
-
-        dfs.append(df)
+        for row in df.to_dict("records"):
+            key = (row["query_name"], row["LipidSpecies"])
+            rec = records.get(key)
+            if rec is None:
+                rec = {"meta": {}, "per_sample": {}}
+                records[key] = rec
+            for c, v in row.items():
+                if c in _BOOKKEEPING_COLUMNS or c == "LipidSpecies" or v == "":
+                    continue
+                kind = column_kind[c]
+                if kind:
+                    rec["per_sample"].setdefault(kind, v)
+                elif c not in rec["meta"]:
+                    rec["meta"][c] = v
 
     # ------------------------------------------------------------
-    # Merge all samples side-by-side
+    # Header: the queries' columns joined in MFQL order, sample columns
+    # expanded for all samples (normal mode: result.listHead)
     # ------------------------------------------------------------
-    wide = pd.concat(dfs, axis=1, join="outer")
+    entries = _join_columns(query_columns.get(q, []) for q in query_order)
+    if ("LipidSpecies", False) not in entries:
+        entries.insert(0, ("LipidSpecies", False))
 
-    # ------------------------------------------------------------
-    # Coalesce duplicate metadata columns
-    # Example: LipidClass appears once per file; keep first non-null value
-    # ------------------------------------------------------------
-    coalesced = pd.DataFrame(index=wide.index)
-
-    for col_name in wide.columns.unique():
-        block = wide.loc[:, wide.columns == col_name]
-
-        if block.shape[1] == 1:
-            coalesced[col_name] = block.iloc[:, 0]
+    header, header_cells = [], []        # header_cells: (base, is_sample, sample)
+    for base, is_sample in entries:
+        if is_sample:
+            for smp in all_samples:
+                header.append(f"{base}:{smp}")
+                header_cells.append((base, True, smp))
         else:
-            filled = block.bfill(axis=1).infer_objects(copy=False)
-            coalesced[col_name] = filled.iloc[:, 0]
-
-    # Drop unwanted columns if present
-    coalesced = coalesced.drop(
-        columns=["query_name", "sample_id"],
-        errors="ignore"
-    )
+            header.append(base)
+            header_cells.append((base, False, None))
 
     # ------------------------------------------------------------
-    # Build logical column order
-    # ------------------------------------------------------------
-    head_meta = [
-        "LipidClass",
-        "Mass",
-        "IsobaricClass",
-        "ChemicalFormula",
-        "DerivatizedForm",
-        "AdductIon",
-        "LipidCategory",
-        "ScanPolarity"
-    ]
-
-    head_meta = [c for c in head_meta if c in coalesced.columns]
-
-    def sample_block(base):
-        cols = []
-
-        for file_path in sample_files:
-            sample_id = Path(file_path).stem
-            col = f"{base}:{sample_id}.mzML"
-
-            if col in coalesced.columns:
-                cols.append(col)
-
-        return cols
-
-    intensity_block = sample_block("Intensity")
-
-    mid_meta = [
-        c for c in ["IdentificationLevel", "QuantificationIon"]
-        if c in coalesced.columns
-    ]
-
-    identifier_block = [
-        c for c in [
-            "PrecursorIdentifier",
-            "FragmentAIdentifier",
-            "FragmentBIdentifier",
-            "FragmentCIdentifier"
-        ]
-        if c in coalesced.columns
-    ]
-
-    precursor_intensity_block = sample_block("PrecursorIntensity")
-
-    # Fragment intensity columns such as FragmentAIntensity, FragmentBIntensity
-    fragment_bases = sorted({
-        re.match(r"^(Fragment[A-Z]Intensity)\b", c).group(1)
-        for c in coalesced.columns
-        if re.match(r"^Fragment[A-Z]Intensity\b", c)
-    })
-
-    fragment_blocks = []
-
-    for base in fragment_bases:
-        fragment_blocks.extend(sample_block(base))
-
-    tail_meta = [
-        c for c in [
-            "PrecursorERRppm",
-            "FragmentAERRppm",
-            "FragmentBERRppm",
-            "FragmentCERRppm",
-            "FragmentAMass",
-            "FragmentBMass",
-            "FragmentCMass",
-            "FragmentAAdductIon",
-            "FragmentBAdductIon",
-            "FragmentCAdductIon",
-            "FragmentAChemicalFormula",
-            "FragmentBChemicalFormula",
-            "FragmentCChemicalFormula",
-            "NeutralChemicalFormula"
-        ]
-        if c in coalesced.columns
-    ]
-
-    ordered_blocks = (
-        head_meta
-        + intensity_block
-        + mid_meta
-        + identifier_block
-        + precursor_intensity_block
-        + fragment_blocks
-        + tail_meta
-    )
-
-    remaining = [
-        c for c in coalesced.columns
-        if c not in ordered_blocks
-    ]
-
-    final_cols = [
-        c for c in ordered_blocks + remaining
-        if c in coalesced.columns
-    ]
-
-    coalesced = coalesced[final_cols]
-
-    # ------------------------------------------------------------
-    # Restore LipidSpecies as a normal column
-    # ------------------------------------------------------------
-    df = coalesced.copy()
-
-    df.index.name = "LipidSpecies"
-    df = df.reset_index()
-
-    # Preserve original order for internal standards
-    df["__orig_pos__"] = np.arange(len(df))
-
-    # ------------------------------------------------------------
-    # Convert intensity columns to numeric and fill missing values with 0
-    # ------------------------------------------------------------
-    intensity_pattern = re.compile(
-        r"^(Intensity|PrecursorIntensity|Fragment[A-Z]Intensity):"
-    )
-
-    intensity_cols = [
-        c for c in df.columns
-        if intensity_pattern.match(c)
-    ]
-
-    for col in intensity_cols:
-        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-
-    # ------------------------------------------------------------
-    # Apply occurrence filter only to main Intensity columns
+    # Occurrence filter on the main Intensity columns
     # ------------------------------------------------------------
     if occurrence_threshold is not None:
         if not 0 <= occurrence_threshold <= 1:
-            raise ValueError(
-                "occurrence_threshold must be between 0 and 1."
-            )
+            raise ValueError("occurrence_threshold must be between 0 and 1.")
 
-        if intensity_block:
-            n_positive = (df[intensity_block] > 0).sum(axis=1)
-            min_required = int(
-                np.ceil(len(intensity_block) * occurrence_threshold)
-            )
-
-            before = len(df)
-            df = df[n_positive >= min_required].copy()
-            after = len(df)
-
+        queries_with_intensity = {
+            q for q in query_order if ("Intensity", True) in query_columns.get(q, [])
+        }
+        if queries_with_intensity:
+            min_required = int(np.ceil(len(sample_files) * occurrence_threshold))
+            before = len(records)
+            for key in list(records.keys()):
+                if key[0] not in queries_with_intensity:
+                    continue
+                per_sample = records[key]["per_sample"]
+                n_positive = sum(
+                    1 for smp in all_samples
+                    if (_to_float(per_sample.get(("Intensity", smp))) or 0) > 0
+                )
+                if n_positive < min_required:
+                    del records[key]
             print(
-                f"Occurrence filter removed {before - after} lipids "
+                f"Occurrence filter removed {before - len(records)} lipids "
                 f"(threshold={occurrence_threshold}, "
                 f"minimum positive samples={min_required})"
             )
@@ -1171,178 +1364,78 @@ def merge_lipid_results(sample_files, mzml_files=None, occurrence_threshold=None
             )
 
     # ------------------------------------------------------------
-    # Identify internal standards
-    # Rows where LipidSpecies starts with IS
+    # Rows
     # ------------------------------------------------------------
-    is_mask = (
-        df["LipidSpecies"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-        .str.startswith("IS")
-    )
+    def make_row(key, rec):
+        q, species = key
+        reported = set(query_columns.get(q, []))
+        row = []
+        lead = ""
+        for base, is_sample, smp in header_cells:
+            absent = False
+            if base == "LipidSpecies" and not is_sample:
+                value = species
+            elif (base, is_sample) not in reported:
+                value = "None"
+                absent = True
+            elif is_sample:
+                # 0 where this sample did not find the species
+                value = rec["per_sample"].get((base, smp), "0")
+            else:
+                value = rec["meta"].get(base, "None")
+            row.append(lead + value)
+            # generateReport() writes a column the query does not report as
+            # "None" + separator + " ", so the next cell starts with a space
+            # (" None"). Copied, so the file reads exactly like normal mode.
+            lead = " " if absent else ""
+        return row
 
-    is_df = (
-        df[is_mask]
-        .copy()
-        .sort_values("__orig_pos__", kind="mergesort")
-    )
+    def is_internal_standard(species):
+        return str(species).strip().upper().startswith(IS_PREFIX)
 
-    non_is_df = df[~is_mask].copy()
+    def mass_sort_key(item):
+        position, (key, rec) = item
+        mass = _to_float(rec["meta"].get("Mass"))
+        return (mass is None, mass if mass is not None else 0.0, position)
 
-    # ------------------------------------------------------------
-    # Sort non-IS lipids
-    # Preferred: LipidClass, then the MFQL file, then Mass
-    # Fallbacks are used if columns are missing
-    #
-    # The MFQL file is the sub-class key: PC and PC O- (and any other
-    # sub-classes) report the same LipidClass but come from different MFQL
-    # files. Sorting by LipidClass and Mass alone interleaved their rows;
-    # with the MFQL file in between, each sub-class forms its own block.
-    # Within one LipidClass the blocks follow the MFQL file names
-    # alphabetically.
-    # ------------------------------------------------------------
-    sort_cols = []
-    ascending = []
+    items = list(enumerate(records.items()))
 
-    if "LipidClass" in non_is_df.columns:
-        sort_cols.append("LipidClass")
-        ascending.append(True)
+    blocks = []
 
-    if "mfql_file" in non_is_df.columns:
-        # Rows without a file (per-sample CSVs from an older version) sort
-        # together as one sub-class instead of breaking the sort.
-        non_is_df["mfql_file"] = non_is_df["mfql_file"].fillna("").astype(str)
-        sort_cols.append("mfql_file")
-        ascending.append(True)
+    # Rules:
+    #   - Every query gets exactly one block, titled exactly as normal mode
+    #     does: "###<sep>QUERYNAME". No query name appears twice.
+    #   - Blocks of queries that found internal standards come first, then
+    #     all other queries; both groups in MFQL order. So the internal
+    #     standards are together at the top.
+    #   - Inside a block: internal standard rows first, then the other rows,
+    #     each sorted by Mass (normal mode: precursor mass).
+    #   - A query without rows gets an empty block, as in normal mode.
+    def rows_of(q, want_is):
+        q_items = [it for it in items
+                   if it[1][0][0] == q and is_internal_standard(it[1][0][1]) == want_is]
+        q_items.sort(key=mass_sort_key)
+        return [make_row(k, r) for _, (k, r) in q_items]
 
-    if "Mass" in non_is_df.columns:
-        non_is_df["Mass"] = pd.to_numeric(
-            non_is_df["Mass"],
-            errors="coerce"
-        )
-        sort_cols.append("Mass")
-        ascending.append(True)
-
-    sort_cols.append("__orig_pos__")
-    ascending.append(True)
-
-    non_is_df = non_is_df.sort_values(
-        sort_cols,
-        ascending=ascending,
-        kind="mergesort"
-    )
+    with_is, without_is = [], []
+    for q in query_order:
+        is_rows = rows_of(q, True)
+        block = (q, is_rows + rows_of(q, False))
+        (with_is if is_rows else without_is).append(block)
+    blocks = with_is + without_is
 
     # ------------------------------------------------------------
-    # Combine IS block first, then sorted lipid classes
+    # Polarity
     # ------------------------------------------------------------
-    ordered = pd.concat(
-        [is_df, non_is_df],
-        ignore_index=True
-    )
+    # Unique values in first-seen order. (A plain dict: lx.tools.odict
+    # takes no arguments.)
+    polarity = np.array(list(dict.fromkeys(
+        r["meta"]["ScanPolarity"] for r in records.values()
+        if r["meta"].get("ScanPolarity")
+    )))
+    if not any(base == "ScanPolarity" for base, _ in entries):
+        warnings.warn("ScanPolarity column missing. Returning empty polarity array.", UserWarning)
+    elif len(polarity) > 1:
+        warnings.warn(f"Multiple ScanPolarity values found: {polarity}", UserWarning)
 
-    ordered = ordered.drop(columns=["__orig_pos__"], errors="ignore")
-
-    # ------------------------------------------------------------
-    # Create grouping column for blank-row separation
-    # IS gets its own group at the top
-    # ------------------------------------------------------------
-    if "LipidClass" in ordered.columns:
-        lipid_class_group = ordered["LipidClass"].astype(str)
-    else:
-        lipid_class_group = pd.Series("Unknown", index=ordered.index)
-
-    # One block per LipidClass AND MFQL file, so sub-classes of one class
-    # (PC / PC O-) get their own block. "\x00" cannot occur in a class or
-    # file name, so the combined key cannot collide.
-    if "mfql_file" in ordered.columns:
-        lipid_class_group = (
-            lipid_class_group
-            + "\x00"
-            + ordered["mfql_file"].fillna("").astype(str)
-        )
-
-    ordered["__grp__"] = np.where(
-        ordered["LipidSpecies"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-        .str.startswith("IS"),
-        "__IS__",
-        lipid_class_group
-    )
-
-    # ------------------------------------------------------------
-    # Add one blank row after each group
-    # ------------------------------------------------------------
-    groups_out = []
-
-    if (ordered["__grp__"] == "__IS__").any():
-        g = ordered[ordered["__grp__"] == "__IS__"]
-        groups_out.append(g)
-        groups_out.append(
-            pd.DataFrame(
-                [[np.nan] * len(ordered.columns)],
-                columns=ordered.columns
-            )
-        )
-
-    # Blocks in the order the rows were sorted above (LipidClass, MFQL file),
-    # i.e. order of first appearance -- not re-sorted as strings, so the
-    # block order always matches the row sort.
-    class_groups = [
-        x for x in pd.unique(ordered["__grp__"].dropna())
-        if x != "__IS__"
-    ]
-
-    for lipid_class in class_groups:
-        g = ordered[ordered["__grp__"] == lipid_class]
-        groups_out.append(g)
-        groups_out.append(
-            pd.DataFrame(
-                [[np.nan] * len(ordered.columns)],
-                columns=ordered.columns
-            )
-        )
-
-    if groups_out:
-        final_df = pd.concat(groups_out, ignore_index=True)
-    else:
-        final_df = ordered.copy()
-
-    # mfql_file was only needed to sort and block the rows; it is not part of
-    # the result table (query_name and sample_id are dropped earlier for the
-    # same reason).
-    final_df = final_df.drop(columns=["__grp__", "mfql_file"], errors="ignore")
-
-    # ------------------------------------------------------------
-    # Ensure LipidSpecies is first column
-    # ------------------------------------------------------------
-    cols = final_df.columns.tolist()
-
-    if "LipidSpecies" in cols:
-        cols = ["LipidSpecies"] + [
-            c for c in cols
-            if c != "LipidSpecies"
-        ]
-        final_df = final_df[cols]
-
-    # ------------------------------------------------------------
-    # Extract polarity safely
-    # ------------------------------------------------------------
-    if "ScanPolarity" in final_df.columns:
-        polarity = final_df["ScanPolarity"].dropna().unique()
-
-        if len(polarity) > 1:
-            warnings.warn(
-                f"Multiple ScanPolarity values found: {polarity}",
-                UserWarning
-            )
-    else:
-        polarity = np.array([])
-        warnings.warn(
-            "ScanPolarity column missing. Returning empty polarity array.",
-            UserWarning
-        )
-
-    return final_df, polarity
+    return MergedResult(header, blocks), polarity

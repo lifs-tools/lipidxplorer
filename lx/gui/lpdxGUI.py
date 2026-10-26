@@ -29,6 +29,7 @@ from lx.lxMain import startMFQL
 
 # the MFQL editor
 from lx.gui.editor import PythonSTC
+from lx.gui import mfqlSyntaxMarks
 
 # those are for the MS-Tools. TODO: out source
 from lx.mfql.chemParser import parseElemSeq
@@ -1163,6 +1164,9 @@ class LpdxFrame(wx.Frame):
 		#self.list_index = 0
 		self.dict_notebook_editor = {}
 		self.dict_text_ctrl = {}
+		# MFQL files opened from Windows ("Open with" / command line): open in
+		# an editor tab only, NOT added to the Run tab's MFQL list. name -> path
+		self.dictEditorOnlyMFQL = {}
 		self.dict_button_close = {}
 		self.dict_button_save = {}
 		self.dict_button_saveAs = {}
@@ -1217,7 +1221,7 @@ class LpdxFrame(wx.Frame):
 		self.notebook_1_pane_5 = wx.Panel(self.notebook_1, -1)
 
 		self.button_open_next = wx.Button(self.start_panel, -1, "LipidXplorerNext")
-		self.button_open_legacy = wx.Button(self.start_panel, -1, "LipidXplorer 1.5")
+		self.button_open_legacy = wx.Button(self.start_panel, -1, "LipidXplorer 1.5.1")
 		self.button_back_from_placeholder = wx.Button(self.placeholder_panel, -1, "Back", size=(48, 20))
 		self.button_back_to_start = wx.Button(self.notebook_1_pane_2, -1, "Back", size=(48, 20))
 
@@ -1551,7 +1555,7 @@ class LpdxFrame(wx.Frame):
 		self.checkbox_verbose_log = wx.CheckBox(self.batchPanel, -1, "Verbose worker log")
 		self.checkbox_verbose_log.SetToolTip(
 			wx.ToolTip(
-				"If enabled, batch_log.txt also records everything the import\n"
+				"If enabled, the batch log also records everything the import\n"
 				"and MFQL code prints, not just each worker's progress and\n"
 				"errors. Useful for diagnosis, but it is roughly 100x more\n"
 				"output and noticeably slows a run down."
@@ -2838,6 +2842,13 @@ intensity."""))
 		for key in list(self.dict_text_ctrl.keys()):
 			if evt.GetId() == self.dict_text_ctrl[key].GetId():
 
+				# drawing the syntax marks fires this event too: not an edit
+				if mfqlSyntaxMarks.is_drawing(self.dict_text_ctrl[key]):
+					return
+
+				# check the MFQL syntax shortly after the user stops typing
+				self.ScheduleMFQLSyntaxCheck(key)
+
 				# find right page
 				for i in range(self.notebook_1.GetPageCount()):
 					if self.notebook_1.GetPage(i) == self.dict_text_ctrl[key].GetParent():
@@ -2846,6 +2857,40 @@ intensity."""))
 							# this is normal gray: (230, 224, 218, 255)
 							if not self.dict_button_save[key].GetBackgroundColour() == (250, 80, 80, 215):
 								self.dict_button_save[key].SetBackgroundColour((250, 80, 80, 215))
+
+	def ScheduleMFQLSyntaxCheck(self, key, delay=800):
+		"""Check the tab's query 'delay' ms after the last change."""
+		if not hasattr(self, "_mfqlSyntaxTimers"):
+			self._mfqlSyntaxTimers = {}
+		timer = self._mfqlSyntaxTimers.get(key)
+		if timer is not None and timer.IsRunning():
+			timer.Stop()
+		self._mfqlSyntaxTimers[key] = wx.CallLater(delay, self.RunMFQLSyntaxCheck, key)
+
+	def RunMFQLSyntaxCheck(self, key):
+		"""Check the query in tab 'key', mark the problems, return them."""
+		ctrl = self.dict_text_ctrl.get(key)
+		if not ctrl:                    # tab closed in the meantime
+			return []
+		try:
+			return mfqlSyntaxMarks.check_ctrl(ctrl)
+		except Exception:
+			traceback.print_exc()       # never let the checker break the editor
+			return []
+
+	def ReportMFQLSyntaxOnSave(self, key):
+		"""After saving: if the query has a syntax error, say so and go to it."""
+		errors = [p for p in self.RunMFQLSyntaxCheck(key) if p.severity == "error"]
+		if not errors:
+			return
+		first = errors[0]
+		wx.MessageBox("'%s' was saved, but the query has an error:\n\nLine %d: %s"
+				% (key, first.line, first.message),
+				"MFQL syntax error", wx.OK | wx.ICON_WARNING, self)
+		ctrl = self.dict_text_ctrl.get(key)
+		if ctrl:
+			ctrl.GotoLine(first.line - 1)
+			ctrl.SetFocus()
 
 	def OnCloseApp(self, evt):
 
@@ -2862,7 +2907,7 @@ intensity."""))
 				dlg = wx.MessageDialog(self, "Modified query '%s' is not saved. Save it?" % key, "Ups..",
 					wx.YES|wx.NO|wx.ICON_HAND)
 				if dlg.ShowModal() == wx.ID_YES:
-					with open(self.dictMFQLScripts[key], 'w') as mfqlFile:
+					with open(self.MFQLPath(key), 'w', encoding='utf-8') as mfqlFile:
 						self.dict_mfqlFile[key] = mfqlFile
 						mfqlFile.write(self.dict_text_ctrl[key].GetText())
 
@@ -3688,7 +3733,14 @@ intensity."""))
 		# -----------------------------
 		# Unified logger (GUI + file)
 		# -----------------------------
-		log_path = os.path.join(import_dir, "batch_log.txt")
+		# One log per ion mode (read from the MFQLs, same rule as the
+		# per_sample_results_<mode> folder in run_batch): batch_log_positive.txt,
+		# batch_log_negative.txt, batch_log_mixed.txt; batch_log.txt if no
+		# "IN MS1+/-" could be read. A run replaces the log of the same mode
+		# and never touches the other mode's log.
+		from lx.batch_processor import batch_ion_mode, ion_mode_suffix
+		ion_mode = batch_ion_mode(queries_payload)
+		log_path = os.path.join(import_dir, "batch_log%s.txt" % ion_mode_suffix(ion_mode))
 
 		# The log file is the single source of text for the debug window: this
 		# process writes to it through TeeLogger, the spawned workers append to
@@ -3696,12 +3748,12 @@ intensity."""))
 		# into the control. That is why gui_writer is None here -- writing to
 		# the control from TeeLogger as well would double every line, and would
 		# do it from the batch thread, which is not allowed to touch wx.
-		# Remember where the file ends before anything is written so a second
-		# run does not replay the first one (TeeLogger appends).
+		# Start the log empty (TeeLogger and the workers append to it).
 		try:
-			self._batch_log_pos = os.path.getsize(log_path)
+			open(log_path, "w", encoding="utf-8").close()
 		except OSError:
-			self._batch_log_pos = 0
+			pass
+		self._batch_log_pos = 0
 		self._batch_log_path = log_path
 
 		self.logger = TeeLogger(
@@ -4674,12 +4726,13 @@ intensity."""))
 				# find right page
 				for i in range(self.notebook_1.GetPageCount()):
 					if self.notebook_1.GetPage(i) == self.dict_button_save[key].GetParent():
-						with open(self.dictMFQLScripts[key], 'w') as mfqlFile:
+						with open(self.MFQLPath(key), 'w', encoding='utf-8') as mfqlFile:
 							self.dict_mfqlFile[key] = mfqlFile
 							mfqlFile.write(self.dict_text_ctrl[key].GetText())
 							self.dict_isChangedAndNotSavedMfqlFile[key] = False
 						if key in self.dict_button_save:
 							self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
+						self.ReportMFQLSyntaxOnSave(key)
 
 	def OnNewPanel(self, evt):
 
@@ -4687,6 +4740,11 @@ intensity."""))
 		return None
 
 	def OnSaveAsPanel(self, evt):
+
+		for key in list(self.dictEditorOnlyMFQL.keys()):
+			if key in self.dict_button_saveAs and evt.GetId() == self.dict_button_saveAs[key].GetId():
+				self.SaveAsEditorOnlyMFQL(key)
+				return
 
 		# open directory with *.dta/*mzXML content
 		dlg = wx.FileDialog(self, "Specify a filename for the MFQL file", style=wx.DD_DEFAULT_STYLE|wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
@@ -4722,7 +4780,7 @@ intensity."""))
 						for i in range(self.notebook_1.GetPageCount()):
 							if self.notebook_1.GetPage(i) == self.dict_button_saveAs[key].GetParent():
 
-								with open(self.dictMFQLScripts[p], 'w') as f:
+								with open(self.dictMFQLScripts[p], 'w', encoding='utf-8') as f:
 									f.write(self.dict_text_ctrl[key].GetText())
 								self.dict_isChangedAndNotSavedMfqlFile[p] = False
 								if key in self.dict_button_save:
@@ -4743,7 +4801,7 @@ intensity."""))
 				### end remove entry
 
 				# fill the changed text with the original one
-				with open(self.dictMFQLScripts[oldText], 'r') as o:
+				with open(self.dictMFQLScripts[oldText], 'r', encoding='utf-8') as o:
 					self.dict_text_ctrl[oldText].SetText(o.read())
 				self.dict_isChangedAndNotSavedMfqlFile[oldText] = False
 				self.dict_button_save[oldText].SetBackgroundColour((230, 224, 218, 255))
@@ -4752,15 +4810,17 @@ intensity."""))
 				self.OnOpenFile(newFile = -1)
 
 				self.notebook_1.ChangeSelection(self.notebook_1.GetPageCount() - 1)
+				self.ReportMFQLSyntaxOnSave(p)
 
 
 			else:
-				with open(self.dictMFQLScripts[p], 'w') as mfqlFile:
+				with open(self.dictMFQLScripts[p], 'w', encoding='utf-8') as mfqlFile:
 					self.dict_mfqlFile[p] = mfqlFile
 					mfqlFile.write(self.dict_text_ctrl[p].GetText())
 				self.dict_isChangedAndNotSavedMfqlFile[p] = False
 				if p in self.dict_button_save:
 					self.dict_button_save[p].SetBackgroundColour((230, 224, 218, 255))
+				self.ReportMFQLSyntaxOnSave(p)
 
 	#self.key_button[i].GetParent().GetParent().RemovePage(n)
 	#self.notebook_1.RemovePage(i)
@@ -4786,7 +4846,7 @@ intensity."""))
 						)
 
 						if dlg.ShowModal() == wx.ID_YES:
-							with open(self.dictMFQLScripts[key], 'w', encoding='utf-8') as mfqlFile:
+							with open(self.MFQLPath(key), 'w', encoding='utf-8') as mfqlFile:
 								mfqlFile.write(self.dict_text_ctrl[key].GetText())
 
 							self.dict_isChangedAndNotSavedMfqlFile[key] = False
@@ -4824,6 +4884,7 @@ intensity."""))
 					del self.dict_notebook_editor[key]
 
 					self.dict_mfqlFile.pop(key, None)
+					self.dictEditorOnlyMFQL.pop(key, None)
 
 					for k in self.dict_notebook_editor:
 						self.dict_notebook_editor[k].Layout()
@@ -4845,7 +4906,7 @@ intensity."""))
 								)
 
 								if dlg.ShowModal() == wx.ID_YES:
-									with open(self.dictMFQLScripts[key], 'w', encoding='utf-8') as mfqlFile:
+									with open(self.MFQLPath(key), 'w', encoding='utf-8') as mfqlFile:
 										mfqlFile.write(self.dict_text_ctrl[key].GetText())
 
 									self.dict_isChangedAndNotSavedMfqlFile[key] = False
@@ -4883,6 +4944,7 @@ intensity."""))
 							del self.dict_notebook_editor[key]
 
 							self.dict_mfqlFile.pop(key, None)
+							self.dictEditorOnlyMFQL.pop(key, None)
 
 							for k in self.dict_notebook_editor:
 								self.dict_notebook_editor[k].Layout()
@@ -4905,62 +4967,173 @@ intensity."""))
 
 		for index in indices:
 			curScript = sortedKeys[index]
-
-			if curScript in self.dict_notebook_editor:
-				continue
-
-			panel = wx.Panel(self.notebook_1, -1)
-			self.dict_notebook_editor[curScript] = panel
-
-			textctrl = PythonSTC(
-				panel, -1,
-				style=wx.SIMPLE_BORDER | wx.HSCROLL | wx.ALWAYS_SHOW_SB | wx.TE_MULTILINE | wx.TE_RICH
-			)
-			self.dict_text_ctrl[curScript] = textctrl
-
-			textctrl.Bind(stc.EVT_STC_CHANGE, self.OnStcChange)
-			textctrl.SetZoom(2)
-			textctrl.SetMarginType(0, stc.STC_MARGIN_NUMBER)
-			textctrl.SetMarginWidth(0, 22)
-			textctrl.StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
-			textctrl.SetEOLMode(stc.STC_EOL_LF)
-
-			with open(self.dictMFQLScripts[curScript], "r", encoding="utf-8") as f:
-				textctrl.SetText(f.read())
-
-			self.dict_isChangedAndNotSavedMfqlFile[curScript] = False
-
-			btn_new = wx.Button(panel, -1, "New")
-			btn_save = wx.Button(panel, -1, "Save")
-			btn_save_as = wx.Button(panel, -1, "SaveAs")
-			btn_close = wx.Button(panel, -1, "Close")
-
-			self.dict_button_new[curScript] = btn_new
-			self.dict_button_save[curScript] = btn_save
-			self.dict_button_saveAs[curScript] = btn_save_as
-			self.dict_button_close[curScript] = btn_close
-
-			btn_new.Bind(wx.EVT_BUTTON, self.OnNewPanel)
-			btn_save.Bind(wx.EVT_BUTTON, self.OnSavePanel)
-			btn_save_as.Bind(wx.EVT_BUTTON, self.OnSaveAsPanel)
-			btn_close.Bind(wx.EVT_BUTTON, self.OnClosePanel)
-
-			hbox = wx.BoxSizer(wx.HORIZONTAL)
-			hbox.Add(btn_new, 0, wx.ALL, 5)
-			hbox.Add(btn_save, 0, wx.ALL, 5)
-			hbox.Add(btn_save_as, 0, wx.ALL, 5)
-			hbox.Add(btn_close, 0, wx.ALL, 5)
-
-			vbox = wx.BoxSizer(wx.VERTICAL)
-			vbox.Add(textctrl, 1, wx.ALL | wx.EXPAND, 10)
-			vbox.Add(hbox, 0, wx.ALIGN_CENTER)
-
-			panel.SetSizer(vbox)
-			panel.Layout()
-
-			self.notebook_1.AddPage(panel, curScript, select=True)
+			self._openEditorTab(curScript, self.dictMFQLScripts[curScript])
 
 		self.notebook_1.Layout()
+
+	def MFQLPath(self, key):
+		"""File path of the query shown in editor tab 'key'."""
+		if key in self.dictEditorOnlyMFQL:
+			return self.dictEditorOnlyMFQL[key]
+		return self.dictMFQLScripts[key]
+
+	def _openEditorTab(self, curScript, path):
+		"""Open 'path' in a new editor tab named 'curScript' (nothing if open)."""
+		if curScript in self.dict_notebook_editor:
+			return
+
+		panel = wx.Panel(self.notebook_1, -1)
+		self.dict_notebook_editor[curScript] = panel
+
+		textctrl = PythonSTC(
+			panel, -1,
+			style=wx.SIMPLE_BORDER | wx.HSCROLL | wx.ALWAYS_SHOW_SB | wx.TE_MULTILINE | wx.TE_RICH
+		)
+		self.dict_text_ctrl[curScript] = textctrl
+
+		textctrl.Bind(stc.EVT_STC_CHANGE, self.OnStcChange)
+		textctrl.SetZoom(2)
+		textctrl.SetMarginType(0, stc.STC_MARGIN_NUMBER)
+		textctrl.SetMarginWidth(0, 22)
+		textctrl.StyleSetSpec(stc.STC_STYLE_LINENUMBER, "size:9,face:Arial")
+		textctrl.SetEOLMode(stc.STC_EOL_LF)
+		mfqlSyntaxMarks.setup(textctrl)
+
+		with open(path, "r", encoding="utf-8") as f:
+			textctrl.SetText(f.read())
+
+		self.dict_isChangedAndNotSavedMfqlFile[curScript] = False
+
+		btn_new = wx.Button(panel, -1, "New")
+		btn_save = wx.Button(panel, -1, "Save")
+		btn_save_as = wx.Button(panel, -1, "SaveAs")
+		btn_close = wx.Button(panel, -1, "Close")
+
+		self.dict_button_new[curScript] = btn_new
+		self.dict_button_save[curScript] = btn_save
+		self.dict_button_saveAs[curScript] = btn_save_as
+		self.dict_button_close[curScript] = btn_close
+
+		btn_new.Bind(wx.EVT_BUTTON, self.OnNewPanel)
+		btn_save.Bind(wx.EVT_BUTTON, self.OnSavePanel)
+		btn_save_as.Bind(wx.EVT_BUTTON, self.OnSaveAsPanel)
+		btn_close.Bind(wx.EVT_BUTTON, self.OnClosePanel)
+
+		hbox = wx.BoxSizer(wx.HORIZONTAL)
+		hbox.Add(btn_new, 0, wx.ALL, 5)
+		hbox.Add(btn_save, 0, wx.ALL, 5)
+		hbox.Add(btn_save_as, 0, wx.ALL, 5)
+		hbox.Add(btn_close, 0, wx.ALL, 5)
+
+		vbox = wx.BoxSizer(wx.VERTICAL)
+		vbox.Add(textctrl, 1, wx.ALL | wx.EXPAND, 10)
+		vbox.Add(hbox, 0, wx.ALIGN_CENTER)
+
+		panel.SetSizer(vbox)
+		panel.Layout()
+
+		self.notebook_1.AddPage(panel, curScript, select=True)
+
+	def OpenMFQLFromPath(self, path):
+		"""Open an .mfql file in an editor tab, given its path.
+
+		Used when LipidXplorer is started with .mfql files on the command
+		line (Windows "Open with"). Switches from the landing page to the
+		LipidXplorer 1.5.1 view and opens the file in an editor tab. The file is
+		NOT added to the Run tab's MFQL list.
+
+		Tabs are named by file name. If a tab or a Run-list entry with the same
+		name belongs to a *different* file, the file is refused with a message.
+
+		Returns True if the file is open in an editor tab afterwards.
+		"""
+		path = os.path.abspath(path)
+		key = os.path.basename(path)
+
+		def _samePath(a, b):
+			return os.path.normcase(os.path.abspath(a)) == os.path.normcase(os.path.abspath(b))
+
+		self._set_active_view("legacy")
+
+		if key in self.dict_notebook_editor or key in self.dictMFQLScripts:
+			other = self.MFQLPath(key) if key in self.dict_notebook_editor else self.dictMFQLScripts[key]
+			if not _samePath(other, path):
+				wx.MessageBox(
+					"Cannot open\n\n%s\n\nA different file with the same name is already "
+					"open or in the MFQL list:\n\n%s\n\nClose that tab or remove it from the "
+					"list on the Run tab and try again, or rename one of the files."
+					% (path, other),
+					"MFQL file not opened", wx.OK | wx.ICON_WARNING, self)
+				return False
+
+		# Already open in a tab: bring that tab to the front.
+		if key in self.dict_notebook_editor:
+			index = self.notebook_1.FindPage(self.dict_notebook_editor[key])
+			if index != wx.NOT_FOUND:
+				self.notebook_1.SetSelection(index)
+			return True
+
+		# Reading with utf-8 raises on bad files; check first so a bad file
+		# gives a message instead of an exception in the event loop.
+		try:
+			with open(path, "r", encoding="utf-8") as f:
+				f.read()
+		except UnicodeDecodeError as e:
+			wx.MessageBox(
+				"Cannot open\n\n%s\n\nThe file is not valid UTF-8 (%s).\n"
+				"Re-save it as UTF-8 in a text editor and try again."
+				% (path, e.reason),
+				"MFQL file not opened", wx.OK | wx.ICON_ERROR, self)
+			return False
+		except OSError as e:
+			wx.MessageBox(
+				"Cannot open\n\n%s\n\n%s" % (path, e.strerror or e),
+				"MFQL file not opened", wx.OK | wx.ICON_ERROR, self)
+			return False
+
+		if key not in self.dictMFQLScripts:
+			# not a Run-list file: editor tab only
+			self.dictEditorOnlyMFQL[key] = path
+		self._openEditorTab(key, path)
+		self.notebook_1.Layout()
+		return key in self.dict_notebook_editor
+
+	def SaveAsEditorOnlyMFQL(self, key):
+		"""Save As for a tab opened via "Open with" (not in the Run list).
+
+		Like Save As for list files: the new file opens in its own tab and
+		this tab goes back to what is on disk. The Run list is not touched.
+		"""
+		oldPath = self.dictEditorOnlyMFQL[key]
+		dlg = wx.FileDialog(self, "Specify a filename for the MFQL file",
+				defaultDir=os.path.dirname(oldPath), wildcard="*.mfql files|*.mfql",
+				style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+		if dlg.ShowModal() != wx.ID_OK:
+			dlg.Destroy()
+			return
+		newPath = dlg.GetPath()
+		dlg.Destroy()
+		if not newPath.lower().endswith(".mfql"):
+			newPath += ".mfql"
+
+		ctrl = self.dict_text_ctrl[key]
+		with open(newPath, 'w', encoding='utf-8') as f:
+			f.write(ctrl.GetText())
+
+		if os.path.normcase(os.path.abspath(newPath)) == os.path.normcase(os.path.abspath(oldPath)):
+			# saved onto itself: same as Save
+			self.dict_isChangedAndNotSavedMfqlFile[key] = False
+			self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
+			self.ReportMFQLSyntaxOnSave(key)
+			return
+
+		with open(oldPath, 'r', encoding='utf-8') as o:
+			ctrl.SetText(o.read())
+		self.dict_isChangedAndNotSavedMfqlFile[key] = False
+		self.dict_button_save[key].SetBackgroundColour((230, 224, 218, 255))
+
+		if self.OpenMFQLFromPath(newPath):
+			self.ReportMFQLSyntaxOnSave(os.path.basename(newPath))
 #################################################################################################
 
 	# def OnOpenFile(self, evt = None, newFile = None):
@@ -6458,7 +6631,7 @@ intensity."""))
 		start_sizer.AddStretchSpacer(1)
 		start_title = wx.StaticText(self.start_panel, -1, "Choose a workspace")
 		start_title.SetFont(self.header_font)
-		start_subtitle = wx.StaticText(self.start_panel, -1, "Open LipidXplorerNext or the current LipidXplorer 1.5 interface.")
+		start_subtitle = wx.StaticText(self.start_panel, -1, "Open LipidXplorerNext or the current LipidXplorer 1.5.1 interface.")
 		start_button_row = wx.BoxSizer(wx.HORIZONTAL)
 		start_button_row.Add(self.button_open_next, 0, wx.ALL, 8)
 		start_button_row.Add(self.button_open_legacy, 0, wx.ALL, 8)
