@@ -204,18 +204,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 			#		return parent.CONST_THREAD_USER_ABORT
 
-			if options['spectraFormat'] == "mzXML": # old mzXML import. I don't wanna touch this
-				ret = add_mzXMLSample(scan, i[0], i[1],
-					timerange = scan.options['timerange'],
-					MSmassrange = scan.options['MSmassrange'],
-					MSMSmassrange = scan.options['MSMSmassrange'],
-					scanAveraging = scanAvg,
-					isGroup = isGroup,
-					importMSMS = importMSMS,
-					MSthresholdType = scan.options['MSthresholdType'],
-					MSMSthresholdType = scan.options['MSMSthresholdType'])
-    
-			elif options['spectraFormat'] == "csv":
+			if options['spectraFormat'] == "csv":
 				ret = add_CSVSample(
 					scan,
 					i[0],
@@ -243,8 +232,16 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 					MSthresholdType = scan.options['MSthresholdType'],
 					MSMSthresholdType = scan.options['MSMSthresholdType'],
 					fileformat = "mzML")
-			
-				
+
+			elif options['spectraFormat'] == 'mzXML':
+				# the mzXML importer was removed in 1.5.1
+				raise LipidXException("mzXML files are no longer supported. Convert them to "
+					"mzML (e.g. with ProteoWizard msconvert) and import those instead.")
+
+			else:
+				raise LipidXException("The spectra format *.%s is not supported." % options['spectraFormat'])
+
+
 
 
 

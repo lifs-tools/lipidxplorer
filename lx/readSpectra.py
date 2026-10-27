@@ -4,7 +4,6 @@ from math import sqrt
 from glob import glob
 import csv
 from lx.fileReader.mzAPI import mzFile
-from lx.fileReader.mzxml import PrecursorSort, MzXMLFileReader
 from lx.alignment import specEntry, linearAlignment, mergeSumIntensity, doClusterSample, lpdxClusterMSMS
 from lx.tools import reportout
 from lx.spectraContainer import Sample, MSMass, MSMS

@@ -12,7 +12,7 @@ from lx.tools import odict
 from lx.spectraTools import *
 from lx.options import Options
 from LipidXplorer import APP_VERSION
-import wx
+from lx.gui.saveRetry import save_with_retry
 
 def syntaxCheck(
 					queries = None,
@@ -141,24 +141,11 @@ def startFromGUI(
 		print("\n <Query returned no result.>\n")
 
 	# maybe dump the complementary MasterScan
-	# maybe dump the complementary MasterScan
+	# (save_with_retry asks "try again?" on the GUI thread; this may run on the Worker thread)
 	if options['complementMasterScan']:
-		tryAgain = True
-		while tryAgain:
-			try:
-				saveSC(mfqlObj.complementSC, options['complementMasterScanFile'])
-				tryAgain = False
-			except IOError:
-				if parent:
-					dlgError = wx.MessageDialog(parent, "The complementary MasterScan cannot be saved. It is probably open by another program. Try again?",
-						"File writing error", wx.YES_NO|wx.ICON_QUESTION)
-					answer = dlgError.ShowModal()
-					dlgError.Destroy()
-					if answer == wx.ID_NO:
-						tryAgain = False
-				else:
-					print("Error: could not save complementary MasterScan")
-					tryAgain = False
+		save_with_retry(
+			lambda: saveSC(mfqlObj.complementSC, options['complementMasterScanFile']),
+			parent, "complementary MasterScan")
 		progressCount += 1
 		if parent:
 			(cont, skip) = parent.debug.progressDialog.Update(progressCount)
@@ -168,27 +155,12 @@ def startFromGUI(
 
 	# may dump the masterscan
 	if options['dumpMasterScan']:
-		tryAgain = True
-		while tryAgain:
-			try:
-				if not options['masterScanInSQL']:
-					masterscan.dump(options['dumpMasterScanFile'])
-				else:
-					masterscan.dumpInSQL(options['dumpMasterScanFile'])
-				tryAgain = False
-			except IOError:
-				if parent:
-					dlgError = wx.MessageDialog(parent, "The MasterScan cannot be saved. It is probably open by another program. Try again?",
-						"File writing error", wx.YES_NO|wx.ICON_QUESTION)
-					answer = dlgError.ShowModal()
-					dlgError.Destroy()
-					if answer == wx.ID_NO:
-						tryAgain = False
-				else:
-					print("Error: could not save MasterScan")
-					tryAgain = False
+		if not options['masterScanInSQL']:
+			dump = lambda: masterscan.dump(options['dumpMasterScanFile'])
+		else:
+			dump = lambda: masterscan.dumpInSQL(options['dumpMasterScanFile'])
+		save_with_retry(dump, parent, "MasterScan")
 
-#########################################################
 	writeReport(options['masterScanFile'], options, queries)
 
 	# return successfull for GUI

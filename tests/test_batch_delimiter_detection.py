@@ -71,9 +71,12 @@ def test_merge_reads_a_real_per_sample_csv(tmp_path):
 
     with warnings.catch_warnings():
         warnings.simplefilter("error")  # a delimiter warning would fail here
-        df, polarity = merge_lipid_results([str(path)])
+        merged, polarity = merge_lipid_results([str(path)])
 
     assert polarity == ["negative"]
-    assert "LipidSpecies" in df.columns
-    # merge_lipid_results appends one blank separator row per lipid class.
-    assert int(df["LipidSpecies"].notna().sum()) == 24
+    assert merged.header[0] == "LipidSpecies"
+    # The comma-split header must be intact, not one long column name.
+    assert merged.header[1:4] == ["LipidClass", "Mass", "ScanPolarity"]
+    # One "###,PC" block holding all 24 rows, each split into header fields.
+    assert [(title, len(rows)) for title, rows in merged.blocks] == [("PC", 24)]
+    assert all(len(row) == len(merged.header) for _, rows in merged.blocks for row in rows)
