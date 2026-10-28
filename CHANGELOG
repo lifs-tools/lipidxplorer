@@ -11,9 +11,7 @@
 - Batch mode: `batch_results_<polarity>.csv` now uses the same layout as normal mode -- one header line, then one `###` block per lipid class -- instead of a flat table. Scripts that read it as a plain CSV must be adapted. It is tab-separated when "tab limited" output is selected.
 - Batch mode: the log, the per-sample results folder and the result file are named after the ion mode read from the MFQL files, e.g. `batch_log_negative.txt`, `per_sample_results_negative/`, `batch_results_negative.csv` (`_mixed` if both polarities are selected). A per-sample results folder left by an earlier run with the same ion mode is deleted at the start of a run.
 - Batch mode: all MFQL queries of a sample now run together, as in normal mode. An error in any one MFQL now fails the whole sample; previously only that query was skipped.
-- CSV import: the relative `MSthreshold` is no longer divided by 100, so it means the same as for mzML import. Existing settings files with a relative threshold now filter 100 times more strictly on CSV input; divide the value by 100 to keep the old behaviour.
 - mzXML import has been removed. Convert mzXML files to mzML (e.g. with ProteoWizard `msconvert`); selecting mzXML now stops with an error saying so.
-- CSV import: only rows with a positive peak `index` are imported; rows with `index` 0 or -1 (unassigned detections) are skipped. An intensity column named `Intensity` is now accepted in addition to `inten`.
 
 ## New features
 - On Windows, `.mfql` files are associated with LipidXplorer. Double-clicking one, or using "Open with", opens it in the LipidXplorer MFQL editor.

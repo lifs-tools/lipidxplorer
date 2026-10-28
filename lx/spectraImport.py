@@ -13,7 +13,7 @@ from lx.mfql.runtimeStatic import TypeTolerance
 from lx.exceptions import LipidXException
 from lx.spectraContainer import MasterScan, SurveyEntry
 from lx.spectraTools import recalibrateMS, recalibrateMSMS, saveSC
-from lx.readSpectra import add_Sample, add_DTASample, add_CSVSample
+from lx.readSpectra import add_Sample, add_DTASample
 from lx.alignment import mkSurveyLinear, \
 		 mkMSMSEntriesLinear_new, \
 		 specEntry, linearAlignment
@@ -204,23 +204,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 
 			#		return parent.CONST_THREAD_USER_ABORT
 
-			if options['spectraFormat'] == "csv":
-				ret = add_CSVSample(
-					scan,
-					i[0],
-					i[1],
-					options=scan.options,
-					timerange=scan.options['timerange'],
-					MSmassrange=scan.options['MSmassrange'],
-					MSMSmassrange=scan.options['MSMSmassrange'],
-					scanAveraging=scanAvg,
-					isGroup=isGroup,
-					importMSMS=importMSMS,
-					MSthresholdType=scan.options['MSthresholdType'],
-					MSMSthresholdType=scan.options['MSMSthresholdType']
-				)
-
-			elif options['spectraFormat'] == 'mzML': # the new import routine, :-)
+			if options['spectraFormat'] == 'mzML': # the new import routine, :-)
 				ret = add_Sample(scan, i[0], i[1],
 					options = scan.options,
 					timerange = scan.options['timerange'],

@@ -1436,7 +1436,7 @@ class LpdxFrame(wx.Frame):
 		"""Choose the type of the mass spec data:
 		mzML - XML file format
 		dta/csv - text file format
-		csv - single CSV with MS1/MS2 separated by QuadMass
+		
 		%s
 		""" % self.rawToolTip))
 
