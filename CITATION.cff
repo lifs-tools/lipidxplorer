@@ -12,7 +12,7 @@ abstract: >-
   isotope-corrected quantification based on the identified MS1 or MS2 level
   fragments.
 type: software
-version: 1.5.0
+version: 1.5.1
 license: GPL-2.0-only
 repository-code: "https://github.com/lifs-tools/lipidxplorer"
 url: "https://lifs-tools.org/lipidxplorer.html"
