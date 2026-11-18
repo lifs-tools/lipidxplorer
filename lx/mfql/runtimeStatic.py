@@ -2231,7 +2231,7 @@ class InternFunctions:
 						if dl % 2 == 1:
 							median = d[(dl + 1) / 2 - 1]
 						else:
-							median = d[dl / 2] # take upper median
+							median = d[dl // 2] # take upper median
 
 						# generate the result as TypeTmpResult
 						result = TypeTmpResult(
@@ -2252,7 +2252,7 @@ class InternFunctions:
 					if dl % 2 == 1:
 						median = d[(dl + 1) / 2 - 1]
 					else:
-						median = d[dl / 2] # take upper median
+						median = d[dl // 2] # take upper median
 
 					# generate the result as TypeTmpResult
 					result = TypeTmpResult(
@@ -2274,7 +2274,7 @@ class InternFunctions:
 						if dl % 2 == 1:
 							median = d[(dl + 1) / 2 - 1]
 						else:
-							median = d[dl / 2 - 1] # take lower median
+							median = d[dl // 2 - 1] # take lower median
 
 						# generate the result as TypeTmpResult
 						result = TypeTmpResult(
@@ -2295,7 +2295,7 @@ class InternFunctions:
 					if dl % 2 == 1:
 						median = d[(dl + 1) / 2 - 1]
 					else:
-						median = d[dl / 2 - 1] # take lower median
+						median = d[dl // 2 - 1] # take lower median
 
 					# generate the result as TypeTmpResult
 					result = TypeTmpResult(

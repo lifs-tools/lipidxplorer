@@ -1424,14 +1424,14 @@ def doClusterSample(res, sample):
 		sumcountScan = 0
 		for i in precurmasslist:
 			sumcountScan += i.scanCount
-		countScan = sumcountScan / len(precurmasslist)
+		countScan = sumcountScan // len(precurmasslist)
 
 		# get sum intensity
 		sumintensity = 0
 		for i in precurmasslist:
 			sumintensity = sumintensity + i.intensity
 
-		avgprecurmass = sumprecurmass / sumcount
+		avgprecurmass = sumprecurmass // sumcount
 
 		newsample.add_MSMass(MSMass(
 			precurmass = avgprecurmass,

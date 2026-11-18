@@ -905,12 +905,12 @@ class TypeResult:
 						numN += scomp['N']
 						numP += scomp['P']
 						numS += scomp['S']
-					numC = numC / len(chargePrecurmassSF[charge])
-					numH = numH / len(chargePrecurmassSF[charge])
-					numO = numO / len(chargePrecurmassSF[charge])
-					numN = numN / len(chargePrecurmassSF[charge])
-					numP = numP / len(chargePrecurmassSF[charge])
-					numS = numS / len(chargePrecurmassSF[charge])
+					numC = numC // len(chargePrecurmassSF[charge])
+					numH = numH // len(chargePrecurmassSF[charge])
+					numO = numO // len(chargePrecurmassSF[charge])
+					numN = numN // len(chargePrecurmassSF[charge])
+					numP = numP // len(chargePrecurmassSF[charge])
+					numS = numS // len(chargePrecurmassSF[charge])
 					gotOne = False
 
 					(mz, intens, monoisotopic) = isotopicValues(numC, numH, numO, numN, numS, numP)

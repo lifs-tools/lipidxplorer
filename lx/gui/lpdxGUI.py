@@ -1221,7 +1221,7 @@ class LpdxFrame(wx.Frame):
 		self.notebook_1_pane_5 = wx.Panel(self.notebook_1, -1)
 
 		self.button_open_next = wx.Button(self.start_panel, -1, "LipidXplorerNext")
-		self.button_open_legacy = wx.Button(self.start_panel, -1, "LipidXplorer 1.5.1")
+		self.button_open_legacy = wx.Button(self.start_panel, -1, "LipidXplorer 1.5.1.1")
 		self.button_back_from_placeholder = wx.Button(self.placeholder_panel, -1, "Back", size=(48, 20))
 		self.button_back_to_start = wx.Button(self.notebook_1_pane_2, -1, "Back", size=(48, 20))
 
@@ -6631,7 +6631,7 @@ intensity."""))
 		start_sizer.AddStretchSpacer(1)
 		start_title = wx.StaticText(self.start_panel, -1, "Choose a workspace")
 		start_title.SetFont(self.header_font)
-		start_subtitle = wx.StaticText(self.start_panel, -1, "Open LipidXplorerNext or the current LipidXplorer 1.5.1 interface.")
+		start_subtitle = wx.StaticText(self.start_panel, -1, "Open LipidXplorerNext or the current LipidXplorer 1.5.1.1 interface.")
 		start_button_row = wx.BoxSizer(wx.HORIZONTAL)
 		start_button_row.Add(self.button_open_next, 0, wx.ALL, 8)
 		start_button_row.Add(self.button_open_legacy, 0, wx.ALL, 8)
