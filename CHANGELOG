@@ -1,5 +1,8 @@
 # LipidXplorer 1.5.1.1 (2026-11-18)
 
+- isotopic correction gave wrong intensities when several sum compositions were assigned to the same precursor peak.
+  - In Python 2, dividing two integers rounded the result down to a whole number, but in Python 3 it gives a fraction. After migrating to Python 3, the average element counts used for the isotopic correction could therefore become fractions (e.g. 0.5 nitrogen), which produced wrong isotope ratios and wrong corrected intensities. 
+
 # LipidXplorer 1.5.1 (2026-10-26)
 
 ## Bug fixes
