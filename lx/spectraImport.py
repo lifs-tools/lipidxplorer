@@ -218,7 +218,7 @@ def doImport(options, scan, importDir, output, parent, listFiles, isTaken, isGro
 					fileformat = "mzML")
 
 			elif options['spectraFormat'] == 'mzXML':
-				# the mzXML importer was removed in 1.5.1.1
+				# the mzXML importer was removed in 1.5.1
 				raise LipidXException("mzXML files are no longer supported. Convert them to "
 					"mzML (e.g. with ProteoWizard msconvert) and import those instead.")
 
